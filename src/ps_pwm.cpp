@@ -1,6 +1,6 @@
 #include <Arduino.h>
 #include <DNSServer.h>
-// #include <ESPmDNS.h>
+#include <ESPmDNS.h>
 #include <WiFi.h>
 #include <SPIFFS.h>
 #include <FS.h>
@@ -28,7 +28,7 @@ const char *hostName = "test_host";
 
 static bool reboot_requested = false;
 
-DNSServer dnsServer;
+// DNSServer dnsServer;
 AsyncWebServer httpServer(80);
 // Server-Sent Events (SSE) enable push updates on clients
 // AsyncEventSource events("/events");
@@ -49,10 +49,10 @@ void setup() {
 
     setup_wifi_hostap();
 
-    // MDNS.begin(hostName);
-    // MDNS.addService("http", "tcp", 80);
+    MDNS.begin(hostName);
+    MDNS.addService("http", "tcp", 80);
 
-    dnsServer.start(53, "*", WiFi.softAPIP());
+    // dnsServer.start(53, "*", WiFi.softAPIP());
     // attach AsyncEventSource
     // server.addHandler(&events);
 
@@ -63,7 +63,7 @@ void setup() {
 }
 
 void loop() {
-    dnsServer.processNextRequest();
+    // dnsServer.processNextRequest();
     delay(20);
     if (reboot_requested) {
         Serial.println("Rebooting...");
@@ -246,6 +246,6 @@ void httpRegisterCallbacks() {
     httpServer.onRequestBody(onBody);
 
     // Handler called when any DNS query is made via access point
-    httpServer.addHandler(new CaptiveRequestHandler()).setFilter(ON_AP_FILTER);
+    // httpServer.addHandler(new CaptiveRequestHandler()).setFilter(ON_AP_FILTER);
 
 } // httpRegisterCallbacks()
