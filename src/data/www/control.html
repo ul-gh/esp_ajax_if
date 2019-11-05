@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Main Page</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" type="text/css" href="u_lukas_style.css">
+    </head>
+    <body>
+        <img src="logo.svg" alt="Application Logo">
+
+        <form action="/cmd" method="get">
+            <table>
+                <caption>Click the "Submit" button to update settings
+                    for the remote component!</caption>
+                <thead>
+                    <tr>
+                        <th colspan="4">Dead Time Settings</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Lag Leg (ZCS) Dead Time /ns:</td>
+                        <td><input type="number" name="lag_dt" value="125"
+                                min="6.25" max="1000" step="6.25"></td>
+                    </tr>
+                    <tr>
+                        <td>Lead Leg (ZVS) Dead Time /ns:</td>
+                        <td><input type="number" name="lead_dt" value="125"
+                                min="6.25" max="1000" step="6.25"></td>
+                    </tr>
+                    <td colspan="2"><input type="submit" value="Submit"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </form>
+
+        <form action="/cmd" method="get">
+            <table>
+                <thead>
+                    <tr>
+                        <th colspan="2">Operation Settings</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Frequency /kHz:</td>
+                        <td><input type="number" name="set_freq"
+                                value="100" min="5" max="1000"></td>
+                    </tr>
+                    <tr>
+                        <td>Duty Cycle /%:</td>
+                        <td><input type="number" name="set_duty"
+                                value="45" min="0" max="100"></td>
+                    </tr>
+                    <td colspan="2"><input type="submit" value="Submit"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </form>
+        <br>
+
+        <form action="/cmd" method="get">
+            <table>
+                <thead>
+                    <tr>
+                        <th colspan="2">Limit Values</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Current Limit /A:</td>
+                        <td><input type="number" name="set_curr_limit"
+                                                 value="35" min="5" max="100"></td>
+                    </tr>
+                    <td colspan="2"><input type="submit" value="Submit"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </form>
+        <br><br>
+
+        <form action="/cmd" method="get">
+            <table>
+                <thead>
+                    <tr>
+                        <th colspan="2">Activate Output</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><input type="submit" id="btn_on" class="button_large"
+                                    name="set_output" value="ON"></td>
+                        <td><input type="submit" id="btn_off" class="button_large"
+                                    name="set_output" value="OFF"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </form>
+
+        <p>2019-10-31 Ulrich Lukas</p>
+        <a href="update.html">Perform OTA Firmware Upload</a>
+    </body>
+</html>

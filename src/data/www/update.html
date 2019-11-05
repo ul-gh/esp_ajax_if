@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Firmware-Upload</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" type="text/css" href="u_lukas_style.css">
+    </head>
+    <body>
+        <img src="logo.svg" alt="Application Logo">
+
+        <form action="/update" method="post" enctype="multipart/form-data">
+            <table>
+                <caption>
+                    Select ".bin" firmware file and click the "Perform Upload!"
+                    button to perform Over-The-Air flash update procedure for
+                    the HE-Square-Wave-Driver.  This can brick your device...
+                </caption>
+                <thead>
+                    <tr>
+                        <th>DANGER ZONE - OTA Firmware Upload</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><input type="file" name="update"></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <input type="submit" class="button_large"
+                                    value="Perform Upload!" id="btn_update">
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </form>
+
+        <p>2019-10-31 Ulrich Lukas</p>
+        <a href="control.html">Back to Main Page</a>
+    </body>
+</html>
