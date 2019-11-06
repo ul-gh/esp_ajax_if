@@ -1,5 +1,7 @@
 #include <Arduino.h>
 #include <unordered_map>
+#include <typeinfo>
+#include <functional>
 #include <DNSServer.h>
 #include <ESPmDNS.h>
 #include <WiFi.h>
@@ -7,6 +9,8 @@
 #include <FS.h>
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
+#include <sstream>
+#include <iomanip>
 
 #include <Update.h>
 
@@ -49,10 +53,11 @@ static void setup_wifi_sta_ap();
 
 // Mapping used for resolving command strings received via HTTP request
 // on the "/cmd" endpoint to specialised request handlers
-//using CmdMapT = std::unordered_map<String, void(*)()>;
+using CmdMapT = std::unordered_map<const char*, void(*)()>;
 
 class HTTPServer : AsyncWebServer {
 public:
+    static CmdMapT cmdMap;
     HTTPServer(int port) : AsyncWebServer(port) {
     }
     // virtual ~HTTPServer() {}
@@ -86,16 +91,27 @@ public:
     } // registerCallbacks()
 
 private:
-    void printFoo() {
+    static void printFoo() {
         Serial.println("Nice Foo!");
     }
-    //static CmdMapT cmdMap;
-    std::unordered_map<String, void(*)()> cmdMap;
-    cmdMap.insert({"set_output", &printFoo});
+
     // on("/")
     static void onRootRequest(AsyncWebServerRequest *request) {
         //request->send(SPIFFS, "/control.html", String(), false, processor);
         request->send(SPIFFS, "/www/control.html");
+    }
+
+    static void raw_print(const char *s) {
+        char cbuffer[4];
+        char sbuffer[200] = {0};
+        char* p = (char*) s;
+        while (*p) {
+            snprintf(cbuffer, sizeof(cbuffer), isalnum((int) *p) ? "%c" : "\\%hhx", *p);
+            strncat(sbuffer, cbuffer, sizeof(sbuffer) - 2 - strlen(sbuffer)); 
+            p++;
+        }
+        strncat(sbuffer, "\n", 1);
+        Serial.print(sbuffer);
     }
 
     // on("/cmd")
@@ -112,7 +128,14 @@ private:
             Serial.println(text);
             Serial.println("------");
             if (name == "set_output") {
-                cmdMap[name]();
+                void (*fp)() = cmdMap[name.c_str()];
+                //fp();
+                raw_print(name.c_str());
+                raw_print("set_output");
+                Serial.println(
+                        String("Is identical: ")
+                        + strcmp(name.c_str(), "set_output") ? "Yes" : "No");
+                Serial.println(String("Dispatch pointer: ") + (uint32_t) fp);
                 Serial.println("Is Switch Command with value: " + text);
             }
         }
@@ -170,6 +193,9 @@ private:
         //Handle upload
     };
 };
+
+// CmdMapT HTTPServer::cmdMap = CmdMapT({{"set_output", 4}});
+CmdMapT HTTPServer::cmdMap({{(const char*) "set_output", HTTPServer::printFoo}});
 
 /* Handler for captive portal page, only active when in access point mode
 */
