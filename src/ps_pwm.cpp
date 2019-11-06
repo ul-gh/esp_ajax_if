@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <unordered_map>
 #include <DNSServer.h>
 #include <ESPmDNS.h>
 #include <WiFi.h>
@@ -20,7 +21,7 @@
 #define SERIAL_BAUD 115200
 
 const char *ap_ssid = "test_ssid";
-const char *ap_psk = "123456";
+const char *ap_psk = "123FOO456";
 const char *hostName = "test_host";
 //IPAddress local_IP(192,168,4,1);
 //IPAddress gateway(192,168,4,254);
@@ -29,14 +30,173 @@ const char *hostName = "test_host";
 static bool reboot_requested = false;
 
 // DNSServer dnsServer;
-AsyncWebServer httpServer(80);
+// AsyncWebServer httpServer(80);
 // Server-Sent Events (SSE) enable push updates on clients
 // AsyncEventSource events("/events");
 
 static void do_ps_pwm();
 static void setup_wifi_hostap();
 static void setup_wifi_sta_ap();
-void httpRegisterCallbacks();
+//void httpRegisterCallbacks();
+
+
+
+/* HTTP server
+ *
+ * Based on ESPAsyncWebServer, see:
+ * https://github.com/me-no-dev/ESPAsyncWebServer
+ */
+
+// Mapping used for resolving command strings received via HTTP request
+// on the "/cmd" endpoint to specialised request handlers
+using cmdMapT = std::unordered_map<String, ArRequestHandlerFunction>;
+
+class ApplicationServer {
+public:
+    // 
+    AsyncWebServer* httpServer;
+
+    ApplicationServer(int port) {
+        httpServer = new AsyncWebServer(port);
+    }
+    ~ApplicationServer() {
+        delete httpServer;
+    }
+
+    void httpRegisterCallbacks() {
+        /* Normal HTTP request handlers
+        */
+        // httpServer.on("/" ...
+        ArRequestHandlerFunction onRootRequest = [](AsyncWebServerRequest *request) {
+            //request->send(SPIFFS, "/control.html", String(), false, processor);
+            request->send(SPIFFS, "/www/control.html");
+        };
+
+        // httpServer.on("/cmd" ...
+        ArRequestHandlerFunction onCmdRequest = [](AsyncWebServerRequest *request) {
+            int n_params = request->params();
+            Serial.println(n_params);
+            for (int i = 0; i < n_params; ++i) {
+                static AsyncWebParameter *p = request->getParam(i);
+                String name = p->name();
+                String text = p->value();
+                Serial.print("Param name: ");
+                Serial.println(name);
+                Serial.print("Param value: ");
+                Serial.println(text);
+                Serial.println("------");
+                if (name == "set_output") {
+                    Serial.println("Is Switch Command with value: " + text);
+                }
+            }
+            request->send(SPIFFS, "/www/control.html");
+        };
+
+        // httpServer.on("/update" ...
+        ArRequestHandlerFunction onUpdateRequest = [](AsyncWebServerRequest *request) {
+            reboot_requested = !Update.hasError();
+            AsyncWebServerResponse *response = request->beginResponse(
+                200, "text/plain", reboot_requested ? "OK": "FAIL");
+            response->addHeader("Connection", "close");
+            request->send(response);
+        };
+        ArUploadHandlerFunction onUpdateUpload = [](AsyncWebServerRequest *request,
+                                                    String filename, size_t index,
+                                                    uint8_t *data, size_t len, bool final) {
+            if(!index) {
+                Serial.printf("Update Start: %s\n", filename.c_str());
+                //Update.runAsync(true);
+                if(!Update.begin((ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000)) {
+                    Update.printError(Serial);
+                }
+            }
+            if(!Update.hasError()) {
+                if(Update.write(data, len) != len){
+                    Update.printError(Serial);
+                }
+            }
+            if(final) {
+                if(Update.end(true)) {
+                    Serial.printf("Update Success: %uB\n", index+len);
+                }
+                else {
+                    Update.printError(Serial);
+                }
+            }
+        }; // httpServer.on("/update" ...
+
+        /* Catch-All-Handlers
+        */
+        ArRequestHandlerFunction onRequest = [](AsyncWebServerRequest *request) {
+            //Handle Unknown Request
+            request->send(404);
+        };
+
+        ArBodyHandlerFunction onBody = [](AsyncWebServerRequest *request,
+                uint8_t *data, size_t len, size_t index, size_t total) {
+            //Handle body
+        };
+
+        ArUploadHandlerFunction onUpload = [](AsyncWebServerRequest *request,
+                String filename, size_t index, uint8_t *data, size_t len, bool final) {
+            //Handle upload
+        };
+
+        /* Register handlers
+        */
+        // Route for main application home page
+        httpServer->on("/", HTTP_GET, onRootRequest);
+
+        // Serve static HTML and related files content
+        httpServer->serveStatic("/", SPIFFS, "/www/");
+
+        // Route for REST API
+        httpServer->on("/cmd", HTTP_GET, onCmdRequest);
+
+        // respond to GET requests on URL /heap
+        httpServer->on("/heap", HTTP_GET,
+                    [](AsyncWebServerRequest *request) {
+                        request->send(200, "text/plain", String(ESP.getFreeHeap()));
+                        }
+                    );
+
+        // OTA Firmware Upgrade via file input, see form method in data/www/upload.html
+        httpServer->on("/update", HTTP_POST, onUpdateRequest, onUpdateUpload);
+
+        httpServer->onNotFound(onRequest);
+        httpServer->onFileUpload(onUpload);
+        httpServer->onRequestBody(onBody);
+
+        // Handler called when any DNS query is made via access point
+        // httpServer.addHandler(new CaptiveRequestHandler()).setFilter(ON_AP_FILTER);
+        Serial.println("FOOOOOOOOO Callbacks set up");
+    } // httpRegisterCallbacks()
+};
+
+/* Request handler for captive portal page is only active when in access point mode
+*/
+class CaptiveRequestHandler : public AsyncWebHandler {
+public:
+    CaptiveRequestHandler() {}
+    virtual ~CaptiveRequestHandler() {}
+
+    bool canHandle(AsyncWebServerRequest *request) {
+        //request->addInterestingHeader("ANY");
+        return true;
+    }
+
+    void handleRequest(AsyncWebServerRequest *request) {
+        AsyncResponseStream *response = request->beginResponseStream("text/html");
+        response->print("<!DOCTYPE html><html><head><title>Captive Portal</title></head><body>");
+        response->print("<p>This is out captive portal front page.</p>");
+        response->printf("<p>You were trying to reach: http://%s%s</p>", request->host().c_str(), request->url().c_str());
+        response->printf("<p>Try opening <a href='http://%s'>this link</a> instead</p>", WiFi.softAPIP().toString().c_str());
+        response->print("</body></html>");
+        request->send(response);
+    }
+}; // class CaptiveRequestHandler
+
+ApplicationServer applicationServer(80);
 
 void setup() {
     Serial.begin(SERIAL_BAUD);
@@ -55,9 +215,8 @@ void setup() {
     // dnsServer.start(53, "*", WiFi.softAPIP());
     // attach AsyncEventSource
     // server.addHandler(&events);
-
-    httpRegisterCallbacks();
-    httpServer.begin();
+    applicationServer.httpRegisterCallbacks();
+    applicationServer.httpServer->begin();
 
     do_ps_pwm();
 }
@@ -116,136 +275,3 @@ static void setup_wifi_hostap() {
     Serial.println("");
 }
 
-/* Request handlers for HTTP server
- */
-void httpRegisterCallbacks() {
-    /* Normal HTTP request handlers
-     */
-    // httpServer.on("/" ...
-    ArRequestHandlerFunction onRootRequest = [](AsyncWebServerRequest *request) {
-        //request->send(SPIFFS, "/control.html", String(), false, processor);
-        request->send(SPIFFS, "/www/control.html");
-    };
-
-    // httpServer.on("/cmd" ...
-    ArRequestHandlerFunction onCmdRequest = [](AsyncWebServerRequest *request) {
-        int n_params = request->params();
-        Serial.println(n_params);
-        for (int i = 0; i < n_params; ++i) {
-            static AsyncWebParameter *p = request->getParam(i);
-            String name = p->name();
-            String text = p->value();
-            Serial.print("Param name: ");
-            Serial.println(name);
-            Serial.print("Param value: ");
-            Serial.println(text);
-            Serial.println("------");
-            if (name == "set_output") {
-                Serial.println("Is Switch Command with value: " + text);
-            }
-        }
-    };
-
-    // httpServer.on("/update" ...
-    ArRequestHandlerFunction onUpdateRequest = [](AsyncWebServerRequest *request) {
-        reboot_requested = !Update.hasError();
-        AsyncWebServerResponse *response = request->beginResponse(
-            200, "text/plain", reboot_requested ? "OK": "FAIL");
-        response->addHeader("Connection", "close");
-        request->send(response);
-    };
-    ArUploadHandlerFunction onUpdateUpload = [](AsyncWebServerRequest *request,
-                                                String filename, size_t index,
-                                                uint8_t *data, size_t len, bool final) {
-        if(!index) {
-            Serial.printf("Update Start: %s\n", filename.c_str());
-            //Update.runAsync(true);
-            if(!Update.begin((ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000)) {
-                Update.printError(Serial);
-            }
-        }
-        if(!Update.hasError()) {
-            if(Update.write(data, len) != len){
-                Update.printError(Serial);
-            }
-        }
-        if(final) {
-            if(Update.end(true)) {
-                Serial.printf("Update Success: %uB\n", index+len);
-            }
-            else {
-                Update.printError(Serial);
-            }
-        }
-    }; // httpServer.on("/update" ...
-
-    /* Catch-All-Handlers
-     */
-    ArRequestHandlerFunction onRequest = [](AsyncWebServerRequest *request) {
-        //Handle Unknown Request
-        request->send(404);
-    };
-
-    ArBodyHandlerFunction onBody = [](AsyncWebServerRequest *request,
-            uint8_t *data, size_t len, size_t index, size_t total) {
-        //Handle body
-    };
-
-    ArUploadHandlerFunction onUpload = [](AsyncWebServerRequest *request,
-            String filename, size_t index, uint8_t *data, size_t len, bool final) {
-        //Handle upload
-    };
-
-    /* Request handler for captive portal page is only active when in access point mode
-    */
-    class CaptiveRequestHandler : public AsyncWebHandler {
-    public:
-        CaptiveRequestHandler() {}
-        virtual ~CaptiveRequestHandler() {}
-
-        bool canHandle(AsyncWebServerRequest *request) {
-            //request->addInterestingHeader("ANY");
-            return true;
-        }
-
-        void handleRequest(AsyncWebServerRequest *request) {
-            AsyncResponseStream *response = request->beginResponseStream("text/html");
-            response->print("<!DOCTYPE html><html><head><title>Captive Portal</title></head><body>");
-            response->print("<p>This is out captive portal front page.</p>");
-            response->printf("<p>You were trying to reach: http://%s%s</p>", request->host().c_str(), request->url().c_str());
-            response->printf("<p>Try opening <a href='http://%s'>this link</a> instead</p>", WiFi.softAPIP().toString().c_str());
-            response->print("</body></html>");
-            request->send(response);
-        }
-    }; // class CaptiveRequestHandler
-
-
-    /* Register handlers
-     */
-    // Route for main application home page
-    httpServer.on("/", HTTP_GET, onRootRequest);
-
-    // Serve static HTML and related files content
-    httpServer.serveStatic("/", SPIFFS, "/www/");
-
-    // Route for REST API
-    httpServer.on("/cmd", HTTP_GET, onCmdRequest);
-
-    // respond to GET requests on URL /heap
-    httpServer.on("/heap", HTTP_GET,
-                  [](AsyncWebServerRequest *request) {
-                      request->send(200, "text/plain", String(ESP.getFreeHeap()));
-                      }
-                  );
-
-    // OTA Firmware Upgrade via file input, see form method in data/www/upload.html
-    httpServer.on("/update", HTTP_POST, onUpdateRequest, onUpdateUpload);
-
-    httpServer.onNotFound(onRequest);
-    httpServer.onFileUpload(onUpload);
-    httpServer.onRequestBody(onBody);
-
-    // Handler called when any DNS query is made via access point
-    // httpServer.addHandler(new CaptiveRequestHandler()).setFilter(ON_AP_FILTER);
-
-} // httpRegisterCallbacks()
