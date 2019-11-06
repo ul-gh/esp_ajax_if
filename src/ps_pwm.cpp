@@ -49,7 +49,7 @@ static void setup_wifi_sta_ap();
 
 // Mapping used for resolving command strings received via HTTP request
 // on the "/cmd" endpoint to specialised request handlers
-using cmdMapT = std::unordered_map<String, ArRequestHandlerFunction>;
+//using CmdMapT = std::unordered_map<String, void(*)()>;
 
 class HTTPServer : AsyncWebServer {
 public:
@@ -86,6 +86,12 @@ public:
     } // registerCallbacks()
 
 private:
+    void printFoo() {
+        Serial.println("Nice Foo!");
+    }
+    //static CmdMapT cmdMap;
+    std::unordered_map<String, void(*)()> cmdMap;
+    cmdMap.insert({"set_output", &printFoo});
     // on("/")
     static void onRootRequest(AsyncWebServerRequest *request) {
         //request->send(SPIFFS, "/control.html", String(), false, processor);
@@ -106,6 +112,7 @@ private:
             Serial.println(text);
             Serial.println("------");
             if (name == "set_output") {
+                cmdMap[name]();
                 Serial.println("Is Switch Command with value: " + text);
             }
         }
