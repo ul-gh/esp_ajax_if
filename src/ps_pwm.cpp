@@ -1,7 +1,7 @@
-#include <Arduino.h>
-#include <unordered_map>
-#include <typeinfo>
+#include <map>
 #include <functional>
+
+#include <Arduino.h>
 #include <DNSServer.h>
 #include <ESPmDNS.h>
 #include <WiFi.h>
@@ -9,9 +9,6 @@
 #include <FS.h>
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
-#include <sstream>
-#include <iomanip>
-
 #include <Update.h>
 
 #include "driver/mcpwm.h"
@@ -44,21 +41,27 @@ static void setup_wifi_sta_ap();
 //void httpRegisterCallbacks();
 
 
-
 /* HTTP server
  *
  * Based on ESPAsyncWebServer, see:
  * https://github.com/me-no-dev/ESPAsyncWebServer
  */
 
+// Generalised callback type
+using CbT = std::function<void(String value)>;
 // Mapping used for resolving command strings received via HTTP request
 // on the "/cmd" endpoint to specialised request handlers
-using CmdMapT = std::unordered_map<const char*, void(*)()>;
+using CmdMapT = std::map<String, CbT>;
 
 class HTTPServer : AsyncWebServer {
 public:
-    static CmdMapT cmdMap;
-    HTTPServer(int port) : AsyncWebServer(port) {
+    CmdMapT cmdMap;
+    
+    HTTPServer(int port)
+        : AsyncWebServer(port),
+        cmdMap{ {String("set_output"), [this](auto value) {printFoo(value);}},
+                {String("set_input"), [this](auto value) {printFoo(value);}},
+        } {
     }
     // virtual ~HTTPServer() {}
 
@@ -68,14 +71,16 @@ public:
     }
 
     /* Normal HTTP request handlers
-    */
+     */
     void registerCallbacks() {
         // Route for main application home page
         on("/", HTTP_GET, onRootRequest);
         // Serve static HTML and related files content
         serveStatic("/", SPIFFS, "/www/");
         // Route for REST API
-        on("/cmd", HTTP_GET, onCmdRequest);
+        //using namespace std::placeholders;
+        //on("/cmd", HTTP_GET, std::bind(&HTTPServer::onCmdRequest, this, _1));
+        on("/cmd", HTTP_GET, [this](auto request) {onCmdRequest(request);});
         // respond to GET requests on URL /heap
         on("/heap", HTTP_GET, [](AsyncWebServerRequest *request) {
                     request->send(200, "text/plain", String(ESP.getFreeHeap()));
@@ -91,8 +96,8 @@ public:
     } // registerCallbacks()
 
 private:
-    static void printFoo() {
-        Serial.println("Nice Foo!");
+    void printFoo(String value) {
+        Serial.println("Nice Foo!, Value is: " + value);
     }
 
     // on("/")
@@ -115,7 +120,7 @@ private:
     }
 
     // on("/cmd")
-    static void onCmdRequest(AsyncWebServerRequest *request) {
+    void onCmdRequest(AsyncWebServerRequest *request) {
         int n_params = request->params();
         Serial.println(n_params);
         for (int i = 0; i < n_params; ++i) {
@@ -128,14 +133,14 @@ private:
             Serial.println(text);
             Serial.println("------");
             if (name == "set_output") {
-                void (*fp)() = cmdMap[name.c_str()];
-                //fp();
+                CbT fp = cmdMap[name];
+                fp(text);
                 raw_print(name.c_str());
                 raw_print("set_output");
                 Serial.println(
                         String("Is identical: ")
-                        + strcmp(name.c_str(), "set_output") ? "Yes" : "No");
-                Serial.println(String("Dispatch pointer: ") + (uint32_t) fp);
+                        + name == "set_output" ? "Yes" : "No");
+                // Serial.println(String("Dispatch pointer: ") + fp);
                 Serial.println("Is Switch Command with value: " + text);
             }
         }
@@ -194,8 +199,6 @@ private:
     };
 };
 
-// CmdMapT HTTPServer::cmdMap = CmdMapT({{"set_output", 4}});
-CmdMapT HTTPServer::cmdMap({{(const char*) "set_output", HTTPServer::printFoo}});
 
 /* Handler for captive portal page, only active when in access point mode
 */
