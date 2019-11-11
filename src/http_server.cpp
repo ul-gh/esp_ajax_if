@@ -3,18 +3,16 @@
  * Based on ESPAsyncWebServer, see:
  * https://github.com/me-no-dev/ESPAsyncWebServer
  */
-#include <Arduino.h>
 #include <Update.h>
 #include <SPIFFS.h>
 #include <FS.h>
-#include <AsyncTCP.h>
-#include <ESPAsyncWebServer.h>
 #include "http_server.h"
 
 HTTPServer::HTTPServer(int port)
     : AsyncWebServer(port),
-    cmdMap{ {String("set_output"), [this](String const &value) {printFoo(value);}},
-            {String("set_input"), [this](String const  &value) {printFoo(value);}},
+    reboot_requested{false},
+    cmdMap{ {String("set_output"), [this](String const &value) {debug_print(value);}},
+            {String("set_input"), [this](String const  &value) {debug_print(value);}},
     } {
 }
 // virtual HTTPServer::~HTTPServer() {}
@@ -25,7 +23,7 @@ void HTTPServer::begin() {
 }
 
 /* Normal HTTP request handlers
-    */
+ */
 void HTTPServer::registerCallbacks() {
     // Route for main application home page
     on("/", HTTP_GET, onRootRequest);
@@ -37,10 +35,15 @@ void HTTPServer::registerCallbacks() {
     on("/cmd", HTTP_GET, [this](auto request) {onCmdRequest(request);});
     // respond to GET requests on URL /heap
     on("/heap", HTTP_GET, [](AsyncWebServerRequest *request) {
-                request->send(200, "text/plain", String(ESP.getFreeHeap()));
-            });
+            request->send(200, "text/plain", String(ESP.getFreeHeap()));
+       }
+    );
     // OTA Firmware Upgrade, see form method in data/www/upload.html
-    on("/update", HTTP_POST, onUpdateRequest, onUpdateUpload);
+    on("/update", HTTP_POST, [this](AsyncWebServerRequest *request) {
+            onUpdateRequest(request);
+       },
+       onUpdateUpload
+    );
     onNotFound(onRequest);
     onFileUpload(onUpload);
     onRequestBody(onBody);
@@ -50,17 +53,12 @@ void HTTPServer::registerCallbacks() {
 } // registerCallbacks()
 
 
-void HTTPServer::printFoo(String value) {
-    Serial.println("Nice Foo!, Value is: " + value);
+void HTTPServer::debug_print(String value) {
+    Serial.println("String value is: " + value + "\nAnd char hex value is: ");
+    hex_print(value.c_str());
 }
 
-// on("/")
-void HTTPServer::onRootRequest(AsyncWebServerRequest *request) {
-    //request->send(SPIFFS, "/control.html", String(), false, processor);
-    request->send(SPIFFS, "/www/control.html");
-}
-
-void HTTPServer::raw_print(const char *s) {
+void HTTPServer::hex_print(const char *s) {
     char cbuffer[4];
     char sbuffer[200] = {0};
     char* p = (char*) s;
@@ -71,6 +69,12 @@ void HTTPServer::raw_print(const char *s) {
     }
     strncat(sbuffer, "\n", 1);
     Serial.print(sbuffer);
+}
+
+// on("/")
+void HTTPServer::onRootRequest(AsyncWebServerRequest *request) {
+    //request->send(SPIFFS, "/control.html", String(), false, processor);
+    request->send(SPIFFS, "/www/control.html");
 }
 
 // on("/cmd")
@@ -89,11 +93,6 @@ void HTTPServer::onCmdRequest(AsyncWebServerRequest *request) {
         if (name == "set_output") {
             CbT fp = cmdMap[name];
             fp(text);
-            raw_print(name.c_str());
-            raw_print("set_output");
-            Serial.println(
-                    String("Is identical: ")
-                    + name == "set_output" ? "Yes" : "No");
             // Serial.println(String("Dispatch pointer: ") + fp);
             Serial.println("Is Switch Command with value: " + text);
         }
@@ -137,17 +136,17 @@ void HTTPServer::onUpdateUpload(AsyncWebServerRequest *request, String filename,
 
 /* Catch-All-Handlers
 */
-HTTPServer::void onRequest(AsyncWebServerRequest *request) {
+void HTTPServer::onRequest(AsyncWebServerRequest *request) {
     //Handle Unknown Request
     request->send(404);
 }
 
-HTTPServer::void onBody(AsyncWebServerRequest *request,
+void HTTPServer::onBody(AsyncWebServerRequest *request,
         uint8_t *data, size_t len, size_t index, size_t total) {
     //Handle body
 }
 
-HTTPServer::void onUpload(AsyncWebServerRequest *request, String filename,
+void HTTPServer::onUpload(AsyncWebServerRequest *request, String filename,
         size_t index, uint8_t *data, size_t len, bool final) {
     //Handle upload
 }
@@ -166,10 +165,14 @@ bool CaptiveRequestHandler::canHandle(AsyncWebServerRequest *request) {
 
 void CaptiveRequestHandler::handleRequest(AsyncWebServerRequest *request) {
     AsyncResponseStream *response = request->beginResponseStream("text/html");
-    response->print("<!DOCTYPE html><html><head><title>Captive Portal</title></head><body>");
-    response->print("<p>This is out captive portal front page.</p>");
-    response->printf("<p>You were trying to reach: http://%s%s</p>", request->host().c_str(), request->url().c_str());
-    response->printf("<p>Try opening <a href='http://%s'>this link</a> instead</p>", WiFi.softAPIP().toString().c_str());
-    response->print("</body></html>");
+    response->printf(
+            "<!DOCTYPE html><html><head><title>Captive Portal</title></head>"
+            "<body><p>Captive portal front page.</p>"
+            "<p>You were trying to reach: http://%s%s</p>"
+            "<p>Opening <a href='http://%s'>this link</a> instead</p>"
+            "</body></html>",
+            request->host().c_str(), request->url().c_str(),
+            WiFi.softAPIP().toString().c_str()
+    );
     request->send(response);
 }

@@ -1,15 +1,9 @@
-#include <map>
-#include <functional>
-
 #include <Arduino.h>
 #include <DNSServer.h>
 #include <ESPmDNS.h>
 #include <WiFi.h>
 #include <SPIFFS.h>
 #include <FS.h>
-#include <AsyncTCP.h>
-#include <ESPAsyncWebServer.h>
-#include <Update.h>
 
 #include "driver/mcpwm.h"
 #include "ps_pwm.h"
@@ -29,10 +23,8 @@ const char *hostName = "test_host";
 //IPAddress gateway(192,168,4,254);
 //IPAddress subnet(255,255,255,0);
 
-static bool reboot_requested = false;
-
 // DNSServer dnsServer;
-// AsyncWebServer httpServer(80);
+// AsyncWebServer http_server(80);
 // Server-Sent Events (SSE) enable push updates on clients
 // AsyncEventSource events("/events");
 
@@ -41,7 +33,7 @@ static void setup_wifi_hostap();
 static void setup_wifi_sta_ap();
 //void httpRegisterCallbacks();
 
-HTTPServer httpServer(80);
+HTTPServer http_server(80);
 
 void setup() {
     Serial.begin(SERIAL_BAUD);
@@ -60,8 +52,8 @@ void setup() {
     // dnsServer.start(53, "*", WiFi.softAPIP());
     // attach AsyncEventSource
     // server.addHandler(&events);
-    //httpServer.httpRegisterCallbacks();
-    httpServer.begin();
+    
+    http_server.begin();
 
     do_ps_pwm();
 }
@@ -69,7 +61,7 @@ void setup() {
 void loop() {
     // dnsServer.processNextRequest();
     delay(20);
-    if (reboot_requested) {
+    if (http_server.reboot_requested) {
         Serial.println("Rebooting...");
         delay(100);
         ESP.restart();
