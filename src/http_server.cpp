@@ -10,21 +10,29 @@
 
 HTTPServer::HTTPServer(int port)
     : AsyncWebServer(port),
-    reboot_requested{false},
-    cmdMap{ {String("set_output"), [this](String const &value) {debug_print(value);}},
-            {String("set_input"), [this](String const  &value) {debug_print(value);}},
-    } {
+    reboot_requested{false}
+    {
 }
 // virtual HTTPServer::~HTTPServer() {}
 
+void HTTPServer::register_command(const char* cmd_name, CbT cmd_callback) {
+    cmd_map[cmd_name] = cmd_callback;
+}
+void HTTPServer::register_command(
+    const char* cmd_name, void(*cmd_callback)(float)) {
+        cmd_map[cmd_name] = [cmd_callback] (String value) {
+            cmd_callback(value.toFloat());
+        };
+}
+
 void HTTPServer::begin() {
-    registerCallbacks();
+    register_default_callbacks();
     AsyncWebServer::begin();
 }
 
 /* Normal HTTP request handlers
  */
-void HTTPServer::registerCallbacks() {
+void HTTPServer::register_default_callbacks() {
     // Route for main application home page
     on("/", HTTP_GET, onRootRequest);
     // Serve static HTML and related files content
@@ -49,7 +57,7 @@ void HTTPServer::registerCallbacks() {
     onRequestBody(onBody);
     // Handler called when any DNS query is made via access point
     // addHandler(new CaptiveRequestHandler()).setFilter(ON_AP_FILTER);
-    Serial.println("Callbacks set up");
+    Serial.println("Default callbacks set up");
 } // registerCallbacks()
 
 
@@ -91,7 +99,7 @@ void HTTPServer::onCmdRequest(AsyncWebServerRequest *request) {
         Serial.println(text);
         Serial.println("------");
         if (name == "set_output") {
-            CbT fp = cmdMap[name];
+            CbT fp = cmd_map[name];
             fp(text);
             // Serial.println(String("Dispatch pointer: ") + fp);
             Serial.println("Is Switch Command with value: " + text);
@@ -135,7 +143,7 @@ void HTTPServer::onUpdateUpload(AsyncWebServerRequest *request, String filename,
 } // on("/update")
 
 /* Catch-All-Handlers
-*/
+ */
 void HTTPServer::onRequest(AsyncWebServerRequest *request) {
     //Handle Unknown Request
     request->send(404);

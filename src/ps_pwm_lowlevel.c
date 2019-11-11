@@ -9,7 +9,7 @@
  */
 #include "freertos/FreeRTOS.h"
 #include "soc/mcpwm_struct.h"
-#include "ps_pwm.h"
+#include "ps_pwm_lowlevel.h"
 
 // MMAP IO using direct register access. See comments in mcpwm_struct.h
 static mcpwm_dev_t *MCPWM[2] = {&MCPWM0, &MCPWM1};
