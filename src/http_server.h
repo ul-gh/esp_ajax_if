@@ -13,11 +13,13 @@
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
 
-// Generalised callback type
-using CbT = std::function<void(String)>;
+// Callback function with string argument
+using CbStringT = std::function<void(String)>;
+// Callback function with float argument
+using CbFloatT = std::function<void(float)>;
 // Mapping used for resolving command strings received via HTTP request
 // on the "/cmd" endpoint to specialised request handlers
-using CmdMapT = std::map<String, CbT>;
+using CmdMapT = std::map<String, CbStringT>;
 
 class HTTPServer : AsyncWebServer
 {
@@ -29,9 +31,9 @@ public:
     // virtual ~HTTPServer();
 
     // Overload for string callbacks
-    void register_command(const char* cmd_name, CbT cmd_callback);
+    void register_command(const char* cmd_name, CbStringT cmd_callback);
     // Overload for float callbacks
-    void register_command(const char* cmd_name, void(*cmd_callback)(float));
+    void register_command(const char* cmd_name, CbFloatT cmd_callback);
 
     void begin();
 

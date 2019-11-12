@@ -26,16 +26,16 @@ static void setup_wifi_sta_ap();
 
 
 // ISOCAL HTTP server provides REST API + HTML5 AJAX web interface on port 80
-HTTPServer http_server(80);
+HTTPServer http_server{80};
 // PS-PWM-Generator instance running with default settings, see ps_pwm_gen.h
-PSPWMGen ps_pwm_generator();
+PSPWMGen ps_pwm_generator{};
 
 void setup() {
     Serial.begin(SERIAL_BAUD);
     Serial.println();
 
     if (!SPIFFS.begin(true)) {
-        Serial.println("An Error has occurred while mounting SPI Flash File System");
+        Serial.println("An Error mounting SPI Flash File System");
         return;
     }
 
@@ -48,7 +48,22 @@ void setup() {
     // attach AsyncEventSource
     // server.addHandler(&events);
 
-    http_server.register_command("set_frequency", [] (float num) {Serial.println(num);});
+    http_server.register_command("set_freq", [] (float n) {
+        ps_pwm_generator.set_frequency(n);
+    });
+
+    http_server.register_command("set_duty", [] (float n) {
+        ps_pwm_generator.set_phase_shift(n);
+    });
+
+    http_server.register_command("lag_dt", [] (float n) {
+        ps_pwm_generator.set_lag_dt(n);
+    });
+
+    http_server.register_command("lead_dt", [] (float n) {
+        ps_pwm_generator.set_lead_dt(n);
+    });
+
     http_server.begin();
 }
 

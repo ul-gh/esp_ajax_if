@@ -13,13 +13,12 @@ void PSPWMGen::update_gpios() {
 }
 
 void PSPWMGen::set_frequency(float frequency) {
-    pspwm_init_individual_deadtimes(
-        pwm_unit, frequency, phase_shift, lead_dt, lead_dt, lag_dt, lag_dt);
+    pspwm_individual_dt_set_frequency(
+        pwm_unit, frequency, lead_dt, lead_dt, lag_dt, lag_dt);
 }
 
 void PSPWMGen::set_phase_shift(float phase_shift) {
-    pspwm_init_individual_deadtimes(
-        pwm_unit, frequency, phase_shift, lead_dt, lead_dt, lag_dt, lag_dt);
+    pspwm_individual_dt_set_ps_duty(pwm_unit, phase_shift);
 }
 
 void PSPWMGen::set_lead_dt(float lead_dt) {
