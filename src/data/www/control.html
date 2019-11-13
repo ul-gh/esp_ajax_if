@@ -1,14 +1,27 @@
-<!DOCTYPE html>
+<!DOCTYPE html><!--HTML5 + ECMA JavaScript 7-->
 <html>
     <head>
-        <title>Main Page</title>
+        <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Main Page</title>
         <link rel="stylesheet" type="text/css" href="u_lukas_style.css">
+        <script>
+            async function submit_formdata(event) {
+                const form_data = new FormData(event.target);
+                form_data.forEach(console.log);
+                let url_string = "cmd/?"
+                url_string += new URLSearchParams(form_data).toString();
+                console.log(url_string);
+                const response = await fetch(url_string, {method: "GET"});
+                alert(response.text());
+            }
+            document.addEventListener("submit", submit_formdata, true);
+        </script>
     </head>
     <body>
         <img src="logo.svg" alt="Application Logo">
 
-        <form action="/cmd" method="get">
+        <form name="dead_time_settings">
             <table>
                 <caption>Click the "Submit" button to update settings
                     for the remote component!</caption>
@@ -34,7 +47,7 @@
             </table>
         </form>
 
-        <form action="/cmd" method="get">
+        <form name="operation_settings">
             <table>
                 <thead>
                     <tr>
@@ -59,7 +72,7 @@
         </form>
         <br>
 
-        <form action="/cmd" method="get">
+        <form name="limit_values">
             <table>
                 <thead>
                     <tr>
@@ -79,11 +92,11 @@
         </form>
         <br><br>
 
-        <form action="/cmd" method="get">
+        <form name="activate_outputs">
             <table>
                 <thead>
                     <tr>
-                        <th colspan="2">Activate Output</th>
+                        <th colspan="2">Activate Outputs</th>
                     </tr>
                 </thead>
                 <tbody>
