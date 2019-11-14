@@ -49,19 +49,19 @@ void setup() {
     // server.addHandler(&events);
 
     http_server.register_command("set_freq", [] (float n) {
-        ps_pwm_generator.set_frequency(n);
+        ps_pwm_generator.set_frequency(n*1e3);
     });
 
     http_server.register_command("set_duty", [] (float n) {
-        ps_pwm_generator.set_phase_shift(n);
+        ps_pwm_generator.set_phase_shift(n/100);
     });
 
     http_server.register_command("lag_dt", [] (float n) {
-        ps_pwm_generator.set_lag_dt(n);
+        ps_pwm_generator.set_lag_dt(n*1e-9);
     });
 
     http_server.register_command("lead_dt", [] (float n) {
-        ps_pwm_generator.set_lead_dt(n);
+        ps_pwm_generator.set_lead_dt(n*1e-9);
     });
 
     http_server.begin();

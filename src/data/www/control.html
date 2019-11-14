@@ -1,4 +1,4 @@
-<!DOCTYPE html><!--HTML5 + ES7 JavaScript-->
+<!DOCTYPE html><!--Needs HTML5 + ES7 JavaScript-->
 <html>
     <head>
         <meta charset="utf-8">
@@ -9,7 +9,7 @@
             async function submit_formdata(event) {
                 const form_data = new FormData(event.target);
                 form_data.forEach(console.log);
-                let req_str = "cmd/?" + new URLSearchParams(form_data).toString();
+                let req_str = "cmd?" + new URLSearchParams(form_data).toString();
                 console.log(req_str);
                 try {
                     let response = await fetch(req_str);
