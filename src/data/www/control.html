@@ -18,7 +18,19 @@
                     console.error(err);
                 }
             }
-            document.addEventListener("submit", submit_formdata, true);
+            function submit_xhr(event) {
+                const form_data = new FormData(event.target);
+                form_data.forEach(console.log);
+                let req_str = "cmd?" + new URLSearchParams(form_data).toString();
+                console.log(req_str);
+                var request = new XMLHttpRequest();
+                request.open("GET", req_str, true);
+                request.send();
+                request.onload = function() {
+                    console.log(this.response);
+                };
+            }
+            document.addEventListener("submit", submit_xhr, true);
         </script>
     </head>
     <body>
