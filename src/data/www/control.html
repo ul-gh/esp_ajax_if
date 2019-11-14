@@ -9,11 +9,14 @@
             async function submit_formdata(event) {
                 const form_data = new FormData(event.target);
                 form_data.forEach(console.log);
-                let url_string = "cmd/?";
-                url_string += new URLSearchParams(form_data).toString();
-                console.log(url_string);
-                const response = await fetch(url_string, {method: "GET"});
-                alert(response.text());
+                let req_str = "cmd/?" + new URLSearchParams(form_data).toString();
+                console.log(req_str);
+                try {
+                    let response = await fetch(req_str);
+                    alert(await response.text());
+                } catch (err) {
+                    console.error(err);
+                }
             }
             document.addEventListener("submit", submit_formdata, true);
         </script>
