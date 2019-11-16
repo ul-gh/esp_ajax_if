@@ -48,33 +48,41 @@ void setup() {
     // attach AsyncEventSource
     // server.addHandler(&events);
 
-    http_server.register_command("set_freq", [] (float n) {
+    http_server.register_command("set_freq", [](float n) {
         ps_pwm_generator.set_frequency(n*1e3);
     });
 
-    http_server.register_command("set_duty", [] (float n) {
+    http_server.register_command("set_duty", [](float n) {
         ps_pwm_generator.set_phase_shift(n/100);
     });
 
-    http_server.register_command("lag_dt", [] (float n) {
+    http_server.register_command("lag_dt", [](float n) {
         ps_pwm_generator.set_lag_dt(n*1e-9);
     });
 
-    http_server.register_command("lead_dt", [] (float n) {
+    http_server.register_command("lead_dt", [](float n) {
         ps_pwm_generator.set_lead_dt(n*1e-9);
     });
 
     http_server.begin();
+
 }
 
 void loop() {
+    static uint32_t timer_ctr = 0;
     // dnsServer.processNextRequest();
-    delay(20);
+    ++timer_ctr;
+    // Once every two seconds
+    if (timer_ctr > 50*2) {
+        timer_ctr = 0;
+        http_server.event_source.send("my event content", "myevent", millis()/1000);
+    }
     if (http_server.reboot_requested) {
         Serial.println("Rebooting...");
         delay(100);
         ESP.restart();
     }
+    delay(20);
 }
 
 /* Configure WiFi for Access Point Mode

@@ -39,6 +39,18 @@ table {
     font-family: sans-serif;
 }
 
+div {
+    margin: auto;
+    content: "OK";
+    display: table;
+    background-color: rgb(139, 255, 143);
+    font-size: 1.5rem;
+}
+div[state="nok"] {
+    content: "NOK";
+    background-color: rgb(250, 84, 84);
+}
+
 td,
 th {
     border: 1px solid rgb(190, 190, 190);

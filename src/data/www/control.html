@@ -7,30 +7,51 @@
         <link rel="stylesheet" type="text/css" href="u_lukas_style.css">
         <script>
             async function submit_formdata(event) {
+                event.preventDefault(); // Disable default "GET" form action
                 const form_data = new FormData(event.target);
-                form_data.forEach(console.log);
-                let req_str = "cmd?" + new URLSearchParams(form_data).toString();
-                console.log(req_str);
+                // form_data.forEach(console.log);
+                const req_str = "cmd?" + new URLSearchParams(form_data).toString();
                 try {
-                    let response = await fetch(req_str);
+                    const response = await fetch(req_str);
+                    if (!response.ok) {
+                        throw new Error('Network error.');
+                    }
                     alert(await response.text());
                 } catch (err) {
-                    console.error(err);
+                    alert(err);
                 }
+                // var request = new XMLHttpRequest();
+                // request.open("GET", req_str, true);
+                // request.onload = function() {
+                //     alert(this.response);
+                // };
+                // request.send();
             }
-            function submit_xhr(event) {
-                const form_data = new FormData(event.target);
-                form_data.forEach(console.log);
-                let req_str = "cmd?" + new URLSearchParams(form_data).toString();
-                console.log(req_str);
-                var request = new XMLHttpRequest();
-                request.open("GET", req_str, true);
-                request.send();
-                request.onload = function() {
-                    console.log(this.response);
-                };
+            // Connect all document forms submit action
+            document.addEventListener("submit", submit_formdata, true);
+            // Connect Server-Sent Events
+            if (!!window.EventSource) {
+                var source = new EventSource('/events');
+
+                source.addEventListener('open', function(e) {
+                    console.log("Events Connected");
+                }, false);
+
+                source.addEventListener('error', function(e) {
+                    if (e.target.readyState != EventSource.OPEN) {
+                    console.log("Events Disconnected");
+                    }
+                }, false);
+
+                source.addEventListener('message', function(e) {
+                    console.log(`Message received: "${e.data}"`);
+                }, false);
+
+                source.addEventListener('myevent', function(e) {
+                    console.log(`Event received with data: "${e.data} "`
+                                + `and ID: ${e.lastEventId}`);
+                }, false);
             }
-            document.addEventListener("submit", submit_xhr, true);
         </script>
     </head>
     <body>
@@ -106,7 +127,8 @@
             </table>
         </form>
         <br><br>
-
+        <div id="state_display" state="ok">OK</div>
+        <br>
         <form name="activate_outputs">
             <table>
                 <thead>

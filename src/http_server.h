@@ -21,11 +21,17 @@ using CbFloatT = std::function<void(float)>;
 // on the "/cmd" endpoint to specialised request handlers
 using CmdMapT = std::map<String, CbStringT>;
 
-class HTTPServer : AsyncWebServer
+class HTTPServer
 {
 public:
-    bool reboot_requested;
+    // Base ESPAsyncWebServer
+    AsyncWebServer backend;
+    // Server-Sent Events (SSE) for "PUSH" updates of HTTP client data
+    AsyncEventSource event_source;
+    // Callback registry, see above
     CmdMapT cmd_map;
+    // Polled in main loop
+    bool reboot_requested;
     
     HTTPServer(int port);
     // virtual ~HTTPServer();
@@ -35,10 +41,13 @@ public:
     // Overload for float callbacks
     void register_command(const char* cmd_name, CbFloatT cmd_callback);
 
+    // Start execution
     void begin();
 
-    /* Normal HTTP request handlers
-     */
+    // Sever-Sent Event Source
+    void register_sse_events();
+
+    // Normal HTTP request handlers
     void register_default_callbacks();
 
 private:
@@ -56,8 +65,7 @@ private:
         AsyncWebServerRequest *request, String filename,
         size_t index, uint8_t *data, size_t len, bool final);
 
-    /* Catch-All-Handlers
-    */
+    // Catch-All-Handlers
     static void onRequest(AsyncWebServerRequest *request);
 
     static void onBody(AsyncWebServerRequest *request,
@@ -71,8 +79,8 @@ private:
 }; // class HTTPServer
 
 
-/* Handler for captive portal page, only active when in access point mode
-*/
+// Handler for captive portal page, only active when in access point mode.
+// FIXME: WIP
 class CaptiveRequestHandler : public AsyncWebHandler
 {
 public:

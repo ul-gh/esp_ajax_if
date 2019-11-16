@@ -9,7 +9,8 @@
 #include "http_server.h"
 
 HTTPServer::HTTPServer(int port)
-    : AsyncWebServer(port),
+    : backend{port},
+    event_source{"/events"},
     reboot_requested{false}
     {
 }
@@ -23,45 +24,61 @@ void HTTPServer::register_command(const char* cmd_name,
 
 void HTTPServer::register_command(const char* cmd_name,
                                   CbFloatT cmd_callback) {
-    cmd_map[cmd_name] = [cmd_callback] (String value) {
-        cmd_callback(value.toFloat()); // Defaults to zero for invalid string?
+    cmd_map[cmd_name] = [cmd_callback](String value) {
+         // Arduino String.toFloat() defaults to zero for invalid string, hmm...
+        cmd_callback(value.toFloat());
     };
     Serial.println(String("Registered float command: ") + cmd_name);
 }
 
 void HTTPServer::begin() {
     register_default_callbacks();
-    AsyncWebServer::begin();
+    register_sse_events();
+    backend.begin();
 }
 
-/* Normal HTTP request handlers
- */
+// Sever-Sent Event Source
+void HTTPServer::register_sse_events() {
+    event_source.onConnect([](AsyncEventSourceClient *client) {
+        if(client->lastId()){
+            Serial.printf("Client connected! Last msg ID: %u\n", client->lastId());
+        }
+        //send event with message "hello!", id current millis
+        // and set reconnect delay to 1 second
+        client->send("Hello Message from ESP32!", NULL, millis(), 1000);
+    });
+    // HTTP Basic authentication
+    // event_source.setAuthentication("user", "pass");
+    backend.addHandler(&event_source);
+}
+
+// Normal HTTP request handlers
 void HTTPServer::register_default_callbacks() {
     // Route for main application home page
-    on("/", HTTP_GET, onRootRequest);
+    backend.on("/", HTTP_GET, onRootRequest);
     // Serve static HTML and related files content
-    serveStatic("/", SPIFFS, "/www/");
+    backend.serveStatic("/", SPIFFS, "/www/");
     // Route for REST API
     //using namespace std::placeholders;
     //on("/cmd", HTTP_GET, std::bind(&HTTPServer::onCmdRequest, this, _1));
-    on("/cmd", HTTP_GET, [this](AsyncWebServerRequest *request) {
+    backend.on("/cmd", HTTP_GET, [this](AsyncWebServerRequest *request) {
             onCmdRequest(request);
         }
     );
     // respond to GET requests on URL /heap
-    on("/heap", HTTP_GET, [](AsyncWebServerRequest *request) {
+    backend.on("/heap", HTTP_GET, [](AsyncWebServerRequest *request) {
             request->send(200, "text/plain", String(ESP.getFreeHeap()));
        }
     );
     // OTA Firmware Upgrade, see form method in data/www/upload.html
-    on("/update", HTTP_POST, [this](AsyncWebServerRequest *request) {
+    backend.on("/update", HTTP_POST, [this](AsyncWebServerRequest *request) {
             onUpdateRequest(request);
        },
        onUpdateUpload
     );
-    onNotFound(onRequest);
-    onFileUpload(onUpload);
-    onRequestBody(onBody);
+    backend.onNotFound(onRequest);
+    backend.onFileUpload(onUpload);
+    backend.onRequestBody(onBody);
     // Handler called when any DNS query is made via access point
     // addHandler(new CaptiveRequestHandler()).setFilter(ON_AP_FILTER);
     Serial.println("Default callbacks set up");
