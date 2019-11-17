@@ -72,10 +72,10 @@ void loop() {
     static uint32_t timer_ctr = 0;
     // dnsServer.processNextRequest();
     ++timer_ctr;
-    // Once every two seconds
-    if (timer_ctr > 50*2) {
+    // Once every second
+    if (timer_ctr > 50*1) {
         timer_ctr = 0;
-        http_server.event_source.send("my event content", "myevent", millis()/1000);
+        http_server.event_source.send("OK", "heartbeat", millis());
     }
     if (http_server.reboot_requested) {
         Serial.println("Rebooting...");

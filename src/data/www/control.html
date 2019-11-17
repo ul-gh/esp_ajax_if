@@ -1,4 +1,4 @@
-<!DOCTYPE html><!--Needs HTML5 + ES7 JavaScript-->
+<!DOCTYPE html><!--Requires HTML5 + ES7 JavaScript-->
 <html>
     <head>
         <meta charset="utf-8">
@@ -20,38 +20,79 @@
                 } catch (err) {
                     alert(err);
                 }
-                // var request = new XMLHttpRequest();
-                // request.open("GET", req_str, true);
-                // request.onload = function() {
-                //     alert(this.response);
-                // };
-                // request.send();
             }
             // Connect all document forms submit action
             document.addEventListener("submit", submit_formdata, true);
-            // Connect Server-Sent Events
-            if (!!window.EventSource) {
-                var source = new EventSource('/events');
-
-                source.addEventListener('open', function(e) {
-                    console.log("Events Connected");
-                }, false);
-
-                source.addEventListener('error', function(e) {
-                    if (e.target.readyState != EventSource.OPEN) {
-                    console.log("Events Disconnected");
+            // Set connection state display to "nok" when heartbeats are missing
+            class HeartbeatTimer {
+                constructor (timeout) {
+                    this.timeout = timeout;
+                    this.display = document.getElementById("state_display");
+                    this.timer_id = this.start_timer();
+                    this.reset_cb = event => this.reset(event.data);
+                }
+                start_timer() {
+                    return window.setTimeout(() => this.set_nok(), this.timeout);
+                }
+                reset(data) {
+                    if (data == "OK") {
+                        window.clearTimeout(this.timer_id);
+                        this.set_ok();
+                        this.timer_id = this.start_timer();
                     }
-                }, false);
-
-                source.addEventListener('message', function(e) {
-                    console.log(`Message received: "${e.data}"`);
-                }, false);
-
-                source.addEventListener('myevent', function(e) {
-                    console.log(`Event received with data: "${e.data} "`
-                                + `and ID: ${e.lastEventId}`);
-                }, false);
-            }
+                }
+                set_nok() {
+                    this.display.setAttribute("state", "nok");
+                    this.display.innerText = "No Connection to Hardware!";
+                }
+                set_ok() {
+                    this.display.setAttribute("state", "ok");
+                    this.display.innerText = "Connection: OK";
+                }
+            } // class HartbeatTimer
+            // Connect Server-Sent Events, with auto-reconnect timer
+            class ServerSentEvents {
+                constructor (endpoint, reconnect_timeout, heartbeat_timer) {
+                    this.endpoint = endpoint;
+                    this.heartbeat_timer = heartbeat_timer;
+                    this.source = null;
+                    const timeout = reconnect_timeout;
+                    this.reconnect_timer = () => window.setTimeout(
+                        () => this.connect(), timeout
+                    );
+                    this.connect();
+                }
+                connect() {
+                    if (this.source != null) {
+                        console.log("Reconnecting Server-Sent Events...");
+                        this.source.close();
+                    } else {
+                        console.log("Connecting Server-Sent Events...");
+                    }
+                    this.source = new EventSource(this.endpoint);
+                    this.source.addEventListener(
+                        "heartbeat", this.heartbeat_timer.reset_cb, false);
+                    this.source.addEventListener(
+                        "open", event => {console.log("Events Connected");},
+                        false
+                    );
+                    this.source.addEventListener(
+                        "error", event => {
+                            if (event.target.readyState != EventSource.OPEN) {
+                                console.log("Events Disconnected!");
+                                // Start Auto-Reconnect
+                                this.reconnect_timer();
+                            }
+                        },
+                        false
+                    );
+                    this.source.addEventListener(
+                        "message", event => {
+                            console.log(`Message received: "${event.data}"`);
+                        }, false
+                    );
+                } // connect()
+            } // class ServerSentEvents
         </script>
     </head>
     <body>
@@ -127,7 +168,7 @@
             </table>
         </form>
         <br><br>
-        <div id="state_display" state="ok">OK</div>
+        <div id="state_display" state="nok">Connection Status: ...</div>
         <br>
         <form name="activate_outputs">
             <table>
@@ -149,5 +190,11 @@
 
         <p>2019-10-31 Ulrich Lukas</p>
         <a href="update.html">Perform OTA Firmware Upload</a>
+
+        <script>
+            const heartbeat_timer = new HeartbeatTimer(1500);
+            const server_sent_events = new ServerSentEvents(
+                "/events", 3000, heartbeat_timer);
+        </script>
     </body>
 </html>
