@@ -21,20 +21,18 @@ static portMUX_TYPE mcpwm_spinlock = portMUX_INITIALIZER_UNLOCKED;
  * TIMER UP/DOWN-COUNTING MODE; DOES NOT USE HW-DEAD-TIME-MODULE *
  *****************************************************************
  *
- * Initialize ESP32 MCPWM hardware module for output of
+ * Initialize ESP32 MCPWM hardware module for output of a
  * Phase-Shift-PWM waveform on 4 hardware pins.
  * 
  * Individual dead-times are configured for both half-bridge PWM outputs.
  * 
- * This PWM generation mode does not use the dead-band generator hardware,
- * instead, the deadtime is configured with the main timer configured in
- * up-down-counting mode.
+ * This PWM generation mode does not use the dead-band generator hardware.
+ * Instead, the dead-time for each two outputs of a half-bridge is configured
+ * by running the main timers in up-down-counting mode and using both compare
+ * registers for each timer to generate two symmetric outputs.
  * 
- * Because of this, maximum output frequency is half of the value which is
- * possible with using the hardware deas-band generator.
- * 
- * assumes symmetric deadtime values i.e. by specification of a
- * bridge-leg duty cycle.
+ * Because of the up/down-counting mode, maximum output frequency is half of
+ * the value which is possible with using the hardware deas-band generator.
  * 
  * Parameters:
  * int mcpwm_num: PWM unit number ([0|1]),
@@ -108,20 +106,17 @@ esp_err_t pspwm_up_down_ctr_mode_init(
 }
 
 /* Set frequency and dead-time values for all four output
- * signals used for phase-shift-PWM when using the timer
- * in up/down counting mode and generating complementary signals
- * with identical values for rising-edge and falling-edge dead time
- * (i.e. by setting the duty cylcle per output leg - leg-duty).
+ * signals of the phase-shift-PWM when using the timer
+ * in up/down counting mode.
  * 
- * Duty cycle of the result output waveform is set via the
- * phase-shift value using the pspwm_set_ps_duty() function.
+ * Phase-Shift of the result full-bridge output waveform is set via the
+ * ps_duty argument of function pspwm_set_ps_duty().
  * 
- * This PWM generation mode does not use the dead-band generator hardware.
- * 
- * Because of this, maximum output frequency is half of the value which is
- * possible with using the hardware deas-band generator.
+ * Because of the up/down-counting mode, maximum output frequency is half of
+ * the value which is possible with using the hardware deas-band generator.
  * 
  * This does not alter prescaler settings.
+ * 
  * Parameters:
  * int mcpwm_num: PWM unit number ([0|1]),
  * float frequency: Frequency of the non-rectified waveform in Hz,
@@ -271,13 +266,17 @@ esp_err_t pspwm_4x_deadtime_init(
     return ESP_OK;
 }
 
-/* Set frequency only, taking into accout current dead-time values,
- * of timer/PWM generator running in 4x individual dead-time mode.
+/* Set frequency when running PS-PWM generator in
+ * 4x individual dead-time mode.
+ * 
+ * Because dead-band timing depends on timer TOP value, current
+ * dead-time settings need to be taken into account for re-adjusting
+ * compare registers when frequency is changed.
  * 
  * Independently configurable rising- and falling edge dead time
  * values can be set using pspwm_4x_deadtime_set_deadtimes().
  * 
- * Duty cycle of the result output waveform is set via the
+ * Duty cycle of the full-bridge result output waveform is set via the
  * phase-shift value using the pspwm_set_ps_duty() function.
  * 
  * This does not alter prescaler settings.
@@ -293,6 +292,8 @@ esp_err_t pspwm_4x_deadtime_set_frequency(
         mcpwm_unit_t mcpwm_num, float frequency, float lead_red, float lead_fed,
         float lag_red, float lag_fed)
 {
+    DBG("Call pspwm_4x_deadtime_set_frequency");
+    assert()
     mcpwm_dev_t *module = MCPWM[mcpwm_num];
     uint32_t timer_top = (uint32_t)(
             MCPWM_CLK / (frequency * (TIMER_CLK_PRESCALE + 1))
@@ -311,9 +312,6 @@ esp_err_t pspwm_4x_deadtime_set_frequency(
     // also for GEN1 with different register offset
     module->channel[MCPWM_TIMER_0].cmpr_value[MCPWM_OPR_A].cmpr_val = cmpr_0_a;
     module->channel[MCPWM_TIMER_1].cmpr_value[MCPWM_OPR_A].cmpr_val = cmpr_1_a;
-    DBG("Period register: %d", timer_top);
-    DBG("Set Duty: cmpr_0_a: %d", cmpr_0_a);
-    DBG("Set Duty: cmpr_1_a: %d", cmpr_1_a);
     portEXIT_CRITICAL(&mcpwm_spinlock);
     return ESP_OK;
 }
