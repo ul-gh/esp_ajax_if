@@ -4,10 +4,10 @@
 #include "driver/mcpwm.h"
 #include "ps_pwm_lowlevel.h"
 
-#define GPIO_PWM0A_OUT 19 //Set GPIO 19 as PWM0A, first half-bridge
-#define GPIO_PWM0B_OUT 18 //Set GPIO 18 as PWM0B, first half-bridge
-#define GPIO_PWM1A_OUT 17 //Set GPIO 17 as PWM1A, second half-bridge
-#define GPIO_PWM1B_OUT 16 //Set GPIO 16 as PWM1B, second half-bridge
+#define GPIO_PWM0A_OUT 0 // PWM0A := LEAD LEG, HB2_HS
+#define GPIO_PWM0B_OUT 4 // PWM0B := LEAD LEG, HB2_LS
+#define GPIO_PWM1A_OUT 16 // PWM1A := LAG LEG, HB1_HS
+#define GPIO_PWM1B_OUT 17 // PWM1B := LAG LEG, HB1_LS
 
 class PSPWMGen
 /* Preset configuration:
