@@ -188,6 +188,11 @@ esp_err_t pspwm_up_down_ctr_mode_set_ps_duty(mcpwm_unit_t mcpwm_num, float ps_du
  * This sets individual dead-time values for rising and falling edges for
  * all four PWM outputs.
  * 
+ * To achieve 4x dead-time adjustability in addition to arbitrary
+ * frequencies, this uses the hardware dead-band generator but also
+ * requires, calculates and sets, complementary timing values for
+ * the PWM operator compare registers.
+ * 
  * Combined output waveform of the phase-shifted full-bridge
  * is symmetric nevertheless.
  * 
@@ -266,13 +271,11 @@ esp_err_t pspwm_4x_deadtime_init(
     return ESP_OK;
 }
 
-/* Set frequency and duty cycle of the timer/PWM operator
- * running in 4x individual dead-time mode.
+/* Set frequency only, taking into accout current dead-time values,
+ * of timer/PWM generator running in 4x individual dead-time mode.
  * 
- * Symmetric output signal with independently configurable
- * rising- and falling edge dead time values can be achieved
- * by using the dead-band generator hardware module, using
- * function set_deadtime.
+ * Independently configurable rising- and falling edge dead time
+ * values can be set using pspwm_4x_deadtime_set_deadtimes().
  * 
  * Duty cycle of the result output waveform is set via the
  * phase-shift value using the pspwm_set_ps_duty() function.
@@ -337,8 +340,14 @@ esp_err_t pspwm_4x_deadtime_set_ps_duty(mcpwm_unit_t mcpwm_num, float ps_duty)
     return ESP_OK;
 }
 
-/* Set deadtime values individually for leading leg rising and faling edge
- * as well as for lagging leg rising and falling edge.
+/* Set deadtime values individually for leading leg rising and
+ * falling edge as well as for lagging leg rising and falling edge
+ * for all four PWM outputs.
+ * 
+ * To achieve 4x dead-time adjustability in addition to arbitrary
+ * frequencies, this uses the hardware dead-band generator but also
+ * requires, calculates and sets, complementary timing values for
+ * the PWM operator compare registers.
  * 
  * Parameters:
  * int mcpwm_num: PWM unit number ([0|1]),
