@@ -9,7 +9,7 @@
  */
 #include "freertos/FreeRTOS.h"
 #include "soc/mcpwm_struct.h"
-#include "ps_pwm_lowlevel.h"
+#include "ps_pwm.h"
 
 /* Dead time settings for both MCPWM hardware modules are defined as lead and
  * lag bridge-leg low-side output rising and falling edge dead-times in seconds
@@ -33,6 +33,9 @@ static portMUX_TYPE mcpwm_spinlock = portMUX_INITIALIZER_UNLOCKED;
 // Dead time settings need to be shared between calls because
 // frequency and dead-time settings depend on each other
 static struct dt_conf *deadtimes[2] = {NULL, NULL};
+
+void pspwm_up_ctr_mode_register_base_setup(mcpwm_unit_t mcpwm_num);
+void pspwm_up_down_ctr_mode_register_base_setup(mcpwm_unit_t mcpwm_num);
 
 
 /*****************************************************************
@@ -384,7 +387,8 @@ esp_err_t pspwm_up_down_ctr_mode_init(
  * int mcpwm_num: PWM unit number ([0|1]),
  * float frequency: Frequency of the non-rectified waveform in Hz,
  */
-esp_err_t pspwm_up_down_ctr_mode_set_frequency(mcpwm_unit_t mcpwm_num, float frequency)
+esp_err_t pspwm_up_down_ctr_mode_set_frequency(mcpwm_unit_t mcpwm_num,
+                                               float frequency)
 {
     mcpwm_dev_t *module = MCPWM[mcpwm_num];
     DBG("Call pspwm_up_down_ctr_mode_set_frequency");
@@ -467,7 +471,8 @@ esp_err_t pspwm_up_down_ctr_mode_set_deadtimes(mcpwm_unit_t mcpwm_num,
  * int mcpwm_num: PWM unit number ([0|1]),
  * float ps_duty: Duty cycle of the rectified waveform (0..1)
  */
-esp_err_t pspwm_up_down_ctr_mode_set_ps_duty(mcpwm_unit_t mcpwm_num, float ps_duty)
+esp_err_t pspwm_up_down_ctr_mode_set_ps_duty(mcpwm_unit_t mcpwm_num,
+                                             float ps_duty)
 {
     portENTER_CRITICAL(&mcpwm_spinlock);
     // Phase shift value is based on timer 0 period setting but intentionally
@@ -480,7 +485,7 @@ esp_err_t pspwm_up_down_ctr_mode_set_ps_duty(mcpwm_unit_t mcpwm_num, float ps_du
     return ESP_OK;
 }
 
-void pspwm_up_down_ctr_mode_register_base_setup(mcpwm_num) {
+void pspwm_up_down_ctr_mode_register_base_setup(mcpwm_unit_t mcpwm_num) {
     portENTER_CRITICAL(&mcpwm_spinlock);
     // Timer and deadtime units clock prescaler/divider configuration
     // Datasheet 16.1: PWM_CLK_CFG_REG (0x0000)
