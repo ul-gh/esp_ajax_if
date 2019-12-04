@@ -152,7 +152,7 @@ esp_err_t pspwm_up_ctr_mode_set_frequency(mcpwm_unit_t mcpwm_num, float frequenc
 {
     // PWM hardware must be initialised first
     assert(deadtimes[mcpwm_num] != NULL);
-    DBG("Call pspwm_4x_deadtime_set_frequency");
+    DBG("Call pspwm_up_ctr_mode_set_frequency");
     mcpwm_dev_t *module = MCPWM[mcpwm_num];
     // MCPWM timers are 16-bit thus 32-bit int has sufficient length
     uint32_t timer_top = (uint32_t)(
