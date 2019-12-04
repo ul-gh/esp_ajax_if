@@ -26,6 +26,9 @@
 #define TIMER_CLK_PRESCALE 3 // Hardware adds 1 to this value
 #define MCPWM_CLK (MCPWM_BASE_CLK/(BASE_CLK_PRESCALE + 1))
 
+#define TRIPZONE_ACTION_PWMxA MCPWM_FORCE_MCPWMXA_LOW
+#define TRIPZONE_ACTION_PWMxB MCPWM_FORCE_MCPWMXB_LOW
+
 #ifdef __cplusplus
 extern "C" {
 #endif
