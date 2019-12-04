@@ -55,6 +55,8 @@ static struct dt_conf *deadtimes[2] = {NULL, NULL};
  * 
  * Parameters:
  * int mcpwm_num: PWM unit number ([0|1]),
+ * int gpio_lead_a, int gpio_lead_b, int gpio_lag_a, int gpio_lag_b:
+ *      GPIOs used as outputs
  * float frequency: Frequency of the non-rectified waveform in Hz,
  * float ps_duty: Duty cycle of the rectified waveform (0..1)
  * float lead_red: dead time value for rising edge, leading leg
@@ -62,11 +64,12 @@ static struct dt_conf *deadtimes[2] = {NULL, NULL};
  * float lag_red: dead time value for rising edge, lagging leg
  * float lag_fed: dead time value for falling edge, lagging leg 
  */
-esp_err_t pspwm_up_ctr_mode_init(mcpwm_unit_t mcpwm_num,
-                                 const float frequency,
-                                 const float ps_duty,
-                                 const float lead_red, const float lead_fed,
-                                 const float lag_red, const float lag_fed)
+esp_err_t pspwm_up_ctr_mode_init(
+        mcpwm_unit_t mcpwm_num,
+        int gpio_lead_a, int gpio_lead_b, int gpio_lag_a, int gpio_lag_b,
+        float frequency,
+        float ps_duty,
+        float lead_red, float lead_fed, float lag_red, float lag_fed)
 {
     if (mcpwm_num < 0 || mcpwm_num > 1) {
         ERROR("mcpwm_num must be 0 or 1!");
@@ -80,12 +83,24 @@ esp_err_t pspwm_up_ctr_mode_init(mcpwm_unit_t mcpwm_num,
     deadtimes[mcpwm_num]->lag_red = lag_red;
     deadtimes[mcpwm_num]->lag_fed = lag_fed;
     periph_module_enable(PERIPH_PWM0_MODULE + mcpwm_num);
+    // Basic setup for PS_PWM in up/down counting mode
     pspwm_up_ctr_mode_register_base_setup(mcpwm_num);
-    pspwm_up_ctr_mode_set_frequency(mcpwm_num, frequency);
-    pspwm_up_ctr_mode_set_deadtimes(mcpwm_num, lead_red, lead_fed, lag_red, lag_fed);
-    pspwm_up_ctr_mode_set_ps_duty(mcpwm_num, ps_duty);
-    pspwm_trigger_sync(mcpwm_num);
-    return ESP_OK;
+    // Setting a Fault Event forcing the GPIOs to pre-defined state
+    if (pspwm_disable_output(mcpwm_num) == ESP_OK
+        && mcpwm_gpio_init(mcpwm_num, MCPWM0A, gpio_lead_a) == ESP_OK
+        && mcpwm_gpio_init(mcpwm_num, MCPWM0B, gpio_lead_b) == ESP_OK
+        && mcpwm_gpio_init(mcpwm_num, MCPWM1A, gpio_lag_a) == ESP_OK
+        && mcpwm_gpio_init(mcpwm_num, MCPWM1B, gpio_lag_b) == ESP_OK
+        && pspwm_up_ctr_mode_set_frequency(mcpwm_num, frequency) == ESP_OK
+        && pspwm_up_ctr_mode_set_deadtimes(
+            mcpwm_num, lead_red, lead_fed, lag_red, lag_fed) == ESP_OK
+        && pspwm_up_ctr_mode_set_ps_duty(mcpwm_num, ps_duty) == ESP_OK
+        && pspwm_resync_enable_output(mcpwm_num) == ESP_OK
+        ) {
+        return ESP_OK;
+    } else {
+        return ESP_FAIL;
+    }
 }
 
 /* Set frequency when running PS-PWM generator in up-counting mode
@@ -312,6 +327,8 @@ void pspwm_up_ctr_mode_register_base_setup(mcpwm_unit_t mcpwm_num) {
  * 
  * Parameters:
  * int mcpwm_num: PWM unit number ([0|1]),
+ * int gpio_lead_a, int gpio_lead_b, int gpio_lag_a, int gpio_lag_b:
+ *      GPIOs used as outputs
  * float frequency: Frequency of the non-rectified waveform in Hz,
  * float ps_duty: Duty cycle of the rectified waveform (0..1)
  * float lead_dt: leading bridge-leg dead-time in sec (0..),
@@ -319,7 +336,10 @@ void pspwm_up_ctr_mode_register_base_setup(mcpwm_unit_t mcpwm_num) {
  */
 esp_err_t pspwm_up_down_ctr_mode_init(
         mcpwm_unit_t mcpwm_num,
-        float frequency, float ps_duty, float lead_dt, float lag_dt)
+        int gpio_lead_a, int gpio_lead_b, int gpio_lag_a, int gpio_lag_b,
+        float frequency,
+        float ps_duty,
+        float lead_dt, float lag_dt)
 {
     if (mcpwm_num < 0 || mcpwm_num > 1) {
         ERROR("mcpwm_num must be 0 or 1!");
@@ -333,13 +353,22 @@ esp_err_t pspwm_up_down_ctr_mode_init(
     periph_module_enable(PERIPH_PWM0_MODULE + mcpwm_num);
     // Basic setup for PS_PWM in up/down counting mode
     pspwm_up_down_ctr_mode_register_base_setup(mcpwm_num);
-    // In up_down_ctr_mode, this also sets the dead time; there should
-    // be no need to call pspwm_up_down_ctr_mode_set_deadtimes() again.
-    pspwm_up_down_ctr_mode_set_frequency(mcpwm_num, frequency);
-    // pspwm_up_down_ctr_mode_set_deadtimes(mcpwm_num, lead_dt, lag_dt);
-    pspwm_up_down_ctr_mode_set_ps_duty(mcpwm_num, ps_duty);
-    ps_pwm_trigger_sync(mcpwm_num);
-    return ESP_OK;
+    // Setting a Fault Event forcing the GPIOs to pre-defined state
+    if (pspwm_disable_output(mcpwm_num) == ESP_OK
+        && mcpwm_gpio_init(mcpwm_num, MCPWM0A, gpio_lead_a) == ESP_OK
+        && mcpwm_gpio_init(mcpwm_num, MCPWM0B, gpio_lead_b) == ESP_OK
+        && mcpwm_gpio_init(mcpwm_num, MCPWM1A, gpio_lag_a) == ESP_OK
+        && mcpwm_gpio_init(mcpwm_num, MCPWM1B, gpio_lag_b) == ESP_OK
+        // In up_down_ctr_mode, this also sets the dead time; there should
+        // be no need to call pspwm_up_down_ctr_mode_set_deadtimes() again.
+        && pspwm_up_down_ctr_mode_set_frequency(mcpwm_num, frequency) == ESP_OK
+        && pspwm_up_down_ctr_mode_set_ps_duty(mcpwm_num, ps_duty) == ESP_OK
+        && ps_pwm_resync_enable_output(mcpwm_num) == ESP_OK
+        ) {
+        return ESP_OK;
+    } else {
+        return ESP_FAIL;
+    }
 }
 
 /* Set frequency (and update dead-time values) for all four output
@@ -521,33 +550,8 @@ void pspwm_up_down_ctr_mode_register_base_setup(mcpwm_num) {
 
 
 /*****************************************************************
- *                      COMMON SETTINGS                          *
+ *                         COMMON SETUP                          *
  *****************************************************************/
-void pspwm_setup_gpios(mcpwm_unit_t mcpwm_num,
-                       uint32_t lead_a, uint32_t lead_b,
-                       uint32_t lag_a, uint32_t lag_b)
-{
-    INFO("Initializing GPIOs for PS-PWM");
-    mcpwm_gpio_init(mcpwm_num, MCPWM0A, lead_a);
-    mcpwm_gpio_init(mcpwm_num, MCPWM0B, lead_b);
-    mcpwm_gpio_init(mcpwm_num, MCPWM1A, lag_a);
-    mcpwm_gpio_init(mcpwm_num, MCPWM1B, lag_b);
-    //gpio_pulldown_en(GPIO_SYNC0_IN);   //Enable pull down on SYNC0  signal
-}
-
-/* Triggers a software-sync of the preconfigured timer
- * phase-register values, e.g. for re-initialisation
- */
-esp_err_t pspwm_trigger_sync(mcpwm_unit_t mcpwm_num)
-{
-    DBG("Resync triggered");
-    portENTER_CRITICAL(&mcpwm_spinlock);
-    // Toggle triggers the sync
-    MCPWM[mcpwm_num]->timer[MCPWM_TIMER_0].sync.sync_sw ^= 1;
-    MCPWM[mcpwm_num]->timer[MCPWM_TIMER_1].sync.sync_sw ^= 1;
-    portEXIT_CRITICAL(&mcpwm_spinlock);
-    return ESP_OK;
-}
 
 /* Disable PWM output immediately by software-triggering the one-shot
  * fault input of the "trip-zone" fault handler module.
@@ -569,7 +573,7 @@ esp_err_t pspwm_disable_output(mcpwm_unit_t mcpwm_num)
 /* (Re-)enable PWM output by clearing fault handler one-shot trigger
  * after software-triggering a re-sync to the initial phase setpoint.
  */
-esp_err_t pspwm_enable_output(mcpwm_unit_t mcpwm_num)
+esp_err_t pspwm_resync_enable_output(mcpwm_unit_t mcpwm_num)
 {
     DBG("Enabling output!");
     portENTER_CRITICAL(&mcpwm_spinlock);

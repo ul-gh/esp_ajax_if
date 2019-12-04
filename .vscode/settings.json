@@ -1,5 +1,9 @@
 {
     "files.associations": {
-        "mcpwm_struct.h": "c"
+        "mcpwm_struct.h": "c",
+        "io_mux_reg.h": "c",
+        "gpio_sig_map.h": "c",
+        "periph_ctrl.h": "c",
+        "dport_reg.h": "c"
     }
 }
