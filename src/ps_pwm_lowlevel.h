@@ -17,6 +17,7 @@
 #include "esp_log.h"
 #define DBG(...) ESP_LOGD("Module: ps_pwm", __VA_ARGS__)
 #define INFO(...) ESP_LOGI("Module: ps_pwm", __VA_ARGS__)
+#define ERROR(...) ESP_LOGE("Module: ps_pwm", __VA_ARGS__)
 
 //#define GPIO_SYNC0_IN   2   //Set GPIO 02 as SYNC0
 
