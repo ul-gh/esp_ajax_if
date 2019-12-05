@@ -98,7 +98,6 @@ esp_err_t pspwm_up_ctr_mode_init(
         && pspwm_up_ctr_mode_set_deadtimes(
             mcpwm_num, lead_red, lead_fed, lag_red, lag_fed) == ESP_OK
         && pspwm_up_ctr_mode_set_ps_duty(mcpwm_num, ps_duty) == ESP_OK
-        && pspwm_resync_enable_output(mcpwm_num) == ESP_OK
         ) {
         return ESP_OK;
     } else {
@@ -366,7 +365,6 @@ esp_err_t pspwm_up_down_ctr_mode_init(
         // be no need to call pspwm_up_down_ctr_mode_set_deadtimes() again.
         && pspwm_up_down_ctr_mode_set_frequency(mcpwm_num, frequency) == ESP_OK
         && pspwm_up_down_ctr_mode_set_ps_duty(mcpwm_num, ps_duty) == ESP_OK
-        && ps_pwm_resync_enable_output(mcpwm_num) == ESP_OK
         ) {
         return ESP_OK;
     } else {

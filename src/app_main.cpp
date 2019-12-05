@@ -5,7 +5,7 @@
 #include <SPIFFS.h>
 
 #include "http_server.h"
-#include "ps_pwm_gen.h"
+#include "app_hw_control.h"
 
 #define SERIAL_BAUD 115200
 
@@ -27,8 +27,9 @@ static void setup_wifi_sta_ap();
 
 // ISOCAL HTTP server provides REST API + HTML5 AJAX web interface on port 80
 HTTPServer http_server{80};
-// PS-PWM-Generator instance running with default settings, see ps_pwm_gen.h
-PSPWMGen ps_pwm_generator{};
+
+// PS-PWM generator instance is remote-controlled by the HTTP server
+PSPWMGen ps_pwm_generator{http_server};
 
 void setup() {
     Serial.begin(SERIAL_BAUD);
@@ -47,22 +48,6 @@ void setup() {
     // dnsServer.start(53, "*", WiFi.softAPIP());
     // attach AsyncEventSource
     // server.addHandler(&events);
-
-    http_server.register_command("set_freq", [](float n) {
-        ps_pwm_generator.set_frequency(n*1e3);
-    });
-
-    http_server.register_command("set_duty", [](float n) {
-        ps_pwm_generator.set_phase_shift(n/100);
-    });
-
-    http_server.register_command("lag_dt", [](float n) {
-        ps_pwm_generator.set_lag_dt(n*1e-9);
-    });
-
-    http_server.register_command("lead_dt", [](float n) {
-        ps_pwm_generator.set_lead_dt(n*1e-9);
-    });
 
     http_server.begin();
 

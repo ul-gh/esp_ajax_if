@@ -14,7 +14,7 @@
 #include <ESPAsyncWebServer.h>
 
 // Callback function with string argument
-using CbStringT = std::function<void(String)>;
+using CbStringT = std::function<void(const String &)>;
 // Callback function with float argument
 using CbFloatT = std::function<void(float)>;
 // Mapping used for resolving command strings received via HTTP request
