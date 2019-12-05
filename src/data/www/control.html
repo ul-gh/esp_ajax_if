@@ -6,11 +6,7 @@
         <title>Main Page</title>
         <link rel="stylesheet" type="text/css" href="u_lukas_style.css">
         <script>
-            async function submit_formdata(event) {
-                event.preventDefault(); // Disable default "GET" form action
-                const form_data = new FormData(event.target);
-                // form_data.forEach(console.log);
-                const req_str = "cmd?" + new URLSearchParams(form_data).toString();
+            async function do_http_request(req_str) {
                 try {
                     const response = await fetch(req_str);
                     if (!response.ok) {
@@ -21,8 +17,26 @@
                     alert(err);
                 }
             }
+            async function submit_formdata(event) {
+                event.preventDefault(); // Disable default "GET" form action
+                const form_data = new FormData(event.target);
+                // form_data.forEach(console.log);
+                const req_str = "cmd?" + new URLSearchParams(form_data).toString();
+                await do_http_request(req_str);
+            }
+            // Sends button name and value pair as if it were in a form.
+            async function submit_single_buttons(event) {
+                target = event.target;
+                btns = Array.from(document.getElementsByClassName("button_large"));
+                if (btns.includes(target)) {
+                    const req_str = "cmd?" + target.name + "=" + target.value;
+                    await do_http_request(req_str);
+                }
+            }
             // Connect all document forms submit action
             document.addEventListener("submit", submit_formdata, true);
+            // Connect single button click events
+            document.addEventListener("click", submit_single_buttons, true);
             // Set connection state display to "nok" when heartbeats are missing
             class HeartbeatTimer {
                 constructor (timeout) {
@@ -170,23 +184,22 @@
         <br><br>
         <div id="state_display" state="nok">Connection Status: ...</div>
         <br>
-        <form name="activate_outputs">
-            <table>
-                <thead>
-                    <tr>
-                        <th colspan="2">Activate Outputs</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td><input type="submit" id="btn_on" class="button_large"
-                                    name="set_output" value="ON"></td>
-                        <td><input type="submit" id="btn_off" class="button_large"
-                                    name="set_output" value="OFF"></td>
-                    </tr>
-                </tbody>
-            </table>
-        </form>
+
+        <table>
+            <thead>
+                <tr>
+                    <th colspan="2">Activate Outputs</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><input type="button" id="btn_on" class="button_large"
+                                name="set_output" value="ON"></td>
+                    <td><input type="button" id="btn_off" class="button_large"
+                                name="set_output" value="OFF"></td>
+                </tr>
+            </tbody>
+        </table>
 
         <p>2019-10-31 Ulrich Lukas</p>
         <a href="update.html">Perform OTA Firmware Upload</a>

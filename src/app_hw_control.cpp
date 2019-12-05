@@ -43,7 +43,7 @@ void PSPWMGen::register_remote_control(HTTPServer &http_server) {
     });
 
     http_server.register_command("set_output", [this](const String &text) {
-        this->output_enabled = text == "ON" ? true : false;
+        this->output_enabled = text == "ON";
         if (output_enabled) {
             pspwm_resync_enable_output(MCPWM_NUM);
         } else {

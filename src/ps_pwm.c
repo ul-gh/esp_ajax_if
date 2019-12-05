@@ -99,8 +99,10 @@ esp_err_t pspwm_up_ctr_mode_init(
             mcpwm_num, lead_red, lead_fed, lag_red, lag_fed) == ESP_OK
         && pspwm_up_ctr_mode_set_ps_duty(mcpwm_num, ps_duty) == ESP_OK
         ) {
+        DBG("pspwm_up_ctr_mode_init OK!");
         return ESP_OK;
     } else {
+        ERROR("pspwm_up_ctr_mode_init failed!");
         return ESP_FAIL;
     }
 }
@@ -144,6 +146,7 @@ esp_err_t pspwm_up_ctr_mode_set_frequency(mcpwm_unit_t mcpwm_num, float frequenc
     module->channel[MCPWM_TIMER_0].cmpr_value[MCPWM_OPR_A].cmpr_val = cmpr_0_a;
     module->channel[MCPWM_TIMER_1].cmpr_value[MCPWM_OPR_A].cmpr_val = cmpr_1_a;
     portEXIT_CRITICAL(&mcpwm_spinlock);
+    DBG("Timer TOP is now: %d", timer_top);
     return ESP_OK;
 }
 
@@ -216,6 +219,8 @@ esp_err_t pspwm_up_ctr_mode_set_deadtimes(mcpwm_unit_t mcpwm_num,
     module->channel[MCPWM_TIMER_0].cmpr_value[MCPWM_OPR_A].cmpr_val = cmpr_0_a;
     module->channel[MCPWM_TIMER_1].cmpr_value[MCPWM_OPR_A].cmpr_val = cmpr_1_a;
     portEXIT_CRITICAL(&mcpwm_spinlock);
+    DBG("Dead time registers set to: %d, %d, %d, %d",
+        lead_red_reg, lead_fed_reg, lag_red_reg, lag_fed_reg);
     return ESP_OK;
 }
 
@@ -366,8 +371,10 @@ esp_err_t pspwm_up_down_ctr_mode_init(
         && pspwm_up_down_ctr_mode_set_frequency(mcpwm_num, frequency) == ESP_OK
         && pspwm_up_down_ctr_mode_set_ps_duty(mcpwm_num, ps_duty) == ESP_OK
         ) {
+        DBG("pspwm_up_ctr_mode_init OK!");
         return ESP_OK;
     } else {
+        ERROR("pspwm_up_ctr_mode_init failed!");
         return ESP_FAIL;
     }
 }
@@ -417,6 +424,7 @@ esp_err_t pspwm_up_down_ctr_mode_set_frequency(mcpwm_unit_t mcpwm_num,
     module->timer[MCPWM_TIMER_0].period.period = timer_top;
     module->timer[MCPWM_TIMER_1].period.period = timer_top;
     portEXIT_CRITICAL(&mcpwm_spinlock);
+    DBG("Timer TOP is now: %d", timer_top);
     return ESP_OK;
 }
 
@@ -457,6 +465,8 @@ esp_err_t pspwm_up_down_ctr_mode_set_deadtimes(mcpwm_unit_t mcpwm_num,
     module->channel[MCPWM_TIMER_0].cmpr_value[MCPWM_OPR_B].cmpr_val = cmpr_b_lead;
     module->channel[MCPWM_TIMER_1].cmpr_value[MCPWM_OPR_B].cmpr_val = cmpr_b_lag;
     portEXIT_CRITICAL(&mcpwm_spinlock);
+    DBG("Timer compare registers set to: %d, %d, %d, %d",
+        cmpr_a_lead, cmpr_a_lag, cmpr_b_lead, cmpr_b_lag);
     return ESP_OK;
 }
 

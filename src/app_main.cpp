@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include "esp32-hal-log.h"
 #include <DNSServer.h>
 #include <ESPmDNS.h>
 #include <WiFi.h>
@@ -24,10 +25,8 @@ const char *hostName = "test_host";
 static void setup_wifi_hostap();
 static void setup_wifi_sta_ap();
 
-
 // ISOCAL HTTP server provides REST API + HTML5 AJAX web interface on port 80
 HTTPServer http_server{80};
-
 // PS-PWM generator instance is remote-controlled by the HTTP server
 PSPWMGen ps_pwm_generator{http_server};
 
@@ -50,7 +49,7 @@ void setup() {
     // server.addHandler(&events);
 
     http_server.begin();
-
+    esp_log_level_set("*", ESP_LOG_DEBUG);
 }
 
 void loop() {

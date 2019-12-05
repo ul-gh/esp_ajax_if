@@ -24,7 +24,7 @@ void HTTPServer::register_command(const char* cmd_name,
 
 void HTTPServer::register_command(const char* cmd_name,
                                   CbFloatT cmd_callback) {
-    cmd_map[cmd_name] = [cmd_callback](String value) {
+    cmd_map[cmd_name] = [cmd_callback](const String &value) {
          // Arduino String.toFloat() defaults to zero for invalid string, hmm...
         cmd_callback(value.toFloat());
     };
