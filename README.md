@@ -19,7 +19,7 @@ and [Arduinocore for ESP32](https://github.com/espressif/arduino-esp32/)
 
 ## Documentation
 
-See: [doc/html/index.html](doc/html/index.html)
+See: <a href="doc/html/index.html">doc/html/index.html</a>
 
 ## License
 [GPL v3.0](LICENSE)
