@@ -30,13 +30,13 @@ void PSPWMGen::register_remote_control(HTTPServer &http_server) {
         pspwm_up_ctr_mode_set_ps_duty(MCPWM_NUM, ps_duty);
     });
 
-    http_server.register_command("lag_dt", [this](float n) {
+    http_server.register_command("set_lag_dt", [this](float n) {
         this->lag_dt = n * 1E-9;
         pspwm_up_ctr_mode_set_deadtimes(MCPWM_NUM,
                                         lead_dt, lead_dt, lag_dt, lag_dt);
     });
 
-    http_server.register_command("lead_dt", [this](float n) {
+    http_server.register_command("set_lead_dt", [this](float n) {
         this->lead_dt = n * 1E-9;
         pspwm_up_ctr_mode_set_deadtimes(MCPWM_NUM,
                                         lead_dt, lead_dt, lag_dt, lag_dt);

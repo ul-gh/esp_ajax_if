@@ -33,7 +33,7 @@ public:
     // Polled in main loop
     bool reboot_requested;
     
-    HTTPServer(int port);
+    HTTPServer(uint16_t port);
     // virtual ~HTTPServer();
 
     // Overload for string callbacks

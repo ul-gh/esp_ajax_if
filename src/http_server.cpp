@@ -8,7 +8,7 @@
 #include <FS.h>
 #include "http_server.h"
 
-HTTPServer::HTTPServer(int port)
+HTTPServer::HTTPServer(uint16_t port)
     : backend{port},
     event_source{"/events"},
     reboot_requested{false}
