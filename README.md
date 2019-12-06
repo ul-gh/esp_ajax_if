@@ -19,7 +19,7 @@ and [Arduinocore for ESP32](https://github.com/espressif/arduino-esp32/)
 
 ## Documentation
 
-See: <a href="doc/html/index.html">doc/html/index.html</a>
+See: [doc/html/index.html](https://htmlpreview.github.com/?https://github.com/ul-gh/esp_ajax_if/blob/cls_http_srv/doc/html/ps__pwm_8h.html)
 
 ## License
 [GPL v3.0](LICENSE)
