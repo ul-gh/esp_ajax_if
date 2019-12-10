@@ -1,0 +1,13 @@
+# Declare files that will always have CRLF line endings on checkout.
+*.c     text eol=lf diff=c
+*.h     text eol=lf diff=c
+*.cpp   text eol=lf diff=cpp
+*.hpp   text eol=lf diff=cpp
+*.py    text eol=lf diff=python
+*.html  text eol=lf
+*.js    text eol=lf
+*.json  text eol=lf
+*.css   text eol=lf
+*.sh    text eol=lf
+*.cmd   text eol=crlf
+*.bat   text eol=crlf
