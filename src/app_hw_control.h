@@ -6,10 +6,10 @@
 // MCPWM unit can be [0,1]
 #define MCPWM_NUM MCPWM_UNIT_0
 // GPIO config
-#define GPIO_PWM0A_OUT 0 // PWM0A := LEAD LEG, HB2_HS
-#define GPIO_PWM0B_OUT 4 // PWM0B := LEAD LEG, HB2_LS
-#define GPIO_PWM1A_OUT 16 // PWM1A := LAG LEG, HB1_HS
-#define GPIO_PWM1B_OUT 17 // PWM1B := LAG LEG, HB1_LS
+#define GPIO_PWM0A_OUT 27 // PWM0A := LEAD leg, Low Side
+#define GPIO_PWM0B_OUT 26 // PWM0B := LEAD leg, High Side
+#define GPIO_PWM1A_OUT 25 // PWM1A := LAG leg, Low Side
+#define GPIO_PWM1B_OUT 33 // PWM1B := LAG leg, High Side
 
 class PSPWMGen
 /* Preset runtime values configuration:
