@@ -86,7 +86,6 @@ Functions</h2></td></tr>
 <tr class="memitem:ac87ccdb2a335a6f571cb807fe133cfb7"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ps__pwm_8h.html#ac87ccdb2a335a6f571cb807fe133cfb7">pspwm_up_ctr_mode_init</a> (mcpwm_unit_t mcpwm_num, int gpio_lead_a, int gpio_lead_b, int gpio_lag_a, int gpio_lag_b, float frequency, float ps_duty, float lead_red, float lead_fed, float lag_red, float lag_fed)</td></tr>
 <tr class="separator:ac87ccdb2a335a6f571cb807fe133cfb7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a018f7a05845d376d5616b68912eb3f6f"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ps__pwm_8h.html#a018f7a05845d376d5616b68912eb3f6f">pspwm_up_ctr_mode_set_frequency</a> (mcpwm_unit_t mcpwm_num, float frequency)</td></tr>
-<tr class="memdesc:a018f7a05845d376d5616b68912eb3f6f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set frequency when running PS-PWM generator in up-counting mode.  <a href="ps__pwm_8h.html#a018f7a05845d376d5616b68912eb3f6f">More...</a><br /></td></tr>
 <tr class="separator:a018f7a05845d376d5616b68912eb3f6f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abfc8372d00e5207a7e90cf03b2250610"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ps__pwm_8h.html#abfc8372d00e5207a7e90cf03b2250610">pspwm_up_ctr_mode_set_deadtimes</a> (mcpwm_unit_t mcpwm_num, float lead_red, float lead_fed, float lag_red, float lag_fed)</td></tr>
 <tr class="separator:abfc8372d00e5207a7e90cf03b2250610"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -109,7 +108,7 @@ Functions</h2></td></tr>
 <div class="textblock"><p>Use Espressif ESP32 platform MCPWM hardware module for generating Phase-Shift-PWM waveform on 4 hardware pins. </p><dl class="section note"><dt>Note</dt><dd>Application in power electronics, e.g. ZVS-PS-PWM, DAB-DCM and LLC converters.</dd>
 <dd>
 This depends on the ESP-IDF SDK</dd></dl>
-<p>2019-12-04 Ulrich Lukas </p>
+<p>2019-12-11 Ulrich Lukas </p>
 </div><h2 class="groupheader">Function Documentation</h2>
 <a id="a9c3c611469c41ed1ae07c55360d5b490"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a9c3c611469c41ed1ae07c55360d5b490">&#9670;&nbsp;</a></span>pspwm_disable_output()</h2>
@@ -347,17 +346,7 @@ This depends on the ESP-IDF SDK</dd></dl>
         </tr>
       </table>
 </div><div class="memdoc">
-
-<p>Set frequency when running PS-PWM generator in up-counting mode. </p>
 <p>Set frequency when running PS-PWM generator in up-counting mode </p><dl class="section note"><dt>Note</dt><dd>This does not alter prescaler settings.</dd></dl>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">mcpwm_num</td><td>PWM unit number ([0|1]), </td></tr>
-    <tr><td class="paramname">frequency</td><td>Frequency of the non-rectified waveform in Hz,</td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section note"><dt>Note</dt><dd>This does not alter prescaler settings.</dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">mcpwm_num</td><td>PWM unit number ([0|1]), </td></tr>
@@ -476,7 +465,7 @@ This depends on the ESP-IDF SDK</dd></dl>
 <p>Initialize ESP32 MCPWM hardware module for output of a Phase-Shift-PWM waveform on 4 hardware pins.</p>
 <p>Individual dead-times are configured for both half-bridge PWM outputs.</p>
 <p>This PWM generation mode does not use the dead-band generator hardware. Instead, the dead-time for each two outputs of a half-bridge is configured by running the main timers in up-down-counting mode and using both compare registers for each timer to generate two symmetric outputs.</p>
-<p>Because of the up/down-counting mode, maximum output frequency is half of the value which is possible with using the hardware deas-band generator.</p>
+<p>Because of the up/down-counting mode, maximum output frequency is half of the value which is possible when using the hardware dead-band generator.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">mcpwm_num</td><td>PWM unit number ([0|1]), </td></tr>
@@ -563,7 +552,7 @@ This depends on the ESP-IDF SDK</dd></dl>
       </table>
 </div><div class="memdoc">
 <p>Set frequency (and update dead-time values) for all four output signals of the phase-shift-PWM when using the timer in up/down counting mode.</p>
-<p>Because of the up/down-counting mode, maximum output frequency is half of the value which is possible with using the hardware deas-band generator.</p>
+<p>Because of the up/down-counting mode, maximum output frequency is half of the value which is possible when using the hardware dead-band generator.</p>
 <dl class="section note"><dt>Note</dt><dd>This does not alter prescaler settings.</dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">

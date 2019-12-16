@@ -6,7 +6,7 @@
  * 
  * @note This depends on the ESP-IDF SDK
  *
- * 2019-12-04 Ulrich Lukas
+ * 2019-12-11 Ulrich Lukas
  */
 #ifndef __PS_PWM_H__
 #define __PS_PWM_H__
@@ -126,7 +126,7 @@ esp_err_t pspwm_up_ctr_mode_set_ps_duty(mcpwm_unit_t mcpwm_num, float ps_duty);
  * registers for each timer to generate two symmetric outputs.
  * 
  * Because of the up/down-counting mode, maximum output frequency is half of
- * the value which is possible with using the hardware deas-band generator.
+ * the value which is possible when using the hardware dead-band generator.
  * 
  * @param mcpwm_num: PWM unit number ([0|1]),
  * @param gpio_lead_a: GPIO number leading leg low_side
@@ -150,7 +150,7 @@ esp_err_t pspwm_up_down_ctr_mode_init(
  * in up/down counting mode.
  * 
  * Because of the up/down-counting mode, maximum output frequency is half of
- * the value which is possible with using the hardware deas-band generator.
+ * the value which is possible when using the hardware dead-band generator.
  * 
  * @note
  * This does not alter prescaler settings.

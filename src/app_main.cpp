@@ -35,7 +35,7 @@ void setup() {
     Serial.println();
 
     if (!SPIFFS.begin(true)) {
-        Serial.println("An Error mounting SPI Flash File System");
+        Serial.println("Error mounting SPI Flash File System");
         return;
     }
 
