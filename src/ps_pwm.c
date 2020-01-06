@@ -21,7 +21,7 @@
 /* Dead time settings for both MCPWM hardware modules are defined as lead and
  * lag bridge-leg low-side output rising and falling edge dead-times in seconds
  */
-struct dt_conf {
+typedef struct {
     // Lead leg, dead time for rising edge (up_ctr_mode)
     // or both edges (up_down_ctr_mode)
     float lead_red;
@@ -30,7 +30,7 @@ struct dt_conf {
     // All the same for lagging leg
     float lag_red;
     float lag_fed;
-};
+} dt_conf_t;
 
 // MMAP IO using direct register access.
 // External definition and declaration in mcpwm_struct.h
@@ -40,7 +40,9 @@ static mcpwm_dev_t * const MCPWM[2] = {(mcpwm_dev_t*) &MCPWM0,
 static portMUX_TYPE mcpwm_spinlock = portMUX_INITIALIZER_UNLOCKED;
 // Dead time settings need to be shared between calls because
 // frequency and dead-time settings depend on each other
-static struct dt_conf *deadtimes[2] = {NULL, NULL};
+static dt_conf_t *deadtimes[2] = {NULL, NULL};
+
+static setpoint_limits_t *s_setpoint_limits[2] = {NULL, NULL};
 
 // Not part of external API
 void _pspwm_up_ctr_mode_register_base_setup(mcpwm_unit_t mcpwm_num);
@@ -59,12 +61,15 @@ esp_err_t pspwm_up_ctr_mode_init(
         float lead_red, float lead_fed, float lag_red, float lag_fed)
 {
     DBG("Call pspwm_up_ctr_mode_init");
-    if (mcpwm_num < 0 || mcpwm_num > 1) {
-        ERROR("mcpwm_num must be 0 or 1!");
+    if (mcpwm_num != MCPWM_UNIT_0 && mcpwm_num != MCPWM_UNIT_1) {
+        ERROR("mcpwm_num must be MCPWM_UNIT_0 or MCPWM_UNIT_1!");
         return ESP_FAIL;
     }
-    if (deadtimes[mcpwm_num] == NULL) {
-        deadtimes[mcpwm_num] = malloc(sizeof(struct dt_conf));
+    if (!deadtimes[mcpwm_num]) {
+        deadtimes[mcpwm_num] = malloc(sizeof(dt_conf_t));
+    }
+    if (!s_setpoint_limits[mcpwm_num]) {
+        s_setpoint_limits[mcpwm_num] = malloc(sizeof(setpoint_limits_t));
     }
     deadtimes[mcpwm_num]->lead_red = lead_red;
     deadtimes[mcpwm_num]->lead_fed = lead_fed;
@@ -96,12 +101,12 @@ esp_err_t pspwm_up_ctr_mode_set_frequency(mcpwm_unit_t mcpwm_num,
                                           float frequency)
 {
     DBG("Call pspwm_up_ctr_mode_set_frequency");
-    // PWM hardware must be initialised first
-    assert(deadtimes[mcpwm_num] != NULL);
     mcpwm_dev_t *module = MCPWM[mcpwm_num];
+    // PWM hardware must have been initialised first
+    assert(deadtimes[mcpwm_num] != NULL);
     // This is a 16-Bit timer register, although the API struct uses uint32_t...
-    if (frequency <= 0 || MCPWM_TIMER_CLK / frequency > UINT16_MAX) {
-        ERROR("Frequency setpoint out of range");
+    if (frequency <= (float)MCPWM_TIMER_CLK / UINT16_MAX) {
+        ERROR("Frequency setpoint out of range!");
         return ESP_FAIL;
     }
     uint32_t timer_top = (uint32_t)(MCPWM_TIMER_CLK / frequency);
@@ -121,6 +126,8 @@ esp_err_t pspwm_up_ctr_mode_set_frequency(mcpwm_unit_t mcpwm_num,
     module->channel[MCPWM_TIMER_1].cmpr_value[MCPWM_OPR_A].cmpr_val = cmpr_1_a;
     portEXIT_CRITICAL(&mcpwm_spinlock);
     DBG("Timer TOP is now: %d", timer_top);
+    DBG("cmpr_0_a register value: %d", cmpr_0_a);
+    DBG("cmpr_1_a register value: %d", cmpr_1_a);
     return ESP_OK;
 }
 
@@ -184,8 +191,11 @@ esp_err_t pspwm_up_ctr_mode_set_deadtimes(mcpwm_unit_t mcpwm_num,
     module->channel[MCPWM_TIMER_0].cmpr_value[MCPWM_OPR_A].cmpr_val = cmpr_0_a;
     module->channel[MCPWM_TIMER_1].cmpr_value[MCPWM_OPR_A].cmpr_val = cmpr_1_a;
     portEXIT_CRITICAL(&mcpwm_spinlock);
-    DBG("Dead time registers set to: %d, %d, %d, %d",
-        lead_red_reg, lead_fed_reg, lag_red_reg, lag_fed_reg);
+    DBG("Dead time registers for LEAD set to: %d (rising edge), %d (falling edge)",
+        lead_red_reg, lead_fed_reg);
+    DBG("Dead time registers for LAG set to: %d (rising edge), %d (falling edge)",
+        lag_red_reg, lag_fed_reg);
+
     return ESP_OK;
 }
 
@@ -225,7 +235,7 @@ void _pspwm_up_ctr_mode_register_base_setup(mcpwm_unit_t mcpwm_num) {
         // Update/swap shadow registers at timer equals zero
         // Datasheet 16.16: PWM_GEN0_STMP_CFG_REG (0x003c) etc.
         MCPWM[mcpwm_num]->channel[timer_i].cmpr_cfg.a_upmethod = 1;
-        // MCPWM[mcpwm_num]->channel[timer_i].cmpr_cfg.b_upmethod = 1;
+        MCPWM[mcpwm_num]->channel[timer_i].cmpr_cfg.b_upmethod = 1;
         // 2 => Set output high; 1 => set output low
         // Datasheet 16.21: PWM_GEN0_A_REG (0x0050) etc.
         MCPWM[mcpwm_num]->channel[timer_i].generator[MCPWM_OPR_A].utez = 2;
@@ -240,9 +250,15 @@ void _pspwm_up_ctr_mode_register_base_setup(mcpwm_unit_t mcpwm_num) {
          * This is used for software-forced output disabling.
          */
         // Datasheet 16.27: PWM_FH0_CFG0_REG (0x0068)
-        MCPWM[mcpwm_num]->channel[timer_i].tz_cfg0.sw_ost = 1; // Enable sw-force
+        // Enable sw-forced one-shot tripzone action
+        MCPWM[mcpwm_num]->channel[timer_i].tz_cfg0.sw_ost = 1;
+        // Uncomment to enable sw-forced cycle-by-cycle tripzone action
+        //MCPWM[mcpwm_num]->channel[timer_i].tz_cfg0.sw_cbc = 1;
+        // Enable hardware-forced (event f0) one-shot tripzone action
         MCPWM[mcpwm_num]->channel[timer_i].tz_cfg0.f0_ost = 1;
-        MCPWM[mcpwm_num]->channel[timer_i].tz_cfg0.f0_cbc = 0;
+        // Uncomment to enable hardware (event f0) cycle-by-cycle tripzone action
+        //MCPWM[mcpwm_num]->channel[timer_i].tz_cfg0.f0_cbc = 1;
+        // Configure the kind of action (pull up / pull down)
         MCPWM[mcpwm_num]->channel[timer_i].tz_cfg0.a_ost_d = TRIPZONE_ACTION_PWMxA;
         MCPWM[mcpwm_num]->channel[timer_i].tz_cfg0.a_ost_u = TRIPZONE_ACTION_PWMxA;
         MCPWM[mcpwm_num]->channel[timer_i].tz_cfg0.b_ost_d = TRIPZONE_ACTION_PWMxB;
@@ -290,12 +306,15 @@ esp_err_t pspwm_up_down_ctr_mode_init(
         float lead_dt, float lag_dt)
 {
     DBG("Call pspwm_up_ctr_mode_init");
-    if (mcpwm_num < 0 || mcpwm_num > 1) {
-        ERROR("mcpwm_num must be 0 or 1!");
+    if (mcpwm_num != MCPWM_UNIT_0 && mcpwm_num != MCPWM_UNIT_1) {
+        ERROR("mcpwm_num must be MCPWM_UNIT_0 or MCPWM_UNIT_1!");
         return ESP_FAIL;
     }
-    if (deadtimes[mcpwm_num] == NULL) {
-        deadtimes[mcpwm_num] = malloc(sizeof(struct dt_conf));
+    if (!deadtimes[mcpwm_num]) {
+        deadtimes[mcpwm_num] = malloc(sizeof(dt_conf_t));
+    }
+    if (!s_setpoint_limits[mcpwm_num]) {
+        s_setpoint_limits[mcpwm_num] = malloc(sizeof(setpoint_limits_t));
     }
     deadtimes[mcpwm_num]->lead_red = lead_dt;
     deadtimes[mcpwm_num]->lag_red = lag_dt;
@@ -326,14 +345,14 @@ esp_err_t pspwm_up_down_ctr_mode_set_frequency(mcpwm_unit_t mcpwm_num,
 {
     DBG("Call pspwm_up_down_ctr_mode_set_frequency");
     mcpwm_dev_t *module = MCPWM[mcpwm_num];
-    // PWM hardware must be initialised first
+    // PWM hardware must have been initialised first
     assert(deadtimes[mcpwm_num] != NULL);
     // This is a 16-Bit timer register, although the API struct uses uint32_t...
-    if (frequency <= 0 || MCPWM_TIMER_CLK / frequency > UINT16_MAX) {
-        ERROR("Frequency setpoint out of range");
+    if (frequency <= (float)MCPWM_TIMER_CLK / UINT16_MAX) {
+        ERROR("Frequency setpoint out of range!");
         return ESP_FAIL;
     }
-    uint32_t timer_top = (uint32_t)(0.5 * MCPWM_TIMER_CLK / frequency);
+    uint32_t timer_top = (uint32_t)(MCPWM_TIMER_CLK / frequency);
     uint32_t cmpr_a_lead = (uint32_t)(
         MCPWM_TIMER_CLK * deadtimes[mcpwm_num]->lead_red / 2);
     uint32_t cmpr_a_lag = (uint32_t)(
@@ -445,9 +464,15 @@ void _pspwm_up_down_ctr_mode_register_base_setup(mcpwm_unit_t mcpwm_num) {
          * This is used for software-forced output disabling.
          */
         // Datasheet 16.27: PWM_FH0_CFG0_REG (0x0068)
-        MCPWM[mcpwm_num]->channel[timer_i].tz_cfg0.sw_ost = 1; // Enable sw-force
+        // Enable sw-forced one-shot tripzone action
+        MCPWM[mcpwm_num]->channel[timer_i].tz_cfg0.sw_ost = 1;
+        // Uncomment to enable sw-forced cycle-by-cycle tripzone action
+        //MCPWM[mcpwm_num]->channel[timer_i].tz_cfg0.sw_cbc = 1;
+        // Enable hardware-forced (event f0) one-shot tripzone action
         MCPWM[mcpwm_num]->channel[timer_i].tz_cfg0.f0_ost = 1;
-        MCPWM[mcpwm_num]->channel[timer_i].tz_cfg0.f0_cbc = 0;
+        // Uncomment to enable hardware (event f0) cycle-by-cycle tripzone action
+        //MCPWM[mcpwm_num]->channel[timer_i].tz_cfg0.f0_cbc = 1;
+        // Configure the kind of action (pull up / pull down)
         MCPWM[mcpwm_num]->channel[timer_i].tz_cfg0.a_ost_d = TRIPZONE_ACTION_PWMxA;
         MCPWM[mcpwm_num]->channel[timer_i].tz_cfg0.a_ost_u = TRIPZONE_ACTION_PWMxA;
         MCPWM[mcpwm_num]->channel[timer_i].tz_cfg0.b_ost_d = TRIPZONE_ACTION_PWMxB;
@@ -509,5 +534,15 @@ esp_err_t pspwm_resync_enable_output(mcpwm_unit_t mcpwm_num)
     MCPWM[mcpwm_num]->channel[MCPWM_TIMER_0].tz_cfg1.clr_ost ^= 1;
     MCPWM[mcpwm_num]->channel[MCPWM_TIMER_1].tz_cfg1.clr_ost ^= 1;
     portEXIT_CRITICAL(&mcpwm_spinlock);
+    return ESP_OK;
+}
+
+esp_err_t pspwm_get_setpoint_limits(mcpwm_unit_t mcpwm_num,
+                                    setpoint_limits_t** setpoint_limits) {
+    if (!setpoint_limits[mcpwm_num]) {
+        ERROR("ERROR: The PMW unit must be initialised first!");
+        return ESP_FAIL;
+    }
+    *setpoint_limits = s_setpoint_limits;
     return ESP_OK;
 }

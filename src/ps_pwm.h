@@ -37,6 +37,18 @@
 extern "C" {
 #endif
 
+
+typedef struct {
+    // Minimum and maximum allowed frequency setpoints
+    float frequency_min;
+    float frequency_max;
+    // Maximum allowed dead-time values
+    float lead_red_max;
+    float lead_fed_max;
+    float lag_red_max;
+    float lag_red_max;
+} setpoint_limits_t;
+
 /********************************************************************//**
  *    FULL-SPEED-MODE, 4x INDIVIDUAL DEAD-TIME, HW-DEAD-TIME-MODULE
  ************************************************************************
@@ -54,7 +66,7 @@ extern "C" {
  * Combined output waveform of the phase-shifted full-bridge
  * is DC-free symmetric nevertheless.
  * 
- * @param mcpwm_num: PWM unit number ([0|1]),
+ * @param mcpwm_num: PWM unit number (enum, MCPWM_UNIT_0 = 0, MCPWM_UNIT_1 = 1),
  * @param gpio_lead_a: GPIO number leading leg low_side
  * @param gpio_lead_b: GPIO number leading leg high_side
  * @param gpio_lag_a: GPIO number lagging leg low_side
@@ -77,7 +89,7 @@ esp_err_t pspwm_up_ctr_mode_init(
  * @note
  * This does not alter prescaler settings.
  * 
- * @param mcpwm_num: PWM unit number ([0|1]),
+ * @param mcpwm_num: PWM unit number (enum, MCPWM_UNIT_0 = 0, MCPWM_UNIT_1 = 1),
  * @param frequency: Frequency of the non-rectified waveform in Hz,
  */
 esp_err_t pspwm_up_ctr_mode_set_frequency(mcpwm_unit_t mcpwm_num,
@@ -87,7 +99,7 @@ esp_err_t pspwm_up_ctr_mode_set_frequency(mcpwm_unit_t mcpwm_num,
  * falling edge as well as for lagging leg rising and falling edge
  * for all four PWM outputs.
  * 
- * @param  mcpwm_num: PWM unit number ([0|1]),
+ * @param  mcpwm_num: PWM unit number (enum, MCPWM_UNIT_0 = 0, MCPWM_UNIT_1 = 1),
  * @param  lead_red: dead time value for rising edge, leading leg
  * @param  lead_fed: dead time value for falling edge, leading leg
  * @param  lag_red: dead time value for rising edge, lagging leg
@@ -104,7 +116,7 @@ esp_err_t pspwm_up_ctr_mode_set_deadtimes(mcpwm_unit_t mcpwm_num,
  * @note The value is calculated based on current value of the
  *       PWM timer "period" register.
  *
- * @param  mcpwm_num: PWM unit number ([0|1]),
+ * @param  mcpwm_num: PWM unit number (enum, MCPWM_UNIT_0 = 0, MCPWM_UNIT_1 = 1),
  * @param  ps_duty: Duty cycle of the rectified waveform (0..1)
  */
 esp_err_t pspwm_up_ctr_mode_set_ps_duty(mcpwm_unit_t mcpwm_num, float ps_duty);
@@ -128,7 +140,7 @@ esp_err_t pspwm_up_ctr_mode_set_ps_duty(mcpwm_unit_t mcpwm_num, float ps_duty);
  * Because of the up/down-counting mode, maximum output frequency is half of
  * the value which is possible when using the hardware dead-band generator.
  * 
- * @param mcpwm_num: PWM unit number ([0|1]),
+ * @param mcpwm_num: PWM unit number (enum, MCPWM_UNIT_0 = 0, MCPWM_UNIT_1 = 1),
  * @param gpio_lead_a: GPIO number leading leg low_side
  * @param gpio_lead_b: GPIO number leading leg high_side
  * @param gpio_lag_a: GPIO number lagging leg low_side
@@ -155,7 +167,7 @@ esp_err_t pspwm_up_down_ctr_mode_init(
  * @note
  * This does not alter prescaler settings.
  * 
- * @param mcpwm_num: PWM unit number ([0|1]),
+ * @param mcpwm_num: PWM unit number (enum, MCPWM_UNIT_0 = 0, MCPWM_UNIT_1 = 1),
  * @param frequency: Frequency of the non-rectified waveform in Hz,
  */
 esp_err_t pspwm_up_down_ctr_mode_set_frequency(mcpwm_unit_t mcpwm_num,
@@ -165,7 +177,7 @@ esp_err_t pspwm_up_down_ctr_mode_set_frequency(mcpwm_unit_t mcpwm_num,
  * of the phase-shift-PWM when using the timer
  * in up/down counting mode.
  * 
- * @param mcpwm_num: PWM unit number ([0|1]),
+ * @param mcpwm_num: PWM unit number (enum, MCPWM_UNIT_0 = 0, MCPWM_UNIT_1 = 1),
  * @param lead_dt: leading bridge-leg dead-time in sec (0..),
  * @param lag_dt: lagging bridge-leg dead-time in sec (0..)
  */
@@ -177,7 +189,7 @@ esp_err_t pspwm_up_down_ctr_mode_set_deadtimes(mcpwm_unit_t mcpwm_num,
  *
  * The phase-shift value is valid for the symmetric dead-time setting
  * 
- * @param mcpwm_num: PWM unit number ([0|1]),
+ * @param mcpwm_num: PWM unit number (enum, MCPWM_UNIT_0 = 0, MCPWM_UNIT_1 = 1),
  * @param ps_duty: Duty cycle of the rectified waveform (0..1)
  */
 esp_err_t pspwm_up_down_ctr_mode_set_ps_duty(mcpwm_unit_t mcpwm_num,
@@ -195,17 +207,19 @@ esp_err_t pspwm_up_down_ctr_mode_set_ps_duty(mcpwm_unit_t mcpwm_num,
  * This sets the PWM output pins to predefined levels TRIPZONE_ACTION_PWMxA
  * and TRIPZONE_ACTION_PWMxB, which can be configured in the header file.
  * 
- * @param mcpwm_num: PWM unit number ([0|1]),
+ * @param mcpwm_num: PWM unit number (enum, MCPWM_UNIT_0 = 0, MCPWM_UNIT_1 = 1),
  */
 esp_err_t pspwm_disable_output(mcpwm_unit_t mcpwm_num);
 
 /** (Re-)enable PWM output by clearing fault handler one-shot trigger
  * after software-triggering a re-sync to the initial phase setpoint.
  * 
- * @param mcpwm_num: PWM unit number ([0|1]),
+ * @param mcpwm_num: PWM unit number (enum, MCPWM_UNIT_0 = 0, MCPWM_UNIT_1 = 1),
  */
 esp_err_t pspwm_resync_enable_output(mcpwm_unit_t mcpwm_num);
 
+esp_err_t pspwm_get_setpoint_limits(mcpwm_unit_t mcpwm_num,
+                                    setpoint_limits_t** setpoint_limits);
 
 #ifdef __cplusplus
 }
