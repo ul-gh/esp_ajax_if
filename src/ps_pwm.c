@@ -18,19 +18,6 @@
 #define INFO(...) ESP_LOGI("Module: ps_pwm.c", __VA_ARGS__)
 #define ERROR(...) ESP_LOGE("Module: ps_pwm.c", __VA_ARGS__)
 
-/* Dead time settings for both MCPWM hardware modules are defined as lead and
- * lag bridge-leg low-side output rising and falling edge dead-times in seconds
- */
-typedef struct {
-    // Lead leg, dead time for rising edge (up_ctr_mode)
-    // or both edges (up_down_ctr_mode)
-    float lead_red;
-    // Falling edge dead time for up_ctr_mode, not defined for up_down_ctr_mode
-    float lead_fed;
-    // All the same for lagging leg
-    float lag_red;
-    float lag_fed;
-} dt_conf_t;
 
 // MMAP IO using direct register access.
 // External definition and declaration in mcpwm_struct.h
@@ -41,6 +28,15 @@ static portMUX_TYPE mcpwm_spinlock = portMUX_INITIALIZER_UNLOCKED;
 // Dead time settings need to be shared between calls because
 // frequency and dead-time settings depend on each other
 static dt_conf_t *deadtimes[2] = {NULL, NULL};
+
+// Timer clock settings are common to both MCPWM stages
+static clk_conf_t clk_conf = {
+    .base_clk_prescale = 4,
+    .timer_clk_prescale = 4,
+    .base_clk = (float) MCPWM_INPUT_CLK / BASE_CLK_PRESCALE_DEFAULT,
+    .timer_clk = (float) MCPWM_INPUT_CLK / (
+            BASE_CLK_PRESCALE_DEFAULT * TIMER_CLK_PRESCALE_DEFAULT)
+};
 
 static setpoint_limits_t *s_setpoint_limits[2] = {NULL, NULL};
 
@@ -70,6 +66,13 @@ esp_err_t pspwm_up_ctr_mode_init(
     }
     if (!s_setpoint_limits[mcpwm_num]) {
         s_setpoint_limits[mcpwm_num] = malloc(sizeof(setpoint_limits_t));
+    }
+    s_setpoint_limits[mcpwm_num]->frequency_min = clk_conf.timer_clk / UINT16_MAX;
+    s_setpoint_limits[mcpwm_num]->frequency_max = clk_conf.timer_clk / TIMER_TOP_MIN;
+    if (UINT16_MAX/clk_conf.base_clk < 1.0 / frequency) {
+        s_setpoint_limits[mcpwm_num]->deadtime_sum_max = UINT16_MAX / clk_conf.base_clk;
+    } else {
+        s_setpoint_limits[mcpwm_num]->deadtime_sum_max = 1.0 / frequency;
     }
     deadtimes[mcpwm_num]->lead_red = lead_red;
     deadtimes[mcpwm_num]->lead_fed = lead_fed;
@@ -105,17 +108,18 @@ esp_err_t pspwm_up_ctr_mode_set_frequency(mcpwm_unit_t mcpwm_num,
     // PWM hardware must have been initialised first
     assert(deadtimes[mcpwm_num] != NULL);
     // This is a 16-Bit timer register, although the API struct uses uint32_t...
-    if (frequency <= (float)MCPWM_TIMER_CLK / UINT16_MAX) {
-        ERROR("Frequency setpoint out of range!");
-        return ESP_FAIL;
+    if (frequency <= s_setpoint_limits[mcpwm_num]->frequency_min
+        || frequency > s_setpoint_limits[mcpwm_num]->frequency_max) {
+            ERROR("Frequency setpoint out of range!");
+            return ESP_FAIL;
     }
-    uint32_t timer_top = (uint32_t)(MCPWM_TIMER_CLK / frequency);
+    uint32_t timer_top = (uint32_t)(clk_conf.timer_clk / frequency);
     uint32_t cmpr_0_a = (uint32_t)(
-        0.5 * (timer_top + MCPWM_TIMER_CLK * (deadtimes[mcpwm_num]->lead_red 
-                                              - deadtimes[mcpwm_num]->lead_fed)));
+        0.5 * (timer_top + clk_conf.timer_clk * (deadtimes[mcpwm_num]->lead_red 
+                                                 - deadtimes[mcpwm_num]->lead_fed)));
     uint32_t cmpr_1_a = (uint32_t)(
-        0.5 * (timer_top + MCPWM_TIMER_CLK * (deadtimes[mcpwm_num]->lag_red
-                                              - deadtimes[mcpwm_num]->lag_fed)));
+        0.5 * (timer_top + clk_conf.timer_clk * (deadtimes[mcpwm_num]->lag_red
+                                                 - deadtimes[mcpwm_num]->lag_fed)));
     portENTER_CRITICAL(&mcpwm_spinlock);
     // Register 16.2: PWM_TIMER0_CFG0_REG (0x0004) etc.
     module->timer[MCPWM_TIMER_0].period.period = timer_top;
@@ -141,10 +145,10 @@ esp_err_t pspwm_up_ctr_mode_set_deadtimes(mcpwm_unit_t mcpwm_num,
     assert(deadtimes[mcpwm_num] != NULL);
     // PWM base period and duty cycle must be adjusted when changing dead-times
     uint32_t timer_top = MCPWM[mcpwm_num]->timer[MCPWM_TIMER_0].period.period;
-    DBG("Limit value for (red + fed) in ns: %f", 1e9*timer_top / MCPWM_TIMER_CLK);
+    DBG("Limit value for (red + fed) in ns: %f", 1e9*timer_top / clk_conf.base_clk);
     if (lead_red < 0 || lead_fed < 0 || lag_red < 0 || lag_fed < 0
-            || MCPWM_TIMER_CLK * (lead_red + lead_fed) >= timer_top
-            || MCPWM_TIMER_CLK * (lag_red + lag_fed) >= timer_top) {
+            || lead_red + lead_fed >= s_setpoint_limits[mcpwm_num]->deadtime_sum_max
+            || lag_red + lag_fed >= s_setpoint_limits[mcpwm_num]->deadtime_sum_max) {
         ERROR("Dead time setpoint out of range");
         return ESP_FAIL;
     }
@@ -154,15 +158,15 @@ esp_err_t pspwm_up_ctr_mode_set_deadtimes(mcpwm_unit_t mcpwm_num,
     deadtimes[mcpwm_num]->lead_fed = lead_fed;
     deadtimes[mcpwm_num]->lag_red = lag_red;
     deadtimes[mcpwm_num]->lag_fed = lag_fed;
-    uint32_t lead_red_reg = (uint32_t)(lead_red * MCPWM_BASE_CLK);
-    uint32_t lead_fed_reg = (uint32_t)(lead_fed * MCPWM_BASE_CLK);
-    uint32_t lag_red_reg = (uint32_t)(lag_red * MCPWM_BASE_CLK);
-    uint32_t lag_fed_reg = (uint32_t)(lag_fed * MCPWM_BASE_CLK);
+    uint32_t lead_red_reg = (uint32_t)(lead_red * clk_conf.base_clk);
+    uint32_t lead_fed_reg = (uint32_t)(lead_fed * clk_conf.base_clk);
+    uint32_t lag_red_reg = (uint32_t)(lag_red * clk_conf.base_clk);
+    uint32_t lag_fed_reg = (uint32_t)(lag_fed * clk_conf.base_clk);
     uint32_t cmpr_0_a = (uint32_t)(
-        0.5 * (timer_top + MCPWM_TIMER_CLK * (deadtimes[mcpwm_num]->lead_red
+        0.5 * (timer_top + clk_conf.timer_clk * (deadtimes[mcpwm_num]->lead_red
                                               - deadtimes[mcpwm_num]->lead_fed)));
     uint32_t cmpr_1_a = (uint32_t)(
-        0.5 * (timer_top + MCPWM_TIMER_CLK * (deadtimes[mcpwm_num]->lag_red
+        0.5 * (timer_top + clk_conf.timer_clk * (deadtimes[mcpwm_num]->lag_red
                                               - deadtimes[mcpwm_num]->lag_fed)));
     portENTER_CRITICAL(&mcpwm_spinlock);
     // Register 16.25: PWM_DT0_RED_CFG_REG (0x0060) etc.
@@ -175,7 +179,7 @@ esp_err_t pspwm_up_ctr_mode_set_deadtimes(mcpwm_unit_t mcpwm_num,
         // Register 16.23: PWM_DT0_CFG_REG (0x0058) etc.
         module->channel[timer_i].db_cfg.fed_upmethod = 1; // TEZ
         module->channel[timer_i].db_cfg.red_upmethod = 1; // TEZ
-        module->channel[timer_i].db_cfg.clk_sel = 0; // MCPWM_BASE_CLK
+        module->channel[timer_i].db_cfg.clk_sel = 0; // MCPWM_BASE_CLK (PWM_clk)
         module->channel[timer_i].db_cfg.b_outbypass = 0; //S0
         module->channel[timer_i].db_cfg.a_outbypass = 0; //S1
         module->channel[timer_i].db_cfg.red_outinvert = 0; //S2
@@ -222,12 +226,12 @@ void _pspwm_up_ctr_mode_register_base_setup(mcpwm_unit_t mcpwm_num) {
     // Timer and deadtime module clock prescaler/divider configuration
     // Datasheet 16.1: PWM_CLK_CFG_REG (0x0000)
     // Hardware prescales by register value plus one, thus subtracting it here
-    MCPWM[mcpwm_num]->clk_cfg.prescale = BASE_CLK_PRESCALE - 1;
+    MCPWM[mcpwm_num]->clk_cfg.prescale = clk_conf.base_clk_prescale - 1;
 
     for (int timer_i=0; timer_i < 2; ++timer_i){
         // Datasheet 16.2: PWM_TIMER0_CFG0_REG (0x0004) etc.
         // Hardware prescales by register value plus one, thus subtracting it here
-        MCPWM[mcpwm_num]->timer[timer_i].period.prescale = TIMER_CLK_PRESCALE - 1;
+        MCPWM[mcpwm_num]->timer[timer_i].period.prescale = clk_conf.timer_clk_prescale - 1;
         // Set first bit => update at timer equals zero
         MCPWM[mcpwm_num]->timer[timer_i].period.upmethod = 1;
         // Datasheet 16.3: PWM_TIMER0_CFG1_REG (0x0008) etc.
@@ -316,6 +320,9 @@ esp_err_t pspwm_up_down_ctr_mode_init(
     if (!s_setpoint_limits[mcpwm_num]) {
         s_setpoint_limits[mcpwm_num] = malloc(sizeof(setpoint_limits_t));
     }
+    s_setpoint_limits[mcpwm_num]->frequency_min = 0.5 * clk_conf.timer_clk / UINT16_MAX;
+    s_setpoint_limits[mcpwm_num]->frequency_max = 0.5 * clk_conf.timer_clk / TIMER_TOP_MIN;
+    s_setpoint_limits[mcpwm_num]->deadtime_sum_max = 1.0 / frequency;
     deadtimes[mcpwm_num]->lead_red = lead_dt;
     deadtimes[mcpwm_num]->lag_red = lag_dt;
     periph_module_enable(PERIPH_PWM0_MODULE + mcpwm_num);
@@ -348,15 +355,16 @@ esp_err_t pspwm_up_down_ctr_mode_set_frequency(mcpwm_unit_t mcpwm_num,
     // PWM hardware must have been initialised first
     assert(deadtimes[mcpwm_num] != NULL);
     // This is a 16-Bit timer register, although the API struct uses uint32_t...
-    if (frequency <= (float)MCPWM_TIMER_CLK / UINT16_MAX) {
-        ERROR("Frequency setpoint out of range!");
-        return ESP_FAIL;
+    if (frequency <= s_setpoint_limits[mcpwm_num]->frequency_min
+        || frequency > s_setpoint_limits[mcpwm_num]->frequency_max) {
+            ERROR("Frequency setpoint out of range!");
+            return ESP_FAIL;
     }
-    uint32_t timer_top = (uint32_t)(MCPWM_TIMER_CLK / frequency);
+    uint32_t timer_top = (uint32_t)(0.5 * clk_conf.timer_clk / frequency);
     uint32_t cmpr_a_lead = (uint32_t)(
-        MCPWM_TIMER_CLK * deadtimes[mcpwm_num]->lead_red / 2);
+        0.5 * clk_conf.timer_clk * deadtimes[mcpwm_num]->lead_red);
     uint32_t cmpr_a_lag = (uint32_t)(
-        MCPWM_TIMER_CLK * deadtimes[mcpwm_num]->lag_red / 2);
+        0.5 * clk_conf.timer_clk * deadtimes[mcpwm_num]->lag_red);
     uint32_t cmpr_b_lead = timer_top - cmpr_a_lead;
     uint32_t cmpr_b_lag = timer_top - cmpr_a_lag;
     portENTER_CRITICAL(&mcpwm_spinlock);
@@ -386,16 +394,16 @@ esp_err_t pspwm_up_down_ctr_mode_set_deadtimes(mcpwm_unit_t mcpwm_num,
     // PWM base period and duty cycle must be adjusted when changing dead-times
     uint32_t timer_top = module->timer[MCPWM_TIMER_0].period.period;
     if (lead_dt < 0 || lag_dt < 0
-            || MCPWM_TIMER_CLK * lead_dt >= timer_top
-            || MCPWM_TIMER_CLK * lag_dt  >= timer_top) {
+            || lead_dt >= 0.5 * s_setpoint_limits[mcpwm_num]->deadtime_sum_max
+            || lag_dt  >= 0.5 * s_setpoint_limits[mcpwm_num]->deadtime_sum_max) {
         ERROR("Dead time setpoint out of range");
         return ESP_FAIL;
     }
     deadtimes[mcpwm_num]->lead_red = lead_dt;
     deadtimes[mcpwm_num]->lag_red = lag_dt;
-    uint32_t cmpr_a_lead = (uint32_t)(MCPWM_TIMER_CLK * lead_dt/2);
+    uint32_t cmpr_a_lead = (uint32_t)(0.5 * clk_conf.timer_clk * lead_dt);
     uint32_t cmpr_b_lead = timer_top - cmpr_a_lead;
-    uint32_t cmpr_a_lag = (uint32_t)(MCPWM_TIMER_CLK * lag_dt/2);
+    uint32_t cmpr_a_lag = (uint32_t)(0.5 * clk_conf.timer_clk * lag_dt);
     uint32_t cmpr_b_lag = timer_top - cmpr_a_lag;
     portENTER_CRITICAL(&mcpwm_spinlock);
     // Register 16.17: PWM_GEN0_TSTMP_A_REG (0x0040) etc.
@@ -436,12 +444,12 @@ void _pspwm_up_down_ctr_mode_register_base_setup(mcpwm_unit_t mcpwm_num) {
     // Timer and deadtime module clock prescaler/divider configuration
     // Datasheet 16.1: PWM_CLK_CFG_REG (0x0000)
     // Hardware prescales by register value plus one, thus subtracting it here
-    MCPWM[mcpwm_num]->clk_cfg.prescale = BASE_CLK_PRESCALE - 1;
+    MCPWM[mcpwm_num]->clk_cfg.prescale = clk_conf.base_clk_prescale - 1;
 
     for (int timer_i=0; timer_i < 2; ++timer_i){
         // Datasheet 16.2: PWM_TIMER0_CFG0_REG (0x0004) etc.
         // Hardware prescales by register value plus one, thus subtracting it here
-        MCPWM[mcpwm_num]->timer[timer_i].period.prescale = TIMER_CLK_PRESCALE - 1;
+        MCPWM[mcpwm_num]->timer[timer_i].period.prescale = clk_conf.timer_clk_prescale - 1;
         // Set first bit => update at timer equals zero
         MCPWM[mcpwm_num]->timer[timer_i].period.upmethod = 1;
         // Datasheet 16.3: PWM_TIMER0_CFG1_REG (0x0008) etc.

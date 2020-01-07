@@ -22,14 +22,15 @@
 #define MCPWM_INPUT_CLK 160000000 // 160 MHz
 // Hardware prescaler factor for input clock.
 // Dead time generators are configured to run on this scaled clock signal
-#define BASE_CLK_PRESCALE 4
-#define MCPWM_BASE_CLK (MCPWM_INPUT_CLK / BASE_CLK_PRESCALE)
+#define BASE_CLK_PRESCALE_DEFAULT 4
 // Hardware prescaler factor for timer operator sub-modules
-#define TIMER_CLK_PRESCALE 4
-#define MCPWM_TIMER_CLK (MCPWM_BASE_CLK / TIMER_CLK_PRESCALE)
+#define TIMER_CLK_PRESCALE_DEFAULT 4
+// Minimum timer counter TOP value / timer resolution for calculation of
+// frequency_min value and subsequent range checking of frequency setpoint
+#define TIMER_TOP_MIN 4
 
 // Define here if the output pins shall be forced low or high
-// or else when a fault condition is triggered
+// or high-impedance when a fault condition is triggered
 #define TRIPZONE_ACTION_PWMxA MCPWM_FORCE_MCPWMXA_LOW
 #define TRIPZONE_ACTION_PWMxB MCPWM_FORCE_MCPWMXB_LOW
 
@@ -37,16 +38,45 @@
 extern "C" {
 #endif
 
+/** Dead time settings for both MCPWM hardware modules are defined as lead and
+ * lag bridge-leg low-side output rising and falling edge dead-times in seconds
+ */
+typedef struct {
+    // Lead leg, dead time for rising edge (up_ctr_mode)
+    // or both edges (up_down_ctr_mode)
+    float lead_red;
+    // Falling edge dead time for up_ctr_mode, not defined for up_down_ctr_mode
+    float lead_fed;
+    // All the same for lagging leg
+    float lag_red;
+    float lag_fed;
+} dt_conf_t;
 
+/** State of the timer counter clock prescaler.
+ * MCPWM_INPUT_CLK is 160MHz.
+ * This is divided by base_clk_prescale to yield base_clock.
+ * This is in turn divided by timer_clk_prescale to yield timer_clk.
+ * 
+ * @note These settings are common for both PWM generators.
+ */
+typedef struct {
+    uint8_t base_clk_prescale;
+    uint8_t timer_clk_prescale;
+    float base_clk;
+    float timer_clk;
+} clk_conf_t;
+
+/** Limiting values for frequency and dead-time settings.
+ * These are set by the initialiser and prescaler setter functions
+ * contained herein and should be treated read-only
+ */
 typedef struct {
     // Minimum and maximum allowed frequency setpoints
     float frequency_min;
     float frequency_max;
-    // Maximum allowed dead-time values
-    float lead_red_max;
-    float lead_fed_max;
-    float lag_red_max;
-    float lag_red_max;
+    // Dead time for each bridge leg must be smaller than this value,
+    // both in sum and also both individually. (Minimum is zero.)
+    float deadtime_sum_max;
 } setpoint_limits_t;
 
 /********************************************************************//**
