@@ -43,7 +43,9 @@ static setpoint_limits_t* s_setpoint_limits[2] = {NULL, NULL};
 // Not part of external API
 void _pspwm_up_ctr_mode_register_base_setup(mcpwm_unit_t mcpwm_num);
 void _pspwm_up_down_ctr_mode_register_base_setup(mcpwm_unit_t mcpwm_num);
-
+esp_err_t _pspwm_setup_fault_handler_module(mcpwm_unit_t mcpwm_num,
+                                            const int gpio_fault_shutdown,
+                                            mcpwm_fault_input_level_t polarity);
 
 /**********************************************************************
  *    FULL-SPEED-MODE, 4x INDIVIDUAL DEAD-TIME, HW-DEAD-TIME-MODULE
@@ -85,13 +87,16 @@ esp_err_t pspwm_up_ctr_mode_init(
     periph_module_enable(PERIPH_PWM0_MODULE + mcpwm_num);
     // Basic setup for PS_PWM in up/down counting mode
     _pspwm_up_ctr_mode_register_base_setup(mcpwm_num);
-    // Setting a Fault Event forcing the GPIOs to pre-defined state
-    if (pspwm_disable_output(mcpwm_num) == ESP_OK
+    // Setup the fault handler module as this is required for disabling the outputs
+    if (_pspwm_setup_fault_handler_module(mcpwm_num, gpio_fault_shutdown,
+                                          tripzone_gpio_polarity) == ESP_OK
+        // Continue by setting a Fault Event forcing the GPIOs to defined "OFF" state
+        && pspwm_disable_output(mcpwm_num) == ESP_OK
         && mcpwm_gpio_init(mcpwm_num, MCPWM0A, gpio_lead_a) == ESP_OK
         && mcpwm_gpio_init(mcpwm_num, MCPWM0B, gpio_lead_b) == ESP_OK
         && mcpwm_gpio_init(mcpwm_num, MCPWM1A, gpio_lag_a) == ESP_OK
         && mcpwm_gpio_init(mcpwm_num, MCPWM1B, gpio_lag_b) == ESP_OK
-        && mcpwm_gpio_init(mcpwm_num, MCPWM_FAULT_0, gpio_fault_shutdown) == ESP_OK
+
         && pspwm_up_ctr_mode_set_frequency(mcpwm_num, frequency) == ESP_OK
         && pspwm_up_ctr_mode_set_deadtimes(
             mcpwm_num, lead_red, lead_fed, lag_red, lag_fed) == ESP_OK
@@ -254,24 +259,6 @@ void _pspwm_up_ctr_mode_register_base_setup(mcpwm_unit_t mcpwm_num) {
         // MCPWM[mcpwm_num]->channel[timer_i].generator[MCPWM_OPR_B].utez = 1;
         // MCPWM[mcpwm_num]->channel[timer_i].generator[MCPWM_OPR_B].uteb = 2;
         // MCPWM[mcpwm_num]->channel[timer_i].generator[MCPWM_OPR_B].dteb = 1;
-        /* Fault Handler ("Trip-Zone") input configuration.
-         * Set up one-shot (stay-off) mode for fault handler 0.
-         * This is used for software-forced output disabling.
-         */
-        // Datasheet 16.27: PWM_FH0_CFG0_REG (0x0068)
-        // Enable sw-forced one-shot tripzone action
-        MCPWM[mcpwm_num]->channel[timer_i].tz_cfg0.sw_ost = 1;
-        // Uncomment to enable sw-forced cycle-by-cycle tripzone action
-        //MCPWM[mcpwm_num]->channel[timer_i].tz_cfg0.sw_cbc = 1;
-        // Enable hardware-forced (event f0) one-shot tripzone action
-        MCPWM[mcpwm_num]->channel[timer_i].tz_cfg0.f0_ost = 1;
-        // Uncomment to enable hardware (event f0) cycle-by-cycle tripzone action
-        //MCPWM[mcpwm_num]->channel[timer_i].tz_cfg0.f0_cbc = 1;
-        // Configure the kind of action (pull up / pull down)
-        MCPWM[mcpwm_num]->channel[timer_i].tz_cfg0.a_ost_d = tripzone_action_pwmxa;
-        MCPWM[mcpwm_num]->channel[timer_i].tz_cfg0.a_ost_u = tripzone_action_pwmxa;
-        MCPWM[mcpwm_num]->channel[timer_i].tz_cfg0.b_ost_d = tripzone_action_pwmxb;
-        MCPWM[mcpwm_num]->channel[timer_i].tz_cfg0.b_ost_u = tripzone_action_pwmxb;
     }
     // Datasheet 16.15: PWM_OPERATOR_TIMERSEL_REG (0x0038)
     MCPWM[mcpwm_num]->timer_sel.operator0_sel = 0;
@@ -290,15 +277,9 @@ void _pspwm_up_ctr_mode_register_base_setup(mcpwm_unit_t mcpwm_num) {
     // Datasheet 16.8: PWM_TIMER1_SYNC_REG (0x001c)
     MCPWM[mcpwm_num]->timer[MCPWM_TIMER_1].sync.in_en = 1; // On
     MCPWM[mcpwm_num]->timer[MCPWM_TIMER_1].sync.out_sel = 3; // Off
-    // Start continuously running mode
+    ///// Start continuously running mode /////
     MCPWM[mcpwm_num]->timer[MCPWM_TIMER_0].mode.start = 2;
-    // Start continuously running mode
     MCPWM[mcpwm_num]->timer[MCPWM_TIMER_1].mode.start = 2;
-    ///// Enable fault F0 generation /////
-    // Datasheet 16.58: PWM_FAULT_DETECT_REG (0x00e4)
-    MCPWM[mcpwm_num]->fault_detect.f0_en = 1;
-    // Set fault active polarity of GPIO pin
-    MCPWM[mcpwm_num]->fault_detect.f0_pole = tripzone_gpio_polarity;
     ///// Force update on all registers for settings to take effect /////
     // Datasheet 16.68: PWM_UPDATE_CFG_REG (0x010c)
     MCPWM[mcpwm_num]->update_cfg.global_up_en = 1;
@@ -342,13 +323,15 @@ esp_err_t pspwm_up_down_ctr_mode_init(
     periph_module_enable(PERIPH_PWM0_MODULE + mcpwm_num);
     // Basic setup for PS_PWM in up/down counting mode
     _pspwm_up_down_ctr_mode_register_base_setup(mcpwm_num);
-    // Setting a Fault Event forcing the GPIOs to pre-defined state
-    if (pspwm_disable_output(mcpwm_num) == ESP_OK
+    // Setup the fault handler module as this is required for disabling the outputs
+    if (_pspwm_setup_fault_handler_module(mcpwm_num, gpio_fault_shutdown,
+                                          tripzone_gpio_polarity) == ESP_OK
+        // Continue by setting a Fault Event forcing the GPIOs to defined "OFF" state
+        && pspwm_disable_output(mcpwm_num) == ESP_OK
         && mcpwm_gpio_init(mcpwm_num, MCPWM0A, gpio_lead_a) == ESP_OK
         && mcpwm_gpio_init(mcpwm_num, MCPWM0B, gpio_lead_b) == ESP_OK
         && mcpwm_gpio_init(mcpwm_num, MCPWM1A, gpio_lag_a) == ESP_OK
         && mcpwm_gpio_init(mcpwm_num, MCPWM1B, gpio_lag_b) == ESP_OK
-        && mcpwm_gpio_init(mcpwm_num, MCPWM_FAULT_0, gpio_fault_shutdown) == ESP_OK
         // In up_down_ctr_mode, this also sets the dead time; there should
         // be no need to call pspwm_up_down_ctr_mode_set_deadtimes() again.
         && pspwm_up_down_ctr_mode_set_frequency(mcpwm_num, frequency) == ESP_OK
@@ -482,24 +465,6 @@ void _pspwm_up_down_ctr_mode_register_base_setup(mcpwm_unit_t mcpwm_num) {
         MCPWM[mcpwm_num]->channel[timer_i].generator[MCPWM_OPR_B].utez = 1;
         MCPWM[mcpwm_num]->channel[timer_i].generator[MCPWM_OPR_B].uteb = 2;
         MCPWM[mcpwm_num]->channel[timer_i].generator[MCPWM_OPR_B].dteb = 1;
-        /* Fault Handler ("Trip-Zone") input configuration.
-         * Set up one-shot (stay-off) mode for fault handler 0
-         * This is used for software-forced output disabling.
-         */
-        // Datasheet 16.27: PWM_FH0_CFG0_REG (0x0068)
-        // Enable sw-forced one-shot tripzone action
-        MCPWM[mcpwm_num]->channel[timer_i].tz_cfg0.sw_ost = 1;
-        // Uncomment to enable sw-forced cycle-by-cycle tripzone action
-        //MCPWM[mcpwm_num]->channel[timer_i].tz_cfg0.sw_cbc = 1;
-        // Enable hardware-forced (event f0) one-shot tripzone action
-        MCPWM[mcpwm_num]->channel[timer_i].tz_cfg0.f0_ost = 1;
-        // Uncomment to enable hardware (event f0) cycle-by-cycle tripzone action
-        //MCPWM[mcpwm_num]->channel[timer_i].tz_cfg0.f0_cbc = 1;
-        // Configure the kind of action (pull up / pull down)
-        MCPWM[mcpwm_num]->channel[timer_i].tz_cfg0.a_ost_d = tripzone_action_pwmxa;
-        MCPWM[mcpwm_num]->channel[timer_i].tz_cfg0.a_ost_u = tripzone_action_pwmxa;
-        MCPWM[mcpwm_num]->channel[timer_i].tz_cfg0.b_ost_d = tripzone_action_pwmxb;
-        MCPWM[mcpwm_num]->channel[timer_i].tz_cfg0.b_ost_u = tripzone_action_pwmxb;
     }
     // Datasheet 16.15: PWM_OPERATOR_TIMERSEL_REG (0x0038)
     MCPWM[mcpwm_num]->timer_sel.operator0_sel = 0;
@@ -518,15 +483,9 @@ void _pspwm_up_down_ctr_mode_register_base_setup(mcpwm_unit_t mcpwm_num) {
     // Datasheet 16.8: PWM_TIMER1_SYNC_REG (0x001c)
     MCPWM[mcpwm_num]->timer[MCPWM_TIMER_1].sync.in_en = 1; // On
     MCPWM[mcpwm_num]->timer[MCPWM_TIMER_1].sync.out_sel = 3; // Off
-    // Start continuously running mode
+    ///// Start continuously running mode /////
     MCPWM[mcpwm_num]->timer[MCPWM_TIMER_0].mode.start = 2;
-    // Start continuously running mode
     MCPWM[mcpwm_num]->timer[MCPWM_TIMER_1].mode.start = 2;
-    ///// Enable fault F0 generation /////
-    // Datasheet 16.58: PWM_FAULT_DETECT_REG (0x00e4)
-    MCPWM[mcpwm_num]->fault_detect.f0_en = 1;
-    // Set fault active polarity of GPIO pin
-    MCPWM[mcpwm_num]->fault_detect.f0_pole = tripzone_gpio_polarity;
     ///// Force update on all registers for settings to take effect /////
     // Datasheet 16.68: PWM_UPDATE_CFG_REG (0x010c)
     MCPWM[mcpwm_num]->update_cfg.global_up_en = 1;
@@ -535,6 +494,43 @@ void _pspwm_up_down_ctr_mode_register_base_setup(mcpwm_unit_t mcpwm_num) {
     portEXIT_CRITICAL(&mcpwm_spinlock);
 }
 
+/* Fault Handler ("Trip-Zone") input configuration.
+ * Set up one-shot (stay-off) mode for fault handler module FH0.
+ * This is used for software-forced output disabling.
+ */
+esp_err_t _pspwm_setup_fault_handler_module(mcpwm_unit_t mcpwm_num,
+                                            const int gpio_fault_shutdown,
+                                            mcpwm_fault_input_level_t polarity) {
+    portENTER_CRITICAL(&mcpwm_spinlock);
+    // Datasheet 16.27: PWM_FH0_CFG0_REG (0x0068)
+    // Enable sw-forced one-shot tripzone action
+    MCPWM[mcpwm_num]->channel[MCPWM_TIMER_0].tz_cfg0.sw_ost = 1;
+    MCPWM[mcpwm_num]->channel[MCPWM_TIMER_1].tz_cfg0.sw_ost = 1;
+    // Uncomment to enable sw-forced cycle-by-cycle tripzone action
+    //MCPWM[mcpwm_num]->channel[timer_i].tz_cfg0.sw_cbc = 1;
+    // Enable hardware-forced (event f0) one-shot tripzone action
+    MCPWM[mcpwm_num]->channel[MCPWM_TIMER_0].tz_cfg0.f0_ost = 1;
+    MCPWM[mcpwm_num]->channel[MCPWM_TIMER_1].tz_cfg0.f0_ost = 1;
+    // Uncomment to enable hardware (event f0) cycle-by-cycle tripzone action
+    //MCPWM[mcpwm_num]->channel[timer_i].tz_cfg0.f0_cbc = 1;
+    // Configure the kind of action (pull up / pull down) for the lag bridge leg:
+    MCPWM[mcpwm_num]->channel[MCPWM_TIMER_1].tz_cfg0.a_ost_d = tripzone_action_lag_leg;
+    MCPWM[mcpwm_num]->channel[MCPWM_TIMER_1].tz_cfg0.a_ost_u = tripzone_action_lag_leg;
+    MCPWM[mcpwm_num]->channel[MCPWM_TIMER_1].tz_cfg0.b_ost_d = tripzone_action_lag_leg;
+    MCPWM[mcpwm_num]->channel[MCPWM_TIMER_1].tz_cfg0.b_ost_u = tripzone_action_lag_leg;
+    // Lead leg might have a different configuration, e.g. stay at last output level
+    MCPWM[mcpwm_num]->channel[MCPWM_TIMER_0].tz_cfg0.a_ost_d = tripzone_action_lead_leg;
+    MCPWM[mcpwm_num]->channel[MCPWM_TIMER_0].tz_cfg0.a_ost_u = tripzone_action_lead_leg;
+    MCPWM[mcpwm_num]->channel[MCPWM_TIMER_0].tz_cfg0.b_ost_d = tripzone_action_lead_leg;
+    MCPWM[mcpwm_num]->channel[MCPWM_TIMER_0].tz_cfg0.b_ost_u = tripzone_action_lead_leg;
+    ///// Enable fault F0 generation /////
+    // Datasheet 16.58: PWM_FAULT_DETECT_REG (0x00e4)
+    MCPWM[mcpwm_num]->fault_detect.f0_en = 1;
+    // Set fault active polarity of GPIO pin
+    MCPWM[mcpwm_num]->fault_detect.f0_pole = polarity;
+    portEXIT_CRITICAL(&mcpwm_spinlock);
+    return mcpwm_gpio_init(mcpwm_num, MCPWM_FAULT_0, gpio_fault_shutdown);
+}
 
 /*****************************************************************
  *                         COMMON SETUP                          *

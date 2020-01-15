@@ -30,9 +30,11 @@
 static const uint16_t timer_top_min = 4;
 
 // Define here if the output pins shall be forced low or high
-// or high-impedance when a fault condition is triggered
-static const mcpwm_action_on_pwmxa_t tripzone_action_pwmxa = MCPWM_FORCE_MCPWMXA_LOW;
-static const mcpwm_action_on_pwmxb_t tripzone_action_pwmxb = MCPWM_FORCE_MCPWMXB_LOW;
+// or high-impedance when a fault condition is triggered.
+// PWMxA and PWMxB have the same type of action, see declaration in mcpwm.h
+static const mcpwm_action_on_pwmxa_t tripzone_action_lag_leg = MCPWM_FORCE_MCPWMXA_LOW;
+// Lead leg might have a different configuration, e.g. stay at last output level
+static const mcpwm_action_on_pwmxa_t tripzone_action_lead_leg = MCPWM_FORCE_MCPWMXA_LOW;
 // GPIO polarity for activation of trip event
 static const mcpwm_fault_input_level_t tripzone_gpio_polarity = MCPWM_LOW_LEVEL_TGR;
 
