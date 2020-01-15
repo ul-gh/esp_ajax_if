@@ -8,8 +8,8 @@
  *
  * 2019-12-11 Ulrich Lukas
  */
-#ifndef __PS_PWM_H__
-#define __PS_PWM_H__
+#ifndef PS_PWM_H__
+#define PS_PWM_H__
 
 #include "driver/mcpwm.h"
 
@@ -27,12 +27,14 @@
 #define TIMER_CLK_PRESCALE_DEFAULT 4
 // Minimum timer counter TOP value / timer resolution for calculation of
 // frequency_min value and subsequent range checking of frequency setpoint
-#define TIMER_TOP_MIN 4
+static const uint16_t timer_top_min = 4;
 
 // Define here if the output pins shall be forced low or high
 // or high-impedance when a fault condition is triggered
-#define TRIPZONE_ACTION_PWMxA MCPWM_FORCE_MCPWMXA_LOW
-#define TRIPZONE_ACTION_PWMxB MCPWM_FORCE_MCPWMXB_LOW
+static const mcpwm_action_on_pwmxa_t tripzone_action_pwmxa = MCPWM_FORCE_MCPWMXA_LOW;
+static const mcpwm_action_on_pwmxb_t tripzone_action_pwmxb = MCPWM_FORCE_MCPWMXB_LOW;
+// GPIO polarity for activation of trip event
+static const mcpwm_fault_input_level_t tripzone_gpio_polarity = MCPWM_LOW_LEVEL_TGR;
 
 #ifdef __cplusplus
 extern "C" {
@@ -101,6 +103,7 @@ typedef struct {
  * @param gpio_lead_b: GPIO number leading leg high_side
  * @param gpio_lag_a: GPIO number lagging leg low_side
  * @param gpio_lag_b: GPIO number lagging leg high_side
+ * @param gpio_fault_shutdown: GPIO number for fault/tripzone HW input
  * @param frequency: Frequency of the non-rectified waveform in Hz,
  * @param ps_duty: Duty cycle of the rectified waveform (0..1)
  * @param lead_red: dead time value for rising edge, leading leg
@@ -111,6 +114,7 @@ typedef struct {
 esp_err_t pspwm_up_ctr_mode_init(
         mcpwm_unit_t mcpwm_num,
         int gpio_lead_a, int gpio_lead_b, int gpio_lag_a, int gpio_lag_b,
+        int gpio_fault_shutdown,
         float frequency,
         float ps_duty,
         float lead_red, float lead_fed, float lag_red, float lag_fed);
@@ -175,6 +179,7 @@ esp_err_t pspwm_up_ctr_mode_set_ps_duty(mcpwm_unit_t mcpwm_num, float ps_duty);
  * @param gpio_lead_b: GPIO number leading leg high_side
  * @param gpio_lag_a: GPIO number lagging leg low_side
  * @param gpio_lag_b: GPIO number lagging leg high_side
+ * @param gpio_fault_shutdown: GPIO number for fault/tripzone HW input
  * @param frequency: Frequency of the non-rectified waveform in Hz,
  * @param ps_duty: Duty cycle of the rectified waveform (0..1)
  * @param lead_dt: leading bridge-leg dead-time in sec (0..),
@@ -183,6 +188,7 @@ esp_err_t pspwm_up_ctr_mode_set_ps_duty(mcpwm_unit_t mcpwm_num, float ps_duty);
 esp_err_t pspwm_up_down_ctr_mode_init(
         mcpwm_unit_t mcpwm_num,
         int gpio_lead_a, int gpio_lead_b, int gpio_lag_a, int gpio_lag_b,
+        int gpio_fault_shutdown,
         float frequency,
         float ps_duty,
         float lead_dt, float lag_dt);

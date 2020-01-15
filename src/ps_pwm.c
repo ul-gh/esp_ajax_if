@@ -21,13 +21,13 @@
 
 // MMAP IO using direct register access.
 // External definition and declaration in mcpwm_struct.h
-static mcpwm_dev_t * const MCPWM[2] = {(mcpwm_dev_t*) &MCPWM0,
-                                       (mcpwm_dev_t*) &MCPWM1};
+static mcpwm_dev_t* const MCPWM[2] = {(mcpwm_dev_t*) &MCPWM0,
+                                      (mcpwm_dev_t*) &MCPWM1};
 // Atomic register access uses spinlock polling via "portENTER_CRITICAL()" macro
 static portMUX_TYPE mcpwm_spinlock = portMUX_INITIALIZER_UNLOCKED;
 // Dead time settings need to be shared between calls because
 // frequency and dead-time settings depend on each other
-static dt_conf_t *deadtimes[2] = {NULL, NULL};
+static dt_conf_t* deadtimes[2] = {NULL, NULL};
 
 // Timer clock settings are common to both MCPWM stages
 static clk_conf_t clk_conf = {
@@ -38,7 +38,7 @@ static clk_conf_t clk_conf = {
             BASE_CLK_PRESCALE_DEFAULT * TIMER_CLK_PRESCALE_DEFAULT)
 };
 
-static setpoint_limits_t *s_setpoint_limits[2] = {NULL, NULL};
+static setpoint_limits_t* s_setpoint_limits[2] = {NULL, NULL};
 
 // Not part of external API
 void _pspwm_up_ctr_mode_register_base_setup(mcpwm_unit_t mcpwm_num);
@@ -52,6 +52,7 @@ void _pspwm_up_down_ctr_mode_register_base_setup(mcpwm_unit_t mcpwm_num);
 esp_err_t pspwm_up_ctr_mode_init(
         mcpwm_unit_t mcpwm_num,
         int gpio_lead_a, int gpio_lead_b, int gpio_lag_a, int gpio_lag_b,
+        int gpio_fault_shutdown,
         float frequency,
         float ps_duty,
         float lead_red, float lead_fed, float lag_red, float lag_fed)
@@ -68,12 +69,15 @@ esp_err_t pspwm_up_ctr_mode_init(
         s_setpoint_limits[mcpwm_num] = malloc(sizeof(setpoint_limits_t));
     }
     s_setpoint_limits[mcpwm_num]->frequency_min = clk_conf.timer_clk / UINT16_MAX;
-    s_setpoint_limits[mcpwm_num]->frequency_max = clk_conf.timer_clk / TIMER_TOP_MIN;
+    s_setpoint_limits[mcpwm_num]->frequency_max = clk_conf.timer_clk / timer_top_min;
     if (UINT16_MAX/clk_conf.base_clk < 1.0 / frequency) {
         s_setpoint_limits[mcpwm_num]->deadtime_sum_max = UINT16_MAX / clk_conf.base_clk;
     } else {
         s_setpoint_limits[mcpwm_num]->deadtime_sum_max = 1.0 / frequency;
     }
+    DBG("frequency_min is now: %g", s_setpoint_limits[mcpwm_num]->frequency_min);
+    DBG("frequency_max is now: %g", s_setpoint_limits[mcpwm_num]->frequency_max);
+    DBG("deadtime_sum_max is now: %g", s_setpoint_limits[mcpwm_num]->deadtime_sum_max);
     deadtimes[mcpwm_num]->lead_red = lead_red;
     deadtimes[mcpwm_num]->lead_fed = lead_fed;
     deadtimes[mcpwm_num]->lag_red = lag_red;
@@ -87,6 +91,7 @@ esp_err_t pspwm_up_ctr_mode_init(
         && mcpwm_gpio_init(mcpwm_num, MCPWM0B, gpio_lead_b) == ESP_OK
         && mcpwm_gpio_init(mcpwm_num, MCPWM1A, gpio_lag_a) == ESP_OK
         && mcpwm_gpio_init(mcpwm_num, MCPWM1B, gpio_lag_b) == ESP_OK
+        && mcpwm_gpio_init(mcpwm_num, MCPWM_FAULT_0, gpio_fault_shutdown) == ESP_OK
         && pspwm_up_ctr_mode_set_frequency(mcpwm_num, frequency) == ESP_OK
         && pspwm_up_ctr_mode_set_deadtimes(
             mcpwm_num, lead_red, lead_fed, lag_red, lag_fed) == ESP_OK
@@ -213,7 +218,7 @@ esp_err_t pspwm_up_ctr_mode_set_ps_duty(mcpwm_unit_t mcpwm_num, float ps_duty)
     portENTER_CRITICAL(&mcpwm_spinlock);
     // Phase shift value is based on timer 0 period setting but intentionally
     // only set for timer 1. Timer 0 is the reference phase.
-    uint32_t curr_period = MCPWM0.timer[MCPWM_TIMER_0].period.period;
+    uint32_t curr_period = MCPWM[mcpwm_num]->timer[MCPWM_TIMER_0].period.period;
     uint32_t phase_setval = (uint32_t)(curr_period * ps_duty / 2);
     MCPWM[mcpwm_num]->timer[MCPWM_TIMER_1].sync.timer_phase = phase_setval;
     portEXIT_CRITICAL(&mcpwm_spinlock);
@@ -263,10 +268,10 @@ void _pspwm_up_ctr_mode_register_base_setup(mcpwm_unit_t mcpwm_num) {
         // Uncomment to enable hardware (event f0) cycle-by-cycle tripzone action
         //MCPWM[mcpwm_num]->channel[timer_i].tz_cfg0.f0_cbc = 1;
         // Configure the kind of action (pull up / pull down)
-        MCPWM[mcpwm_num]->channel[timer_i].tz_cfg0.a_ost_d = TRIPZONE_ACTION_PWMxA;
-        MCPWM[mcpwm_num]->channel[timer_i].tz_cfg0.a_ost_u = TRIPZONE_ACTION_PWMxA;
-        MCPWM[mcpwm_num]->channel[timer_i].tz_cfg0.b_ost_d = TRIPZONE_ACTION_PWMxB;
-        MCPWM[mcpwm_num]->channel[timer_i].tz_cfg0.b_ost_u = TRIPZONE_ACTION_PWMxB;
+        MCPWM[mcpwm_num]->channel[timer_i].tz_cfg0.a_ost_d = tripzone_action_pwmxa;
+        MCPWM[mcpwm_num]->channel[timer_i].tz_cfg0.a_ost_u = tripzone_action_pwmxa;
+        MCPWM[mcpwm_num]->channel[timer_i].tz_cfg0.b_ost_d = tripzone_action_pwmxb;
+        MCPWM[mcpwm_num]->channel[timer_i].tz_cfg0.b_ost_u = tripzone_action_pwmxb;
     }
     // Datasheet 16.15: PWM_OPERATOR_TIMERSEL_REG (0x0038)
     MCPWM[mcpwm_num]->timer_sel.operator0_sel = 0;
@@ -289,7 +294,12 @@ void _pspwm_up_ctr_mode_register_base_setup(mcpwm_unit_t mcpwm_num) {
     MCPWM[mcpwm_num]->timer[MCPWM_TIMER_0].mode.start = 2;
     // Start continuously running mode
     MCPWM[mcpwm_num]->timer[MCPWM_TIMER_1].mode.start = 2;
-    // Force update on all registers for settings to take effect
+    ///// Enable fault F0 generation /////
+    // Datasheet 16.58: PWM_FAULT_DETECT_REG (0x00e4)
+    MCPWM[mcpwm_num]->fault_detect.f0_en = 1;
+    // Set fault active polarity of GPIO pin
+    MCPWM[mcpwm_num]->fault_detect.f0_pole = tripzone_gpio_polarity;
+    ///// Force update on all registers for settings to take effect /////
     // Datasheet 16.68: PWM_UPDATE_CFG_REG (0x010c)
     MCPWM[mcpwm_num]->update_cfg.global_up_en = 1;
     // Toggle triggers a "forced register update" whatever that means..
@@ -305,6 +315,7 @@ void _pspwm_up_ctr_mode_register_base_setup(mcpwm_unit_t mcpwm_num) {
 esp_err_t pspwm_up_down_ctr_mode_init(
         mcpwm_unit_t mcpwm_num,
         int gpio_lead_a, int gpio_lead_b, int gpio_lag_a, int gpio_lag_b,
+        int gpio_fault_shutdown,
         float frequency,
         float ps_duty,
         float lead_dt, float lag_dt)
@@ -321,8 +332,11 @@ esp_err_t pspwm_up_down_ctr_mode_init(
         s_setpoint_limits[mcpwm_num] = malloc(sizeof(setpoint_limits_t));
     }
     s_setpoint_limits[mcpwm_num]->frequency_min = 0.5 * clk_conf.timer_clk / UINT16_MAX;
-    s_setpoint_limits[mcpwm_num]->frequency_max = 0.5 * clk_conf.timer_clk / TIMER_TOP_MIN;
+    s_setpoint_limits[mcpwm_num]->frequency_max = 0.5 * clk_conf.timer_clk / timer_top_min;
     s_setpoint_limits[mcpwm_num]->deadtime_sum_max = 1.0 / frequency;
+    DBG("frequency_min is now: %g", s_setpoint_limits[mcpwm_num]->frequency_min);
+    DBG("frequency_max is now: %g", s_setpoint_limits[mcpwm_num]->frequency_max);
+    DBG("deadtime_sum_max is now: %g", s_setpoint_limits[mcpwm_num]->deadtime_sum_max);
     deadtimes[mcpwm_num]->lead_red = lead_dt;
     deadtimes[mcpwm_num]->lag_red = lag_dt;
     periph_module_enable(PERIPH_PWM0_MODULE + mcpwm_num);
@@ -334,6 +348,7 @@ esp_err_t pspwm_up_down_ctr_mode_init(
         && mcpwm_gpio_init(mcpwm_num, MCPWM0B, gpio_lead_b) == ESP_OK
         && mcpwm_gpio_init(mcpwm_num, MCPWM1A, gpio_lag_a) == ESP_OK
         && mcpwm_gpio_init(mcpwm_num, MCPWM1B, gpio_lag_b) == ESP_OK
+        && mcpwm_gpio_init(mcpwm_num, MCPWM_FAULT_0, gpio_fault_shutdown) == ESP_OK
         // In up_down_ctr_mode, this also sets the dead time; there should
         // be no need to call pspwm_up_down_ctr_mode_set_deadtimes() again.
         && pspwm_up_down_ctr_mode_set_frequency(mcpwm_num, frequency) == ESP_OK
@@ -431,7 +446,7 @@ esp_err_t pspwm_up_down_ctr_mode_set_ps_duty(mcpwm_unit_t mcpwm_num,
     portENTER_CRITICAL(&mcpwm_spinlock);
     // Phase shift value is based on timer 0 period setting but intentionally
     // only set for timer 1. Timer 0 is the reference phase.
-    uint32_t curr_period = MCPWM0.timer[MCPWM_TIMER_0].period.period;
+    uint32_t curr_period = MCPWM[mcpwm_num]->timer[MCPWM_TIMER_0].period.period;
     uint32_t phase_setval = (uint32_t)(curr_period * ps_duty);
     MCPWM[mcpwm_num]->timer[MCPWM_TIMER_1].sync.timer_phase = phase_setval;
     portEXIT_CRITICAL(&mcpwm_spinlock);
@@ -481,10 +496,10 @@ void _pspwm_up_down_ctr_mode_register_base_setup(mcpwm_unit_t mcpwm_num) {
         // Uncomment to enable hardware (event f0) cycle-by-cycle tripzone action
         //MCPWM[mcpwm_num]->channel[timer_i].tz_cfg0.f0_cbc = 1;
         // Configure the kind of action (pull up / pull down)
-        MCPWM[mcpwm_num]->channel[timer_i].tz_cfg0.a_ost_d = TRIPZONE_ACTION_PWMxA;
-        MCPWM[mcpwm_num]->channel[timer_i].tz_cfg0.a_ost_u = TRIPZONE_ACTION_PWMxA;
-        MCPWM[mcpwm_num]->channel[timer_i].tz_cfg0.b_ost_d = TRIPZONE_ACTION_PWMxB;
-        MCPWM[mcpwm_num]->channel[timer_i].tz_cfg0.b_ost_u = TRIPZONE_ACTION_PWMxB;
+        MCPWM[mcpwm_num]->channel[timer_i].tz_cfg0.a_ost_d = tripzone_action_pwmxa;
+        MCPWM[mcpwm_num]->channel[timer_i].tz_cfg0.a_ost_u = tripzone_action_pwmxa;
+        MCPWM[mcpwm_num]->channel[timer_i].tz_cfg0.b_ost_d = tripzone_action_pwmxb;
+        MCPWM[mcpwm_num]->channel[timer_i].tz_cfg0.b_ost_u = tripzone_action_pwmxb;
     }
     // Datasheet 16.15: PWM_OPERATOR_TIMERSEL_REG (0x0038)
     MCPWM[mcpwm_num]->timer_sel.operator0_sel = 0;
@@ -507,7 +522,12 @@ void _pspwm_up_down_ctr_mode_register_base_setup(mcpwm_unit_t mcpwm_num) {
     MCPWM[mcpwm_num]->timer[MCPWM_TIMER_0].mode.start = 2;
     // Start continuously running mode
     MCPWM[mcpwm_num]->timer[MCPWM_TIMER_1].mode.start = 2;
-    // Force update on all registers for settings to take effect
+    ///// Enable fault F0 generation /////
+    // Datasheet 16.58: PWM_FAULT_DETECT_REG (0x00e4)
+    MCPWM[mcpwm_num]->fault_detect.f0_en = 1;
+    // Set fault active polarity of GPIO pin
+    MCPWM[mcpwm_num]->fault_detect.f0_pole = tripzone_gpio_polarity;
+    ///// Force update on all registers for settings to take effect /////
     // Datasheet 16.68: PWM_UPDATE_CFG_REG (0x010c)
     MCPWM[mcpwm_num]->update_cfg.global_up_en = 1;
     // Toggle triggers a "forced register update" whatever that means..
@@ -551,6 +571,6 @@ esp_err_t pspwm_get_setpoint_limits(mcpwm_unit_t mcpwm_num,
         ERROR("ERROR: The PMW unit must be initialised first!");
         return ESP_FAIL;
     }
-    *setpoint_limits = s_setpoint_limits;
+    *setpoint_limits = s_setpoint_limits[mcpwm_num];
     return ESP_OK;
 }

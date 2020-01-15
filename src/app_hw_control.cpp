@@ -2,14 +2,15 @@
 
 #include "driver/mcpwm.h"
 #include "ps_pwm.h"
-#include "app_hw_control.h"
+#include "app_hw_control.hpp"
 
 PSPWMGen::PSPWMGen(HTTPServer &http_server) {
     Serial.println("Configuring Phase-Shift-PWM...");
     // http_server = http_server;
     pspwm_up_ctr_mode_init(
-        MCPWM_NUM,
-        GPIO_PWM0A_OUT, GPIO_PWM0B_OUT, GPIO_PWM1A_OUT, GPIO_PWM1B_OUT,
+        mcpwm_num,
+        gpio_pwm0a_out, gpio_pwm0b_out, gpio_pwm1a_out, gpio_pwm1b_out,
+        gpio_fault_shutdown,
         frequency,
         ps_duty,
         lead_dt, lead_dt, lag_dt, lag_dt);
@@ -21,33 +22,33 @@ PSPWMGen::PSPWMGen(HTTPServer &http_server) {
  */
 void PSPWMGen::register_remote_control(HTTPServer &http_server) {
     http_server.register_command("set_frequency", [this](float n) {
-        this->frequency = n * 1E3;
-        pspwm_up_ctr_mode_set_frequency(MCPWM_NUM, frequency);
+        frequency = n * 1E3;
+        pspwm_up_ctr_mode_set_frequency(mcpwm_num, frequency);
     });
 
     http_server.register_command("set_duty", [this](float n) {
-        this->ps_duty = n / 100;
-        pspwm_up_ctr_mode_set_ps_duty(MCPWM_NUM, ps_duty);
+        ps_duty = n / 100;
+        pspwm_up_ctr_mode_set_ps_duty(mcpwm_num, ps_duty);
     });
 
     http_server.register_command("set_lag_dt", [this](float n) {
-        this->lag_dt = n * 1E-9;
-        pspwm_up_ctr_mode_set_deadtimes(MCPWM_NUM,
+        lag_dt = n * 1E-9;
+        pspwm_up_ctr_mode_set_deadtimes(mcpwm_num,
                                         lead_dt, lead_dt, lag_dt, lag_dt);
     });
 
     http_server.register_command("set_lead_dt", [this](float n) {
-        this->lead_dt = n * 1E-9;
-        pspwm_up_ctr_mode_set_deadtimes(MCPWM_NUM,
+        lead_dt = n * 1E-9;
+        pspwm_up_ctr_mode_set_deadtimes(mcpwm_num,
                                         lead_dt, lead_dt, lag_dt, lag_dt);
     });
 
     http_server.register_command("set_output", [this](const String &text) {
-        this->output_enabled = text == "ON";
+        output_enabled = text == "ON";
         if (output_enabled) {
-            pspwm_resync_enable_output(MCPWM_NUM);
+            pspwm_resync_enable_output(mcpwm_num);
         } else {
-            pspwm_disable_output(MCPWM_NUM);
+            pspwm_disable_output(mcpwm_num);
         }
     });
 }

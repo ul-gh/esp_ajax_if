@@ -6,7 +6,7 @@
 #include <SPIFFS.h>
 
 #include "http_server.h"
-#include "app_hw_control.h"
+#include "app_hw_control.hpp"
 
 #define SERIAL_BAUD 115200
 
