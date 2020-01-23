@@ -43,21 +43,23 @@ static setpoint_limits_t* s_setpoint_limits[2] = {NULL, NULL};
 // Not part of external API
 void _pspwm_up_ctr_mode_register_base_setup(mcpwm_unit_t mcpwm_num);
 void _pspwm_up_down_ctr_mode_register_base_setup(mcpwm_unit_t mcpwm_num);
-esp_err_t _pspwm_setup_fault_handler_module(mcpwm_unit_t mcpwm_num,
-                                            const int gpio_fault_shutdown,
-                                            mcpwm_fault_input_level_t polarity);
+void _pspwm_setup_fault_handler_module(mcpwm_unit_t mcpwm_num,
+                                       mcpwm_action_on_pwmxa_t disable_action_lag_leg,
+                                       mcpwm_action_on_pwmxa_t disable_action_lead_leg);
 
 /**********************************************************************
  *    FULL-SPEED-MODE, 4x INDIVIDUAL DEAD-TIME, HW-DEAD-TIME-MODULE
  **********************************************************************
  */
-esp_err_t pspwm_up_ctr_mode_init(
-        mcpwm_unit_t mcpwm_num,
-        int gpio_lead_a, int gpio_lead_b, int gpio_lag_a, int gpio_lag_b,
-        int gpio_fault_shutdown,
-        float frequency,
-        float ps_duty,
-        float lead_red, float lead_fed, float lag_red, float lag_fed)
+esp_err_t pspwm_up_ctr_mode_init(mcpwm_unit_t mcpwm_num,
+                                 const int gpio_lead_a, const int gpio_lead_b,
+                                 const int gpio_lag_a, const int gpio_lag_b,
+                                 const float frequency,
+                                 const float ps_duty,
+                                 const float lead_red, const float lead_fed,
+                                 const float lag_red, const float lag_fed,
+                                 mcpwm_action_on_pwmxa_t disable_action_lag_leg,
+                                 mcpwm_action_on_pwmxa_t disable_action_lead_leg)
 {
     DBG("Call pspwm_up_ctr_mode_init");
     if (mcpwm_num != MCPWM_UNIT_0 && mcpwm_num != MCPWM_UNIT_1) {
@@ -71,7 +73,7 @@ esp_err_t pspwm_up_ctr_mode_init(
         s_setpoint_limits[mcpwm_num] = malloc(sizeof(setpoint_limits_t));
     }
     s_setpoint_limits[mcpwm_num]->frequency_min = clk_conf.timer_clk / UINT16_MAX;
-    s_setpoint_limits[mcpwm_num]->frequency_max = clk_conf.timer_clk / timer_top_min;
+    s_setpoint_limits[mcpwm_num]->frequency_max = clk_conf.timer_clk / (1 + timer_top_min);
     if (UINT16_MAX/clk_conf.base_clk < 1.0 / frequency) {
         s_setpoint_limits[mcpwm_num]->deadtime_sum_max = UINT16_MAX / clk_conf.base_clk;
     } else {
@@ -88,10 +90,11 @@ esp_err_t pspwm_up_ctr_mode_init(
     // Basic setup for PS_PWM in up/down counting mode
     _pspwm_up_ctr_mode_register_base_setup(mcpwm_num);
     // Setup the fault handler module as this is required for disabling the outputs
-    if (_pspwm_setup_fault_handler_module(mcpwm_num, gpio_fault_shutdown,
-                                          tripzone_gpio_polarity) == ESP_OK
-        // Continue by setting a Fault Event forcing the GPIOs to defined "OFF" state
-        && pspwm_disable_output(mcpwm_num) == ESP_OK
+    _pspwm_setup_fault_handler_module(mcpwm_num,
+                                      disable_action_lag_leg,
+                                      disable_action_lead_leg);
+    // Continue by setting a Fault Event forcing the GPIOs to defined "OFF" state
+    if (pspwm_disable_output(mcpwm_num) == ESP_OK
         && mcpwm_gpio_init(mcpwm_num, MCPWM0A, gpio_lead_a) == ESP_OK
         && mcpwm_gpio_init(mcpwm_num, MCPWM0B, gpio_lead_b) == ESP_OK
         && mcpwm_gpio_init(mcpwm_num, MCPWM1A, gpio_lag_a) == ESP_OK
@@ -111,7 +114,7 @@ esp_err_t pspwm_up_ctr_mode_init(
 }
 
 esp_err_t pspwm_up_ctr_mode_set_frequency(mcpwm_unit_t mcpwm_num, 
-                                          float frequency)
+                                          const float frequency)
 {
     DBG("Call pspwm_up_ctr_mode_set_frequency");
     mcpwm_dev_t *module = MCPWM[mcpwm_num];
@@ -123,7 +126,7 @@ esp_err_t pspwm_up_ctr_mode_set_frequency(mcpwm_unit_t mcpwm_num,
             ERROR("Frequency setpoint out of range!");
             return ESP_FAIL;
     }
-    uint32_t timer_top = (uint32_t)(clk_conf.timer_clk / frequency);
+    uint32_t timer_top = (uint32_t)(clk_conf.timer_clk / frequency) - 1;
     uint32_t cmpr_0_a = (uint32_t)(
         0.5 * (timer_top + clk_conf.timer_clk * (deadtimes[mcpwm_num]->lead_red 
                                                  - deadtimes[mcpwm_num]->lead_fed)));
@@ -146,8 +149,8 @@ esp_err_t pspwm_up_ctr_mode_set_frequency(mcpwm_unit_t mcpwm_num,
 }
 
 esp_err_t pspwm_up_ctr_mode_set_deadtimes(mcpwm_unit_t mcpwm_num,
-                                          float lead_red, float lead_fed,
-                                          float lag_red, float lag_fed)
+                                          const float lead_red, const float lead_fed,
+                                          const float lag_red, const float lag_fed)
 {
     DBG("Call pspwm_up_ctr_mode_set_deadtimes()");
     mcpwm_dev_t *module = MCPWM[mcpwm_num];
@@ -213,7 +216,7 @@ esp_err_t pspwm_up_ctr_mode_set_deadtimes(mcpwm_unit_t mcpwm_num,
     return ESP_OK;
 }
 
-esp_err_t pspwm_up_ctr_mode_set_ps_duty(mcpwm_unit_t mcpwm_num, float ps_duty)
+esp_err_t pspwm_up_ctr_mode_set_ps_duty(mcpwm_unit_t mcpwm_num, const float ps_duty)
 {
     DBG("Call pspwm_up_ctr_mode_set_ps_duty");
     if (ps_duty < 0 || ps_duty > 1) {
@@ -284,7 +287,8 @@ void _pspwm_up_ctr_mode_register_base_setup(mcpwm_unit_t mcpwm_num) {
     // Datasheet 16.68: PWM_UPDATE_CFG_REG (0x010c)
     MCPWM[mcpwm_num]->update_cfg.global_up_en = 1;
     // Toggle triggers a "forced register update" whatever that means..
-    MCPWM[mcpwm_num]->update_cfg.global_force_up ^= 1;
+    MCPWM[mcpwm_num]->update_cfg.global_force_up = 1;
+    MCPWM[mcpwm_num]->update_cfg.global_force_up = 0;
     portEXIT_CRITICAL(&mcpwm_spinlock);
 }
 
@@ -293,13 +297,14 @@ void _pspwm_up_ctr_mode_register_base_setup(mcpwm_unit_t mcpwm_num) {
  * TIMER UP/DOWN-COUNTING MODE; DOES NOT USE HW-DEAD-TIME-MODULE *
  *****************************************************************
  */
-esp_err_t pspwm_up_down_ctr_mode_init(
-        mcpwm_unit_t mcpwm_num,
-        int gpio_lead_a, int gpio_lead_b, int gpio_lag_a, int gpio_lag_b,
-        int gpio_fault_shutdown,
-        float frequency,
-        float ps_duty,
-        float lead_dt, float lag_dt)
+esp_err_t pspwm_up_down_ctr_mode_init(mcpwm_unit_t mcpwm_num,
+                                      const int gpio_lead_a, const int gpio_lead_b,
+                                      const int gpio_lag_a, const int gpio_lag_b,
+                                      const float frequency,
+                                      const float ps_duty,
+                                      const float lead_dt, const float lag_dt,
+                                      mcpwm_action_on_pwmxa_t disable_action_lag_leg,
+                                      mcpwm_action_on_pwmxa_t disable_action_lead_leg)
 {
     DBG("Call pspwm_up_ctr_mode_init");
     if (mcpwm_num != MCPWM_UNIT_0 && mcpwm_num != MCPWM_UNIT_1) {
@@ -324,10 +329,11 @@ esp_err_t pspwm_up_down_ctr_mode_init(
     // Basic setup for PS_PWM in up/down counting mode
     _pspwm_up_down_ctr_mode_register_base_setup(mcpwm_num);
     // Setup the fault handler module as this is required for disabling the outputs
-    if (_pspwm_setup_fault_handler_module(mcpwm_num, gpio_fault_shutdown,
-                                          tripzone_gpio_polarity) == ESP_OK
-        // Continue by setting a Fault Event forcing the GPIOs to defined "OFF" state
-        && pspwm_disable_output(mcpwm_num) == ESP_OK
+    _pspwm_setup_fault_handler_module(mcpwm_num,
+                                      disable_action_lag_leg,
+                                      disable_action_lead_leg);
+    // Continue by setting a Fault Event forcing the GPIOs to defined "OFF" state
+    if (pspwm_disable_output(mcpwm_num) == ESP_OK
         && mcpwm_gpio_init(mcpwm_num, MCPWM0A, gpio_lead_a) == ESP_OK
         && mcpwm_gpio_init(mcpwm_num, MCPWM0B, gpio_lead_b) == ESP_OK
         && mcpwm_gpio_init(mcpwm_num, MCPWM1A, gpio_lag_a) == ESP_OK
@@ -346,7 +352,7 @@ esp_err_t pspwm_up_down_ctr_mode_init(
 }
 
 esp_err_t pspwm_up_down_ctr_mode_set_frequency(mcpwm_unit_t mcpwm_num,
-                                               float frequency)
+                                               const float frequency)
 {
     DBG("Call pspwm_up_down_ctr_mode_set_frequency");
     mcpwm_dev_t *module = MCPWM[mcpwm_num];
@@ -383,7 +389,7 @@ esp_err_t pspwm_up_down_ctr_mode_set_frequency(mcpwm_unit_t mcpwm_num,
 }
 
 esp_err_t pspwm_up_down_ctr_mode_set_deadtimes(mcpwm_unit_t mcpwm_num,
-                                               float lead_dt, float lag_dt)
+                                               const float lead_dt, const float lag_dt)
 {
     DBG("Call pspwm_up_down_ctr_mode_set_deadtimes()");
     mcpwm_dev_t *module = MCPWM[mcpwm_num];
@@ -419,7 +425,7 @@ esp_err_t pspwm_up_down_ctr_mode_set_deadtimes(mcpwm_unit_t mcpwm_num,
 }
 
 esp_err_t pspwm_up_down_ctr_mode_set_ps_duty(mcpwm_unit_t mcpwm_num,
-                                             float ps_duty)
+                                             const float ps_duty)
 {
     DBG("Call pspwm_up_down_ctr_mode_set_ps_duty");
     if (ps_duty < 0 || ps_duty > 1) {
@@ -490,7 +496,8 @@ void _pspwm_up_down_ctr_mode_register_base_setup(mcpwm_unit_t mcpwm_num) {
     // Datasheet 16.68: PWM_UPDATE_CFG_REG (0x010c)
     MCPWM[mcpwm_num]->update_cfg.global_up_en = 1;
     // Toggle triggers a "forced register update" whatever that means..
-    MCPWM[mcpwm_num]->update_cfg.global_force_up ^= 1;
+    MCPWM[mcpwm_num]->update_cfg.global_force_up = 1;
+    MCPWM[mcpwm_num]->update_cfg.global_force_up = 0;
     portEXIT_CRITICAL(&mcpwm_spinlock);
 }
 
@@ -498,9 +505,9 @@ void _pspwm_up_down_ctr_mode_register_base_setup(mcpwm_unit_t mcpwm_num) {
  * Set up one-shot (stay-off) mode for fault handler module FH0.
  * This is used for software-forced output disabling.
  */
-esp_err_t _pspwm_setup_fault_handler_module(mcpwm_unit_t mcpwm_num,
-                                            const int gpio_fault_shutdown,
-                                            mcpwm_fault_input_level_t polarity) {
+void _pspwm_setup_fault_handler_module(mcpwm_unit_t mcpwm_num,
+                                       mcpwm_action_on_pwmxa_t disable_action_lag_leg,
+                                       mcpwm_action_on_pwmxa_t disable_action_lead_leg) {
     portENTER_CRITICAL(&mcpwm_spinlock);
     // Datasheet 16.27: PWM_FH0_CFG0_REG (0x0068)
     // Enable sw-forced one-shot tripzone action
@@ -514,22 +521,16 @@ esp_err_t _pspwm_setup_fault_handler_module(mcpwm_unit_t mcpwm_num,
     // Uncomment to enable hardware (event f0) cycle-by-cycle tripzone action
     //MCPWM[mcpwm_num]->channel[timer_i].tz_cfg0.f0_cbc = 1;
     // Configure the kind of action (pull up / pull down) for the lag bridge leg:
-    MCPWM[mcpwm_num]->channel[MCPWM_TIMER_1].tz_cfg0.a_ost_d = tripzone_action_lag_leg;
-    MCPWM[mcpwm_num]->channel[MCPWM_TIMER_1].tz_cfg0.a_ost_u = tripzone_action_lag_leg;
-    MCPWM[mcpwm_num]->channel[MCPWM_TIMER_1].tz_cfg0.b_ost_d = tripzone_action_lag_leg;
-    MCPWM[mcpwm_num]->channel[MCPWM_TIMER_1].tz_cfg0.b_ost_u = tripzone_action_lag_leg;
+    MCPWM[mcpwm_num]->channel[MCPWM_TIMER_1].tz_cfg0.a_ost_d = disable_action_lag_leg;
+    MCPWM[mcpwm_num]->channel[MCPWM_TIMER_1].tz_cfg0.a_ost_u = disable_action_lag_leg;
+    MCPWM[mcpwm_num]->channel[MCPWM_TIMER_1].tz_cfg0.b_ost_d = disable_action_lag_leg;
+    MCPWM[mcpwm_num]->channel[MCPWM_TIMER_1].tz_cfg0.b_ost_u = disable_action_lag_leg;
     // Lead leg might have a different configuration, e.g. stay at last output level
-    MCPWM[mcpwm_num]->channel[MCPWM_TIMER_0].tz_cfg0.a_ost_d = tripzone_action_lead_leg;
-    MCPWM[mcpwm_num]->channel[MCPWM_TIMER_0].tz_cfg0.a_ost_u = tripzone_action_lead_leg;
-    MCPWM[mcpwm_num]->channel[MCPWM_TIMER_0].tz_cfg0.b_ost_d = tripzone_action_lead_leg;
-    MCPWM[mcpwm_num]->channel[MCPWM_TIMER_0].tz_cfg0.b_ost_u = tripzone_action_lead_leg;
-    ///// Enable fault F0 generation /////
-    // Datasheet 16.58: PWM_FAULT_DETECT_REG (0x00e4)
-    MCPWM[mcpwm_num]->fault_detect.f0_en = 1;
-    // Set fault active polarity of GPIO pin
-    MCPWM[mcpwm_num]->fault_detect.f0_pole = polarity;
+    MCPWM[mcpwm_num]->channel[MCPWM_TIMER_0].tz_cfg0.a_ost_d = disable_action_lead_leg;
+    MCPWM[mcpwm_num]->channel[MCPWM_TIMER_0].tz_cfg0.a_ost_u = disable_action_lead_leg;
+    MCPWM[mcpwm_num]->channel[MCPWM_TIMER_0].tz_cfg0.b_ost_d = disable_action_lead_leg;
+    MCPWM[mcpwm_num]->channel[MCPWM_TIMER_0].tz_cfg0.b_ost_u = disable_action_lead_leg;
     portEXIT_CRITICAL(&mcpwm_spinlock);
-    return mcpwm_gpio_init(mcpwm_num, MCPWM_FAULT_0, gpio_fault_shutdown);
 }
 
 /*****************************************************************
@@ -541,8 +542,10 @@ esp_err_t pspwm_disable_output(mcpwm_unit_t mcpwm_num)
     DBG("Disabling output!");
     portENTER_CRITICAL(&mcpwm_spinlock);
     // Toggle triggers the fault event
-    MCPWM[mcpwm_num]->channel[MCPWM_TIMER_0].tz_cfg1.force_ost ^= 1;
-    MCPWM[mcpwm_num]->channel[MCPWM_TIMER_1].tz_cfg1.force_ost ^= 1;
+    MCPWM[mcpwm_num]->channel[MCPWM_TIMER_0].tz_cfg1.force_ost = 1;
+    MCPWM[mcpwm_num]->channel[MCPWM_TIMER_0].tz_cfg1.force_ost = 0;
+    MCPWM[mcpwm_num]->channel[MCPWM_TIMER_1].tz_cfg1.force_ost = 1;
+    MCPWM[mcpwm_num]->channel[MCPWM_TIMER_1].tz_cfg1.force_ost = 0;
     portEXIT_CRITICAL(&mcpwm_spinlock);
     return ESP_OK;
 }
@@ -551,14 +554,44 @@ esp_err_t pspwm_resync_enable_output(mcpwm_unit_t mcpwm_num)
 {
     DBG("Enabling output!");
     portENTER_CRITICAL(&mcpwm_spinlock);
-    // Toggle triggers the sync
-    MCPWM[mcpwm_num]->timer[MCPWM_TIMER_0].sync.sync_sw ^= 1;
-    MCPWM[mcpwm_num]->timer[MCPWM_TIMER_1].sync.sync_sw ^= 1;
-    // Toggle clears the fault event
-    MCPWM[mcpwm_num]->channel[MCPWM_TIMER_0].tz_cfg1.clr_ost ^= 1;
-    MCPWM[mcpwm_num]->channel[MCPWM_TIMER_1].tz_cfg1.clr_ost ^= 1;
+    // Toggle triggers the sync.
+    MCPWM[mcpwm_num]->timer[MCPWM_TIMER_0].sync.sync_sw = 1;
+    MCPWM[mcpwm_num]->timer[MCPWM_TIMER_0].sync.sync_sw = 0;
+    MCPWM[mcpwm_num]->timer[MCPWM_TIMER_1].sync.sync_sw = 1;
+    MCPWM[mcpwm_num]->timer[MCPWM_TIMER_1].sync.sync_sw = 0;
+    // Toggle clears the fault event. XOR is somehow not reliable here.
+    MCPWM[mcpwm_num]->channel[MCPWM_TIMER_0].tz_cfg1.clr_ost = 1;
+    MCPWM[mcpwm_num]->channel[MCPWM_TIMER_0].tz_cfg1.clr_ost = 0;
+    MCPWM[mcpwm_num]->channel[MCPWM_TIMER_1].tz_cfg1.clr_ost = 1;
+    MCPWM[mcpwm_num]->channel[MCPWM_TIMER_1].tz_cfg1.clr_ost = 0;
     portEXIT_CRITICAL(&mcpwm_spinlock);
     return ESP_OK;
+}
+
+esp_err_t pspwm_enable_hw_fault_shutdown(mcpwm_unit_t mcpwm_num,
+                                         const int gpio_fault_shutdown,
+                                         mcpwm_fault_input_level_t fault_pin_active_level) {
+    DBG("Enabling hardware fault shutdown on GPIO: %d", gpio_fault_shutdown);
+    portENTER_CRITICAL(&mcpwm_spinlock);
+    ///// Enable fault F0 generation from hardware pin /////
+    // Datasheet 16.58: PWM_FAULT_DETECT_REG (0x00e4)
+    MCPWM[mcpwm_num]->fault_detect.f0_en = 1;
+    // Set GPIO polarity for activation of trip event
+    MCPWM[mcpwm_num]->fault_detect.f0_pole = fault_pin_active_level;
+    portEXIT_CRITICAL(&mcpwm_spinlock);
+    return mcpwm_gpio_init(mcpwm_num, MCPWM_FAULT_0, gpio_fault_shutdown);
+}
+
+esp_err_t pspwm_disable_hw_fault_shutdown(mcpwm_unit_t mcpwm_num,
+                                          const int gpio_fault_shutdown) {
+    DBG("Resetting GPIO to default state: %d", gpio_fault_shutdown);
+    portENTER_CRITICAL(&mcpwm_spinlock);
+    ///// Enable fault F0 generation from hardware pin /////
+    // Datasheet 16.58: PWM_FAULT_DETECT_REG (0x00e4)
+    MCPWM[mcpwm_num]->fault_detect.f0_en = 0;
+    portEXIT_CRITICAL(&mcpwm_spinlock);
+    // Resets pin to default state, i.e. pull-up enabled etc.
+    return gpio_reset_pin(gpio_fault_shutdown);
 }
 
 esp_err_t pspwm_get_setpoint_limits(mcpwm_unit_t mcpwm_num,

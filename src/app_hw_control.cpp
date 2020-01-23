@@ -7,13 +7,14 @@
 PSPWMGen::PSPWMGen(HTTPServer &http_server) {
     Serial.println("Configuring Phase-Shift-PWM...");
     // http_server = http_server;
-    pspwm_up_ctr_mode_init(
-        mcpwm_num,
-        gpio_pwm0a_out, gpio_pwm0b_out, gpio_pwm1a_out, gpio_pwm1b_out,
-        gpio_fault_shutdown,
-        frequency,
-        ps_duty,
-        lead_dt, lead_dt, lag_dt, lag_dt);
+    pspwm_up_ctr_mode_init(mcpwm_num,
+                           gpio_pwm0a_out, gpio_pwm0b_out,
+                           gpio_pwm1a_out, gpio_pwm1b_out,
+                           frequency,
+                           ps_duty,
+                           lead_dt, lead_dt, lag_dt, lag_dt,
+                           disable_action_lag_leg, disable_action_lead_leg);
+    //pspwm_enable_hw_fault_shutdown(mcpwm_num, gpio_fault_shutdown, MCPWM_LOW_LEVEL_TGR);
     register_remote_control(http_server);
 }
 

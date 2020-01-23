@@ -29,15 +29,6 @@
 // frequency_min value and subsequent range checking of frequency setpoint
 static const uint16_t timer_top_min = 4;
 
-// Define here if the output pins shall be forced low or high
-// or high-impedance when a fault condition is triggered.
-// PWMxA and PWMxB have the same type of action, see declaration in mcpwm.h
-static const mcpwm_action_on_pwmxa_t tripzone_action_lag_leg = MCPWM_FORCE_MCPWMXA_LOW;
-// Lead leg might have a different configuration, e.g. stay at last output level
-static const mcpwm_action_on_pwmxa_t tripzone_action_lead_leg = MCPWM_FORCE_MCPWMXA_LOW;
-// GPIO polarity for activation of trip event
-static const mcpwm_fault_input_level_t tripzone_gpio_polarity = MCPWM_LOW_LEVEL_TGR;
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -111,15 +102,20 @@ typedef struct {
  * @param lead_red: dead time value for rising edge, leading leg
  * @param lead_fed: dead time value for falling edge, leading leg
  * @param lag_red: dead time value for rising edge, lagging leg
- * @param lag_fed: dead time value for falling edge, lagging leg 
+ * @param lag_fed: dead time value for falling edge, lagging leg
+ * @param disable_action_lag_leg: Choice of actions when lag bridge leg is disabled
+ *                                (See typedef for mcpwm_action_on_pwmxa_t)
+ * @param disable_action_lead_leg: Same for lead leg
  */
-esp_err_t pspwm_up_ctr_mode_init(
-        mcpwm_unit_t mcpwm_num,
-        int gpio_lead_a, int gpio_lead_b, int gpio_lag_a, int gpio_lag_b,
-        int gpio_fault_shutdown,
-        float frequency,
-        float ps_duty,
-        float lead_red, float lead_fed, float lag_red, float lag_fed);
+esp_err_t pspwm_up_ctr_mode_init(mcpwm_unit_t mcpwm_num,
+                                 const int gpio_lead_a, const int gpio_lead_b,
+                                 const int gpio_lag_a, const int gpio_lag_b,
+                                 const float frequency,
+                                 const float ps_duty,
+                                 const float lead_red, const float lead_fed,
+                                 const float lag_red, const float lag_fed,
+                                 mcpwm_action_on_pwmxa_t disable_action_lag_leg,
+                                 mcpwm_action_on_pwmxa_t disable_action_lead_leg);
 
 /** Set frequency when running PS-PWM generator in up-counting mode
  * @note
@@ -129,7 +125,7 @@ esp_err_t pspwm_up_ctr_mode_init(
  * @param frequency: Frequency of the non-rectified waveform in Hz,
  */
 esp_err_t pspwm_up_ctr_mode_set_frequency(mcpwm_unit_t mcpwm_num,
-                                          float frequency);
+                                          const float frequency);
 
 /** Set deadtime values individually for leading leg rising and
  * falling edge as well as for lagging leg rising and falling edge
@@ -142,8 +138,8 @@ esp_err_t pspwm_up_ctr_mode_set_frequency(mcpwm_unit_t mcpwm_num,
  * @param  lag_fed: dead time value for falling edge, lagging leg
  */
 esp_err_t pspwm_up_ctr_mode_set_deadtimes(mcpwm_unit_t mcpwm_num,
-                                          float lead_red, float lead_fed,
-                                          float lag_red, float lag_fed);
+                                          const float lead_red, const float lead_fed,
+                                          const float lag_red, const float lag_fed);
 
 /** Set PS-PWM phase shift between lead and lag leg output pairs
  * 
@@ -155,7 +151,7 @@ esp_err_t pspwm_up_ctr_mode_set_deadtimes(mcpwm_unit_t mcpwm_num,
  * @param  mcpwm_num: PWM unit number (enum, MCPWM_UNIT_0 = 0, MCPWM_UNIT_1 = 1),
  * @param  ps_duty: Duty cycle of the rectified waveform (0..1)
  */
-esp_err_t pspwm_up_ctr_mode_set_ps_duty(mcpwm_unit_t mcpwm_num, float ps_duty);
+esp_err_t pspwm_up_ctr_mode_set_ps_duty(mcpwm_unit_t mcpwm_num, const float ps_duty);
 
 
 
@@ -186,14 +182,18 @@ esp_err_t pspwm_up_ctr_mode_set_ps_duty(mcpwm_unit_t mcpwm_num, float ps_duty);
  * @param ps_duty: Duty cycle of the rectified waveform (0..1)
  * @param lead_dt: leading bridge-leg dead-time in sec (0..),
  * @param lag_dt: lagging bridge-leg dead-time in sec (0..)
+ * @param disable_action_lag_leg: Choice of actions when lag bridge leg is disabled
+ *                                (See typedef for mcpwm_action_on_pwmxa_t)
+ * @param disable_action_lead_leg: Same for lead leg
  */
-esp_err_t pspwm_up_down_ctr_mode_init(
-        mcpwm_unit_t mcpwm_num,
-        int gpio_lead_a, int gpio_lead_b, int gpio_lag_a, int gpio_lag_b,
-        int gpio_fault_shutdown,
-        float frequency,
-        float ps_duty,
-        float lead_dt, float lag_dt);
+esp_err_t pspwm_up_down_ctr_mode_init(mcpwm_unit_t mcpwm_num,
+                                      const int gpio_lead_a, const int gpio_lead_b,
+                                      const int gpio_lag_a, const int gpio_lag_b,
+                                      const float frequency,
+                                      const float ps_duty,
+                                      const float lead_dt, const float lag_dt,
+                                      mcpwm_action_on_pwmxa_t disable_action_lag_leg,
+                                      mcpwm_action_on_pwmxa_t disable_action_lead_leg);
 
 /** Set frequency (and update dead-time values) for all four output
  * signals of the phase-shift-PWM when using the timer
@@ -209,7 +209,7 @@ esp_err_t pspwm_up_down_ctr_mode_init(
  * @param frequency: Frequency of the non-rectified waveform in Hz,
  */
 esp_err_t pspwm_up_down_ctr_mode_set_frequency(mcpwm_unit_t mcpwm_num,
-                                               float frequency);
+                                               const float frequency);
 
 /** Set dead-time values for all four output signals
  * of the phase-shift-PWM when using the timer
@@ -220,7 +220,7 @@ esp_err_t pspwm_up_down_ctr_mode_set_frequency(mcpwm_unit_t mcpwm_num,
  * @param lag_dt: lagging bridge-leg dead-time in sec (0..)
  */
 esp_err_t pspwm_up_down_ctr_mode_set_deadtimes(mcpwm_unit_t mcpwm_num,
-                                               float lead_dt, float lag_dt);
+                                               const float lead_dt, const float lag_dt);
 
 /** Set PS-PWM phase shift based on the current period time setting
  * i.e. state of the PWM hardware "period" register.
@@ -231,7 +231,7 @@ esp_err_t pspwm_up_down_ctr_mode_set_deadtimes(mcpwm_unit_t mcpwm_num,
  * @param ps_duty: Duty cycle of the rectified waveform (0..1)
  */
 esp_err_t pspwm_up_down_ctr_mode_set_ps_duty(mcpwm_unit_t mcpwm_num,
-                                             float ps_duty);
+                                             const float ps_duty);
 
 
 
@@ -256,6 +256,32 @@ esp_err_t pspwm_disable_output(mcpwm_unit_t mcpwm_num);
  */
 esp_err_t pspwm_resync_enable_output(mcpwm_unit_t mcpwm_num);
 
+/** Enable hardware fault shutdown ("tripzone") input on given GPIO pin.
+ * 
+ * This registers the fault handler FH0 signal with the specified PWM unit.
+ * @param mcpwm_num: PWM unit number (enum, MCPWM_UNIT_0 = 0, MCPWM_UNIT_1 = 1),
+ * @param gpio_fault_shutdown: GPIO pin number for shutdown input
+ * @param fault_pin_active_level: Logic level setting the fault condition
+ *                                [MCPWM_LOW_LEVEL_TGR | MCPWM_HIGH_LEVEL_TGR]
+ */
+esp_err_t pspwm_enable_hw_fault_shutdown(mcpwm_unit_t mcpwm_num,
+                                         const int gpio_fault_shutdown,
+                                         mcpwm_fault_input_level_t fault_pin_active_level);
+
+/** Disable hardware fault shutdown pin, resetting the GPIO to default state.
+ * 
+ * @param mcpwm_num: PWM unit number (enum, MCPWM_UNIT_0 = 0, MCPWM_UNIT_1 = 1),
+ * @param gpio_fault_shutdown: GPIO pin number for shutdown input
+ */
+esp_err_t pspwm_disable_hw_fault_shutdown(mcpwm_unit_t mcpwm_num,
+                                          const int gpio_fault_shutdown);
+
+/** Read from PSPWM state the calculated setpoint limits into the given
+ *  pointer to struct setpoint_limits_t.
+ * 
+ * @param mcpwm_num: PWM unit number (enum, MCPWM_UNIT_0 = 0, MCPWM_UNIT_1 = 1),
+ * @param setpoint_limits: Pointer to a struct instance of setpoint_limits_t
+ */
 esp_err_t pspwm_get_setpoint_limits(mcpwm_unit_t mcpwm_num,
                                     setpoint_limits_t** setpoint_limits);
 
