@@ -119,7 +119,7 @@ esp_err_t pspwm_up_ctr_mode_set_frequency(mcpwm_unit_t mcpwm_num,
     DBG("Call pspwm_up_ctr_mode_set_frequency");
     mcpwm_dev_t *module = MCPWM[mcpwm_num];
     // PWM hardware must have been initialised first
-    assert(deadtimes[mcpwm_num] != NULL);
+    //assert(deadtimes[mcpwm_num] != NULL);
     // This is a 16-Bit timer register, although the API struct uses uint32_t...
     if (frequency <= s_setpoint_limits[mcpwm_num]->frequency_min
         || frequency > s_setpoint_limits[mcpwm_num]->frequency_max) {
@@ -145,6 +145,10 @@ esp_err_t pspwm_up_ctr_mode_set_frequency(mcpwm_unit_t mcpwm_num,
     DBG("Timer TOP is now: %d", timer_top);
     DBG("cmpr_0_a register value: %d", cmpr_0_a);
     DBG("cmpr_1_a register value: %d", cmpr_1_a);
+    DBG("Repeat from register, timer0 TOP is now: %d", module->timer[MCPWM_TIMER_0].period.period);
+    DBG("Repeat from register, timer1 TOP is now: %d", module->timer[MCPWM_TIMER_1].period.period);
+    DBG("Repeat from register, cmpr_0_a register value: %d", module->channel[MCPWM_TIMER_0].cmpr_value[MCPWM_OPR_A].cmpr_val);
+    DBG("Repeat from register, cmpr_1_a register value: %d", module->channel[MCPWM_TIMER_1].cmpr_value[MCPWM_OPR_A].cmpr_val);
     return ESP_OK;
 }
 
@@ -231,6 +235,7 @@ esp_err_t pspwm_up_ctr_mode_set_ps_duty(mcpwm_unit_t mcpwm_num, const float ps_d
     MCPWM[mcpwm_num]->timer[MCPWM_TIMER_1].sync.timer_phase = phase_setval;
     portEXIT_CRITICAL(&mcpwm_spinlock);
     DBG("Phase register set to: %d", phase_setval);
+    DBG("Repeat from register, phase register set to: %d", MCPWM[mcpwm_num]->timer[MCPWM_TIMER_1].sync.timer_phase);
     return ESP_OK;
 }
 
