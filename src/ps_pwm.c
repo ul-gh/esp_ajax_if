@@ -119,7 +119,7 @@ esp_err_t pspwm_up_ctr_mode_set_frequency(mcpwm_unit_t mcpwm_num,
     DBG("Call pspwm_up_ctr_mode_set_frequency");
     mcpwm_dev_t *module = MCPWM[mcpwm_num];
     // PWM hardware must have been initialised first
-    //assert(deadtimes[mcpwm_num] != NULL);
+    assert(deadtimes[mcpwm_num] != NULL);
     // This is a 16-Bit timer register, although the API struct uses uint32_t...
     if (frequency <= s_setpoint_limits[mcpwm_num]->frequency_min
         || frequency > s_setpoint_limits[mcpwm_num]->frequency_max) {
