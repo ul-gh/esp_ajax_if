@@ -23,8 +23,8 @@ PSPWMGen ps_pwm_generator{http_server};
 
 void setup() {
     Serial.begin(SERIAL_BAUD);
-    //setup_wifi_station();
-    setup_wifi_hostap();
+    setup_wifi_station();
+    //setup_wifi_hostap();
     Serial.println();
 
     if (!SPIFFS.begin(true)) {
