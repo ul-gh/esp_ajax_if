@@ -185,16 +185,7 @@ esp_err_t pspwm_up_ctr_mode_set_frequency(mcpwm_unit_t mcpwm_num,
     DBG("Timer TOP is now: %d", timer_top);
     DBG("cmpr_0_a register value: %d", cmpr_0_a);
     DBG("cmpr_1_a register value: %d", cmpr_1_a);
-<<<<<<< HEAD
-    DBG("Repeat from register, timer0 TOP is now: %d", module->timer[MCPWM_TIMER_0].period.period);
-    DBG("Repeat from register, timer1 TOP is now: %d", module->timer[MCPWM_TIMER_1].period.period);
-    DBG("Repeat from register, cmpr_0_a register value: %d", module->channel[MCPWM_TIMER_0].cmpr_value[MCPWM_OPR_A].cmpr_val);
-    DBG("Repeat from register, cmpr_1_a register value: %d", module->channel[MCPWM_TIMER_1].cmpr_value[MCPWM_OPR_A].cmpr_val);
-    DBG("Phase register for TIMER0 set to: %d", MCPWM[mcpwm_num]->timer[MCPWM_TIMER_0].sync.timer_phase);
-    DBG("Phase register for TIMER1 set to: %d", MCPWM[mcpwm_num]->timer[MCPWM_TIMER_1].sync.timer_phase);
-=======
     DBG("Phase register set to: %d", phase_setval);
->>>>>>> 7506c68686164044c9a5c1897d8ded404fb50e46
     return ESP_OK;
 }
 
