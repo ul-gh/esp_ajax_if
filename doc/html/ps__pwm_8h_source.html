@@ -48,98 +48,154 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 <a href="ps__pwm_8h.html">Go to the documentation of this file.</a><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160; </div>
-<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="preprocessor">#ifndef __PS_PWM_H__</span></div>
-<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="preprocessor">#define __PS_PWM_H__</span></div>
+<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="preprocessor">#ifndef PS_PWM_H__</span></div>
+<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="preprocessor">#define PS_PWM_H__</span></div>
 <div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160; </div>
-<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="preprocessor">#include &quot;driver/mcpwm.h&quot;</span></div>
-<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160; </div>
-<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="comment">// Set log level to ESP_LOG_INFO for production!</span></div>
-<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;<span class="preprocessor">#define PS_PWM_LOG_LEVEL ESP_LOG_DEBUG</span></div>
-<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160; </div>
-<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;<span class="comment">//#define GPIO_SYNC0_IN   2   //Set GPIO 02 as SYNC0</span></div>
-<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160; </div>
-<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;<span class="comment">// Unscaled input clock frequency</span></div>
-<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="preprocessor">#define MCPWM_INPUT_CLK 160000000 // 160 MHz</span></div>
-<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;<span class="comment">// Hardware prescaler factor for input clock.</span></div>
-<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;<span class="comment">// Dead time generators are configured to run on this scaled clock signal</span></div>
-<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;<span class="preprocessor">#define BASE_CLK_PRESCALE 4</span></div>
-<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;<span class="preprocessor">#define MCPWM_BASE_CLK (MCPWM_INPUT_CLK / BASE_CLK_PRESCALE)</span></div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="preprocessor">#include &lt;stdbool.h&gt;</span> </div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="preprocessor">#include &quot;driver/mcpwm.h&quot;</span></div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160; </div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;<span class="comment">// Set log level to ESP_LOG_INFO for production!</span></div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;<span class="preprocessor">#define PS_PWM_LOG_LEVEL ESP_LOG_DEBUG</span></div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160; </div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;<span class="comment">//#define GPIO_SYNC0_IN   2   //Set GPIO 02 as SYNC0</span></div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160; </div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="comment">// Unscaled input clock frequency</span></div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;<span class="preprocessor">#define MCPWM_INPUT_CLK 160000000 // 160 MHz</span></div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;<span class="comment">// Hardware prescaler factor for input clock.</span></div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;<span class="comment">// Dead time generators are configured to run on this scaled clock signal</span></div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;<span class="preprocessor">#define BASE_CLK_PRESCALE_DEFAULT 4</span></div>
 <div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;<span class="comment">// Hardware prescaler factor for timer operator sub-modules</span></div>
-<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;<span class="preprocessor">#define TIMER_CLK_PRESCALE 4</span></div>
-<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;<span class="preprocessor">#define MCPWM_TIMER_CLK (MCPWM_BASE_CLK / TIMER_CLK_PRESCALE)</span></div>
-<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160; </div>
-<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;<span class="comment">// Define here if the output pins shall be forced low or high</span></div>
-<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;<span class="comment">// or else when a fault condition is triggered</span></div>
-<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;<span class="preprocessor">#define TRIPZONE_ACTION_PWMxA MCPWM_FORCE_MCPWMXA_LOW</span></div>
-<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;<span class="preprocessor">#define TRIPZONE_ACTION_PWMxB MCPWM_FORCE_MCPWMXB_LOW</span></div>
-<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160; </div>
-<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;<span class="preprocessor">#ifdef __cplusplus</span></div>
-<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;<span class="keyword">extern</span> <span class="stringliteral">&quot;C&quot;</span> {</div>
-<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;<span class="preprocessor">#endif</span></div>
-<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160; </div>
-<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;<span class="comment">/********************************************************************/</span></div>
-<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;esp_err_t <a class="code" href="ps__pwm_8h.html#ac87ccdb2a335a6f571cb807fe133cfb7">pspwm_up_ctr_mode_init</a>(</div>
-<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;        mcpwm_unit_t mcpwm_num,</div>
-<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;        <span class="keywordtype">int</span> gpio_lead_a, <span class="keywordtype">int</span> gpio_lead_b, <span class="keywordtype">int</span> gpio_lag_a, <span class="keywordtype">int</span> gpio_lag_b,</div>
-<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;        <span class="keywordtype">float</span> frequency,</div>
-<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;        <span class="keywordtype">float</span> ps_duty,</div>
-<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;        <span class="keywordtype">float</span> lead_red, <span class="keywordtype">float</span> lead_fed, <span class="keywordtype">float</span> lag_red, <span class="keywordtype">float</span> lag_fed);</div>
-<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160; </div>
-<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;esp_err_t <a class="code" href="ps__pwm_8h.html#a018f7a05845d376d5616b68912eb3f6f">pspwm_up_ctr_mode_set_frequency</a>(mcpwm_unit_t mcpwm_num,</div>
-<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;                                          <span class="keywordtype">float</span> frequency);</div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;<span class="preprocessor">#define TIMER_CLK_PRESCALE_DEFAULT 4</span></div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;<span class="comment">// Minimum timer counter TOP value / timer resolution for calculation of</span></div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;<span class="comment">// frequency_min value and subsequent range checking of frequency setpoint</span></div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;<span class="keyword">static</span> <span class="keyword">const</span> uint16_t timer_top_min = 4;</div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160; </div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;<span class="preprocessor">#ifdef __cplusplus</span></div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;<span class="keyword">extern</span> <span class="stringliteral">&quot;C&quot;</span> {</div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160; </div>
+<div class="line"><a name="l00042"></a><span class="lineno"><a class="line" href="structpspwm__setpoint__t.html">   42</a></span>&#160;<span class="keyword">typedef</span> <span class="keyword">struct </span>{</div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;    <span class="comment">// Frequency setpoint</span></div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;    <span class="keywordtype">float</span> frequency;</div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;    <span class="comment">// Phase shift setpoint</span></div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;    <span class="keywordtype">float</span> ps_duty;</div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;    <span class="comment">// Lead leg, dead time for rising edge (up_ctr_mode)</span></div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;    <span class="comment">// or both edges (up_down_ctr_mode)</span></div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;    <span class="keywordtype">float</span> lead_red;</div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;    <span class="comment">// Falling edge dead time for up_ctr_mode, not defined for up_down_ctr_mode</span></div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;    <span class="keywordtype">float</span> lead_fed;</div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;    <span class="comment">// All the same for lagging leg</span></div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;    <span class="keywordtype">float</span> lag_red;</div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;    <span class="keywordtype">float</span> lag_fed;</div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;    <span class="comment">// true if output is enabled</span></div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;    <span class="keywordtype">bool</span> output_enabled;</div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;} <a class="code" href="structpspwm__setpoint__t.html">pspwm_setpoint_t</a>;</div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160; </div>
+<div class="line"><a name="l00066"></a><span class="lineno"><a class="line" href="structpspwm__clk__conf__t.html">   66</a></span>&#160;<span class="keyword">typedef</span> <span class="keyword">struct </span>{</div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;    uint8_t base_clk_prescale;</div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;    uint8_t timer_clk_prescale;</div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;    <span class="keywordtype">float</span> base_clk;</div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;    <span class="keywordtype">float</span> timer_clk;</div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;} <a class="code" href="structpspwm__clk__conf__t.html">pspwm_clk_conf_t</a>;</div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160; </div>
+<div class="line"><a name="l00077"></a><span class="lineno"><a class="line" href="structpspwm__setpoint__limits__t.html">   77</a></span>&#160;<span class="keyword">typedef</span> <span class="keyword">struct </span>{</div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;    <span class="comment">// Minimum and maximum allowed frequency setpoints</span></div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;    <span class="keywordtype">float</span> frequency_min;</div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;    <span class="keywordtype">float</span> frequency_max;</div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;    <span class="comment">// Dead time for each bridge leg must be smaller than this value,</span></div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;    <span class="comment">// both in sum and also both individually. (Minimum is zero.)</span></div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;    <span class="keywordtype">float</span> deadtime_sum_max;</div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;} <a class="code" href="structpspwm__setpoint__limits__t.html">pspwm_setpoint_limits_t</a>;</div>
 <div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160; </div>
-<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;esp_err_t <a class="code" href="ps__pwm_8h.html#abfc8372d00e5207a7e90cf03b2250610">pspwm_up_ctr_mode_set_deadtimes</a>(mcpwm_unit_t mcpwm_num,</div>
-<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;                                          <span class="keywordtype">float</span> lead_red, <span class="keywordtype">float</span> lead_fed,</div>
-<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;                                          <span class="keywordtype">float</span> lag_red, <span class="keywordtype">float</span> lag_fed);</div>
-<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160; </div>
-<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;esp_err_t <a class="code" href="ps__pwm_8h.html#a5a3443a3bbe40b7d767bf032854cd9cd">pspwm_up_ctr_mode_set_ps_duty</a>(mcpwm_unit_t mcpwm_num, <span class="keywordtype">float</span> ps_duty);</div>
-<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160; </div>
-<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160; </div>
-<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160; </div>
-<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;<span class="comment">/*************************************************************/</span></div>
-<div class="line"><a name="l00141"></a><span class="lineno">  141</span>&#160;esp_err_t <a class="code" href="ps__pwm_8h.html#a164ec97b947f995e03e0023c1d0c05fb">pspwm_up_down_ctr_mode_init</a>(</div>
-<div class="line"><a name="l00142"></a><span class="lineno">  142</span>&#160;        mcpwm_unit_t mcpwm_num,</div>
-<div class="line"><a name="l00143"></a><span class="lineno">  143</span>&#160;        <span class="keywordtype">int</span> gpio_lead_a, <span class="keywordtype">int</span> gpio_lead_b, <span class="keywordtype">int</span> gpio_lag_a, <span class="keywordtype">int</span> gpio_lag_b,</div>
-<div class="line"><a name="l00144"></a><span class="lineno">  144</span>&#160;        <span class="keywordtype">float</span> frequency,</div>
-<div class="line"><a name="l00145"></a><span class="lineno">  145</span>&#160;        <span class="keywordtype">float</span> ps_duty,</div>
-<div class="line"><a name="l00146"></a><span class="lineno">  146</span>&#160;        <span class="keywordtype">float</span> lead_dt, <span class="keywordtype">float</span> lag_dt);</div>
-<div class="line"><a name="l00147"></a><span class="lineno">  147</span>&#160; </div>
-<div class="line"><a name="l00161"></a><span class="lineno">  161</span>&#160;esp_err_t <a class="code" href="ps__pwm_8h.html#a68b21c2d2d58b7e0d47c581da252baab">pspwm_up_down_ctr_mode_set_frequency</a>(mcpwm_unit_t mcpwm_num,</div>
-<div class="line"><a name="l00162"></a><span class="lineno">  162</span>&#160;                                               <span class="keywordtype">float</span> frequency);</div>
-<div class="line"><a name="l00163"></a><span class="lineno">  163</span>&#160; </div>
-<div class="line"><a name="l00172"></a><span class="lineno">  172</span>&#160;esp_err_t <a class="code" href="ps__pwm_8h.html#a0fbd7a072319dff47de954afc2d4150d">pspwm_up_down_ctr_mode_set_deadtimes</a>(mcpwm_unit_t mcpwm_num,</div>
-<div class="line"><a name="l00173"></a><span class="lineno">  173</span>&#160;                                               <span class="keywordtype">float</span> lead_dt, <span class="keywordtype">float</span> lag_dt);</div>
-<div class="line"><a name="l00174"></a><span class="lineno">  174</span>&#160; </div>
-<div class="line"><a name="l00183"></a><span class="lineno">  183</span>&#160;esp_err_t <a class="code" href="ps__pwm_8h.html#a14e8356605ee74e7dd65637c1a99c951">pspwm_up_down_ctr_mode_set_ps_duty</a>(mcpwm_unit_t mcpwm_num,</div>
-<div class="line"><a name="l00184"></a><span class="lineno">  184</span>&#160;                                             <span class="keywordtype">float</span> ps_duty);</div>
-<div class="line"><a name="l00185"></a><span class="lineno">  185</span>&#160; </div>
-<div class="line"><a name="l00186"></a><span class="lineno">  186</span>&#160; </div>
-<div class="line"><a name="l00187"></a><span class="lineno">  187</span>&#160; </div>
-<div class="line"><a name="l00188"></a><span class="lineno">  188</span>&#160;<span class="comment">/*****************************************************************</span></div>
-<div class="line"><a name="l00189"></a><span class="lineno">  189</span>&#160;<span class="comment"> *                         COMMON SETUP</span></div>
-<div class="line"><a name="l00190"></a><span class="lineno">  190</span>&#160;<span class="comment"> *****************************************************************/</span></div>
-<div class="line"><a name="l00191"></a><span class="lineno">  191</span>&#160; </div>
-<div class="line"><a name="l00200"></a><span class="lineno">  200</span>&#160;esp_err_t <a class="code" href="ps__pwm_8h.html#a9c3c611469c41ed1ae07c55360d5b490">pspwm_disable_output</a>(mcpwm_unit_t mcpwm_num);</div>
-<div class="line"><a name="l00201"></a><span class="lineno">  201</span>&#160; </div>
-<div class="line"><a name="l00207"></a><span class="lineno">  207</span>&#160;esp_err_t <a class="code" href="ps__pwm_8h.html#ad72e8ec85dfbb20872a028695c9dde6f">pspwm_resync_enable_output</a>(mcpwm_unit_t mcpwm_num);</div>
-<div class="line"><a name="l00208"></a><span class="lineno">  208</span>&#160; </div>
-<div class="line"><a name="l00209"></a><span class="lineno">  209</span>&#160; </div>
-<div class="line"><a name="l00210"></a><span class="lineno">  210</span>&#160;<span class="preprocessor">#ifdef __cplusplus</span></div>
-<div class="line"><a name="l00211"></a><span class="lineno">  211</span>&#160;}</div>
-<div class="line"><a name="l00212"></a><span class="lineno">  212</span>&#160;<span class="preprocessor">#endif</span></div>
-<div class="line"><a name="l00213"></a><span class="lineno">  213</span>&#160; </div>
-<div class="line"><a name="l00214"></a><span class="lineno">  214</span>&#160;<span class="preprocessor">#endif  </span><span class="comment">/* __PS_PWM_H__ */</span><span class="preprocessor"></span></div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;<span class="comment">/********************************************************************/</span></div>
+<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;esp_err_t <a class="code" href="ps__pwm_8h.html#aee579ae2e0f291a356d833a686f4d3fb">pspwm_up_ctr_mode_init</a>(mcpwm_unit_t mcpwm_num,</div>
+<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;                                 <span class="keyword">const</span> <span class="keywordtype">int</span> gpio_lead_a, <span class="keyword">const</span> <span class="keywordtype">int</span> gpio_lead_b,</div>
+<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;                                 <span class="keyword">const</span> <span class="keywordtype">int</span> gpio_lag_a, <span class="keyword">const</span> <span class="keywordtype">int</span> gpio_lag_b,</div>
+<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;                                 <span class="keyword">const</span> <span class="keywordtype">float</span> frequency,</div>
+<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;                                 <span class="keyword">const</span> <span class="keywordtype">float</span> ps_duty,</div>
+<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;                                 <span class="keyword">const</span> <span class="keywordtype">float</span> lead_red, <span class="keyword">const</span> <span class="keywordtype">float</span> lead_fed,</div>
+<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;                                 <span class="keyword">const</span> <span class="keywordtype">float</span> lag_red, <span class="keyword">const</span> <span class="keywordtype">float</span> lag_fed,</div>
+<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;                                 <span class="keyword">const</span> <span class="keywordtype">bool</span> output_enabled,</div>
+<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;                                 mcpwm_action_on_pwmxa_t disable_action_lag_leg,</div>
+<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;                                 mcpwm_action_on_pwmxa_t disable_action_lead_leg);</div>
+<div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160; </div>
+<div class="line"><a name="l00138"></a><span class="lineno">  138</span>&#160;esp_err_t <a class="code" href="ps__pwm_8h.html#a7e3f48e28063050d0fbeaaa03cee28c5">pspwm_up_ctr_mode_set_frequency</a>(mcpwm_unit_t mcpwm_num,</div>
+<div class="line"><a name="l00139"></a><span class="lineno">  139</span>&#160;                                          <span class="keyword">const</span> <span class="keywordtype">float</span> frequency);</div>
+<div class="line"><a name="l00140"></a><span class="lineno">  140</span>&#160; </div>
+<div class="line"><a name="l00151"></a><span class="lineno">  151</span>&#160;esp_err_t <a class="code" href="ps__pwm_8h.html#a7fb014bf49a32018b32cfd6b881f4c34">pspwm_up_ctr_mode_set_deadtimes</a>(mcpwm_unit_t mcpwm_num,</div>
+<div class="line"><a name="l00152"></a><span class="lineno">  152</span>&#160;                                          <span class="keyword">const</span> <span class="keywordtype">float</span> lead_red, <span class="keyword">const</span> <span class="keywordtype">float</span> lead_fed,</div>
+<div class="line"><a name="l00153"></a><span class="lineno">  153</span>&#160;                                          <span class="keyword">const</span> <span class="keywordtype">float</span> lag_red, <span class="keyword">const</span> <span class="keywordtype">float</span> lag_fed);</div>
+<div class="line"><a name="l00154"></a><span class="lineno">  154</span>&#160; </div>
+<div class="line"><a name="l00165"></a><span class="lineno">  165</span>&#160;esp_err_t <a class="code" href="ps__pwm_8h.html#a445bb8526a64fba0bc7a206b9c74032b">pspwm_up_ctr_mode_set_ps_duty</a>(mcpwm_unit_t mcpwm_num, <span class="keyword">const</span> <span class="keywordtype">float</span> ps_duty);</div>
+<div class="line"><a name="l00166"></a><span class="lineno">  166</span>&#160; </div>
+<div class="line"><a name="l00167"></a><span class="lineno">  167</span>&#160; </div>
+<div class="line"><a name="l00168"></a><span class="lineno">  168</span>&#160; </div>
+<div class="line"><a name="l00169"></a><span class="lineno">  169</span>&#160;<span class="comment">/*************************************************************/</span></div>
+<div class="line"><a name="l00201"></a><span class="lineno">  201</span>&#160;esp_err_t <a class="code" href="ps__pwm_8h.html#a0b02ebb3d71e317252e06a1a5b3cd1ef">pspwm_up_down_ctr_mode_init</a>(mcpwm_unit_t mcpwm_num,</div>
+<div class="line"><a name="l00202"></a><span class="lineno">  202</span>&#160;                                      <span class="keyword">const</span> <span class="keywordtype">int</span> gpio_lead_a, <span class="keyword">const</span> <span class="keywordtype">int</span> gpio_lead_b,</div>
+<div class="line"><a name="l00203"></a><span class="lineno">  203</span>&#160;                                      <span class="keyword">const</span> <span class="keywordtype">int</span> gpio_lag_a, <span class="keyword">const</span> <span class="keywordtype">int</span> gpio_lag_b,</div>
+<div class="line"><a name="l00204"></a><span class="lineno">  204</span>&#160;                                      <span class="keyword">const</span> <span class="keywordtype">float</span> frequency,</div>
+<div class="line"><a name="l00205"></a><span class="lineno">  205</span>&#160;                                      <span class="keyword">const</span> <span class="keywordtype">float</span> ps_duty,</div>
+<div class="line"><a name="l00206"></a><span class="lineno">  206</span>&#160;                                      <span class="keyword">const</span> <span class="keywordtype">float</span> lead_dt, <span class="keyword">const</span> <span class="keywordtype">float</span> lag_dt,</div>
+<div class="line"><a name="l00207"></a><span class="lineno">  207</span>&#160;                                      <span class="keyword">const</span> <span class="keywordtype">bool</span> output_enabled,</div>
+<div class="line"><a name="l00208"></a><span class="lineno">  208</span>&#160;                                      mcpwm_action_on_pwmxa_t disable_action_lag_leg,</div>
+<div class="line"><a name="l00209"></a><span class="lineno">  209</span>&#160;                                      mcpwm_action_on_pwmxa_t disable_action_lead_leg);</div>
+<div class="line"><a name="l00210"></a><span class="lineno">  210</span>&#160; </div>
+<div class="line"><a name="l00224"></a><span class="lineno">  224</span>&#160;esp_err_t <a class="code" href="ps__pwm_8h.html#ab29d98ceed348ebe5c7e5f6b3565a5cf">pspwm_up_down_ctr_mode_set_frequency</a>(mcpwm_unit_t mcpwm_num,</div>
+<div class="line"><a name="l00225"></a><span class="lineno">  225</span>&#160;                                               <span class="keyword">const</span> <span class="keywordtype">float</span> frequency);</div>
+<div class="line"><a name="l00226"></a><span class="lineno">  226</span>&#160; </div>
+<div class="line"><a name="l00235"></a><span class="lineno">  235</span>&#160;esp_err_t <a class="code" href="ps__pwm_8h.html#a41f4854e6a52c579fcc137df2be74142">pspwm_up_down_ctr_mode_set_deadtimes</a>(mcpwm_unit_t mcpwm_num,</div>
+<div class="line"><a name="l00236"></a><span class="lineno">  236</span>&#160;                                               <span class="keyword">const</span> <span class="keywordtype">float</span> lead_dt, <span class="keyword">const</span> <span class="keywordtype">float</span> lag_dt);</div>
+<div class="line"><a name="l00237"></a><span class="lineno">  237</span>&#160; </div>
+<div class="line"><a name="l00246"></a><span class="lineno">  246</span>&#160;esp_err_t <a class="code" href="ps__pwm_8h.html#aaf6bfbd819bdf20c4148797a8477ca43">pspwm_up_down_ctr_mode_set_ps_duty</a>(mcpwm_unit_t mcpwm_num,</div>
+<div class="line"><a name="l00247"></a><span class="lineno">  247</span>&#160;                                             <span class="keyword">const</span> <span class="keywordtype">float</span> ps_duty);</div>
+<div class="line"><a name="l00248"></a><span class="lineno">  248</span>&#160; </div>
+<div class="line"><a name="l00249"></a><span class="lineno">  249</span>&#160; </div>
+<div class="line"><a name="l00250"></a><span class="lineno">  250</span>&#160; </div>
+<div class="line"><a name="l00251"></a><span class="lineno">  251</span>&#160;<span class="comment">/*****************************************************************</span></div>
+<div class="line"><a name="l00252"></a><span class="lineno">  252</span>&#160;<span class="comment"> *                         COMMON SETUP</span></div>
+<div class="line"><a name="l00253"></a><span class="lineno">  253</span>&#160;<span class="comment"> *****************************************************************/</span></div>
+<div class="line"><a name="l00254"></a><span class="lineno">  254</span>&#160; </div>
+<div class="line"><a name="l00263"></a><span class="lineno">  263</span>&#160;esp_err_t <a class="code" href="ps__pwm_8h.html#a9c3c611469c41ed1ae07c55360d5b490">pspwm_disable_output</a>(mcpwm_unit_t mcpwm_num);</div>
+<div class="line"><a name="l00264"></a><span class="lineno">  264</span>&#160; </div>
+<div class="line"><a name="l00270"></a><span class="lineno">  270</span>&#160;esp_err_t <a class="code" href="ps__pwm_8h.html#ad72e8ec85dfbb20872a028695c9dde6f">pspwm_resync_enable_output</a>(mcpwm_unit_t mcpwm_num);</div>
+<div class="line"><a name="l00271"></a><span class="lineno">  271</span>&#160; </div>
+<div class="line"><a name="l00280"></a><span class="lineno">  280</span>&#160;esp_err_t <a class="code" href="ps__pwm_8h.html#ab72487b95590c7cf5bcfe9e4eb2ad43a">pspwm_enable_hw_fault_shutdown</a>(mcpwm_unit_t mcpwm_num,</div>
+<div class="line"><a name="l00281"></a><span class="lineno">  281</span>&#160;                                         <span class="keyword">const</span> <span class="keywordtype">int</span> gpio_fault_shutdown,</div>
+<div class="line"><a name="l00282"></a><span class="lineno">  282</span>&#160;                                         mcpwm_fault_input_level_t fault_pin_active_level);</div>
+<div class="line"><a name="l00283"></a><span class="lineno">  283</span>&#160; </div>
+<div class="line"><a name="l00289"></a><span class="lineno">  289</span>&#160;esp_err_t <a class="code" href="ps__pwm_8h.html#a865fe5e36bfb4efa91224f3449ab44a1">pspwm_disable_hw_fault_shutdown</a>(mcpwm_unit_t mcpwm_num,</div>
+<div class="line"><a name="l00290"></a><span class="lineno">  290</span>&#160;                                          <span class="keyword">const</span> <span class="keywordtype">int</span> gpio_fault_shutdown);</div>
+<div class="line"><a name="l00291"></a><span class="lineno">  291</span>&#160; </div>
+<div class="line"><a name="l00298"></a><span class="lineno">  298</span>&#160;esp_err_t <a class="code" href="ps__pwm_8h.html#ac7047c0a9227bee351af307ac76fe703">pspwm_get_setpoint_ptr</a>(mcpwm_unit_t mcpwm_num,</div>
+<div class="line"><a name="l00299"></a><span class="lineno">  299</span>&#160;                                 <a class="code" href="structpspwm__setpoint__t.html">pspwm_setpoint_t</a>** setpoint);</div>
+<div class="line"><a name="l00300"></a><span class="lineno">  300</span>&#160; </div>
+<div class="line"><a name="l00307"></a><span class="lineno">  307</span>&#160;esp_err_t <a class="code" href="ps__pwm_8h.html#af7932614270524046433c7993130a438">pspwm_get_setpoint_limits_ptr</a>(mcpwm_unit_t mcpwm_num,</div>
+<div class="line"><a name="l00308"></a><span class="lineno">  308</span>&#160;                                        <a class="code" href="structpspwm__setpoint__limits__t.html">pspwm_setpoint_limits_t</a>** setpoint_limits);</div>
+<div class="line"><a name="l00309"></a><span class="lineno">  309</span>&#160; </div>
+<div class="line"><a name="l00310"></a><span class="lineno">  310</span>&#160;<span class="preprocessor">#ifdef __cplusplus</span></div>
+<div class="line"><a name="l00311"></a><span class="lineno">  311</span>&#160;}</div>
+<div class="line"><a name="l00312"></a><span class="lineno">  312</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00313"></a><span class="lineno">  313</span>&#160; </div>
+<div class="line"><a name="l00314"></a><span class="lineno">  314</span>&#160;<span class="preprocessor">#endif  </span><span class="comment">/* __PS_PWM_H__ */</span><span class="preprocessor"></span></div>
 </div><!-- fragment --></div><!-- contents -->
-<div class="ttc" id="aps__pwm_8h_html_a0fbd7a072319dff47de954afc2d4150d"><div class="ttname"><a href="ps__pwm_8h.html#a0fbd7a072319dff47de954afc2d4150d">pspwm_up_down_ctr_mode_set_deadtimes</a></div><div class="ttdeci">esp_err_t pspwm_up_down_ctr_mode_set_deadtimes(mcpwm_unit_t mcpwm_num, float lead_dt, float lag_dt)</div><div class="ttdef"><b>Definition:</b> ps_pwm.c:358</div></div>
-<div class="ttc" id="aps__pwm_8h_html_a68b21c2d2d58b7e0d47c581da252baab"><div class="ttname"><a href="ps__pwm_8h.html#a68b21c2d2d58b7e0d47c581da252baab">pspwm_up_down_ctr_mode_set_frequency</a></div><div class="ttdeci">esp_err_t pspwm_up_down_ctr_mode_set_frequency(mcpwm_unit_t mcpwm_num, float frequency)</div><div class="ttdef"><b>Definition:</b> ps_pwm.c:322</div></div>
-<div class="ttc" id="aps__pwm_8h_html_a018f7a05845d376d5616b68912eb3f6f"><div class="ttname"><a href="ps__pwm_8h.html#a018f7a05845d376d5616b68912eb3f6f">pspwm_up_ctr_mode_set_frequency</a></div><div class="ttdeci">esp_err_t pspwm_up_ctr_mode_set_frequency(mcpwm_unit_t mcpwm_num, float frequency)</div><div class="ttdef"><b>Definition:</b> ps_pwm.c:94</div></div>
-<div class="ttc" id="aps__pwm_8h_html_a5a3443a3bbe40b7d767bf032854cd9cd"><div class="ttname"><a href="ps__pwm_8h.html#a5a3443a3bbe40b7d767bf032854cd9cd">pspwm_up_ctr_mode_set_ps_duty</a></div><div class="ttdeci">esp_err_t pspwm_up_ctr_mode_set_ps_duty(mcpwm_unit_t mcpwm_num, float ps_duty)</div><div class="ttdef"><b>Definition:</b> ps_pwm.c:191</div></div>
-<div class="ttc" id="aps__pwm_8h_html_abfc8372d00e5207a7e90cf03b2250610"><div class="ttname"><a href="ps__pwm_8h.html#abfc8372d00e5207a7e90cf03b2250610">pspwm_up_ctr_mode_set_deadtimes</a></div><div class="ttdeci">esp_err_t pspwm_up_ctr_mode_set_deadtimes(mcpwm_unit_t mcpwm_num, float lead_red, float lead_fed, float lag_red, float lag_fed)</div><div class="ttdef"><b>Definition:</b> ps_pwm.c:126</div></div>
-<div class="ttc" id="aps__pwm_8h_html_ac87ccdb2a335a6f571cb807fe133cfb7"><div class="ttname"><a href="ps__pwm_8h.html#ac87ccdb2a335a6f571cb807fe133cfb7">pspwm_up_ctr_mode_init</a></div><div class="ttdeci">esp_err_t pspwm_up_ctr_mode_init(mcpwm_unit_t mcpwm_num, int gpio_lead_a, int gpio_lead_b, int gpio_lag_a, int gpio_lag_b, float frequency, float ps_duty, float lead_red, float lead_fed, float lag_red, float lag_fed)</div><div class="ttdef"><b>Definition:</b> ps_pwm.c:53</div></div>
-<div class="ttc" id="aps__pwm_8h_html_ad72e8ec85dfbb20872a028695c9dde6f"><div class="ttname"><a href="ps__pwm_8h.html#ad72e8ec85dfbb20872a028695c9dde6f">pspwm_resync_enable_output</a></div><div class="ttdeci">esp_err_t pspwm_resync_enable_output(mcpwm_unit_t mcpwm_num)</div><div class="ttdef"><b>Definition:</b> ps_pwm.c:498</div></div>
-<div class="ttc" id="aps__pwm_8h_html_a14e8356605ee74e7dd65637c1a99c951"><div class="ttname"><a href="ps__pwm_8h.html#a14e8356605ee74e7dd65637c1a99c951">pspwm_up_down_ctr_mode_set_ps_duty</a></div><div class="ttdeci">esp_err_t pspwm_up_down_ctr_mode_set_ps_duty(mcpwm_unit_t mcpwm_num, float ps_duty)</div><div class="ttdef"><b>Definition:</b> ps_pwm.c:394</div></div>
-<div class="ttc" id="aps__pwm_8h_html_a9c3c611469c41ed1ae07c55360d5b490"><div class="ttname"><a href="ps__pwm_8h.html#a9c3c611469c41ed1ae07c55360d5b490">pspwm_disable_output</a></div><div class="ttdeci">esp_err_t pspwm_disable_output(mcpwm_unit_t mcpwm_num)</div><div class="ttdef"><b>Definition:</b> ps_pwm.c:487</div></div>
-<div class="ttc" id="aps__pwm_8h_html_a164ec97b947f995e03e0023c1d0c05fb"><div class="ttname"><a href="ps__pwm_8h.html#a164ec97b947f995e03e0023c1d0c05fb">pspwm_up_down_ctr_mode_init</a></div><div class="ttdeci">esp_err_t pspwm_up_down_ctr_mode_init(mcpwm_unit_t mcpwm_num, int gpio_lead_a, int gpio_lead_b, int gpio_lag_a, int gpio_lag_b, float frequency, float ps_duty, float lead_dt, float lag_dt)</div><div class="ttdef"><b>Definition:</b> ps_pwm.c:283</div></div>
+<div class="ttc" id="aps__pwm_8h_html_ac7047c0a9227bee351af307ac76fe703"><div class="ttname"><a href="ps__pwm_8h.html#ac7047c0a9227bee351af307ac76fe703">pspwm_get_setpoint_ptr</a></div><div class="ttdeci">esp_err_t pspwm_get_setpoint_ptr(mcpwm_unit_t mcpwm_num, pspwm_setpoint_t **setpoint)</div><div class="ttdef"><b>Definition:</b> ps_pwm.c:701</div></div>
+<div class="ttc" id="aps__pwm_8h_html_a41f4854e6a52c579fcc137df2be74142"><div class="ttname"><a href="ps__pwm_8h.html#a41f4854e6a52c579fcc137df2be74142">pspwm_up_down_ctr_mode_set_deadtimes</a></div><div class="ttdeci">esp_err_t pspwm_up_down_ctr_mode_set_deadtimes(mcpwm_unit_t mcpwm_num, const float lead_dt, const float lag_dt)</div><div class="ttdef"><b>Definition:</b> ps_pwm.c:488</div></div>
+<div class="ttc" id="aps__pwm_8h_html_a7fb014bf49a32018b32cfd6b881f4c34"><div class="ttname"><a href="ps__pwm_8h.html#a7fb014bf49a32018b32cfd6b881f4c34">pspwm_up_ctr_mode_set_deadtimes</a></div><div class="ttdeci">esp_err_t pspwm_up_ctr_mode_set_deadtimes(mcpwm_unit_t mcpwm_num, const float lead_red, const float lead_fed, const float lag_red, const float lag_fed)</div><div class="ttdef"><b>Definition:</b> ps_pwm.c:195</div></div>
+<div class="ttc" id="aps__pwm_8h_html_a445bb8526a64fba0bc7a206b9c74032b"><div class="ttname"><a href="ps__pwm_8h.html#a445bb8526a64fba0bc7a206b9c74032b">pspwm_up_ctr_mode_set_ps_duty</a></div><div class="ttdeci">esp_err_t pspwm_up_ctr_mode_set_ps_duty(mcpwm_unit_t mcpwm_num, const float ps_duty)</div><div class="ttdef"><b>Definition:</b> ps_pwm.c:266</div></div>
+<div class="ttc" id="aps__pwm_8h_html_a0b02ebb3d71e317252e06a1a5b3cd1ef"><div class="ttname"><a href="ps__pwm_8h.html#a0b02ebb3d71e317252e06a1a5b3cd1ef">pspwm_up_down_ctr_mode_init</a></div><div class="ttdeci">esp_err_t pspwm_up_down_ctr_mode_init(mcpwm_unit_t mcpwm_num, const int gpio_lead_a, const int gpio_lead_b, const int gpio_lag_a, const int gpio_lag_b, const float frequency, const float ps_duty, const float lead_dt, const float lag_dt, const bool output_enabled, mcpwm_action_on_pwmxa_t disable_action_lag_leg, mcpwm_action_on_pwmxa_t disable_action_lead_leg)</div><div class="ttdef"><b>Definition:</b> ps_pwm.c:349</div></div>
+<div class="ttc" id="astructpspwm__setpoint__limits__t_html"><div class="ttname"><a href="structpspwm__setpoint__limits__t.html">pspwm_setpoint_limits_t</a></div><div class="ttdef"><b>Definition:</b> ps_pwm.h:77</div></div>
+<div class="ttc" id="aps__pwm_8h_html_a865fe5e36bfb4efa91224f3449ab44a1"><div class="ttname"><a href="ps__pwm_8h.html#a865fe5e36bfb4efa91224f3449ab44a1">pspwm_disable_hw_fault_shutdown</a></div><div class="ttdeci">esp_err_t pspwm_disable_hw_fault_shutdown(mcpwm_unit_t mcpwm_num, const int gpio_fault_shutdown)</div><div class="ttdef"><b>Definition:</b> ps_pwm.c:689</div></div>
+<div class="ttc" id="aps__pwm_8h_html_a7e3f48e28063050d0fbeaaa03cee28c5"><div class="ttname"><a href="ps__pwm_8h.html#a7e3f48e28063050d0fbeaaa03cee28c5">pspwm_up_ctr_mode_set_frequency</a></div><div class="ttdeci">esp_err_t pspwm_up_ctr_mode_set_frequency(mcpwm_unit_t mcpwm_num, const float frequency)</div><div class="ttdef"><b>Definition:</b> ps_pwm.c:145</div></div>
+<div class="ttc" id="aps__pwm_8h_html_ab29d98ceed348ebe5c7e5f6b3565a5cf"><div class="ttname"><a href="ps__pwm_8h.html#ab29d98ceed348ebe5c7e5f6b3565a5cf">pspwm_up_down_ctr_mode_set_frequency</a></div><div class="ttdeci">esp_err_t pspwm_up_down_ctr_mode_set_frequency(mcpwm_unit_t mcpwm_num, const float frequency)</div><div class="ttdef"><b>Definition:</b> ps_pwm.c:436</div></div>
+<div class="ttc" id="astructpspwm__setpoint__t_html"><div class="ttname"><a href="structpspwm__setpoint__t.html">pspwm_setpoint_t</a></div><div class="ttdef"><b>Definition:</b> ps_pwm.h:42</div></div>
+<div class="ttc" id="aps__pwm_8h_html_af7932614270524046433c7993130a438"><div class="ttname"><a href="ps__pwm_8h.html#af7932614270524046433c7993130a438">pspwm_get_setpoint_limits_ptr</a></div><div class="ttdeci">esp_err_t pspwm_get_setpoint_limits_ptr(mcpwm_unit_t mcpwm_num, pspwm_setpoint_limits_t **setpoint_limits)</div><div class="ttdef"><b>Definition:</b> ps_pwm.c:711</div></div>
+<div class="ttc" id="aps__pwm_8h_html_ab72487b95590c7cf5bcfe9e4eb2ad43a"><div class="ttname"><a href="ps__pwm_8h.html#ab72487b95590c7cf5bcfe9e4eb2ad43a">pspwm_enable_hw_fault_shutdown</a></div><div class="ttdeci">esp_err_t pspwm_enable_hw_fault_shutdown(mcpwm_unit_t mcpwm_num, const int gpio_fault_shutdown, mcpwm_fault_input_level_t fault_pin_active_level)</div><div class="ttdef"><b>Definition:</b> ps_pwm.c:675</div></div>
+<div class="ttc" id="astructpspwm__clk__conf__t_html"><div class="ttname"><a href="structpspwm__clk__conf__t.html">pspwm_clk_conf_t</a></div><div class="ttdef"><b>Definition:</b> ps_pwm.h:66</div></div>
+<div class="ttc" id="aps__pwm_8h_html_aaf6bfbd819bdf20c4148797a8477ca43"><div class="ttname"><a href="ps__pwm_8h.html#aaf6bfbd819bdf20c4148797a8477ca43">pspwm_up_down_ctr_mode_set_ps_duty</a></div><div class="ttdeci">esp_err_t pspwm_up_down_ctr_mode_set_ps_duty(mcpwm_unit_t mcpwm_num, const float ps_duty)</div><div class="ttdef"><b>Definition:</b> ps_pwm.c:525</div></div>
+<div class="ttc" id="aps__pwm_8h_html_ad72e8ec85dfbb20872a028695c9dde6f"><div class="ttname"><a href="ps__pwm_8h.html#ad72e8ec85dfbb20872a028695c9dde6f">pspwm_resync_enable_output</a></div><div class="ttdeci">esp_err_t pspwm_resync_enable_output(mcpwm_unit_t mcpwm_num)</div><div class="ttdef"><b>Definition:</b> ps_pwm.c:655</div></div>
+<div class="ttc" id="aps__pwm_8h_html_aee579ae2e0f291a356d833a686f4d3fb"><div class="ttname"><a href="ps__pwm_8h.html#aee579ae2e0f291a356d833a686f4d3fb">pspwm_up_ctr_mode_init</a></div><div class="ttdeci">esp_err_t pspwm_up_ctr_mode_init(mcpwm_unit_t mcpwm_num, const int gpio_lead_a, const int gpio_lead_b, const int gpio_lag_a, const int gpio_lag_b, const float frequency, const float ps_duty, const float lead_red, const float lead_fed, const float lag_red, const float lag_fed, const bool output_enabled, mcpwm_action_on_pwmxa_t disable_action_lag_leg, mcpwm_action_on_pwmxa_t disable_action_lead_leg)</div><div class="ttdef"><b>Definition:</b> ps_pwm.c:53</div></div>
+<div class="ttc" id="aps__pwm_8h_html_a9c3c611469c41ed1ae07c55360d5b490"><div class="ttname"><a href="ps__pwm_8h.html#a9c3c611469c41ed1ae07c55360d5b490">pspwm_disable_output</a></div><div class="ttdeci">esp_err_t pspwm_disable_output(mcpwm_unit_t mcpwm_num)</div><div class="ttdef"><b>Definition:</b> ps_pwm.c:640</div></div>
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
 Generated by &#160;<a href="http://www.doxygen.org/index.html">

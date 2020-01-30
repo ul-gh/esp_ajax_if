@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.16"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>ESP32_PS_PWM: dt_conf Struct Reference</title>
+<title>ESP32_PS_PWM: pspwm_setpoint_limits_t Struct Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -41,29 +41,30 @@ $(function() {
 <div class="header">
   <div class="summary">
 <a href="#pub-attribs">Public Attributes</a> &#124;
-<a href="structdt__conf-members.html">List of all members</a>  </div>
+<a href="structpspwm__setpoint__limits__t-members.html">List of all members</a>  </div>
   <div class="headertitle">
-<div class="title">dt_conf Struct Reference</div>  </div>
+<div class="title">pspwm_setpoint_limits_t Struct Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
+
+<p><code>#include &lt;<a class="el" href="ps__pwm_8h_source.html">ps_pwm.h</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:af3e299965ae33443fddb8c23e1bbb7a5"><td class="memItemLeft" align="right" valign="top"><a id="af3e299965ae33443fddb8c23e1bbb7a5"></a>
-float&#160;</td><td class="memItemRight" valign="bottom"><b>lead_red</b></td></tr>
-<tr class="separator:af3e299965ae33443fddb8c23e1bbb7a5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab4c396e4b7098313fdf7e408320f3d68"><td class="memItemLeft" align="right" valign="top"><a id="ab4c396e4b7098313fdf7e408320f3d68"></a>
-float&#160;</td><td class="memItemRight" valign="bottom"><b>lead_fed</b></td></tr>
-<tr class="separator:ab4c396e4b7098313fdf7e408320f3d68"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a28485e0007f995e9b5e409a8954c5f05"><td class="memItemLeft" align="right" valign="top"><a id="a28485e0007f995e9b5e409a8954c5f05"></a>
-float&#160;</td><td class="memItemRight" valign="bottom"><b>lag_red</b></td></tr>
-<tr class="separator:a28485e0007f995e9b5e409a8954c5f05"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9dc810e7a4fa0992aa6b9898022290a9"><td class="memItemLeft" align="right" valign="top"><a id="a9dc810e7a4fa0992aa6b9898022290a9"></a>
-float&#160;</td><td class="memItemRight" valign="bottom"><b>lag_fed</b></td></tr>
-<tr class="separator:a9dc810e7a4fa0992aa6b9898022290a9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a04a83c9b92a3595e7e0f22bdf7dd1fb2"><td class="memItemLeft" align="right" valign="top"><a id="a04a83c9b92a3595e7e0f22bdf7dd1fb2"></a>
+float&#160;</td><td class="memItemRight" valign="bottom"><b>frequency_min</b></td></tr>
+<tr class="separator:a04a83c9b92a3595e7e0f22bdf7dd1fb2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a025b4bdc3c476cc3b8c74edd492a4dac"><td class="memItemLeft" align="right" valign="top"><a id="a025b4bdc3c476cc3b8c74edd492a4dac"></a>
+float&#160;</td><td class="memItemRight" valign="bottom"><b>frequency_max</b></td></tr>
+<tr class="separator:a025b4bdc3c476cc3b8c74edd492a4dac"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a93ed0f0f39b95374af156ba25b85172c"><td class="memItemLeft" align="right" valign="top"><a id="a93ed0f0f39b95374af156ba25b85172c"></a>
+float&#160;</td><td class="memItemRight" valign="bottom"><b>deadtime_sum_max</b></td></tr>
+<tr class="separator:a93ed0f0f39b95374af156ba25b85172c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<hr/>The documentation for this struct was generated from the following file:<ul>
-<li>D:/src/PlatformIO/esp_ajax_if/src/ps_pwm.c</li>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Limiting values for frequency and dead-time settings. These are set by the initialiser and prescaler setter functions contained herein and should be treated read-only </p>
+</div><hr/>The documentation for this struct was generated from the following file:<ul>
+<li>D:/src/PlatformIO/esp_ajax_if/src/<a class="el" href="ps__pwm_8h_source.html">ps_pwm.h</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->

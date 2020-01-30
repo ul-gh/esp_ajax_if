@@ -11,6 +11,7 @@
 #ifndef PS_PWM_H__
 #define PS_PWM_H__
 
+#include <stdbool.h> 
 #include "driver/mcpwm.h"
 
 // Set log level to ESP_LOG_INFO for production!
@@ -51,7 +52,9 @@ typedef struct {
     // All the same for lagging leg
     float lag_red;
     float lag_fed;
-} setpoint_t;
+    // true if output is enabled
+    bool output_enabled;
+} pspwm_setpoint_t;
 
 /** State of the timer counter clock prescaler.
  * MCPWM_INPUT_CLK is 160MHz.
@@ -65,7 +68,7 @@ typedef struct {
     uint8_t timer_clk_prescale;
     float base_clk;
     float timer_clk;
-} clk_conf_t;
+} pspwm_clk_conf_t;
 
 /** Limiting values for frequency and dead-time settings.
  * These are set by the initialiser and prescaler setter functions
@@ -78,7 +81,7 @@ typedef struct {
     // Dead time for each bridge leg must be smaller than this value,
     // both in sum and also both individually. (Minimum is zero.)
     float deadtime_sum_max;
-} setpoint_limits_t;
+} pspwm_setpoint_limits_t;
 
 /********************************************************************//**
  *    FULL-SPEED-MODE, 4x INDIVIDUAL DEAD-TIME, HW-DEAD-TIME-MODULE
@@ -109,6 +112,7 @@ typedef struct {
  * @param lead_fed: dead time value for falling edge, leading leg
  * @param lag_red: dead time value for rising edge, lagging leg
  * @param lag_fed: dead time value for falling edge, lagging leg
+ * @param output_enabled: initial output state (true <==> ON)
  * @param disable_action_lag_leg: Choice of actions when lag bridge leg is disabled
  *                                (See typedef for mcpwm_action_on_pwmxa_t)
  * @param disable_action_lead_leg: Same for lead leg
@@ -120,6 +124,7 @@ esp_err_t pspwm_up_ctr_mode_init(mcpwm_unit_t mcpwm_num,
                                  const float ps_duty,
                                  const float lead_red, const float lead_fed,
                                  const float lag_red, const float lag_fed,
+                                 const bool output_enabled,
                                  mcpwm_action_on_pwmxa_t disable_action_lag_leg,
                                  mcpwm_action_on_pwmxa_t disable_action_lead_leg);
 
@@ -188,6 +193,7 @@ esp_err_t pspwm_up_ctr_mode_set_ps_duty(mcpwm_unit_t mcpwm_num, const float ps_d
  * @param ps_duty: Duty cycle of the rectified waveform (0..1)
  * @param lead_dt: leading bridge-leg dead-time in sec (0..),
  * @param lag_dt: lagging bridge-leg dead-time in sec (0..)
+ * @param output_enabled: initial output state (true <==> ON)
  * @param disable_action_lag_leg: Choice of actions when lag bridge leg is disabled
  *                                (See typedef for mcpwm_action_on_pwmxa_t)
  * @param disable_action_lead_leg: Same for lead leg
@@ -198,6 +204,7 @@ esp_err_t pspwm_up_down_ctr_mode_init(mcpwm_unit_t mcpwm_num,
                                       const float frequency,
                                       const float ps_duty,
                                       const float lead_dt, const float lag_dt,
+                                      const bool output_enabled,
                                       mcpwm_action_on_pwmxa_t disable_action_lag_leg,
                                       mcpwm_action_on_pwmxa_t disable_action_lead_leg);
 
@@ -282,14 +289,23 @@ esp_err_t pspwm_enable_hw_fault_shutdown(mcpwm_unit_t mcpwm_num,
 esp_err_t pspwm_disable_hw_fault_shutdown(mcpwm_unit_t mcpwm_num,
                                           const int gpio_fault_shutdown);
 
-/** Read from PSPWM state the calculated setpoint limits into the given
- *  pointer to struct setpoint_limits_t.
+/** Read from PSPWM state the calculated setpoint into the given
+ *  pointer to struct pspwm_setpoint_t.
  * 
  * @param mcpwm_num: PWM unit number (enum, MCPWM_UNIT_0 = 0, MCPWM_UNIT_1 = 1),
- * @param setpoint_limits: Pointer to a struct instance of setpoint_limits_t
+ * @param setpoint: Pointer to a struct instance of pspwm_setpoint_t
  */
-esp_err_t pspwm_get_setpoint_limits(mcpwm_unit_t mcpwm_num,
-                                    setpoint_limits_t** setpoint_limits);
+esp_err_t pspwm_get_setpoint_ptr(mcpwm_unit_t mcpwm_num,
+                                 pspwm_setpoint_t** setpoint);
+
+/** Read from PSPWM state the calculated setpoint limits into the given
+ *  pointer to struct pspwm_setpoint_limits_t.
+ * 
+ * @param mcpwm_num: PWM unit number (enum, MCPWM_UNIT_0 = 0, MCPWM_UNIT_1 = 1),
+ * @param setpoint_limits: Pointer to a struct instance of pspwm_setpoint_limits_t
+ */
+esp_err_t pspwm_get_setpoint_limits_ptr(mcpwm_unit_t mcpwm_num,
+                                        pspwm_setpoint_limits_t** setpoint_limits);
 
 #ifdef __cplusplus
 }

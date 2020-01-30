@@ -9,11 +9,11 @@
 /* Configure WiFi for Access Point Mode
  */
 void setup_wifi_hostap() {
-    //WiFi.mode(WIFI_AP);
+    WiFi.mode(WIFI_AP);
     //info_print_sv(
     //    "Setting soft-AP configuration ...",
     //    WiFi.softAPConfig(ap_ip, ap_gateway, ap_subnet) ? "Ready" : "Failed!");
-    //WiFi.softAPsetHostname(hostName);
+    WiFi.softAPsetHostname(hostName);
     info_print_sv(
         "Setting soft-AP ...",
         WiFi.softAP(ap_ssid, ap_psk) ? "Ready" : "Failed!");

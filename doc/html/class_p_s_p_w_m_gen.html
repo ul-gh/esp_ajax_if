@@ -42,6 +42,7 @@ $(function() {
   <div class="summary">
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="#pub-attribs">Public Attributes</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
 <a href="class_p_s_p_w_m_gen-members.html">List of all members</a>  </div>
   <div class="headertitle">
 <div class="title">PSPWMGen Class Reference</div>  </div>
@@ -50,33 +51,69 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a74b069e5531d81cc95a4e831af951af3"><td class="memItemLeft" align="right" valign="top"><a id="a74b069e5531d81cc95a4e831af951af3"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>PSPWMGen</b> (<a class="el" href="class_h_t_t_p_server.html">HTTPServer</a> &amp;http_server)</td></tr>
-<tr class="separator:a74b069e5531d81cc95a4e831af951af3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a66d6af327546e72dae34b49ea5dc3e05"><td class="memItemLeft" align="right" valign="top"><a id="a66d6af327546e72dae34b49ea5dc3e05"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>register_remote_control</b> (<a class="el" href="class_h_t_t_p_server.html">HTTPServer</a> &amp;http_server)</td></tr>
-<tr class="separator:a66d6af327546e72dae34b49ea5dc3e05"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0f82480e2579eb277e0b973d56efa507"><td class="memItemLeft" align="right" valign="top"><a id="a0f82480e2579eb277e0b973d56efa507"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>PSPWMGen</b> (<a class="el" href="class_a_p_i_server.html">APIServer</a> &amp;api_server)</td></tr>
+<tr class="separator:a0f82480e2579eb277e0b973d56efa507"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a41159499255ef71518854814e07b3898"><td class="memItemLeft" align="right" valign="top"><a id="a41159499255ef71518854814e07b3898"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>register_remote_control</b> (<a class="el" href="class_a_p_i_server.html">APIServer</a> &amp;api_server)</td></tr>
+<tr class="separator:a41159499255ef71518854814e07b3898"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:aa2e13258b44f0a744f18c4fc59996936"><td class="memItemLeft" align="right" valign="top"><a id="aa2e13258b44f0a744f18c4fc59996936"></a>
-float&#160;</td><td class="memItemRight" valign="bottom"><b>frequency</b> {20e3}</td></tr>
-<tr class="separator:aa2e13258b44f0a744f18c4fc59996936"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa5eb2db152c1d731cd49611d2c912446"><td class="memItemLeft" align="right" valign="top"><a id="aa5eb2db152c1d731cd49611d2c912446"></a>
-float&#160;</td><td class="memItemRight" valign="bottom"><b>ps_duty</b> {0.45}</td></tr>
-<tr class="separator:aa5eb2db152c1d731cd49611d2c912446"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a36cafba96f842068b6dc88eebe1a76cc"><td class="memItemLeft" align="right" valign="top"><a id="a36cafba96f842068b6dc88eebe1a76cc"></a>
-float&#160;</td><td class="memItemRight" valign="bottom"><b>lead_dt</b> {300e-9}</td></tr>
-<tr class="separator:a36cafba96f842068b6dc88eebe1a76cc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4fa6efa1d2c718126848ac39e70226bf"><td class="memItemLeft" align="right" valign="top"><a id="a4fa6efa1d2c718126848ac39e70226bf"></a>
-float&#160;</td><td class="memItemRight" valign="bottom"><b>lag_dt</b> {300e-9}</td></tr>
-<tr class="separator:a4fa6efa1d2c718126848ac39e70226bf"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a70daf5fe8081484de635576559776de2"><td class="memItemLeft" align="right" valign="top"><a id="a70daf5fe8081484de635576559776de2"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>output_enabled</b> {false}</td></tr>
-<tr class="separator:a70daf5fe8081484de635576559776de2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa4db4eb868def7b86a8341d4bd34eecb"><td class="memItemLeft" align="right" valign="top"><a id="aa4db4eb868def7b86a8341d4bd34eecb"></a>
+<a class="el" href="structpspwm__setpoint__t.html">pspwm_setpoint_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>pspwm_setpoint</b></td></tr>
+<tr class="separator:aa4db4eb868def7b86a8341d4bd34eecb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a29ed71658c9a67ea0bbe03a6bb89f823"><td class="memItemLeft" align="right" valign="top"><a id="a29ed71658c9a67ea0bbe03a6bb89f823"></a>
+<a class="el" href="structpspwm__setpoint__limits__t.html">pspwm_setpoint_limits_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>pspwm_setpoint_limits</b></td></tr>
+<tr class="separator:a29ed71658c9a67ea0bbe03a6bb89f823"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:ada8baa7ed5a47818064d1fcaaf76d155"><td class="memItemLeft" align="right" valign="top"><a id="ada8baa7ed5a47818064d1fcaaf76d155"></a>
+static constexpr mcpwm_unit_t&#160;</td><td class="memItemRight" valign="bottom"><b>mcpwm_num</b> = MCPWM_UNIT_0</td></tr>
+<tr class="separator:ada8baa7ed5a47818064d1fcaaf76d155"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af19da2fdae5c03914b11ca9850fb9a8b"><td class="memItemLeft" align="right" valign="top"><a id="af19da2fdae5c03914b11ca9850fb9a8b"></a>
+static constexpr int&#160;</td><td class="memItemRight" valign="bottom"><b>gpio_pwm0a_out</b> = 27</td></tr>
+<tr class="separator:af19da2fdae5c03914b11ca9850fb9a8b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad37f6716d3d7c6700026e34df1f797fe"><td class="memItemLeft" align="right" valign="top"><a id="ad37f6716d3d7c6700026e34df1f797fe"></a>
+static constexpr int&#160;</td><td class="memItemRight" valign="bottom"><b>gpio_pwm0b_out</b> = 26</td></tr>
+<tr class="separator:ad37f6716d3d7c6700026e34df1f797fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aba420fd4494c52070877abe0caeaa79b"><td class="memItemLeft" align="right" valign="top"><a id="aba420fd4494c52070877abe0caeaa79b"></a>
+static constexpr int&#160;</td><td class="memItemRight" valign="bottom"><b>gpio_pwm1a_out</b> = 25</td></tr>
+<tr class="separator:aba420fd4494c52070877abe0caeaa79b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9a6e701c154f5a30d797b5231d2735bc"><td class="memItemLeft" align="right" valign="top"><a id="a9a6e701c154f5a30d797b5231d2735bc"></a>
+static constexpr int&#160;</td><td class="memItemRight" valign="bottom"><b>gpio_pwm1b_out</b> = 33</td></tr>
+<tr class="separator:a9a6e701c154f5a30d797b5231d2735bc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad50ead389877c0487704b434ea3b772e"><td class="memItemLeft" align="right" valign="top"><a id="ad50ead389877c0487704b434ea3b772e"></a>
+static constexpr int&#160;</td><td class="memItemRight" valign="bottom"><b>gpio_fault_shutdown</b> = 4</td></tr>
+<tr class="separator:ad50ead389877c0487704b434ea3b772e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a54b517644605606dd1d36e44de5c0097"><td class="memItemLeft" align="right" valign="top"><a id="a54b517644605606dd1d36e44de5c0097"></a>
+static constexpr mcpwm_fault_input_level_t&#160;</td><td class="memItemRight" valign="bottom"><b>fault_pin_active_level</b> = MCPWM_LOW_LEVEL_TGR</td></tr>
+<tr class="separator:a54b517644605606dd1d36e44de5c0097"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aef158acc3f5e42466bab6015c8802b55"><td class="memItemLeft" align="right" valign="top"><a id="aef158acc3f5e42466bab6015c8802b55"></a>
+static constexpr mcpwm_action_on_pwmxa_t&#160;</td><td class="memItemRight" valign="bottom"><b>disable_action_lag_leg</b> = MCPWM_FORCE_MCPWMXA_LOW</td></tr>
+<tr class="separator:aef158acc3f5e42466bab6015c8802b55"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad5884e04f6701a37d32103a924be45a6"><td class="memItemLeft" align="right" valign="top"><a id="ad5884e04f6701a37d32103a924be45a6"></a>
+static constexpr mcpwm_action_on_pwmxa_t&#160;</td><td class="memItemRight" valign="bottom"><b>disable_action_lead_leg</b> = MCPWM_FORCE_MCPWMXA_LOW</td></tr>
+<tr class="separator:ad5884e04f6701a37d32103a924be45a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab690f4c654d93b5fd8c919330f1dfca3"><td class="memItemLeft" align="right" valign="top"><a id="ab690f4c654d93b5fd8c919330f1dfca3"></a>
+static constexpr float&#160;</td><td class="memItemRight" valign="bottom"><b>init_frequency</b> {100e3}</td></tr>
+<tr class="separator:ab690f4c654d93b5fd8c919330f1dfca3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab74c9be55b81248cb5c1374924ac8b51"><td class="memItemLeft" align="right" valign="top"><a id="ab74c9be55b81248cb5c1374924ac8b51"></a>
+static constexpr float&#160;</td><td class="memItemRight" valign="bottom"><b>init_ps_duty</b> {0.45}</td></tr>
+<tr class="separator:ab74c9be55b81248cb5c1374924ac8b51"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acb6330bc7d868198cc80e2b69c7f03b5"><td class="memItemLeft" align="right" valign="top"><a id="acb6330bc7d868198cc80e2b69c7f03b5"></a>
+static constexpr float&#160;</td><td class="memItemRight" valign="bottom"><b>init_lead_dt</b> {125e-9}</td></tr>
+<tr class="separator:acb6330bc7d868198cc80e2b69c7f03b5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0abfdd61937c0e5c6d98fd318657af42"><td class="memItemLeft" align="right" valign="top"><a id="a0abfdd61937c0e5c6d98fd318657af42"></a>
+static constexpr float&#160;</td><td class="memItemRight" valign="bottom"><b>init_lag_dt</b> {125e-9}</td></tr>
+<tr class="separator:a0abfdd61937c0e5c6d98fd318657af42"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9c87d581b7bcc967e5d86a347a26fa25"><td class="memItemLeft" align="right" valign="top"><a id="a9c87d581b7bcc967e5d86a347a26fa25"></a>
+static constexpr bool&#160;</td><td class="memItemRight" valign="bottom"><b>init_output_enabled</b> {false}</td></tr>
+<tr class="separator:a9c87d581b7bcc967e5d86a347a26fa25"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <hr/>The documentation for this class was generated from the following files:<ul>
-<li>D:/src/PlatformIO/esp_ajax_if/src/<a class="el" href="app__hw__control_8h_source.html">app_hw_control.h</a></li>
+<li>D:/src/PlatformIO/esp_ajax_if/src/<a class="el" href="app__hw__control_8hpp_source.html">app_hw_control.hpp</a></li>
 <li>D:/src/PlatformIO/esp_ajax_if/src/app_hw_control.cpp</li>
 </ul>
 </div><!-- contents -->
