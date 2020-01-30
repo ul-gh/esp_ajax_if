@@ -152,6 +152,8 @@ esp_err_t pspwm_up_ctr_mode_set_frequency(mcpwm_unit_t mcpwm_num,
             ERROR("Frequency setpoint out of range!");
             return ESP_FAIL;
     }
+    // Set global state
+    setpoints[mcpwm_num]->frequency = frequency;
     uint32_t timer_top = (uint32_t)(clk_conf.timer_clk / frequency) - 1;
     uint32_t cmpr_0_a = (uint32_t)(
         0.5 * (timer_top + clk_conf.timer_clk * (setpoints[mcpwm_num]->lead_red 
@@ -248,6 +250,8 @@ esp_err_t pspwm_up_ctr_mode_set_deadtimes(mcpwm_unit_t mcpwm_num,
     module->channel[MCPWM_TIMER_0].cmpr_value[MCPWM_OPR_A].cmpr_val = cmpr_0_a;
     module->channel[MCPWM_TIMER_1].cmpr_value[MCPWM_OPR_A].cmpr_val = cmpr_1_a;
     portEXIT_CRITICAL(&mcpwm_spinlock);
+    DBG("cmpr_0_a register value: %d", cmpr_0_a);
+    DBG("cmpr_1_a register value: %d", cmpr_1_a);
     DBG("Dead time registers for LEAD set to: %d (rising edge), %d (falling edge)",
         lead_red_reg, lead_fed_reg);
     DBG("Dead time registers for LAG set to: %d (rising edge), %d (falling edge)",
@@ -263,6 +267,8 @@ esp_err_t pspwm_up_ctr_mode_set_ps_duty(mcpwm_unit_t mcpwm_num, const float ps_d
         ERROR("Invalid setpoint value for ps_duty");
         return ESP_FAIL;
     }
+    // Set global state
+    setpoints[mcpwm_num]->ps_duty = ps_duty;
     portENTER_CRITICAL(&mcpwm_spinlock);
     uint32_t curr_period = MCPWM[mcpwm_num]->timer[MCPWM_TIMER_0].period.period;
     uint32_t phase_setval = (uint32_t)(curr_period * ps_duty / 2);
@@ -433,6 +439,8 @@ esp_err_t pspwm_up_down_ctr_mode_set_frequency(mcpwm_unit_t mcpwm_num,
             ERROR("Frequency setpoint out of range!");
             return ESP_FAIL;
     }
+    // Set global state
+    setpoints[mcpwm_num]->frequency = frequency;
     uint32_t timer_top = (uint32_t)(0.5 * clk_conf.timer_clk / frequency);
     uint32_t cmpr_lead_a = (uint32_t)(
         0.5 * clk_conf.timer_clk * setpoints[mcpwm_num]->lead_red);
@@ -515,6 +523,8 @@ esp_err_t pspwm_up_down_ctr_mode_set_ps_duty(mcpwm_unit_t mcpwm_num,
         ERROR("Invalid setpoint value for ps_duty");
         return ESP_FAIL;
     }
+    // Set global state
+    setpoints[mcpwm_num]->ps_duty = ps_duty;
     portENTER_CRITICAL(&mcpwm_spinlock);
     uint32_t curr_period = MCPWM[mcpwm_num]->timer[MCPWM_TIMER_0].period.period;
     uint32_t phase_setval = (uint32_t)(curr_period * ps_duty);
