@@ -33,10 +33,16 @@ static const uint16_t timer_top_min = 4;
 extern "C" {
 #endif
 
-/** Dead time settings for both MCPWM hardware modules are defined as lead and
+/** Static structure holds the inter-dependent setpoint values for PWM timing.
+ * Frequency in Hz. Phase-shift in percent of a half timer period.
+ * Dead time settings for both MCPWM hardware modules are defined as lead and
  * lag bridge-leg low-side output rising and falling edge dead-times in seconds
  */
 typedef struct {
+    // Frequency setpoint
+    float frequency;
+    // Phase shift setpoint
+    float ps_duty;
     // Lead leg, dead time for rising edge (up_ctr_mode)
     // or both edges (up_down_ctr_mode)
     float lead_red;
@@ -45,7 +51,7 @@ typedef struct {
     // All the same for lagging leg
     float lag_red;
     float lag_fed;
-} dt_conf_t;
+} setpoint_t;
 
 /** State of the timer counter clock prescaler.
  * MCPWM_INPUT_CLK is 160MHz.
