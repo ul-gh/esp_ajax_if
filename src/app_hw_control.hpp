@@ -2,7 +2,8 @@
 #define APP_HW_CONTROL_HPP__
 
 #include "driver/mcpwm.h"
-#include "http_server.h"
+#include "ps_pwm.h"
+#include "api_server.hpp"
 
 class PSPWMGen
 /* Preset runtime values configuration:
@@ -31,17 +32,21 @@ public:
     // Lead leg might have a different configuration, e.g. stay at last output level
     static constexpr mcpwm_action_on_pwmxa_t disable_action_lead_leg = MCPWM_FORCE_MCPWMXA_LOW;
 
-    float frequency{100e3};
-    float ps_duty{0.45};
-    float lead_dt{125e-9};
-    float lag_dt{125e-9};
-    bool output_enabled{false};
+    // Initial state
+    static constexpr float init_frequency{100e3};
+    static constexpr float init_ps_duty{0.45};
+    static constexpr float init_lead_dt{125e-9};
+    static constexpr float init_lag_dt{125e-9};
+    static constexpr bool init_output_enabled{false};
 
-    PSPWMGen(HTTPServer &http_server);
+    pspwm_setpoint_t* pspwm_setpoint;
+    pspwm_setpoint_limits_t* pspwm_setpoint_limits;
+
+    PSPWMGen(APIServer &api_server);
     // virtual ~PSPWMGen();
 
     // Register hw control functions as request handlers with the HTPP server
-    void register_remote_control(HTTPServer &http_server);
+    void register_remote_control(APIServer &api_server);
 };
 
 #endif

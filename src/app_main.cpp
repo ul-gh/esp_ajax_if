@@ -3,56 +3,52 @@
 #include <DNSServer.h>
 #include <ESPmDNS.h>
 #include <WiFi.h>
-#include <SPIFFS.h>
+#include <AsyncTCP.h>
+#include <ESPAsyncWebServer.h>
+//#include <ESPAsyncWiFiManager.h>
 
 #include "wifi_setup.hpp"
-#include "http_server.h"
+#include "api_server.hpp"
 #include "app_hw_control.hpp"
 
-#define SERIAL_BAUD 115200
+constexpr unsigned long serial_baudrate = 115200;
+// TCP socket port number
+constexpr uint16_t tcp_port = 80;
 
-// DNSServer dnsServer;
-// AsyncWebServer http_server(80);
-// Server-Sent Events (SSE) enable push updates on clients
-// AsyncEventSource events("/events");
+// ESPAsyncWebserver must be one single instance
+AsyncWebServer http_backend{tcp_port};
+// DNS resolution for captive portal page etc.
+DNSServer* dns_server;
+// Wifi connection manager
+//AsyncWiFiManager* wifi_manager;
 
-// ISOCAL HTTP server provides REST API + HTML5 AJAX web interface on port 80
-HTTPServer http_server{80};
+// HTTP server provides REST API + HTML5 AJAX web interface on port 80
+APIServer* api_server;
+
 // PS-PWM generator instance is remote-controlled by the HTTP server
-PSPWMGen ps_pwm_generator{http_server};
+PSPWMGen* ps_pwm_generator;
 
 void setup() {
-    Serial.begin(SERIAL_BAUD);
-    setup_wifi_station();
-    //setup_wifi_hostap();
-    Serial.println();
-
-    if (!SPIFFS.begin(true)) {
-        Serial.println("Error mounting SPI Flash File System");
-        return;
-    }
-
-    // dnsServer.start(53, "*", WiFi.softAPIP());
-    // attach AsyncEventSource
-    // server.addHandler(&events);
-
-    http_server.begin();
-    esp_log_level_set("*", ESP_LOG_DEBUG);
+    //esp_log_level_set("*", ESP_LOG_DEBUG);
+    Serial.begin(serial_baudrate);
+    //setup_wifi_station(); // Optional, when not using AsyncWifiManager
+    setup_wifi_hostap(); // Optional, when not using AsyncWifiManager
+    http_backend.begin(); // Needed when not using AsyncWifiManager!
+    //delay(300);
+    //dns_server = new DNSServer{};
+    // Disable above setup_wifi... calls when using AsyncWifiManager
+    //wifi_manager = new AsyncWiFiManager{&http_backend, dns_server};
+    //wifi_manager->resetSettings(); // For Debug etc.
+    //wifi_manager->startConfigPortal("Isocal_Access_Point"); // Debug or special
+    //wifi_manager->autoConnect("Isocal_Access_Point");
+    //wifi_manager->setConfigPortalTimeout(180);
+    api_server = new APIServer{&http_backend};
+    ps_pwm_generator = new PSPWMGen{*api_server};
+    api_server->activate_events_on("/events");
+    api_server->activate_default_callbacks();
 }
 
 void loop() {
-    static uint32_t timer_ctr = 0;
-    // dnsServer.processNextRequest();
-    ++timer_ctr;
-    // Once every second
-    if (timer_ctr > 50*1) {
-        timer_ctr = 0;
-        http_server.event_source.send("OK", "heartbeat", millis());
-    }
-    if (http_server.reboot_requested) {
-        Serial.println("Rebooting...");
-        delay(100);
-        ESP.restart();
-    }
-    delay(20);
+    // Application runs asynchronously, you can do anything here except
+    // blocking for prolonged periods.
 }
