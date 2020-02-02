@@ -1,5 +1,5 @@
-#ifndef __WIFI_SETUP_HPP__
-#define __WIFI_SETUP_HPP__
+#ifndef WIFI_SETUP_HPP__
+#define WIFI_SETUP_HPP__
 
 // At initilisation phase, wifi stack debug output suppresses serial console
 // output for a certaion time. Setting a small delay here adds to bootup time

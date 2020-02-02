@@ -6,7 +6,7 @@
  * 
  * @note This depends on the ESP-IDF SDK
  *
- * 2019-12-11 Ulrich Lukas
+ * 2020-01-31 Ulrich Lukas
  */
 #ifndef PS_PWM_H__
 #define PS_PWM_H__
@@ -23,12 +23,14 @@
 #define MCPWM_INPUT_CLK 160000000 // 160 MHz
 // Hardware prescaler factor for input clock.
 // Dead time generators are configured to run on this scaled clock signal
-#define BASE_CLK_PRESCALE_DEFAULT 4
+// Valid values are 1...255
+#define BASE_CLK_PRESCALE_DEFAULT 1
 // Hardware prescaler factor for timer operator sub-modules
-#define TIMER_CLK_PRESCALE_DEFAULT 4
+// Valid values are 1...255
+#define TIMER_CLK_PRESCALE_DEFAULT 1
 // Minimum timer counter TOP value / timer resolution for calculation of
 // frequency_min value and subsequent range checking of frequency setpoint
-static const uint16_t timer_top_min = 4;
+static const uint16_t period_min = 4;
 
 #ifdef __cplusplus
 extern "C" {
@@ -311,4 +313,4 @@ esp_err_t pspwm_get_setpoint_limits_ptr(mcpwm_unit_t mcpwm_num,
 }
 #endif
 
-#endif  /* __PS_PWM_H__ */
+#endif  /* PS_PWM_H__ */

@@ -126,4 +126,4 @@ public:
 }; // class CaptiveRequestHandler
 #endif
 
-#endif
+#endif /* API_SERVER_HPP__ */

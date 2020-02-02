@@ -5,13 +5,24 @@
 #include "ps_pwm.h"
 #include "api_server.hpp"
 
-class PSPWMGen
-/* Preset runtime values configuration:
- *
- * Frequency 20 kHz,
- * phase-shift duty cycle of 45% per output or 90% of rectified waveform,
- * dead-time 300 ns both bridge outputs.
+/** PSPWMGen - Phase-Shift PWM output generation on ESP32 platform
+ * 
+ * By default, the symmetric-drive API is used.
+ * This allows the setting of two individual dead-time values
+ * for the leading and lagging driver output half-bridge-leg
+ * and enforces a DC-free symmetric output waveform.
+ * 
+ * In order to allow four individual dead-time values, i.e. different
+ * settings for both outputs of each half-bridge-leg, uncomment the
+ * #define USE_ASYMMETRIC_FULL_SPEED_DRIVE_API line.
+ * 
+ * Asymmetric drive allows twice the maximum output frequency by using
+ * the hardware dead-time generator module but output is not guaranteed
+ * DC-free.
  */
+//#define USE_ASYMMETRIC_FULL_SPEED_DRIVE_API
+#define USE_SYMMETRIC_DC_FREE_DRIVE_API
+class PSPWMGen
 {
 public:
     // MCPWM unit can be [0,1]

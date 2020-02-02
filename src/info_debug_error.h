@@ -1,5 +1,8 @@
-#ifndef __INFO_DEBUG_ERROR_H__
-#define __INFO_DEBUG_ERROR_H__
+// Arduino-compatible debug print macros.
+// These are optimized-away completely with no run-time overhead
+// when DEBUG is set to zero.
+#ifndef INFO_DEBUG_ERROR_H__
+#define INFO_DEBUG_ERROR_H__
 
 #include <HardwareSerial.h>
 

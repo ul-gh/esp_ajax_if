@@ -43,6 +43,8 @@ void setup() {
     //wifi_manager->autoConnect("Isocal_Access_Point");
     //wifi_manager->setConfigPortalTimeout(180);
     api_server = new APIServer{&http_backend};
+    esp_log_level_set("*", ESP_LOG_DEBUG);
+    delay(1000);
     ps_pwm_generator = new PSPWMGen{*api_server};
     api_server->activate_events_on("/events");
     api_server->activate_default_callbacks();
