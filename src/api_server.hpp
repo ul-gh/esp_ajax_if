@@ -23,6 +23,10 @@ using CbIntT = std::function<void(const int)>;
 // Callback function without arguments
 using CbVoidT = std::function<void(void)>;
 
+// Callback function without arguments returning a const char*.
+// This is used for register_heartbeat_cb().
+using HeartbeatCbT = std::function<const char*(void)>;
+
 // Mapping used for resolving command strings received via HTTP request
 // on the "/cmd" endpoint to specialised request handlers
 using CmdMapT = std::map<String, CbStringT>;
@@ -46,36 +50,62 @@ public:
     APIServer(AsyncWebServer* http_backend);
     ~APIServer();
 
-    // Set an entry in the template processor string <=> string mapping 
+    /** Set an entry in the template processor string <=> string mapping
+     */
     void set_template(const char* placeholder, const char* replacement);
 
-    // Activate event source for Server-Sent Events on specified endpoint
+    /** Activate event source for Server-Sent Events on specified endpoint
+     */
     void activate_events_on(const char* endpoint);
 
     /** Setup HTTP request callbacks to a common API endpoint,
      *  distinguished by individual command names.
+     *
+     * Overload for string argument callbacks:
      */
-    // Overload for string callbacks
     void register_api_cb(const char* cmd_name, CbStringT cmd_callback);
-    // Overload for float callbacks
+    /** Setup HTTP request callbacks to a common API endpoint,
+     *  distinguished by individual command names.
+     *
+     * Overload for float argument callbacks:
+     */
     void register_api_cb(const char* cmd_name, CbFloatT cmd_callback);
-    // Overload for int callbacks
+    /** Setup HTTP request callbacks to a common API endpoint,
+     *  distinguished by individual command names.
+     *
+     * Overload for integer argument callbacks:
+     */
     void register_api_cb(const char* cmd_name, CbIntT cmd_callback);
-    // Overload for void callbacks
+    /** Setup HTTP request callbacks to a common API endpoint,
+     *  distinguished by individual command names.
+     *
+     * Overload for void argument callbacks:
+     */
     void register_api_cb(const char* cmd_name, CbVoidT cmd_callback);
 
-    // Start execution, includes starting the ESPAsyncWebServer backend.
-    // Do not call this when using WifiManger or when backend has been
-    // activated before by other means
+    /** One optional function object can be registered and is called when
+     * the periodic heartbeat timer event occurs. This is initialised empty.
+     */
+    void register_heartbeat_cb(HeartbeatCbT heartbeat_callback);
+
+    /** Start execution, includes starting the ESPAsyncWebServer backend.
+     * Do not call this when using WifiManger or when backend has been
+     * activated before by other means
+     */
     void begin();
 
-    // Start execution, assuming the backend server is started elsewhere
+    /** Start execution, assuming the backend server is started elsewhere
+     */
     void activate_default_callbacks();
 
 
 private:
     // Async event timer
     Ticker event_timer;
+
+    // One optional function object can be registered and is called when
+    // the periodic heartbeat timer event occurs. This is initialised empty.
+    HeartbeatCbT heartbeat_cb = {};
 
     // Timer update for heartbeats, reboot etc
     // Static function wraps member function to obtain C API callback

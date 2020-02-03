@@ -97,6 +97,13 @@ PSPWMGen::PSPWMGen(APIServer &api_server) {
         return;
     }
     //pspwm_enable_hw_fault_shutdown(mcpwm_num, gpio_fault_shutdown, MCPWM_LOW_LEVEL_TGR);
+    api_server.register_heartbeat_cb([api_server]() {
+        if(pspwm_get_hw_fault_shutdown_status(mcpwm_num)) {
+            return shutdown_message;
+        } else {
+            return normal_message;
+        }
+    });
     register_remote_control(api_server);
 }
 

@@ -87,6 +87,15 @@ void APIServer::register_api_cb(const char* cmd_name,
     debug_print_sv("Registered void command:", cmd_name);
 }
 
+// One optional function object can be registered and is called when
+// the periodic heartbeat timer event occurs.
+// The callback is supposed to return a const char* pointing to a message
+// which is then sent via the Server Sent Event Source.
+void APIServer::register_heartbeat_cb(HeartbeatCbT heartbeat_callback) {
+    heartbeat_cb = heartbeat_callback;
+    debug_print("Registered Heartbeat callback");
+}
+
 void APIServer::begin() {
     activate_default_callbacks();
     backend->begin();
@@ -147,8 +156,17 @@ void APIServer::activate_default_callbacks() {
 // Timer update for heartbeats, reboot etc
 // Static function wraps member function to obtain C API callback
 void APIServer::on_timer_event(APIServer* self) {
+    // If a callback function object is registered for the heartebat timer
+    // event, this is called first.
+    const char* heartbeat_message;
+    if (self->heartbeat_cb) {
+        debug_print("Calling heartbeat timer event callback");
+        heartbeat_message = self->heartbeat_cb();
+    } else {
+        heartbeat_message = heartbeat_default_message;
+    }
     if (sending_heartbeats && self->event_source != nullptr) {
-        self->event_source->send("OK", "heartbeat");
+        self->event_source->send(heartbeat_message, "heartbeat");
     }
     if (self->reboot_requested) {
         debug_print("Rebooting...");

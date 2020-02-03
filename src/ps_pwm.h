@@ -85,6 +85,23 @@ typedef struct {
     float deadtime_sum_max;
 } pspwm_setpoint_limits_t;
 
+/** Interrupt enable flags for PSPWM.
+ * 
+ * These extend those specified in ESP-IDF API in file
+ * soc/include/hal/mcpwm_types.h.
+ * 
+ * Please see description in technical reference datasheet:
+ * Register 16.69: INT_ENA_PWM_REG (0x0110)
+ */
+typedef enum {
+    PSPWM_INT_TIMER0_TEZ_INT = BIT(3), ///< Timer 0 TEZ event triggered
+    PSPWM_INT_FAULT0_INT = BIT(9), ///< Fault event_f0 started
+    PSPWM_INT_FH0_OST_INT = BIT(24), ///< Fault FH0 One-Shot-Mode triggered
+    //MCPWM_LL_INTR_CAP0 = BIT(27), ///< Capture 0 happened
+    //MCPWM_LL_INTR_CAP1 = BIT(28), ///< Capture 1 happened
+    //MCPWM_LL_INTR_CAP2 = BIT(29), ///< Capture 2 happened
+} pspwm_intr_t;
+
 /********************************************************************//**
  *    FULL-SPEED-MODE, 4x INDIVIDUAL DEAD-TIME, HW-DEAD-TIME-MODULE
  ************************************************************************
@@ -254,6 +271,13 @@ esp_err_t pspwm_up_down_ctr_mode_set_ps_duty(mcpwm_unit_t mcpwm_num,
  *                         COMMON SETUP
  *****************************************************************/
 
+/** Returns true when the hardware fault shutdown pin has been activated.
+ * 
+ * The state remains true (shutdown activated) as long as hw status has
+ * not been cleared by a call to pspwm_resync_enable_output().
+ */
+bool pspwm_get_hw_fault_shutdown_status(mcpwm_unit_t mcpwm_num);
+
 /** Disable PWM output immediately by software-triggering the one-shot
  * fault input of the "trip-zone" fault handler module.
  * 
@@ -308,6 +332,17 @@ esp_err_t pspwm_get_setpoint_ptr(mcpwm_unit_t mcpwm_num,
  */
 esp_err_t pspwm_get_setpoint_limits_ptr(mcpwm_unit_t mcpwm_num,
                                         pspwm_setpoint_limits_t** setpoint_limits);
+
+// Enable interrupts...
+esp_err_t pspwm_enable_interrupts(mcpwm_unit_t mcpwm_num,
+                                  uint32_t mcpwm_interrupt_enable_mask);
+
+/* Interrupt handler called on activation of MCPWM_UNIT_0 stage interrupts,
+ * e.g. on hardware fault "tripzone" input trigger.
+ * 
+ * You need to implement this if needed.
+ */
+static void IRAM_ATTR pspwm_unit0_isr_handler(void* arg);
 
 #ifdef __cplusplus
 }

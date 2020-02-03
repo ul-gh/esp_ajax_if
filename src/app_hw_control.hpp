@@ -50,6 +50,11 @@ public:
     static constexpr float init_lag_dt{125e-9};
     static constexpr bool init_output_enabled{false};
 
+    // Message to send via HTTP Server-Sent-Events when HW shutdown occurs
+    static constexpr const char* shutdown_message = "Hardware Shutdown occurred!";
+    // Normal reply
+    static constexpr const char* normal_message = "OK";
+
     pspwm_setpoint_t* pspwm_setpoint;
     pspwm_setpoint_limits_t* pspwm_setpoint_limits;
 
@@ -58,6 +63,9 @@ public:
 
     // Register hw control functions as request handlers with the HTPP server
     void register_remote_control(APIServer &api_server);
+
+private:
+    static void IRAM_ATTR fault_isr_handler(void* unused);
 };
 
 #endif

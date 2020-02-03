@@ -663,6 +663,17 @@ void _pspwm_setup_fault_handler_module(mcpwm_unit_t mcpwm_num,
  *                         COMMON SETUP                          *
  *****************************************************************
  */
+bool pspwm_get_hw_fault_shutdown_status(mcpwm_unit_t mcpwm_num) {
+    bool status;
+    portENTER_CRITICAL(&mcpwm_spinlock);
+    // Register 16.58: PWM_FAULT_DETECT_REG (0x00e4)
+    //status = (bool)MCPWM[mcpwm_num]->fault_detect.event_f0;
+    // Register 16.29: PWM_FH0_STATUS_REG (0x0070)
+    status = (bool)MCPWM[mcpwm_num]->channel[MCPWM_TIMER_0].tz_status.ost_on;
+    portEXIT_CRITICAL(&mcpwm_spinlock);
+    return status;
+}
+
 esp_err_t pspwm_disable_output(mcpwm_unit_t mcpwm_num)
 {
     DBG("Disabling output!");
@@ -750,4 +761,28 @@ esp_err_t pspwm_get_setpoint_limits_ptr(mcpwm_unit_t mcpwm_num,
     }
     *setpoint_limits = s_setpoint_limits[mcpwm_num];
     return ESP_OK;
+}
+
+esp_err_t pspwm_enable_interrupts(mcpwm_unit_t mcpwm_num,
+                                  uint32_t mcpwm_interrupt_enable_mask) {
+    portENTER_CRITICAL(&mcpwm_spinlock);
+    MCPWM[mcpwm_num]->int_ena.val = mcpwm_interrupt_enable_mask;
+    portEXIT_CRITICAL(&mcpwm_spinlock);
+    return mcpwm_isr_register(
+        mcpwm_num, pspwm_unit0_isr_handler, NULL, ESP_INTR_FLAG_IRAM, NULL);
+}
+
+/* Interrupt handler called on activation of MCPWM_UNIT_0 stage interrupts,
+ * e.g. on hardware fault "tripzone" input trigger.
+ * 
+ * You need to implement this if needed.
+ */
+void pspwm_unit0_isr_handler(void* arg) {
+    uint32_t interrupt_status = MCPWM[MCPWM_UNIT_0]->int_st.val;
+    DBG("pspwm interrupt handler called. Interrupt status: %x",
+        interrupt_status);
+    if (interrupt_status & (uint32_t)PSPWM_INT_FAULT0_INT) {
+        DBG("Fault event_f0 triggered");
+    }
+    MCPWM[MCPWM_UNIT_0]->int_clr.val = interrupt_status;
 }

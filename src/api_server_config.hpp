@@ -19,7 +19,8 @@ constexpr const char* ajax_return_text = "OK";
 // set to true. This needs regular calling of update_timer().
 constexpr bool sending_heartbeats = true;
 // Interval time in milliseconds
-constexpr unsigned long heartbeat_interval = 1000;
+constexpr unsigned long heartbeat_interval = 500;
+constexpr const char* heartbeat_default_message = "OK";
 
 // Activate HTTP Basic Authentication, set to true when user/password is given
 constexpr bool http_auth_requested = false;
