@@ -27,3 +27,8 @@ constexpr bool http_auth_requested = false;
 // HTTP Basic Authentication username and password
 constexpr const char* http_user = "";
 constexpr const char* http_pass = "";
+
+// Message to send via HTTP Server-Sent-Events when HW shutdown occurs
+constexpr const char* shutdown_message = "Hardware Shutdown occurred!";
+// Normal reply
+constexpr const char* normal_message = "OK";

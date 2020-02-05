@@ -334,15 +334,15 @@ esp_err_t pspwm_get_setpoint_limits_ptr(mcpwm_unit_t mcpwm_num,
                                         pspwm_setpoint_limits_t** setpoint_limits);
 
 // Enable interrupts...
-esp_err_t pspwm_enable_interrupts(mcpwm_unit_t mcpwm_num,
+/*esp_err_t pspwm_enable_interrupts(mcpwm_unit_t mcpwm_num,
                                   uint32_t mcpwm_interrupt_enable_mask);
-
+*/
 /* Interrupt handler called on activation of MCPWM_UNIT_0 stage interrupts,
  * e.g. on hardware fault "tripzone" input trigger.
  * 
  * You need to implement this if needed.
  */
-static void IRAM_ATTR pspwm_unit0_isr_handler(void* arg);
+//static void IRAM_ATTR pspwm_unit0_isr_handler(void* arg);
 
 #ifdef __cplusplus
 }

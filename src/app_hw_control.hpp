@@ -5,6 +5,7 @@
 #include "ps_pwm.h"
 #include "api_server.hpp"
 
+
 /** PSPWMGen - Phase-Shift PWM output generation on ESP32 platform
  * 
  * By default, the symmetric-drive API is used.
@@ -51,9 +52,9 @@ public:
     static constexpr bool init_output_enabled{false};
 
     // Message to send via HTTP Server-Sent-Events when HW shutdown occurs
-    static constexpr const char* shutdown_message = "Hardware Shutdown occurred!";
+    //static constexpr const char* shutdown_message = "Hardware Shutdown occurred!";
     // Normal reply
-    static constexpr const char* normal_message = "OK";
+    //static constexpr const char* normal_message = "OK";
 
     pspwm_setpoint_t* pspwm_setpoint;
     pspwm_setpoint_limits_t* pspwm_setpoint_limits;

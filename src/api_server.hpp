@@ -46,6 +46,11 @@ public:
     TemplateMapT template_map;
     // Polled in main loop
     bool reboot_requested;
+
+    // Message to send via HTTP Server-Sent-Events when HW shutdown occurs
+    static constexpr const char* shutdown_message = "Hardware Shutdown occurred!";
+    // Normal reply
+    static constexpr const char* normal_message = "OK";
     
     APIServer(AsyncWebServer* http_backend);
     ~APIServer();

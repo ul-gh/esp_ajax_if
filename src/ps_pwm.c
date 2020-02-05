@@ -763,21 +763,21 @@ esp_err_t pspwm_get_setpoint_limits_ptr(mcpwm_unit_t mcpwm_num,
     return ESP_OK;
 }
 
-esp_err_t pspwm_enable_interrupts(mcpwm_unit_t mcpwm_num,
+/*esp_err_t pspwm_enable_interrupts(mcpwm_unit_t mcpwm_num,
                                   uint32_t mcpwm_interrupt_enable_mask) {
     portENTER_CRITICAL(&mcpwm_spinlock);
     MCPWM[mcpwm_num]->int_ena.val = mcpwm_interrupt_enable_mask;
     portEXIT_CRITICAL(&mcpwm_spinlock);
     return mcpwm_isr_register(
         mcpwm_num, pspwm_unit0_isr_handler, NULL, ESP_INTR_FLAG_IRAM, NULL);
-}
+}*/
 
 /* Interrupt handler called on activation of MCPWM_UNIT_0 stage interrupts,
  * e.g. on hardware fault "tripzone" input trigger.
  * 
  * You need to implement this if needed.
  */
-void pspwm_unit0_isr_handler(void* arg) {
+/*void pspwm_unit0_isr_handler(void* arg) {
     uint32_t interrupt_status = MCPWM[MCPWM_UNIT_0]->int_st.val;
     DBG("pspwm interrupt handler called. Interrupt status: %x",
         interrupt_status);
@@ -785,4 +785,4 @@ void pspwm_unit0_isr_handler(void* arg) {
         DBG("Fault event_f0 triggered");
     }
     MCPWM[MCPWM_UNIT_0]->int_clr.val = interrupt_status;
-}
+}*/
