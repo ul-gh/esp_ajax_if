@@ -96,12 +96,12 @@ PSPWMGen::PSPWMGen(APIServer &api_server) {
         error_print("Error initializing the PS-PWM module!");
         return;
     }
-    //pspwm_enable_hw_fault_shutdown(mcpwm_num, gpio_fault_shutdown, MCPWM_LOW_LEVEL_TGR);
-    api_server.register_heartbeat_cb([api_server]() {
+    pspwm_enable_hw_fault_shutdown(mcpwm_num, gpio_fault_shutdown, MCPWM_LOW_LEVEL_TGR);
+    api_server.register_heartbeat_cb([]() {
         if(pspwm_get_hw_fault_shutdown_status(mcpwm_num)) {
-            return APIServer::shutdown_message;
+            return shutdown_message;
         } else {
-            return APIServer::normal_message;
+            return normal_message;
         }
     });
     register_remote_control(api_server);

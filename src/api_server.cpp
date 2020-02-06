@@ -49,7 +49,12 @@ void APIServer::set_template(const char* placeholder, const char* replacement) {
 void APIServer::activate_events_on(const char* endpoint) {
     event_source = new AsyncEventSource(endpoint);
     if (event_source) {
-        register_sse_callbacks();
+        register_sse_default_callback();
+        // HTTP Basic Authentication
+        //if (USE_AUTH) {
+        //    event_source.setAuthentication(http_user, http_pass);
+        //}
+        backend->addHandler(event_source);
     } else {
         error_print("Event Source could not be initialised!");
     }
@@ -176,7 +181,7 @@ void APIServer::on_timer_event(APIServer* self) {
 }
 
 // Sever-Sent Event Source
-void APIServer::register_sse_callbacks() {
+void APIServer::register_sse_default_callback() {
     event_source->onConnect([](AsyncEventSourceClient *client) {
         if(client->lastId()){
             info_print_sv("Client connected! Last msg ID:", client->lastId());
@@ -185,11 +190,6 @@ void APIServer::register_sse_callbacks() {
         // and set reconnect delay to 1 second
         client->send("Hello Message from ESP32!", NULL, millis(), 1000);
     });
-    // HTTP Basic Authentication
-    //if (USE_AUTH) {
-    //    event_source.setAuthentication(http_user, http_pass);
-    //}
-    backend->addHandler(event_source);
 }
 
 // Template processor

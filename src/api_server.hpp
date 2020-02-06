@@ -15,7 +15,7 @@
 #include <ESPAsyncWebServer.h>
 
 // Callback function with string argument
-using CbStringT = std::function<void(const String& )>;
+using CbStringT = std::function<void(const String&)>;
 // Callback function with float argument
 using CbFloatT = std::function<void(const float)>;
 // Callback function with integer argument
@@ -46,11 +46,6 @@ public:
     TemplateMapT template_map;
     // Polled in main loop
     bool reboot_requested;
-
-    // Message to send via HTTP Server-Sent-Events when HW shutdown occurs
-    static constexpr const char* shutdown_message = "Hardware Shutdown occurred!";
-    // Normal reply
-    static constexpr const char* normal_message = "OK";
     
     APIServer(AsyncWebServer* http_backend);
     ~APIServer();
@@ -110,14 +105,14 @@ private:
 
     // One optional function object can be registered and is called when
     // the periodic heartbeat timer event occurs. This is initialised empty.
-    HeartbeatCbT heartbeat_cb = {};
+    HeartbeatCbT heartbeat_cb{};
 
     // Timer update for heartbeats, reboot etc
     // Static function wraps member function to obtain C API callback
     static void on_timer_event(APIServer* self);
 
     // Sever-Sent Event Source
-    void register_sse_callbacks();
+    void register_sse_default_callback();
 
     // Template processor
     String templateProcessor(const String& placeholder);

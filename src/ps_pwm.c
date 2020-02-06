@@ -667,9 +667,10 @@ bool pspwm_get_hw_fault_shutdown_status(mcpwm_unit_t mcpwm_num) {
     bool status;
     portENTER_CRITICAL(&mcpwm_spinlock);
     // Register 16.58: PWM_FAULT_DETECT_REG (0x00e4)
-    //status = (bool)MCPWM[mcpwm_num]->fault_detect.event_f0;
+    status = (bool)MCPWM[mcpwm_num]->fault_detect.event_f0;
     // Register 16.29: PWM_FH0_STATUS_REG (0x0070)
-    status = (bool)MCPWM[mcpwm_num]->channel[MCPWM_TIMER_0].tz_status.ost_on;
+    //status = (bool)MCPWM[mcpwm_num]->channel[MCPWM_TIMER_0].tz_status.ost_on;
+    DBG("TZ status: %d", MCPWM[mcpwm_num]->channel[MCPWM_TIMER_0].tz_status.ost_on);
     portEXIT_CRITICAL(&mcpwm_spinlock);
     return status;
 }
