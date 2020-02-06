@@ -20,7 +20,8 @@ constexpr const char* ajax_return_text = "OK";
 constexpr bool sending_heartbeats = true;
 // Interval time in milliseconds
 constexpr unsigned long heartbeat_interval = 500;
-constexpr const char* heartbeat_default_message = "OK";
+// Text string sent with the heartbeat event if enabled
+static constexpr const char* heartbeat_message{"HB"};
 
 // Activate HTTP Basic Authentication, set to true when user/password is given
 constexpr bool http_auth_requested = false;

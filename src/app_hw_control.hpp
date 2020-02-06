@@ -53,8 +53,6 @@ public:
 
     // Message to send via HTTP Server-Sent-Events when HW shutdown occurs
     static constexpr const char* shutdown_message{"Hardware Shutdown occurred!"};
-    // Normal reply
-    static constexpr const char* normal_message{"OK"};
 
     pspwm_setpoint_t* pspwm_setpoint;
     pspwm_setpoint_limits_t* pspwm_setpoint_limits;
@@ -67,6 +65,8 @@ public:
 
 //private:
 //    static void IRAM_ATTR fault_isr_handler(void* unused);
+
+    static unsigned char* on_timer_push_application_state_update();
 };
 
 #endif

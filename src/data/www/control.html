@@ -49,7 +49,7 @@
                     return window.setTimeout(() => this.set_nok(), this.timeout);
                 }
                 reset(data) {
-                    if (data == "OK") {
+                    if (data == "HB") {
                         window.clearTimeout(this.timer_id);
                         this.set_ok();
                         this.timer_id = this.start_timer();

@@ -163,13 +163,6 @@ void APIServer::activate_default_callbacks() {
 void APIServer::on_timer_event(APIServer* self) {
     // If a callback function object is registered for the heartebat timer
     // event, this is called first.
-    const char* heartbeat_message;
-    if (self->heartbeat_cb) {
-        debug_print("Calling heartbeat timer event callback");
-        heartbeat_message = self->heartbeat_cb();
-    } else {
-        heartbeat_message = heartbeat_default_message;
-    }
     if (sending_heartbeats && self->event_source != nullptr) {
         self->event_source->send(heartbeat_message, "heartbeat");
     }
@@ -186,8 +179,8 @@ void APIServer::register_sse_default_callback() {
         if(client->lastId()){
             info_print_sv("Client connected! Last msg ID:", client->lastId());
         }
-        //send event with message "hello!", id current millis
-        // and set reconnect delay to 1 second
+        // Send confirmation message via SSE source when connection has been
+        // established, ID is current millis. Set reconnect delay to 1 second.
         client->send("Hello Message from ESP32!", NULL, millis(), 1000);
     });
 }

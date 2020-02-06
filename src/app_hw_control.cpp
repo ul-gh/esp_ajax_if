@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <ArduinoJson.h>
 
 #include "info_debug_error.h"
 #include "driver/mcpwm.h"
@@ -151,3 +152,7 @@ void PSPWMGen::register_remote_control(APIServer &api_server) {
     api_server.register_api_cb("set_output", cb_text);
 }
 #endif /* USE_SYMMETRIC_DC_FREE_DRIVE_API */
+
+unsigned char* PSPWMGen::on_timer_send_sse_state_update() {
+    NOP();
+}
