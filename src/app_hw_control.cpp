@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <ArduinoJson.h>
 
 #include "info_debug_error.h"
 #include "driver/mcpwm.h"
@@ -159,5 +160,5 @@ void PSPWMGen::register_remote_control(APIServer* api_server) {
 
 // Called periodicly submitting application state to the HTTP client
 void PSPWMGen::on_push_update_timer(PSPWMGen* self) {
-    self->api_server->begin();
+    // foo
 }

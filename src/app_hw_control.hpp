@@ -74,6 +74,8 @@ private:
      */
     static void on_push_update_timer(PSPWMGen* self);
 //    static void IRAM_ATTR fault_isr_handler(void* unused);
+
+    static unsigned char* on_timer_push_application_state_update();
 };
 
 #endif
