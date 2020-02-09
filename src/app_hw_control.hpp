@@ -2,6 +2,8 @@
 #define APP_HW_CONTROL_HPP__
 
 #include <Ticker.h>
+#include <ArduinoJson.h>
+
 #include "driver/mcpwm.h"
 #include "ps_pwm.h"
 #include "api_server.hpp"
@@ -27,6 +29,8 @@
 class PSPWMGen
 {
 public:
+    /************************ DEFAULT VALUES START ****************************
+     */
     // MCPWM unit can be [0,1]
     static constexpr mcpwm_unit_t mcpwm_num{MCPWM_UNIT_0};
     // GPIO config for PWM output
@@ -54,7 +58,11 @@ public:
 
     // Send cyclic state updates to the HTTP client using this time interval (ms)
     static constexpr uint32_t api_state_push_update_interval_ms{500};
+    /************************* END DEFAULT VALUES *****************************
+     */
 
+    // Zero-Copy values using pointers read from the PSPWM C API
+    pspwm_clk_conf_t* pspwm_clk_conf;
     pspwm_setpoint_t* pspwm_setpoint;
     pspwm_setpoint_limits_t* pspwm_setpoint_limits;
 
@@ -62,7 +70,7 @@ public:
     APIServer* api_server;
 
     PSPWMGen(APIServer* api_server);
-    // virtual ~PSPWMGen();
+    virtual ~PSPWMGen();
 
     // Register hw control functions as request handlers with the HTPP server
     void register_remote_control(APIServer* api_server);
@@ -70,12 +78,37 @@ public:
 private:
     // Event timer instance
     Ticker push_update_timer;
-    /** Send periodic application state updates to the HTTP client
+
+    /** JSON_OBJECT_SIZE needs to be adapted accordingly if below structure
+     * size is increased (!) (!!) (!!!)
+     */
+    static constexpr size_t json_object_size = JSON_OBJECT_SIZE(10);
+
+    /** Application state is sent as a push update via the SSE event source.
+     *
+     * The data is JSON structured as follows:
+     * 
+     * {
+     * // Setpoint limits
+     *  "frequency_min": 1.0,
+     *  "frequency_max": 1000.0,
+     * 
+     * // Operational settings
+     *  "dt_sum_max": 1200,
+     *  "frequency": 500.0,
+     *  "ps_duty": 79.0,
+     *  "lead_dt": 100.0,
+     *  "lag_dt": 200.0,
+     *  "output_enabled": true,
+     * 
+     * // Clock divider settings
+     *  "base_div": 1,
+     *  "timer_div": 1
+     * }
      */
     static void on_push_update_timer(PSPWMGen* self);
-//    static void IRAM_ATTR fault_isr_handler(void* unused);
 
-    static unsigned char* on_timer_push_application_state_update();
+//    static void IRAM_ATTR fault_isr_handler(void* unused);
 };
 
 #endif

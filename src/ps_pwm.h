@@ -82,7 +82,7 @@ typedef struct {
     float frequency_max;
     // Dead time for each bridge leg must be smaller than this value,
     // both in sum and also both individually. (Minimum is zero.)
-    float deadtime_sum_max;
+    float dt_sum_max;
 } pspwm_setpoint_limits_t;
 
 /** Interrupt enable flags for PSPWM.
@@ -332,6 +332,15 @@ esp_err_t pspwm_get_setpoint_ptr(mcpwm_unit_t mcpwm_num,
  */
 esp_err_t pspwm_get_setpoint_limits_ptr(mcpwm_unit_t mcpwm_num,
                                         pspwm_setpoint_limits_t** setpoint_limits);
+
+/** Read from PSPWM state the base clock and timer clock prescaler settings into
+ *  the given pointer to struct pspwm_clk_conf_t.
+ * 
+ * @param mcpwm_num: PWM unit number (enum, MCPWM_UNIT_0 = 0, MCPWM_UNIT_1 = 1),
+ * @param clk_conf: Pointer to a struct instance of pspwm_setpoint_t
+ */
+esp_err_t pspwm_get_clk_conf_ptr(mcpwm_unit_t mcpwm_num,
+                                 pspwm_clk_conf_t** clk_conf);
 
 // Enable interrupts...
 /*esp_err_t pspwm_enable_interrupts(mcpwm_unit_t mcpwm_num,

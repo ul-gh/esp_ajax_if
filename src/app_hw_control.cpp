@@ -1,5 +1,4 @@
 #include <Arduino.h>
-#include <ArduinoJson.h>
 
 #include "info_debug_error.h"
 #include "driver/mcpwm.h"
@@ -158,7 +157,26 @@ void PSPWMGen::register_remote_control(APIServer* api_server) {
 }
 #endif /* USE_SYMMETRIC_DC_FREE_DRIVE_API */
 
+PSPWMGen::~PSPWMGen() {
+    push_update_timer.detach();
+}
+
 // Called periodicly submitting application state to the HTTP client
 void PSPWMGen::on_push_update_timer(PSPWMGen* self) {
-    // foo
+    StaticJsonDocument<json_object_size> app_state_json;
+    // Setpoint limits
+    app_state_json["frequency_min"] = self->pspwm_setpoint_limits->frequency_min;
+    app_state_json["frequency_max"] = self->pspwm_setpoint_limits->frequency_max;
+    app_state_json["dt_sum_max"] = self->pspwm_setpoint_limits->dt_sum_max;
+    // Operational settings
+    app_state_json["frequency"] = self->pspwm_setpoint->frequency;
+    app_state_json["ps_duty"] = self->pspwm_setpoint->ps_duty;
+    app_state_json["lead_dt"] = self->pspwm_setpoint->lead_red;
+    app_state_json["lag_dt"] = self->pspwm_setpoint->lag_red;
+    app_state_json["output_enabled"] = self->pspwm_setpoint->output_enabled;
+    // Clock divider settings
+    app_state_json["base_div"] = self->pspwm_clk_conf->base_clk_prescale;
+    app_state_json["timer_div"] = self->pspwm_clk_conf->timer_clk_prescale;
+
+    serializeJson(app_state_json, Serial);
 }

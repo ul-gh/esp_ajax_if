@@ -83,13 +83,13 @@ esp_err_t pspwm_up_ctr_mode_init(mcpwm_unit_t mcpwm_num,
     s_setpoint_limits[mcpwm_num]->frequency_min = s_clk_conf.timer_clk / UINT16_MAX;
     s_setpoint_limits[mcpwm_num]->frequency_max = s_clk_conf.timer_clk / period_min;
     if (UINT16_MAX/s_clk_conf.base_clk < 1.0 / frequency) {
-        s_setpoint_limits[mcpwm_num]->deadtime_sum_max = UINT16_MAX / s_clk_conf.base_clk;
+        s_setpoint_limits[mcpwm_num]->dt_sum_max = UINT16_MAX / s_clk_conf.base_clk;
     } else {
-        s_setpoint_limits[mcpwm_num]->deadtime_sum_max = 1.0 / frequency;
+        s_setpoint_limits[mcpwm_num]->dt_sum_max = 1.0 / frequency;
     }
     DBG("frequency_min is now: %g", s_setpoint_limits[mcpwm_num]->frequency_min);
     DBG("frequency_max is now: %g", s_setpoint_limits[mcpwm_num]->frequency_max);
-    DBG("deadtime_sum_max is now: %g", s_setpoint_limits[mcpwm_num]->deadtime_sum_max);
+    DBG("dt_sum_max is now: %g", s_setpoint_limits[mcpwm_num]->dt_sum_max);
     // This is a 16-Bit timer register, although the API struct uses uint32_t...
     if (frequency <= s_setpoint_limits[mcpwm_num]->frequency_min
         || frequency > s_setpoint_limits[mcpwm_num]->frequency_max) {
@@ -101,8 +101,8 @@ esp_err_t pspwm_up_ctr_mode_init(mcpwm_unit_t mcpwm_num,
         return ESP_FAIL;
     }
     if (lead_red < 0 || lead_fed < 0 || lag_red < 0 || lag_fed < 0
-            || lead_red + lead_fed >= s_setpoint_limits[mcpwm_num]->deadtime_sum_max
-            || lag_red + lag_fed >= s_setpoint_limits[mcpwm_num]->deadtime_sum_max) {
+            || lead_red + lead_fed >= s_setpoint_limits[mcpwm_num]->dt_sum_max
+            || lag_red + lag_fed >= s_setpoint_limits[mcpwm_num]->dt_sum_max) {
         ERROR("Dead time setpoint out of range");
         return ESP_FAIL;
     }
@@ -203,8 +203,8 @@ esp_err_t pspwm_up_ctr_mode_set_deadtimes(mcpwm_unit_t mcpwm_num,
     assert(setpoints != NULL);
     // PWM base period and duty cycle must be adjusted when changing dead-times
     if (lead_red < 0 || lead_fed < 0 || lag_red < 0 || lag_fed < 0
-            || lead_red + lead_fed >= s_setpoint_limits[mcpwm_num]->deadtime_sum_max
-            || lag_red + lag_fed >= s_setpoint_limits[mcpwm_num]->deadtime_sum_max) {
+            || lead_red + lead_fed >= s_setpoint_limits[mcpwm_num]->dt_sum_max
+            || lag_red + lag_fed >= s_setpoint_limits[mcpwm_num]->dt_sum_max) {
         ERROR("Dead time setpoint out of range");
         return ESP_FAIL;
     }
@@ -388,10 +388,10 @@ esp_err_t pspwm_up_down_ctr_mode_init(mcpwm_unit_t mcpwm_num,
     }
     s_setpoint_limits[mcpwm_num]->frequency_min = 0.5 * s_clk_conf.timer_clk / UINT16_MAX;
     s_setpoint_limits[mcpwm_num]->frequency_max = 0.5 * s_clk_conf.timer_clk / period_min;
-    s_setpoint_limits[mcpwm_num]->deadtime_sum_max = 1.0 / frequency;
+    s_setpoint_limits[mcpwm_num]->dt_sum_max = 1.0 / frequency;
     DBG("frequency_min is now: %g", s_setpoint_limits[mcpwm_num]->frequency_min);
     DBG("frequency_max is now: %g", s_setpoint_limits[mcpwm_num]->frequency_max);
-    DBG("deadtime_sum_max is now: %g", s_setpoint_limits[mcpwm_num]->deadtime_sum_max);
+    DBG("dt_sum_max is now: %g", s_setpoint_limits[mcpwm_num]->dt_sum_max);
     // This is a 16-Bit timer register, although the API struct uses uint32_t...
     if (frequency <= s_setpoint_limits[mcpwm_num]->frequency_min
         || frequency > s_setpoint_limits[mcpwm_num]->frequency_max) {
@@ -403,8 +403,8 @@ esp_err_t pspwm_up_down_ctr_mode_init(mcpwm_unit_t mcpwm_num,
         return ESP_FAIL;
     }
     if (lead_dt < 0 || lag_dt < 0
-            || lead_dt >= 0.5 * s_setpoint_limits[mcpwm_num]->deadtime_sum_max
-            || lag_dt  >= 0.5 * s_setpoint_limits[mcpwm_num]->deadtime_sum_max) {
+            || lead_dt >= 0.5 * s_setpoint_limits[mcpwm_num]->dt_sum_max
+            || lag_dt  >= 0.5 * s_setpoint_limits[mcpwm_num]->dt_sum_max) {
         ERROR("Dead time setpoint out of range");
         return ESP_FAIL;
     }
@@ -506,8 +506,8 @@ esp_err_t pspwm_up_down_ctr_mode_set_deadtimes(mcpwm_unit_t mcpwm_num,
     pspwm_setpoint_t* setpoints = s_setpoints[mcpwm_num];
     assert(setpoints != NULL);
     if (lead_dt < 0 || lag_dt < 0
-            || lead_dt >= 0.5 * s_setpoint_limits[mcpwm_num]->deadtime_sum_max
-            || lag_dt  >= 0.5 * s_setpoint_limits[mcpwm_num]->deadtime_sum_max) {
+            || lead_dt >= 0.5 * s_setpoint_limits[mcpwm_num]->dt_sum_max
+            || lag_dt  >= 0.5 * s_setpoint_limits[mcpwm_num]->dt_sum_max) {
         ERROR("Dead time setpoint out of range");
         return ESP_FAIL;
     }
@@ -761,6 +761,12 @@ esp_err_t pspwm_get_setpoint_limits_ptr(mcpwm_unit_t mcpwm_num,
         return ESP_FAIL;
     }
     *setpoint_limits = s_setpoint_limits[mcpwm_num];
+    return ESP_OK;
+}
+
+esp_err_t pspwm_get_clk_conf_ptr(mcpwm_unit_t mcpwm_num,
+                                 pspwm_clk_conf_t** clk_conf) {
+    *clk_conf = &s_clk_conf;
     return ESP_OK;
 }
 
