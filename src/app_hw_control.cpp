@@ -99,13 +99,14 @@ PSPWMGen::PSPWMGen(APIServer* api_server)
             init_lead_dt, init_lag_dt,
             init_output_enabled,
             disable_action_lag_leg, disable_action_lead_leg) == ESP_OK;
-    is_ok &= pspwm_get_setpoint_ptr(mcpwm_num, &pspwm_setpoint) == ESP_OK;
     is_ok &= pspwm_get_setpoint_limits_ptr(mcpwm_num, &pspwm_setpoint_limits) == ESP_OK;
+    is_ok &= pspwm_get_setpoint_ptr(mcpwm_num, &pspwm_setpoint) == ESP_OK;
+    is_ok &= pspwm_get_clk_conf_ptr(mcpwm_num, &pspwm_clk_conf) == ESP_OK;
+    is_ok &= pspwm_enable_hw_fault_shutdown(mcpwm_num, gpio_fault_shutdown, MCPWM_LOW_LEVEL_TGR);
     if (!is_ok) {
         error_print("Error initializing the PS-PWM module!");
         return;
     }
-    pspwm_enable_hw_fault_shutdown(mcpwm_num, gpio_fault_shutdown, MCPWM_LOW_LEVEL_TGR);
     register_remote_control(api_server);
     push_update_timer.attach_ms(api_state_push_update_interval_ms,
                                 on_push_update_timer,
