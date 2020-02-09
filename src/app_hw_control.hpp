@@ -79,11 +79,6 @@ private:
     // Event timer instance
     Ticker push_update_timer;
 
-    /** JSON_OBJECT_SIZE needs to be adapted accordingly if below structure
-     * size is increased (!) (!!) (!!!)
-     */
-    static constexpr size_t json_object_size = JSON_OBJECT_SIZE(10);
-
     /** Application state is sent as a push update via the SSE event source.
      *
      * The data is JSON structured as follows:

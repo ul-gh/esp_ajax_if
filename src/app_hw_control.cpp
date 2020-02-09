@@ -164,20 +164,35 @@ PSPWMGen::~PSPWMGen() {
 
 // Called periodicly submitting application state to the HTTP client
 void PSPWMGen::on_push_update_timer(PSPWMGen* self) {
-    StaticJsonDocument<json_object_size> app_state_json;
+    /* The sizes needs to be adapted accordingly if below structure
+     * size is changed (!) (!!)
+     */
+    constexpr size_t json_object_size = JSON_OBJECT_SIZE(10);
+    constexpr size_t strings_size = sizeof(
+        "frequency_min""frequency_max""dt_sum_max"
+        "frequency""ps_duty""lead_dt""lag_dt""output_enabled"
+        "base_div""timer_div"
+        );
+    constexpr size_t I_AM_SCARED_MARGIN = 50;
+    // ArduinoJson JsonDocument object, see https://arduinojson.org
+    StaticJsonDocument<json_object_size> json_doc;
     // Setpoint limits
-    app_state_json["frequency_min"] = self->pspwm_setpoint_limits->frequency_min;
-    app_state_json["frequency_max"] = self->pspwm_setpoint_limits->frequency_max;
-    app_state_json["dt_sum_max"] = self->pspwm_setpoint_limits->dt_sum_max;
+    json_doc["frequency_min"] = self->pspwm_setpoint_limits->frequency_min;
+    json_doc["frequency_max"] = self->pspwm_setpoint_limits->frequency_max;
+    json_doc["dt_sum_max"] = self->pspwm_setpoint_limits->dt_sum_max;
     // Operational settings
-    app_state_json["frequency"] = self->pspwm_setpoint->frequency;
-    app_state_json["ps_duty"] = self->pspwm_setpoint->ps_duty;
-    app_state_json["lead_dt"] = self->pspwm_setpoint->lead_red;
-    app_state_json["lag_dt"] = self->pspwm_setpoint->lag_red;
-    app_state_json["output_enabled"] = self->pspwm_setpoint->output_enabled;
+    json_doc["frequency"] = self->pspwm_setpoint->frequency;
+    json_doc["ps_duty"] = self->pspwm_setpoint->ps_duty;
+    json_doc["lead_dt"] = self->pspwm_setpoint->lead_red;
+    json_doc["lag_dt"] = self->pspwm_setpoint->lag_red;
+    json_doc["output_enabled"] = self->pspwm_setpoint->output_enabled;
     // Clock divider settings
-    app_state_json["base_div"] = self->pspwm_clk_conf->base_clk_prescale;
-    app_state_json["timer_div"] = self->pspwm_clk_conf->timer_clk_prescale;
+    json_doc["base_div"] = self->pspwm_clk_conf->base_clk_prescale;
+    json_doc["timer_div"] = self->pspwm_clk_conf->timer_clk_prescale;
 
-    serializeJson(app_state_json, Serial);
+    char json_str_buffer[json_object_size + strings_size + I_AM_SCARED_MARGIN];
+    serializeJson(json_doc, json_str_buffer);
+    self->api_server->event_source->send(json_str_buffer, "app_state");
+    // FIXME: Debug
+    serializeJson(json_doc, Serial);
 }
