@@ -1,6 +1,7 @@
 #ifndef APP_HW_CONTROL_HPP__
 #define APP_HW_CONTROL_HPP__
 
+#include <Ticker.h>
 #include "driver/mcpwm.h"
 #include "ps_pwm.h"
 #include "api_server.hpp"
@@ -51,21 +52,27 @@ public:
     static constexpr float init_lag_dt{125e-9};
     static constexpr bool init_output_enabled{false};
 
-    // Message to send via HTTP Server-Sent-Events when HW shutdown occurs
-    static constexpr const char* shutdown_message{"Hardware Shutdown occurred!"};
-    // Normal reply
-    static constexpr const char* normal_message{"OK"};
+    // Send cyclic state updates to the HTTP client using this time interval (ms)
+    static constexpr uint32_t api_state_push_update_interval_ms{500};
 
     pspwm_setpoint_t* pspwm_setpoint;
     pspwm_setpoint_limits_t* pspwm_setpoint_limits;
 
-    PSPWMGen(APIServer &api_server);
+    // Instance of HTTP API server. There must only be one.
+    APIServer* api_server;
+
+    PSPWMGen(APIServer* api_server);
     // virtual ~PSPWMGen();
 
     // Register hw control functions as request handlers with the HTPP server
-    void register_remote_control(APIServer &api_server);
+    void register_remote_control(APIServer* api_server);
 
-//private:
+private:
+    // Event timer instance
+    Ticker push_update_timer;
+    /** Send periodic application state updates to the HTTP client
+     */
+    static void on_push_update_timer(PSPWMGen* self);
 //    static void IRAM_ATTR fault_isr_handler(void* unused);
 };
 

@@ -83,11 +83,6 @@ public:
      */
     void register_api_cb(const char* cmd_name, CbVoidT cmd_callback);
 
-    /** One optional function object can be registered and is called when
-     * the periodic heartbeat timer event occurs. This is initialised empty.
-     */
-    void register_heartbeat_cb(HeartbeatCbT heartbeat_callback);
-
     /** Start execution, includes starting the ESPAsyncWebServer backend.
      * Do not call this when using WifiManger or when backend has been
      * activated before by other means
