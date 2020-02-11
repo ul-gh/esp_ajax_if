@@ -21,8 +21,10 @@ PSPWMGen::PSPWMGen(APIServer* api_server)
             init_lead_dt, init_lead_dt, init_lag_dt, init_lag_dt,
             init_output_enabled,
             disable_action_lag_leg, disable_action_lead_leg) == ESP_OK;
-    is_ok &= pspwm_get_setpoint_ptr(mcpwm_num, &pspwm_setpoint) == ESP_OK;
     is_ok &= pspwm_get_setpoint_limits_ptr(mcpwm_num, &pspwm_setpoint_limits) == ESP_OK;
+    is_ok &= pspwm_get_setpoint_ptr(mcpwm_num, &pspwm_setpoint) == ESP_OK;
+    is_ok &= pspwm_get_clk_conf_ptr(mcpwm_num, &pspwm_clk_conf) == ESP_OK;
+    is_ok &= pspwm_enable_hw_fault_shutdown(mcpwm_num, gpio_fault_shutdown, MCPWM_LOW_LEVEL_TGR) == ESP_OK;
     if (!is_ok) {
         error_print("Error initializing the PS-PWM module!");
         return;
@@ -102,7 +104,7 @@ PSPWMGen::PSPWMGen(APIServer* api_server)
     is_ok &= pspwm_get_setpoint_limits_ptr(mcpwm_num, &pspwm_setpoint_limits) == ESP_OK;
     is_ok &= pspwm_get_setpoint_ptr(mcpwm_num, &pspwm_setpoint) == ESP_OK;
     is_ok &= pspwm_get_clk_conf_ptr(mcpwm_num, &pspwm_clk_conf) == ESP_OK;
-    is_ok &= pspwm_enable_hw_fault_shutdown(mcpwm_num, gpio_fault_shutdown, MCPWM_LOW_LEVEL_TGR);
+    is_ok &= pspwm_enable_hw_fault_shutdown(mcpwm_num, gpio_fault_shutdown, MCPWM_LOW_LEVEL_TGR) == ESP_OK;
     if (!is_ok) {
         error_print("Error initializing the PS-PWM module!");
         return;
@@ -193,6 +195,4 @@ void PSPWMGen::on_push_update_timer(PSPWMGen* self) {
     char json_str_buffer[json_object_size + strings_size + I_AM_SCARED_MARGIN];
     serializeJson(json_doc, json_str_buffer);
     self->api_server->event_source->send(json_str_buffer, "app_state");
-    // FIXME: Debug
-    serializeJson(json_doc, Serial);
 }

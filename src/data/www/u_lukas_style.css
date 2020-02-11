@@ -50,6 +50,14 @@ div[state="nok"] {
     content: "NOK";
     background-color: rgb(250, 84, 84);
 }
+div[state="on"] {
+    content: "ON";
+    background-color: rgb(139, 255, 143);
+}
+div[state="off"] {
+    content: "OFF";
+    background-color: rgb(250, 84, 84);
+}
 
 td,
 th {

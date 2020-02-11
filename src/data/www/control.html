@@ -6,6 +6,9 @@
         <title>Main Page</title>
         <link rel="stylesheet" type="text/css" href="u_lukas_style.css">
         <script>
+            // Global object storing the application state, this is updated from
+            // server PUSH updates via the SSE event handler.
+            let app_state = {};
             async function do_http_request(req_str) {
                 try {
                     const response = await fetch(req_str);
@@ -38,10 +41,10 @@
             // Connect single button click events
             document.addEventListener("click", submit_single_buttons, true);
             // Set connection state display to "nok" when heartbeats are missing
-            class HeartbeatTimer {
+            class HeartbeatWatchdog {
                 constructor (timeout) {
                     this.timeout = timeout;
-                    this.display = document.getElementById("state_display");
+                    this.display = document.getElementById("connection_display");
                     this.timer_id = this.start_timer();
                     this.reset_cb = event => this.reset(event.data);
                 }
@@ -64,11 +67,28 @@
                     this.display.innerText = "Connection: OK";
                 }
             } // class HartbeatTimer
+            // Update application state
+            class ViewUpdater {
+                constructor() {
+                    this.output_state_display = document.getElementById("output_display");
+                }
+                update() {
+                    if (app_state.output_enabled) {
+                        this.output_state_display.setAttribute("state", "on");
+                        this.output_state_display.innerText = "Output: ON";
+                    } else {
+                        this.output_state_display.setAttribute("state", "off");
+                        this.output_state_display.innerText = "Output: OFF";
+                    }
+                }
+            } // class ViewUpdater
             // Connect Server-Sent Events, with auto-reconnect timer
-            class ServerSentEvents {
-                constructor (endpoint, reconnect_timeout, heartbeat_timer) {
+            class ServerSentEventHandler {
+                constructor (endpoint, reconnect_timeout,
+                             heartbeat_watchdog, view_updater) {
                     this.endpoint = endpoint;
-                    this.heartbeat_timer = heartbeat_timer;
+                    this.heartbeat_watchdog = heartbeat_watchdog;
+                    this.view_updater = view_updater;
                     this.source = null;
                     const timeout = reconnect_timeout;
                     this.reconnect_timer = () => window.setTimeout(
@@ -85,7 +105,7 @@
                     }
                     this.source = new EventSource(this.endpoint);
                     this.source.addEventListener(
-                        "heartbeat", this.heartbeat_timer.reset_cb, false);
+                        "heartbeat", this.heartbeat_watchdog.reset_cb, false);
                     this.source.addEventListener(
                         "open", event => {console.log("Events Connected");},
                         false
@@ -101,8 +121,11 @@
                         false
                     );
                     this.source.addEventListener(
-                        "message", event => {
-                            console.log(`Message received: "${event.data}"`);
+                        "app_state", event => {
+                            // console.log(`App State: "${event.data}"`);
+                            // Set global object
+                            app_state = JSON.parse(event.data);
+                            this.view_updater.update();
                         }, false
                     );
                 } // connect()
@@ -182,7 +205,9 @@
             </table>
         </form>
         <br><br>
-        <div id="state_display" state="nok">Connection Status: ...</div>
+        <div id="connection_display" state="nok">Connection Status: ...</div>
+        <br>
+        <div id="output_display" state="off">Output Status: ...</div>
         <br>
 
         <table>
@@ -205,9 +230,10 @@
         <a href="update.html">Perform OTA Firmware Upload</a>
 
         <script>
-            const heartbeat_timer = new HeartbeatTimer(1500);
-            const server_sent_events = new ServerSentEvents(
-                "/events", 3000, heartbeat_timer);
+            const heartbeat_watchdog = new HeartbeatWatchdog(1500);
+            const view_updater = new ViewUpdater();
+            const sse_handler = new ServerSentEventHandler(
+                "/events", 3000, heartbeat_watchdog, view_updater);
         </script>
     </body>
 </html>
