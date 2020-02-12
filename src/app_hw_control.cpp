@@ -169,11 +169,11 @@ void PSPWMGen::on_push_update_timer(PSPWMGen* self) {
     /* The sizes needs to be adapted accordingly if below structure
      * size is changed (!) (!!)
      */
-    constexpr size_t json_object_size = JSON_OBJECT_SIZE(10);
+    constexpr size_t json_object_size = JSON_OBJECT_SIZE(11);
     constexpr size_t strings_size = sizeof(
         "frequency_min""frequency_max""dt_sum_max"
         "frequency""ps_duty""lead_dt""lag_dt""output_enabled"
-        "base_div""timer_div"
+        "base_div""timer_div""hw_shutdown_active"
         );
     constexpr size_t I_AM_SCARED_MARGIN = 50;
     // ArduinoJson JsonDocument object, see https://arduinojson.org
@@ -182,7 +182,7 @@ void PSPWMGen::on_push_update_timer(PSPWMGen* self) {
     json_doc["frequency_min"] = self->pspwm_setpoint_limits->frequency_min;
     json_doc["frequency_max"] = self->pspwm_setpoint_limits->frequency_max;
     json_doc["dt_sum_max"] = self->pspwm_setpoint_limits->dt_sum_max;
-    // Operational settings
+    // Operational setpoints
     json_doc["frequency"] = self->pspwm_setpoint->frequency;
     json_doc["ps_duty"] = self->pspwm_setpoint->ps_duty;
     json_doc["lead_dt"] = self->pspwm_setpoint->lead_red;
@@ -191,6 +191,8 @@ void PSPWMGen::on_push_update_timer(PSPWMGen* self) {
     // Clock divider settings
     json_doc["base_div"] = self->pspwm_clk_conf->base_clk_prescale;
     json_doc["timer_div"] = self->pspwm_clk_conf->timer_clk_prescale;
+    // Hardware Fault Shutdown Status
+    json_doc["hw_shutdown_active"] = pspwm_get_hw_fault_shutdown_status(mcpwm_num);
 
     char json_str_buffer[json_object_size + strings_size + I_AM_SCARED_MARGIN];
     serializeJson(json_doc, json_str_buffer);

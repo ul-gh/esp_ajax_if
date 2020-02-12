@@ -80,6 +80,13 @@
                         this.output_state_display.setAttribute("state", "off");
                         this.output_state_display.innerText = "Output: OFF";
                     }
+                    if (app_state.hw_shutdown_active) {
+                        this.shutdown_display.setAttribute("state", "ok");
+                        this.shutdown_display.innerText = "State: Normal";
+                    } else {
+                        this.shutdown_display.setAttribute("state", "nok");
+                        this.shutdown_display.innerText = "HW FAULT SHUTDOWN ACTIVE!";
+                    }
                 }
             } // class ViewUpdater
             // Connect Server-Sent Events, with auto-reconnect timer
@@ -206,6 +213,8 @@
         </form>
         <br><br>
         <div id="connection_display" state="nok">Connection Status: ...</div>
+        <br>
+        <div id="shutdown_display" state="off">HW Shutdown Status: ...</div>
         <br>
         <div id="output_display" state="off">Output Status: ...</div>
         <br>
