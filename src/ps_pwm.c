@@ -18,7 +18,7 @@
 #define INFO(...) ESP_LOGI("Module: ps_pwm.c", __VA_ARGS__)
 #define ERROR(...) ESP_LOGE("Module: ps_pwm.c", __VA_ARGS__)
 
-// Setpoint values need to be static because of timing settings
+// Setpoint values need to be globally shared because timing settings
 // between frequency, phase and dead-time all depend on each other.
 static pspwm_setpoint_t* s_setpoints[2] = {NULL, NULL};
 // Calculated setpoint limits
