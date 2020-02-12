@@ -36,15 +36,19 @@ static pspwm_clk_conf_t s_clk_conf = {
     .timer_clk = (float) MCPWM_INPUT_CLK / (
             BASE_CLK_PRESCALE_DEFAULT * TIMER_CLK_PRESCALE_DEFAULT)
 };
-
+// Calculated setpoint limits
 static pspwm_setpoint_limits_t* s_setpoint_limits[2] = {NULL, NULL};
+// Set to true by interrupt handler when OST fault event is triggered
+static bool ost_fault_event_occurred[2] = {false, false};
 
 // Not part of external API
-void _pspwm_up_ctr_mode_register_base_setup(mcpwm_unit_t mcpwm_num);
-void _pspwm_up_down_ctr_mode_register_base_setup(mcpwm_unit_t mcpwm_num);
-void _pspwm_setup_fault_handler_module(mcpwm_unit_t mcpwm_num,
-                                       mcpwm_action_on_pwmxa_t disable_action_lag_leg,
-                                       mcpwm_action_on_pwmxa_t disable_action_lead_leg);
+static void _pspwm_up_ctr_mode_register_base_setup(mcpwm_unit_t mcpwm_num);
+static void _pspwm_up_down_ctr_mode_register_base_setup(mcpwm_unit_t mcpwm_num);
+static void _pspwm_setup_fault_handler_module(
+        mcpwm_unit_t mcpwm_num,
+        mcpwm_action_on_pwmxa_t disable_action_lag_leg,
+        mcpwm_action_on_pwmxa_t disable_action_lead_leg);
+static void IRAM_ATTR pspwm_unit0_isr_handler(void* arg);
 
 /**********************************************************************
  *    FULL-SPEED-MODE, 4x INDIVIDUAL DEAD-TIME, HW-DEAD-TIME-MODULE
@@ -319,15 +323,15 @@ void _pspwm_up_ctr_mode_register_base_setup(mcpwm_unit_t mcpwm_num) {
     // update at sync for timer1.
     // Datasheet 16.2: PWM_TIMER0_CFG0_REG (0x0004) etc.
     module->timer[MCPWM_TIMER_0].period.upmethod = 1; // TEZ
-    module->timer[MCPWM_TIMER_1].period.upmethod = (uint32_t)(1u<<2); // At sync
+    module->timer[MCPWM_TIMER_1].period.upmethod = 2; // Literal 2 correct: At sync
     // Datasheet 16.16: PWM_GEN0_STMP_CFG_REG (0x003c) etc.
     module->channel[MCPWM_TIMER_0].cmpr_cfg.a_upmethod = 1; // TEZ
     module->channel[MCPWM_TIMER_0].cmpr_cfg.b_upmethod = 1; // TEZ
-    module->channel[MCPWM_TIMER_1].cmpr_cfg.a_upmethod = (uint32_t)(1u<<2); // At sync
-    module->channel[MCPWM_TIMER_1].cmpr_cfg.b_upmethod = (uint32_t)(1u<<2); // At sync
+    module->channel[MCPWM_TIMER_1].cmpr_cfg.a_upmethod = 1ul<<2; // At sync
+    module->channel[MCPWM_TIMER_1].cmpr_cfg.b_upmethod = 1ul<<2; // At sync
     // Register 16.23: PWM_DT0_CFG_REG (0x0058) etc.
     module->channel[MCPWM_TIMER_0].db_cfg.fed_upmethod = 1; // TEZ
-    module->channel[MCPWM_TIMER_1].db_cfg.red_upmethod = (uint32_t)(1u<<2); // At sync
+    module->channel[MCPWM_TIMER_1].db_cfg.red_upmethod = 1ul<<2; // At sync
     // Datasheet 16.15: PWM_OPERATOR_TIMERSEL_REG (0x0038)
     module->timer_sel.operator0_sel = 0;
     module->timer_sel.operator1_sel = 1;
@@ -600,12 +604,12 @@ void _pspwm_up_down_ctr_mode_register_base_setup(mcpwm_unit_t mcpwm_num) {
     // update at sync for timer1.
     // Datasheet 16.2: PWM_TIMER0_CFG0_REG (0x0004) etc.
     module->timer[MCPWM_TIMER_0].period.upmethod = 1; // TEZ
-    module->timer[MCPWM_TIMER_1].period.upmethod = (uint32_t)(1u<<2u); // At sync
+    module->timer[MCPWM_TIMER_1].period.upmethod = 2; // Literal 2 correct: At sync
     // Datasheet 16.16: PWM_GEN0_STMP_CFG_REG (0x003c) etc.
     module->channel[MCPWM_TIMER_0].cmpr_cfg.a_upmethod = 1; // TEZ
     module->channel[MCPWM_TIMER_0].cmpr_cfg.b_upmethod = 1; // TEZ
-    module->channel[MCPWM_TIMER_1].cmpr_cfg.a_upmethod = (uint32_t)(1u<<2); // At sync
-    module->channel[MCPWM_TIMER_1].cmpr_cfg.b_upmethod = (uint32_t)(1u<<2); // At sync
+    module->channel[MCPWM_TIMER_1].cmpr_cfg.a_upmethod = 1ul<<2; // At sync
+    module->channel[MCPWM_TIMER_1].cmpr_cfg.b_upmethod = 1ul<<2; // At sync
     // Datasheet 16.15: PWM_OPERATOR_TIMERSEL_REG (0x0038)
     module->timer_sel.operator0_sel = 0;
     module->timer_sel.operator1_sel = 1;
@@ -639,9 +643,10 @@ void _pspwm_up_down_ctr_mode_register_base_setup(mcpwm_unit_t mcpwm_num) {
  * Set up one-shot (stay-off) mode for fault handler module FH0.
  * This is used for software-forced output disabling.
  */
-void _pspwm_setup_fault_handler_module(mcpwm_unit_t mcpwm_num,
-                                       mcpwm_action_on_pwmxa_t disable_action_lag_leg,
-                                       mcpwm_action_on_pwmxa_t disable_action_lead_leg) {
+static void _pspwm_setup_fault_handler_module(
+        mcpwm_unit_t mcpwm_num,
+        mcpwm_action_on_pwmxa_t disable_action_lag_leg,
+        mcpwm_action_on_pwmxa_t disable_action_lead_leg) {
     mcpwm_dev_t* const module = MCPWM[mcpwm_num];
     portENTER_CRITICAL(&mcpwm_spinlock);
     // Datasheet 16.27: PWM_FH0_CFG0_REG (0x0068)
@@ -673,15 +678,14 @@ void _pspwm_setup_fault_handler_module(mcpwm_unit_t mcpwm_num,
  *****************************************************************
  */
 bool pspwm_get_hw_fault_shutdown_status(mcpwm_unit_t mcpwm_num) {
-    bool status;
-    portENTER_CRITICAL(&mcpwm_spinlock);
+    //bool status;
+    //portENTER_CRITICAL(&mcpwm_spinlock);
     // Register 16.58: PWM_FAULT_DETECT_REG (0x00e4)
     //status = (bool)MCPWM[mcpwm_num]->fault_detect.event_f0;
     // Register 16.29: PWM_FH0_STATUS_REG (0x0070)
-    status = (bool)MCPWM[mcpwm_num]->channel[MCPWM_TIMER_0].tz_status.ost_on;
-    DBG("TZ status: %d", MCPWM[mcpwm_num]->channel[MCPWM_TIMER_0].tz_status.ost_on);
-    portEXIT_CRITICAL(&mcpwm_spinlock);
-    return status;
+    //status = (bool)MCPWM[mcpwm_num]->channel[MCPWM_TIMER_0].tz_status.ost_on;
+    //portEXIT_CRITICAL(&mcpwm_spinlock);
+    return ost_fault_event_occurred[mcpwm_num];
 }
 
 esp_err_t pspwm_disable_output(mcpwm_unit_t mcpwm_num)
@@ -690,6 +694,7 @@ esp_err_t pspwm_disable_output(mcpwm_unit_t mcpwm_num)
     mcpwm_dev_t* const module = MCPWM[mcpwm_num];
     portENTER_CRITICAL(&mcpwm_spinlock);
     // Toggle triggers the fault event
+    // Register 16.28: PWM_FH0_CFG1_REG (0x006c)
     module->channel[MCPWM_TIMER_0].tz_cfg1.force_ost = 1;
     module->channel[MCPWM_TIMER_0].tz_cfg1.force_ost = 0;
     module->channel[MCPWM_TIMER_1].tz_cfg1.force_ost = 1;
@@ -713,6 +718,7 @@ esp_err_t pspwm_resync_enable_output(mcpwm_unit_t mcpwm_num)
     module->timer[MCPWM_TIMER_1].sync.sync_sw = 1;
     module->timer[MCPWM_TIMER_1].sync.sync_sw = 0;
     // Toggle clears the fault event. XOR is somehow not reliable here.
+    // Register 16.28: PWM_FH0_CFG1_REG (0x006c)
     module->channel[MCPWM_TIMER_0].tz_cfg1.clr_ost = 1;
     module->channel[MCPWM_TIMER_0].tz_cfg1.clr_ost = 0;
     module->channel[MCPWM_TIMER_1].tz_cfg1.clr_ost = 1;
@@ -779,26 +785,34 @@ esp_err_t pspwm_get_clk_conf_ptr(mcpwm_unit_t mcpwm_num,
     return ESP_OK;
 }
 
-/*esp_err_t pspwm_enable_interrupts(mcpwm_unit_t mcpwm_num,
+esp_err_t pspwm_enable_interrupts(mcpwm_unit_t mcpwm_num,
                                   uint32_t mcpwm_interrupt_enable_mask) {
     portENTER_CRITICAL(&mcpwm_spinlock);
     MCPWM[mcpwm_num]->int_ena.val = mcpwm_interrupt_enable_mask;
     portEXIT_CRITICAL(&mcpwm_spinlock);
     return mcpwm_isr_register(
-        mcpwm_num, pspwm_unit0_isr_handler, NULL, ESP_INTR_FLAG_IRAM, NULL);
-}*/
+        mcpwm_num, pspwm_isr_handler, NULL, ESP_INTR_FLAG_IRAM, NULL);
+}
 
-/* Interrupt handler called on activation of MCPWM_UNIT_0 stage interrupts,
+/* Interrupt handler called on activation of either MCPWM_UNIT stage interrupts,
  * e.g. on hardware fault "tripzone" input trigger.
  * 
- * You need to implement this if needed.
+ * This sets a global flag when the One-Shot-Action Fault Handler is triggered
+ * because the OST status from registers is seemingly broken e.g. the following
+ * registers have the OST status only /while/ the hardware pin is active:
+ * // Register 16.58: PWM_FAULT_DETECT_REG (0x00e4)
+ * //status = (bool)MCPWM[mcpwm_num]->fault_detect.event_f0;
+ * // Register 16.29: PWM_FH0_STATUS_REG (0x0070)
+ * //status = (bool)MCPWM[mcpwm_num]->channel[MCPWM_TIMER_0].tz_status.ost_on;
  */
-/*void pspwm_unit0_isr_handler(void* arg) {
-    uint32_t interrupt_status = MCPWM[MCPWM_UNIT_0]->int_st.val;
-    DBG("pspwm interrupt handler called. Interrupt status: %x",
-        interrupt_status);
-    if (interrupt_status & (uint32_t)PSPWM_INT_FAULT0_INT) {
-        DBG("Fault event_f0 triggered");
-    }
+static void IRAM_ATTR pspwm_isr_handler(void* arg) {
+    uint32_t interrupt_status;
+    // Get state for MCPWM unit 0 and set flag
+    interrupt_status = MCPWM[MCPWM_UNIT_0]->int_st.val;
+    ost_fault_event_occurred[0] = (bool)(interrupt_status & PSPWM_INT_FAULT0_INT);
     MCPWM[MCPWM_UNIT_0]->int_clr.val = interrupt_status;
-}*/
+    // Get state for MCPWM unit 1 and set flag
+    interrupt_status = MCPWM[MCPWM_UNIT_1]->int_st.val;
+    ost_fault_event_occurred[1] = (bool)(interrupt_status & PSPWM_INT_FAULT0_INT);
+    MCPWM[MCPWM_UNIT_1]->int_clr.val = interrupt_status;
+}
