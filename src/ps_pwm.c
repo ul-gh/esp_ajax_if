@@ -290,14 +290,8 @@ void _pspwm_up_ctr_mode_register_base_setup(mcpwm_unit_t mcpwm_num) {
         // Datasheet 16.2: PWM_TIMER0_CFG0_REG (0x0004) etc.
         // Hardware prescales by register value plus one, thus subtracting it here
         module->timer[timer_i].period.prescale = s_clk_conf.timer_clk_prescale - 1;
-        // 3 => update at timer equals zero OR at sync...
-        module->timer[timer_i].period.upmethod = 3;
         // Datasheet 16.3: PWM_TIMER0_CFG1_REG (0x0008) etc.
         module->timer[timer_i].mode.mode = MCPWM_UP_COUNTER;
-        // Update/swap shadow registers at timer equals zero
-        // Datasheet 16.16: PWM_GEN0_STMP_CFG_REG (0x003c) etc.
-        module->channel[timer_i].cmpr_cfg.a_upmethod = 1;
-        module->channel[timer_i].cmpr_cfg.b_upmethod = 1;
         // 2 => Set output high; 1 => set output low
         // Datasheet 16.21: PWM_GEN0_A_REG (0x0050) etc.
         module->channel[timer_i].generator[MCPWM_OPR_A].utez = 2;
@@ -310,8 +304,6 @@ void _pspwm_up_ctr_mode_register_base_setup(mcpwm_unit_t mcpwm_num) {
         /* Dead-Band Generator Set-Up
          */
         // Register 16.23: PWM_DT0_CFG_REG (0x0058) etc.
-        module->channel[timer_i].db_cfg.fed_upmethod = 1; // TEZ
-        module->channel[timer_i].db_cfg.red_upmethod = 1; // TEZ
         module->channel[timer_i].db_cfg.clk_sel = 0; // MCPWM_BASE_CLK (PWM_clk)
         module->channel[timer_i].db_cfg.b_outbypass = 0; //S0
         module->channel[timer_i].db_cfg.a_outbypass = 0; //S1
@@ -323,6 +315,19 @@ void _pspwm_up_ctr_mode_register_base_setup(mcpwm_unit_t mcpwm_num) {
         // module->channel[timer_i].db_cfg.b_outswap = 0; //S7
         // module->channel[timer_i].db_cfg.deb_mode = 0;  //S8
     }
+    // Update/swap shadow registers at timer equals zero for timer0,
+    // update at sync for timer1.
+    // Datasheet 16.2: PWM_TIMER0_CFG0_REG (0x0004) etc.
+    module->timer[MCPWM_TIMER_0].period.upmethod = 1; // TEZ
+    module->timer[MCPWM_TIMER_1].period.upmethod = (uint32_t)(1u<<2); // At sync
+    // Datasheet 16.16: PWM_GEN0_STMP_CFG_REG (0x003c) etc.
+    module->channel[MCPWM_TIMER_0].cmpr_cfg.a_upmethod = 1; // TEZ
+    module->channel[MCPWM_TIMER_0].cmpr_cfg.b_upmethod = 1; // TEZ
+    module->channel[MCPWM_TIMER_1].cmpr_cfg.a_upmethod = (uint32_t)(1u<<2); // At sync
+    module->channel[MCPWM_TIMER_1].cmpr_cfg.b_upmethod = (uint32_t)(1u<<2); // At sync
+    // Register 16.23: PWM_DT0_CFG_REG (0x0058) etc.
+    module->channel[MCPWM_TIMER_0].db_cfg.fed_upmethod = 1; // TEZ
+    module->channel[MCPWM_TIMER_1].db_cfg.red_upmethod = (uint32_t)(1u<<2); // At sync
     // Datasheet 16.15: PWM_OPERATOR_TIMERSEL_REG (0x0038)
     module->timer_sel.operator0_sel = 0;
     module->timer_sel.operator1_sel = 1;
@@ -469,7 +474,7 @@ esp_err_t pspwm_up_down_ctr_mode_set_frequency(mcpwm_unit_t mcpwm_num,
     uint32_t cmpr_lag_b = timer_top - cmpr_lag_a;
     // Phase shift value for Timer 1 needs updating when changing frequency.
     // Timer 0 is the reference phase and needs no update.
-    uint32_t phase_setval = (uint32_t)(half_period * setpoints->ps_duty / 2);
+    uint32_t phase_setval = (uint32_t)(half_period * setpoints->ps_duty);
     mcpwm_dev_t* const module = MCPWM[mcpwm_num];
     portENTER_CRITICAL(&mcpwm_spinlock);
     // Register 16.17: PWM_GEN0_TSTMP_A_REG (0x0040) etc.
@@ -579,14 +584,8 @@ void _pspwm_up_down_ctr_mode_register_base_setup(mcpwm_unit_t mcpwm_num) {
         // Datasheet 16.2: PWM_TIMER0_CFG0_REG (0x0004) etc.
         // Hardware prescales by register value plus one, thus subtracting it here
         module->timer[timer_i].period.prescale = s_clk_conf.timer_clk_prescale - 1;
-        // 3 => update at timer equals zero OR at sync
-        module->timer[timer_i].period.upmethod = 3;
         // Datasheet 16.3: PWM_TIMER0_CFG1_REG (0x0008) etc.
         module->timer[timer_i].mode.mode = MCPWM_UP_DOWN_COUNTER;
-        // Update/swap shadow registers at timer equals zero
-        // Datasheet 16.16: PWM_GEN0_STMP_CFG_REG (0x003c) etc.
-        module->channel[timer_i].cmpr_cfg.a_upmethod = 1;
-        module->channel[timer_i].cmpr_cfg.b_upmethod = 1;
         // 2 => Set output high; 1 => set output low
         // Datasheet 16.21: PWM_GEN0_A_REG (0x0050) etc.
         //module->channel[timer_i].generator[MCPWM_OPR_A].utez = 2;
@@ -597,6 +596,16 @@ void _pspwm_up_down_ctr_mode_register_base_setup(mcpwm_unit_t mcpwm_num) {
         module->channel[timer_i].generator[MCPWM_OPR_B].uteb = 2;
         module->channel[timer_i].generator[MCPWM_OPR_B].dteb = 1;
     }
+    // Update/swap shadow registers at timer equals zero for timer0,
+    // update at sync for timer1.
+    // Datasheet 16.2: PWM_TIMER0_CFG0_REG (0x0004) etc.
+    module->timer[MCPWM_TIMER_0].period.upmethod = 1; // TEZ
+    module->timer[MCPWM_TIMER_1].period.upmethod = (uint32_t)(1u<<2u); // At sync
+    // Datasheet 16.16: PWM_GEN0_STMP_CFG_REG (0x003c) etc.
+    module->channel[MCPWM_TIMER_0].cmpr_cfg.a_upmethod = 1; // TEZ
+    module->channel[MCPWM_TIMER_0].cmpr_cfg.b_upmethod = 1; // TEZ
+    module->channel[MCPWM_TIMER_1].cmpr_cfg.a_upmethod = (uint32_t)(1u<<2); // At sync
+    module->channel[MCPWM_TIMER_1].cmpr_cfg.b_upmethod = (uint32_t)(1u<<2); // At sync
     // Datasheet 16.15: PWM_OPERATOR_TIMERSEL_REG (0x0038)
     module->timer_sel.operator0_sel = 0;
     module->timer_sel.operator1_sel = 1;
@@ -667,9 +676,9 @@ bool pspwm_get_hw_fault_shutdown_status(mcpwm_unit_t mcpwm_num) {
     bool status;
     portENTER_CRITICAL(&mcpwm_spinlock);
     // Register 16.58: PWM_FAULT_DETECT_REG (0x00e4)
-    status = (bool)MCPWM[mcpwm_num]->fault_detect.event_f0;
+    //status = (bool)MCPWM[mcpwm_num]->fault_detect.event_f0;
     // Register 16.29: PWM_FH0_STATUS_REG (0x0070)
-    //status = (bool)MCPWM[mcpwm_num]->channel[MCPWM_TIMER_0].tz_status.ost_on;
+    status = (bool)MCPWM[mcpwm_num]->channel[MCPWM_TIMER_0].tz_status.ost_on;
     DBG("TZ status: %d", MCPWM[mcpwm_num]->channel[MCPWM_TIMER_0].tz_status.ost_on);
     portEXIT_CRITICAL(&mcpwm_spinlock);
     return status;
