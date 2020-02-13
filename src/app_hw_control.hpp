@@ -104,7 +104,6 @@ private:
      */
     static void on_periodic_update_timer(PSPWMGen* self);
 
-//    static void IRAM_ATTR fault_isr_handler(void* unused);
 };
 
 #endif
