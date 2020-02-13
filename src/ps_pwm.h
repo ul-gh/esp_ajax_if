@@ -85,23 +85,6 @@ typedef struct {
     float dt_sum_max;
 } pspwm_setpoint_limits_t;
 
-/** Interrupt enable flags for PSPWM.
- * 
- * These extend those specified in ESP-IDF API in file
- * soc/include/hal/mcpwm_types.h.
- * 
- * Please see description in technical reference datasheet:
- * Register 16.69: INT_ENA_PWM_REG (0x0110)
- */
-typedef enum {
-    PSPWM_INT_TIMER0_TEZ_INT = BIT(3), ///< Timer 0 TEZ event triggered
-    PSPWM_INT_FAULT0_INT = BIT(9), ///< Fault event_f0 started
-    PSPWM_INT_FH0_OST_INT = BIT(24), ///< Fault FH0 One-Shot-Mode triggered
-    //MCPWM_LL_INTR_CAP0 = BIT(27), ///< Capture 0 happened
-    //MCPWM_LL_INTR_CAP1 = BIT(28), ///< Capture 1 happened
-    //MCPWM_LL_INTR_CAP2 = BIT(29), ///< Capture 2 happened
-} pspwm_intr_t;
-
 /********************************************************************//**
  *    FULL-SPEED-MODE, 4x INDIVIDUAL DEAD-TIME, HW-DEAD-TIME-MODULE
  ************************************************************************
@@ -278,6 +261,13 @@ esp_err_t pspwm_up_down_ctr_mode_set_ps_duty(mcpwm_unit_t mcpwm_num,
  */
 bool pspwm_get_hw_fault_shutdown_status(mcpwm_unit_t mcpwm_num);
 
+/** Resets the fault shutdown active flag without re-enabling the output
+ * 
+ * If a hardware shutdown occurred, this flag must be reset first
+ * in order to re-enable the output. This acts as a safety feature.
+ */
+void pspwm_reset_hw_fault_shutdown(mcpwm_unit_t mcpwm_num);
+
 /** Disable PWM output immediately by software-triggering the one-shot
  * fault input of the "trip-zone" fault handler module.
  * 
@@ -290,6 +280,10 @@ esp_err_t pspwm_disable_output(mcpwm_unit_t mcpwm_num);
 
 /** (Re-)enable PWM output by clearing fault handler one-shot trigger
  * after software-triggering a re-sync to the initial phase setpoint.
+ * 
+ * If a hardware shutdown occurred, the shutdown flag must be reset first
+ * by calling pspwm_reset_hw_fault_shutdown() in order to be able to 
+ * re-enable the output. This acts as a safety feature.
  * 
  * @param mcpwm_num: PWM unit number (enum, MCPWM_UNIT_0 = 0, MCPWM_UNIT_1 = 1),
  */

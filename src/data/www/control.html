@@ -30,7 +30,7 @@
             // Sends button name and value pair as if it were in a form.
             async function submit_single_buttons(event) {
                 target = event.target;
-                btns = Array.from(document.getElementsByClassName("button_large"));
+                btns = Array.from(document.getElementsByClassName("request_source"));
                 if (btns.includes(target)) {
                     const req_str = "cmd?" + target.name + "=" + target.value;
                     await do_http_request(req_str);
@@ -71,6 +71,7 @@
             class ViewUpdater {
                 constructor() {
                     this.output_state_display = document.getElementById("output_display");
+                    this.shutdown_display = document.getElementById("shutdown_display");
                 }
                 update() {
                     if (app_state.output_enabled) {
@@ -81,11 +82,11 @@
                         this.output_state_display.innerText = "Output: OFF";
                     }
                     if (app_state.hw_shutdown_active) {
-                        this.shutdown_display.setAttribute("state", "ok");
-                        this.shutdown_display.innerText = "State: Normal";
-                    } else {
                         this.shutdown_display.setAttribute("state", "nok");
                         this.shutdown_display.innerText = "HW FAULT SHUTDOWN ACTIVE!";
+                    } else {
+                        this.shutdown_display.setAttribute("state", "ok");
+                        this.shutdown_display.innerText = "State: Normal";
                     }
                 }
             } // class ViewUpdater
@@ -215,6 +216,8 @@
         <div id="connection_display" state="nok">Connection Status: ...</div>
         <br>
         <div id="shutdown_display" state="off">HW Shutdown Status: ...</div>
+        <input type="button" id="btn_reset" name="reset_shutdown"
+            value="Reset Shutdown" class="request_source">
         <br>
         <div id="output_display" state="off">Output Status: ...</div>
         <br>
@@ -227,10 +230,10 @@
             </thead>
             <tbody>
                 <tr>
-                    <td><input type="button" id="btn_on" class="button_large"
-                                name="set_output" value="ON"></td>
-                    <td><input type="button" id="btn_off" class="button_large"
-                                name="set_output" value="OFF"></td>
+                    <td><input type="button" id="btn_on" name="set_output"
+                            value="ON" class="request_source button_large"></td>
+                    <td><input type="button" id="btn_off" name="set_output"
+                            value="OFF" class="request_source button_large"></td>
                 </tr>
             </tbody>
         </table>

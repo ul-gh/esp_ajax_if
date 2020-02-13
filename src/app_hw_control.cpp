@@ -8,7 +8,7 @@
 #ifdef USE_ASYMMETRIC_FULL_SPEED_DRIVE_API
 PSPWMGen::PSPWMGen(APIServer* api_server)
     : api_server{api_server},
-    push_update_timer{}
+    periodic_update_timer{}
 {
     debug_print("Configuring Phase-Shift-PWM...");
     // http_server = http_server;
@@ -31,9 +31,9 @@ PSPWMGen::PSPWMGen(APIServer* api_server)
     }
     //pspwm_enable_hw_fault_shutdown(mcpwm_num, gpio_fault_shutdown, MCPWM_LOW_LEVEL_TGR);
     register_remote_control(api_server);
-    push_update_timer.attach_ms(api_state_push_update_interval_ms,
-                                on_push_update_timer,
-                                this);
+    periodic_update_timer.attach_ms(api_state_periodic_update_interval_ms,
+                                    on_periodic_update_timer,
+                                    this);
 }
 
 /* Registers hardware control function callbacks
@@ -88,7 +88,7 @@ void PSPWMGen::register_remote_control(APIServer* api_server) {
 #ifdef USE_SYMMETRIC_DC_FREE_DRIVE_API
 PSPWMGen::PSPWMGen(APIServer* api_server)
     : api_server{api_server},
-    push_update_timer{}
+    periodic_update_timer{}
 {
     debug_print("Configuring Phase-Shift-PWM...");
     // http_server = http_server;
@@ -110,9 +110,9 @@ PSPWMGen::PSPWMGen(APIServer* api_server)
         return;
     }
     register_remote_control(api_server);
-    push_update_timer.attach_ms(api_state_push_update_interval_ms,
-                                on_push_update_timer,
-                                this);
+    periodic_update_timer.attach_ms(api_state_periodic_update_interval_ms,
+                                    on_periodic_update_timer,
+                                    this);
 }
 
 /* Registers hardware control function callbacks
@@ -149,23 +149,31 @@ void PSPWMGen::register_remote_control(APIServer* api_server) {
     api_server->register_api_cb("set_lead_dt", cb_float);
 
     CbStringT cb_text = [this](const String &text) {
-        pspwm_setpoint->output_enabled = text == "ON";
-        if (pspwm_setpoint->output_enabled) {
+        if (text == "ON") {
             pspwm_resync_enable_output(mcpwm_num);
         } else {
             pspwm_disable_output(mcpwm_num);
         }
     };
     api_server->register_api_cb("set_output", cb_text);
+
+    api_server->register_api_cb("reset_shutdown", [this](){
+        pspwm_reset_hw_fault_shutdown(mcpwm_num);
+    });
 }
 #endif /* USE_SYMMETRIC_DC_FREE_DRIVE_API */
 
 PSPWMGen::~PSPWMGen() {
-    push_update_timer.detach();
+    periodic_update_timer.detach();
 }
 
 // Called periodicly submitting application state to the HTTP client
-void PSPWMGen::on_push_update_timer(PSPWMGen* self) {
+void PSPWMGen::on_periodic_update_timer(PSPWMGen* self) {
+    bool shutdown_status = pspwm_get_hw_fault_shutdown_status(mcpwm_num);
+    if (shutdown_status) {
+        self->pspwm_setpoint->output_enabled = false;
+    }
+
     /* The sizes needs to be adapted accordingly if below structure
      * size is changed (!) (!!)
      */
@@ -192,7 +200,7 @@ void PSPWMGen::on_push_update_timer(PSPWMGen* self) {
     json_doc["base_div"] = self->pspwm_clk_conf->base_clk_prescale;
     json_doc["timer_div"] = self->pspwm_clk_conf->timer_clk_prescale;
     // Hardware Fault Shutdown Status
-    json_doc["hw_shutdown_active"] = pspwm_get_hw_fault_shutdown_status(mcpwm_num);
+    json_doc["hw_shutdown_active"] = shutdown_status;
 
     char json_str_buffer[json_object_size + strings_size + I_AM_SCARED_MARGIN];
     serializeJson(json_doc, json_str_buffer);

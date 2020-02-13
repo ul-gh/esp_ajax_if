@@ -56,8 +56,9 @@ public:
     static constexpr float init_lag_dt{125e-9};
     static constexpr bool init_output_enabled{false};
 
-    // Send cyclic state updates to the HTTP client using this time interval (ms)
-    static constexpr uint32_t api_state_push_update_interval_ms{500};
+    // Update non-critical application state and send cyclic
+    // state updates to the HTTP client using this time interval (ms)
+    static constexpr uint32_t api_state_periodic_update_interval_ms{500};
     /************************* END DEFAULT VALUES *****************************
      */
 
@@ -77,7 +78,7 @@ public:
 
 private:
     // Event timer instance
-    Ticker push_update_timer;
+    Ticker periodic_update_timer;
 
     /** Application state is sent as a push update via the SSE event source.
      *
@@ -101,7 +102,7 @@ private:
      *  "timer_div": 1
      * }
      */
-    static void on_push_update_timer(PSPWMGen* self);
+    static void on_periodic_update_timer(PSPWMGen* self);
 
 //    static void IRAM_ATTR fault_isr_handler(void* unused);
 };

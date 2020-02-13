@@ -85,16 +85,14 @@ p {
     font-size: 1.5rem;
 }
 
+#btn_reset {
+    display: inline-block;
+}
+
 #btn_on {
     background-color: #4CAF50; /* Green */
 }
 
-#btn_off,
-#btn_update {
+#btn_off {
     background-color: #FF0000; /* Red */
-}
-
-#btn_update {
-    font-size: 1.3rem;
-    padding: 0rem 2rem;
 }
