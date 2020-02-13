@@ -82,6 +82,11 @@ void PSPWMGen::register_remote_control(APIServer* api_server) {
         }
     };
     api_server->register_api_cb("set_output", cb_text);
+
+    CbVoidT cb_void = [this](){
+        pspwm_reset_hw_fault_shutdown(mcpwm_num);
+    };
+    api_server->register_api_cb("reset_shutdown", cb_void);
 }
 #endif /* USE_ASYMMETRIC_FULL_SPEED_DRIVE_API */
 
@@ -157,9 +162,10 @@ void PSPWMGen::register_remote_control(APIServer* api_server) {
     };
     api_server->register_api_cb("set_output", cb_text);
 
-    api_server->register_api_cb("reset_shutdown", [this](){
+    CbVoidT cb_void = [this](){
         pspwm_reset_hw_fault_shutdown(mcpwm_num);
-    });
+    };
+    api_server->register_api_cb("reset_shutdown", cb_void);
 }
 #endif /* USE_SYMMETRIC_DC_FREE_DRIVE_API */
 

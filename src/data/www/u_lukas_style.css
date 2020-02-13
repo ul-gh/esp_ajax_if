@@ -86,7 +86,9 @@ p {
 }
 
 #btn_reset {
-    display: inline-block;
+    display: block;
+    margin: auto;
+    text-align: center;
 }
 
 #btn_on {

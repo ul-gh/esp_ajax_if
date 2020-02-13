@@ -537,18 +537,20 @@ esp_err_t pspwm_disable_output(mcpwm_unit_t mcpwm_num)
 {
     DBG("Disabling output!");
     mcpwm_dev_t* const module = MCPWM[mcpwm_num];
-    portENTER_CRITICAL(&mcpwm_spinlock);
+    //portENTER_CRITICAL(&mcpwm_spinlock);
     // Toggle triggers the fault event
     // Register 16.28: PWM_FH0_CFG1_REG (0x006c)
     module->channel[MCPWM_TIMER_0].tz_cfg1.force_ost = 1;
     module->channel[MCPWM_TIMER_0].tz_cfg1.force_ost = 0;
     module->channel[MCPWM_TIMER_1].tz_cfg1.force_ost = 1;
     module->channel[MCPWM_TIMER_1].tz_cfg1.force_ost = 0;
-    portEXIT_CRITICAL(&mcpwm_spinlock);
+    //portEXIT_CRITICAL(&mcpwm_spinlock);
     // Update global state
     pspwm_setpoint_t* setpoints = s_setpoints[mcpwm_num];
+DBG("assert!");
     assert(setpoints != NULL);
     setpoints->output_enabled = false;
+DBG("Disabling output done!");
     return ESP_OK;
 }
 
@@ -812,7 +814,8 @@ static esp_err_t pspwm_setup_fault_handler_module(
     module->channel[MCPWM_TIMER_0].tz_cfg0.b_ost_u = disable_action_lead_leg;
     // Set MCPWM interrupt generator enable mask
     // Register 16.69: INT_ENA_PWM_REG (0x0110)
-    module->int_ena.tz0_ost_int_ena = 1;
+    //module->int_ena.tz0_ost_int_ena = 1;
+    module->int_ena.fault0_int_ena = 1;
     portEXIT_CRITICAL(&mcpwm_spinlock);
     //////////////////// Register fault handler ISR ///////////////////////
     return mcpwm_isr_register(
@@ -842,6 +845,8 @@ static void IRAM_ATTR pspwm_isr_handler(void* arg) {
     // MCPWM[MCPWM_UNIT_1]->int_clr.tz0_ost_int_clr = flag_state;
     // portEXIT_CRITICAL_ISR(&mcpwm_spinlock);
     //////////// Alternatively: //////////
+    //// ===> Do not forget to activate the corresponding interrupt source
+    //// in function pspwm_setup_fault_handler_module() !
     portENTER_CRITICAL_ISR(&mcpwm_spinlock);
     // Get state for MCPWM unit 0 and set flag
     flag_state = (bool)MCPWM[MCPWM_UNIT_0]->int_st.fault0_int_st;
