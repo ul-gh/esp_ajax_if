@@ -253,20 +253,25 @@ esp_err_t pspwm_up_down_ctr_mode_set_ps_duty(mcpwm_unit_t mcpwm_num,
 /*****************************************************************
  *                         COMMON SETUP
  *****************************************************************/
+/** Returns true while the hardware fault shutdown pin is active
+ * i.e. for as long as the failure is still present.
+ * 
+ */
+bool pspwm_get_hw_fault_shutdown_present(mcpwm_unit_t mcpwm_num);
 
 /** Returns true when the hardware fault shutdown pin has been activated.
  * 
  * The state remains true (shutdown activated) as long as hw status has
  * not been cleared by a call to pspwm_resync_enable_output().
  */
-bool pspwm_get_hw_fault_shutdown_status(mcpwm_unit_t mcpwm_num);
+bool pspwm_get_hw_fault_shutdown_occurred(mcpwm_unit_t mcpwm_num);
 
 /** Resets the fault shutdown active flag without re-enabling the output
  * 
  * If a hardware shutdown occurred, this flag must be reset first
  * in order to re-enable the output. This acts as a safety feature.
  */
-void pspwm_reset_hw_fault_shutdown(mcpwm_unit_t mcpwm_num);
+void pspwm_clear_hw_fault_shutdown_occurred(mcpwm_unit_t mcpwm_num);
 
 /** Disable PWM output immediately by software-triggering the one-shot
  * fault input of the "trip-zone" fault handler module.

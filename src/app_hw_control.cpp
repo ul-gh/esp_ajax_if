@@ -163,9 +163,13 @@ void PSPWMGen::register_remote_control(APIServer* api_server) {
     api_server->register_api_cb("set_output", cb_text);
 
     CbVoidT cb_void = [this](){
-        pspwm_reset_hw_fault_shutdown(mcpwm_num);
+        if (!pspwm_get_hw_fault_shutdown_present(mcpwm_num)) {
+            pspwm_clear_hw_fault_shutdown_occurred(mcpwm_num);
+        } else {
+            error_print("Will Not Clear: Fault Shutdown Pin Still Active!");
+        }
     };
-    api_server->register_api_cb("reset_shutdown", cb_void);
+    api_server->register_api_cb("clear_shutdown", cb_void);
 }
 #endif /* USE_SYMMETRIC_DC_FREE_DRIVE_API */
 
@@ -175,7 +179,7 @@ PSPWMGen::~PSPWMGen() {
 
 // Called periodicly submitting application state to the HTTP client
 void PSPWMGen::on_periodic_update_timer(PSPWMGen* self) {
-    bool shutdown_status = pspwm_get_hw_fault_shutdown_status(mcpwm_num);
+    bool shutdown_status = pspwm_get_hw_fault_shutdown_occurred(mcpwm_num);
     if (shutdown_status) {
         self->pspwm_setpoint->output_enabled = false;
     }

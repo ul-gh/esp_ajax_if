@@ -500,6 +500,10 @@ esp_err_t pspwm_up_down_ctr_mode_set_ps_duty(mcpwm_unit_t mcpwm_num,
     portENTER_CRITICAL(&mcpwm_spinlock);
     uint32_t timer_top = module->timer[MCPWM_TIMER_0].period.period;
     uint32_t phase_setval = (uint32_t)(timer_top * ps_duty);
+    // This must not be equal to timer_top, otherwise timer seems to stop
+    if (phase_setval >= timer_top) {
+        phase_setval = timer_top - 1;
+    } 
     // Phase shift value is based on timer 0 period setting but intentionally
     // only set for timer 1. Timer 0 is the reference phase.
     // Register 16.8: PWM_TIMER1_SYNC_REG (0x001c)
@@ -514,7 +518,18 @@ esp_err_t pspwm_up_down_ctr_mode_set_ps_duty(mcpwm_unit_t mcpwm_num,
  *                         COMMON API                            *
  *****************************************************************
  */
-bool pspwm_get_hw_fault_shutdown_status(mcpwm_unit_t mcpwm_num) {
+bool pspwm_get_hw_fault_shutdown_present(mcpwm_unit_t mcpwm_num) {
+    bool status;
+    portENTER_CRITICAL(&mcpwm_spinlock);
+    // Register 16.58: PWM_FAULT_DETECT_REG (0x00e4)
+    //bool status = (bool)MCPWM[mcpwm_num]->fault_detect.event_f0;
+    // Register 16.29: PWM_FH0_STATUS_REG (0x0070)
+    status = (bool)MCPWM[mcpwm_num]->channel[MCPWM_TIMER_0].tz_status.ost_on;
+    portEXIT_CRITICAL(&mcpwm_spinlock);
+    return status;
+}
+
+bool pspwm_get_hw_fault_shutdown_occurred(mcpwm_unit_t mcpwm_num) {
     bool status;
     portENTER_CRITICAL(&mcpwm_spinlock);
     // Register 16.58: PWM_FAULT_DETECT_REG (0x00e4)
@@ -527,7 +542,7 @@ bool pspwm_get_hw_fault_shutdown_status(mcpwm_unit_t mcpwm_num) {
     return status;
 }
 
-void pspwm_reset_hw_fault_shutdown(mcpwm_unit_t mcpwm_num) {
+void pspwm_clear_hw_fault_shutdown_occurred(mcpwm_unit_t mcpwm_num) {
     portENTER_CRITICAL(&mcpwm_spinlock);
     ost_fault_event_occurred[mcpwm_num] = false;
     portEXIT_CRITICAL(&mcpwm_spinlock);
@@ -834,27 +849,34 @@ static esp_err_t pspwm_setup_fault_handler_module(
  * //status = (bool)MCPWM[mcpwm_num]->channel[MCPWM_TIMER_0].tz_status.ost_on;
  */
 static void IRAM_ATTR pspwm_isr_handler(void* arg) {
+    /* Assuming the other CPU core does not meddle with CPU or peripheral state
+     * accessed by this ISR routine, we should not need an in-ISR mutex/lock.
+     * If this assumption turns out to be false, a spinlock can be employed:
+     * static portMUX_TYPE mcpwm_isr_spinlock = portMUX_INITIALIZER_UNLOCKED;
+     * portENTER_CRITICAL_ISR(&mcpwm_isr_spinlock);
+     * ...
+     * portEXIT_CRITICAL_ISR(&mcpwm_isr_spinlock);
+     */
     bool flag_state;
-    // portENTER_CRITICAL_ISR(&mcpwm_spinlock);
+    // Debug
+    //ets_printf("Interrupt_entered ");
+    //
     // // Get state for MCPWM unit 0 and set flag
     // flag_state = (bool)MCPWM[MCPWM_UNIT_0]->int_st.tz0_ost_int_st;
-    // ost_fault_event_occurred[0] = flag_state;
+    // ost_fault_event_occurred[0] |= flag_state;
     // MCPWM[MCPWM_UNIT_0]->int_clr.tz0_ost_int_clr = flag_state;
     // flag_state = (bool)MCPWM[MCPWM_UNIT_1]->int_st.tz0_ost_int_st;
-    // ost_fault_event_occurred[1] = flag_state;
+    // ost_fault_event_occurred[1] |= flag_state;
     // MCPWM[MCPWM_UNIT_1]->int_clr.tz0_ost_int_clr = flag_state;
-    // portEXIT_CRITICAL_ISR(&mcpwm_spinlock);
-    //////////// Alternatively: //////////
-    //// ===> Do not forget to activate the corresponding interrupt source
-    //// in function pspwm_setup_fault_handler_module() !
-    portENTER_CRITICAL_ISR(&mcpwm_spinlock);
+    ////////// Alternatively:
+    ////////// ===> Do not forget to activate the corresponding interrupt
+    //////////      source in function pspwm_setup_fault_handler_module() !
     // Get state for MCPWM unit 0 and set flag
     flag_state = (bool)MCPWM[MCPWM_UNIT_0]->int_st.fault0_int_st;
-    ost_fault_event_occurred[0] = flag_state;
+    ost_fault_event_occurred[0] |= flag_state;
     MCPWM[MCPWM_UNIT_0]->int_clr.fault0_int_clr = flag_state;
     // Get state for MCPWM unit 1 and set flag
     flag_state = (bool)MCPWM[MCPWM_UNIT_1]->int_st.fault0_int_st;
-    ost_fault_event_occurred[1] = flag_state;
+    ost_fault_event_occurred[1] |= flag_state;
     MCPWM[MCPWM_UNIT_1]->int_clr.fault0_int_clr = flag_state;
-    portEXIT_CRITICAL_ISR(&mcpwm_spinlock);
 }
