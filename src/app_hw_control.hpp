@@ -88,9 +88,9 @@ private:
      * // Setpoint limits
      *  "frequency_min": 1.0,
      *  "frequency_max": 1000.0,
+     *  "dt_sum_max": 1200,
      * 
      * // Operational settings
-     *  "dt_sum_max": 1200,
      *  "frequency": 500.0,
      *  "ps_duty": 79.0,
      *  "lead_dt": 100.0,
