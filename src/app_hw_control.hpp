@@ -99,7 +99,10 @@ private:
      * 
      * // Clock divider settings
      *  "base_div": 1,
-     *  "timer_div": 1
+     *  "timer_div": 1,
+     * 
+     * // Hardware Fault Shutdown Status
+     * "hw_shutdown_active": false,
      * }
      */
     static void on_periodic_update_timer(PSPWMGen* self);

@@ -86,7 +86,7 @@ void PSPWMGen::register_remote_control(APIServer* api_server) {
     CbVoidT cb_void = [this](){
         pspwm_reset_hw_fault_shutdown(mcpwm_num);
     };
-    api_server->register_api_cb("reset_shutdown", cb_void);
+    api_server->register_api_cb("clear_shutdown", cb_void);
 }
 #endif /* USE_ASYMMETRIC_FULL_SPEED_DRIVE_API */
 
