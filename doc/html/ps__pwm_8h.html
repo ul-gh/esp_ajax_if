@@ -302,7 +302,7 @@ This depends on the ESP-IDF SDK</dd></dl>
       </table>
 </div><div class="memdoc">
 <p>Returns true when the hardware fault shutdown pin has been activated.</p>
-<p>The state remains true (shutdown activated) as long as hw status has not been cleared by a call to <a class="el" href="ps__pwm_8h.html#ad72e8ec85dfbb20872a028695c9dde6f">pspwm_resync_enable_output()</a>. </p>
+<p>The state remains true (shutdown activated) as long as hw status has not been cleared by a call to <a class="el" href="ps__pwm_8h.html#ad33f497fe3be5cbe41ae918fb775512f">pspwm_clear_hw_fault_shutdown_occurred()</a>. </p>
 
 </div>
 </div>
@@ -413,7 +413,7 @@ This depends on the ESP-IDF SDK</dd></dl>
       </table>
 </div><div class="memdoc">
 <p>(Re-)enable PWM output by clearing fault handler one-shot trigger after software-triggering a re-sync to the initial phase setpoint.</p>
-<p>If a hardware shutdown occurred, the shutdown flag must be reset first by calling pspwm_reset_hw_fault_shutdown() in order to be able to re-enable the output. This acts as a safety feature.</p>
+<p>If a hardware shutdown occurred, the shutdown flag must be reset first by calling <a class="el" href="ps__pwm_8h.html#ad33f497fe3be5cbe41ae918fb775512f">pspwm_clear_hw_fault_shutdown_occurred()</a> in order to be able to re-enable the output. This acts as a safety feature.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">mcpwm_num</td><td>PWM unit number (enum, MCPWM_UNIT_0 = 0, MCPWM_UNIT_1 = 1), </td></tr>
