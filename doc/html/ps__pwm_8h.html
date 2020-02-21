@@ -74,10 +74,10 @@ Macros</h2></td></tr>
 #define&#160;</td><td class="memItemRight" valign="bottom"><b>MCPWM_INPUT_CLK</b>&#160;&#160;&#160;160000000</td></tr>
 <tr class="separator:a8797701ac9b4def93778bf0adae4732c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4b0dd1bc9e7f45ae1c94bc276947a03f"><td class="memItemLeft" align="right" valign="top"><a id="a4b0dd1bc9e7f45ae1c94bc276947a03f"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><b>BASE_CLK_PRESCALE_DEFAULT</b>&#160;&#160;&#160;4</td></tr>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>BASE_CLK_PRESCALE_DEFAULT</b>&#160;&#160;&#160;1</td></tr>
 <tr class="separator:a4b0dd1bc9e7f45ae1c94bc276947a03f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2ae5e16ad77ce7cb8bd077d9d057fd64"><td class="memItemLeft" align="right" valign="top"><a id="a2ae5e16ad77ce7cb8bd077d9d057fd64"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><b>TIMER_CLK_PRESCALE_DEFAULT</b>&#160;&#160;&#160;4</td></tr>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>TIMER_CLK_PRESCALE_DEFAULT</b>&#160;&#160;&#160;1</td></tr>
 <tr class="separator:a2ae5e16ad77ce7cb8bd077d9d057fd64"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
@@ -98,6 +98,12 @@ Functions</h2></td></tr>
 <tr class="separator:a41f4854e6a52c579fcc137df2be74142"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aaf6bfbd819bdf20c4148797a8477ca43"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ps__pwm_8h.html#aaf6bfbd819bdf20c4148797a8477ca43">pspwm_up_down_ctr_mode_set_ps_duty</a> (mcpwm_unit_t mcpwm_num, const float ps_duty)</td></tr>
 <tr class="separator:aaf6bfbd819bdf20c4148797a8477ca43"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9324368d1cd7d3e8f0c0fa4d7e1b5bb1"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ps__pwm_8h.html#a9324368d1cd7d3e8f0c0fa4d7e1b5bb1">pspwm_get_hw_fault_shutdown_present</a> (mcpwm_unit_t mcpwm_num)</td></tr>
+<tr class="separator:a9324368d1cd7d3e8f0c0fa4d7e1b5bb1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a901715fdd774356f15e8dfca890a7a3b"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ps__pwm_8h.html#a901715fdd774356f15e8dfca890a7a3b">pspwm_get_hw_fault_shutdown_occurred</a> (mcpwm_unit_t mcpwm_num)</td></tr>
+<tr class="separator:a901715fdd774356f15e8dfca890a7a3b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad33f497fe3be5cbe41ae918fb775512f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ps__pwm_8h.html#ad33f497fe3be5cbe41ae918fb775512f">pspwm_clear_hw_fault_shutdown_occurred</a> (mcpwm_unit_t mcpwm_num)</td></tr>
+<tr class="separator:ad33f497fe3be5cbe41ae918fb775512f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9c3c611469c41ed1ae07c55360d5b490"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ps__pwm_8h.html#a9c3c611469c41ed1ae07c55360d5b490">pspwm_disable_output</a> (mcpwm_unit_t mcpwm_num)</td></tr>
 <tr class="separator:a9c3c611469c41ed1ae07c55360d5b490"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad72e8ec85dfbb20872a028695c9dde6f"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ps__pwm_8h.html#ad72e8ec85dfbb20872a028695c9dde6f">pspwm_resync_enable_output</a> (mcpwm_unit_t mcpwm_num)</td></tr>
@@ -110,13 +116,35 @@ Functions</h2></td></tr>
 <tr class="separator:ac7047c0a9227bee351af307ac76fe703"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af7932614270524046433c7993130a438"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ps__pwm_8h.html#af7932614270524046433c7993130a438">pspwm_get_setpoint_limits_ptr</a> (mcpwm_unit_t mcpwm_num, <a class="el" href="structpspwm__setpoint__limits__t.html">pspwm_setpoint_limits_t</a> **setpoint_limits)</td></tr>
 <tr class="separator:af7932614270524046433c7993130a438"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a809a0e93057954966377291fee48376f"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ps__pwm_8h.html#a809a0e93057954966377291fee48376f">pspwm_get_clk_conf_ptr</a> (mcpwm_unit_t mcpwm_num, <a class="el" href="structpspwm__clk__conf__t.html">pspwm_clk_conf_t</a> **clk_conf)</td></tr>
+<tr class="separator:a809a0e93057954966377291fee48376f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Use Espressif ESP32 platform MCPWM hardware module for generating Phase-Shift-PWM waveform on 4 hardware pins. </p><dl class="section note"><dt>Note</dt><dd>Application in power electronics, e.g. ZVS-PS-PWM, DAB-DCM and LLC converters.</dd>
 <dd>
 This depends on the ESP-IDF SDK</dd></dl>
-<p>2019-12-11 Ulrich Lukas </p>
+<p>2020-01-31 Ulrich Lukas </p>
 </div><h2 class="groupheader">Function Documentation</h2>
+<a id="ad33f497fe3be5cbe41ae918fb775512f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad33f497fe3be5cbe41ae918fb775512f">&#9670;&nbsp;</a></span>pspwm_clear_hw_fault_shutdown_occurred()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void pspwm_clear_hw_fault_shutdown_occurred </td>
+          <td>(</td>
+          <td class="paramtype">mcpwm_unit_t&#160;</td>
+          <td class="paramname"><em>mcpwm_num</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Resets the fault shutdown active flag without re-enabling the output</p>
+<p>If a hardware shutdown occurred, this flag must be reset first in order to re-enable the output. This acts as a safety feature. </p>
+
+</div>
+</div>
 <a id="a865fe5e36bfb4efa91224f3449ab44a1"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a865fe5e36bfb4efa91224f3449ab44a1">&#9670;&nbsp;</a></span>pspwm_disable_hw_fault_shutdown()</h2>
 
@@ -222,6 +250,81 @@ This depends on the ESP-IDF SDK</dd></dl>
 
 </div>
 </div>
+<a id="a809a0e93057954966377291fee48376f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a809a0e93057954966377291fee48376f">&#9670;&nbsp;</a></span>pspwm_get_clk_conf_ptr()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">esp_err_t pspwm_get_clk_conf_ptr </td>
+          <td>(</td>
+          <td class="paramtype">mcpwm_unit_t&#160;</td>
+          <td class="paramname"><em>mcpwm_num</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structpspwm__clk__conf__t.html">pspwm_clk_conf_t</a> **&#160;</td>
+          <td class="paramname"><em>clk_conf</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Read from PSPWM state the base clock and timer clock prescaler settings into the given pointer to struct <a class="el" href="structpspwm__clk__conf__t.html">pspwm_clk_conf_t</a>.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">mcpwm_num</td><td>PWM unit number (enum, MCPWM_UNIT_0 = 0, MCPWM_UNIT_1 = 1), </td></tr>
+    <tr><td class="paramname">clk_conf</td><td>Pointer to a struct instance of <a class="el" href="structpspwm__setpoint__t.html">pspwm_setpoint_t</a> </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a901715fdd774356f15e8dfca890a7a3b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a901715fdd774356f15e8dfca890a7a3b">&#9670;&nbsp;</a></span>pspwm_get_hw_fault_shutdown_occurred()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool pspwm_get_hw_fault_shutdown_occurred </td>
+          <td>(</td>
+          <td class="paramtype">mcpwm_unit_t&#160;</td>
+          <td class="paramname"><em>mcpwm_num</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Returns true when the hardware fault shutdown pin has been activated.</p>
+<p>The state remains true (shutdown activated) as long as hw status has not been cleared by a call to <a class="el" href="ps__pwm_8h.html#ad72e8ec85dfbb20872a028695c9dde6f">pspwm_resync_enable_output()</a>. </p>
+
+</div>
+</div>
+<a id="a9324368d1cd7d3e8f0c0fa4d7e1b5bb1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9324368d1cd7d3e8f0c0fa4d7e1b5bb1">&#9670;&nbsp;</a></span>pspwm_get_hw_fault_shutdown_present()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool pspwm_get_hw_fault_shutdown_present </td>
+          <td>(</td>
+          <td class="paramtype">mcpwm_unit_t&#160;</td>
+          <td class="paramname"><em>mcpwm_num</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Returns true while the hardware fault shutdown pin is active i.e. for as long as the failure is still present. </p>
+
+</div>
+</div>
 <a id="af7932614270524046433c7993130a438"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#af7932614270524046433c7993130a438">&#9670;&nbsp;</a></span>pspwm_get_setpoint_limits_ptr()</h2>
 
@@ -310,6 +413,7 @@ This depends on the ESP-IDF SDK</dd></dl>
       </table>
 </div><div class="memdoc">
 <p>(Re-)enable PWM output by clearing fault handler one-shot trigger after software-triggering a re-sync to the initial phase setpoint.</p>
+<p>If a hardware shutdown occurred, the shutdown flag must be reset first by calling pspwm_reset_hw_fault_shutdown() in order to be able to re-enable the output. This acts as a safety feature.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">mcpwm_num</td><td>PWM unit number (enum, MCPWM_UNIT_0 = 0, MCPWM_UNIT_1 = 1), </td></tr>
