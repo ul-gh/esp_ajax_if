@@ -262,7 +262,7 @@ bool pspwm_get_hw_fault_shutdown_present(mcpwm_unit_t mcpwm_num);
 /** Returns true when the hardware fault shutdown pin has been activated.
  * 
  * The state remains true (shutdown activated) as long as hw status has
- * not been cleared by a call to pspwm_resync_enable_output().
+ * not been cleared by a call to pspwm_clear_hw_fault_shutdown_occurred().
  */
 bool pspwm_get_hw_fault_shutdown_occurred(mcpwm_unit_t mcpwm_num);
 
@@ -287,7 +287,7 @@ esp_err_t pspwm_disable_output(mcpwm_unit_t mcpwm_num);
  * after software-triggering a re-sync to the initial phase setpoint.
  * 
  * If a hardware shutdown occurred, the shutdown flag must be reset first
- * by calling pspwm_reset_hw_fault_shutdown() in order to be able to 
+ * by calling pspwm_clear_hw_fault_shutdown_occurred() in order to be able to 
  * re-enable the output. This acts as a safety feature.
  * 
  * @param mcpwm_num: PWM unit number (enum, MCPWM_UNIT_0 = 0, MCPWM_UNIT_1 = 1),
