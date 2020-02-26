@@ -84,7 +84,11 @@ void PSPWMGen::register_remote_control(APIServer* api_server) {
     api_server->register_api_cb("set_output", cb_text);
 
     CbVoidT cb_void = [this](){
-        pspwm_reset_hw_fault_shutdown(mcpwm_num);
+    if (!pspwm_get_hw_fault_shutdown_present(mcpwm_num)) {
+            pspwm_clear_hw_fault_shutdown_occurred(mcpwm_num);
+        } else {
+            error_print("Will Not Clear: Fault Shutdown Pin Still Active!");
+        }
     };
     api_server->register_api_cb("clear_shutdown", cb_void);
 }

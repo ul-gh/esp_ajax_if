@@ -24,8 +24,8 @@
  * the hardware dead-time generator module but output is not guaranteed
  * DC-free.
  */
-//#define USE_ASYMMETRIC_FULL_SPEED_DRIVE_API
-#define USE_SYMMETRIC_DC_FREE_DRIVE_API
+#define USE_ASYMMETRIC_FULL_SPEED_DRIVE_API
+//#define USE_SYMMETRIC_DC_FREE_DRIVE_API
 class PSPWMGen
 {
 public:

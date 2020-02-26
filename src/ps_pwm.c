@@ -172,6 +172,11 @@ esp_err_t pspwm_up_ctr_mode_set_frequency(mcpwm_unit_t mcpwm_num,
     }
     // Set global state
     setpoints->frequency = frequency;
+    if (UINT16_MAX/s_clk_conf.base_clk < 1.0 / frequency) {
+        s_setpoint_limits[mcpwm_num]->dt_sum_max = UINT16_MAX / s_clk_conf.base_clk;
+    } else {
+        s_setpoint_limits[mcpwm_num]->dt_sum_max = 1.0 / frequency;
+    }
     float half_period = 0.5 * s_clk_conf.timer_clk / frequency;
     uint32_t timer_top = (uint32_t)(2 * half_period) - 1;
     uint32_t cmpr_0_a = (uint32_t)(
@@ -401,6 +406,7 @@ esp_err_t pspwm_up_down_ctr_mode_set_frequency(mcpwm_unit_t mcpwm_num,
     }
     // Set global state
     setpoints->frequency = frequency;
+    s_setpoint_limits[mcpwm_num]->dt_sum_max = 1.0 / frequency;
     float half_period = 0.5 * s_clk_conf.timer_clk / frequency;
     uint32_t timer_top = (uint32_t)half_period;
     uint32_t cmpr_lead_a = (uint32_t)(
@@ -412,6 +418,10 @@ esp_err_t pspwm_up_down_ctr_mode_set_frequency(mcpwm_unit_t mcpwm_num,
     // Phase shift value for Timer 1 needs updating when changing frequency.
     // Timer 0 is the reference phase and needs no update.
     uint32_t phase_setval = (uint32_t)(half_period * setpoints->ps_duty);
+    // This must not be equal to timer_top, otherwise timer seems to stop
+    if (phase_setval >= timer_top) {
+        phase_setval = timer_top - 1;
+    } 
     mcpwm_dev_t* const module = MCPWM[mcpwm_num];
     portENTER_CRITICAL(&mcpwm_spinlock);
     // Register 16.17: PWM_GEN0_TSTMP_A_REG (0x0040) etc.
