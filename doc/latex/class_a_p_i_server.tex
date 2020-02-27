@@ -1,0 +1,107 @@
+\hypertarget{class_a_p_i_server}{}\doxysection{A\+P\+I\+Server Class Reference}
+\label{class_a_p_i_server}\index{APIServer@{APIServer}}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_a_p_i_server_a7d82e5e7f4fe919abd0649b199d31b15}\label{class_a_p_i_server_a7d82e5e7f4fe919abd0649b199d31b15}} 
+{\bfseries A\+P\+I\+Server} (Async\+Web\+Server $\ast$http\+\_\+backend)
+\item 
+void \mbox{\hyperlink{class_a_p_i_server_a1b7b38226d0c2f74fd5e60a0d35b5127}{set\+\_\+template}} (const char $\ast$placeholder, const char $\ast$replacement)
+\item 
+void \mbox{\hyperlink{class_a_p_i_server_a24d38e13dda84409bfed4b541c7f2ad2}{activate\+\_\+events\+\_\+on}} (const char $\ast$endpoint)
+\item 
+void \mbox{\hyperlink{class_a_p_i_server_a9e4fcd3aa702498fc2e2767a08bf99f3}{register\+\_\+api\+\_\+cb}} (const char $\ast$cmd\+\_\+name, Cb\+StringT cmd\+\_\+callback)
+\item 
+void \mbox{\hyperlink{class_a_p_i_server_a316e314306f06bfa93688ab88687029f}{register\+\_\+api\+\_\+cb}} (const char $\ast$cmd\+\_\+name, Cb\+FloatT cmd\+\_\+callback)
+\item 
+void \mbox{\hyperlink{class_a_p_i_server_aca68c6f8413d92e12b229c9ad25fc5f9}{register\+\_\+api\+\_\+cb}} (const char $\ast$cmd\+\_\+name, Cb\+IntT cmd\+\_\+callback)
+\item 
+void \mbox{\hyperlink{class_a_p_i_server_ad2514a1173d3252adc1aaf1991714a90}{register\+\_\+api\+\_\+cb}} (const char $\ast$cmd\+\_\+name, Cb\+VoidT cmd\+\_\+callback)
+\item 
+void \mbox{\hyperlink{class_a_p_i_server_adaa106e51ca2f3c23cf8a72be7933ddd}{begin}} ()
+\item 
+void \mbox{\hyperlink{class_a_p_i_server_a96a43106df130ba6b02f2e1809811375}{activate\+\_\+default\+\_\+callbacks}} ()
+\end{DoxyCompactItemize}
+\doxysubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_a_p_i_server_af2f0acab745492a72362c197c9a33fd5}\label{class_a_p_i_server_af2f0acab745492a72362c197c9a33fd5}} 
+Async\+Web\+Server $\ast$ {\bfseries backend}
+\item 
+\mbox{\Hypertarget{class_a_p_i_server_a8f3f4eea3aab1965ea910a232f9ed92f}\label{class_a_p_i_server_a8f3f4eea3aab1965ea910a232f9ed92f}} 
+Async\+Event\+Source $\ast$ {\bfseries event\+\_\+source}
+\item 
+\mbox{\Hypertarget{class_a_p_i_server_a9d8942f841a8a7c361342dce7847cf39}\label{class_a_p_i_server_a9d8942f841a8a7c361342dce7847cf39}} 
+Cmd\+MapT {\bfseries cmd\+\_\+map}
+\item 
+\mbox{\Hypertarget{class_a_p_i_server_a60551d4c483eb974506aa05458f52b29}\label{class_a_p_i_server_a60551d4c483eb974506aa05458f52b29}} 
+Template\+MapT {\bfseries template\+\_\+map}
+\item 
+\mbox{\Hypertarget{class_a_p_i_server_aa69a954465115284a0fccd4c97609aea}\label{class_a_p_i_server_aa69a954465115284a0fccd4c97609aea}} 
+bool {\bfseries reboot\+\_\+requested}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{class_a_p_i_server_a96a43106df130ba6b02f2e1809811375}\label{class_a_p_i_server_a96a43106df130ba6b02f2e1809811375}} 
+\index{APIServer@{APIServer}!activate\_default\_callbacks@{activate\_default\_callbacks}}
+\index{activate\_default\_callbacks@{activate\_default\_callbacks}!APIServer@{APIServer}}
+\doxysubsubsection{\texorpdfstring{activate\_default\_callbacks()}{activate\_default\_callbacks()}}
+{\footnotesize\ttfamily void A\+P\+I\+Server\+::activate\+\_\+default\+\_\+callbacks (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+Start execution, assuming the backend server is started elsewhere \mbox{\Hypertarget{class_a_p_i_server_a24d38e13dda84409bfed4b541c7f2ad2}\label{class_a_p_i_server_a24d38e13dda84409bfed4b541c7f2ad2}} 
+\index{APIServer@{APIServer}!activate\_events\_on@{activate\_events\_on}}
+\index{activate\_events\_on@{activate\_events\_on}!APIServer@{APIServer}}
+\doxysubsubsection{\texorpdfstring{activate\_events\_on()}{activate\_events\_on()}}
+{\footnotesize\ttfamily void A\+P\+I\+Server\+::activate\+\_\+events\+\_\+on (\begin{DoxyParamCaption}\item[{const char $\ast$}]{endpoint }\end{DoxyParamCaption})}
+
+Activate event source for Server-\/\+Sent Events on specified endpoint \mbox{\Hypertarget{class_a_p_i_server_adaa106e51ca2f3c23cf8a72be7933ddd}\label{class_a_p_i_server_adaa106e51ca2f3c23cf8a72be7933ddd}} 
+\index{APIServer@{APIServer}!begin@{begin}}
+\index{begin@{begin}!APIServer@{APIServer}}
+\doxysubsubsection{\texorpdfstring{begin()}{begin()}}
+{\footnotesize\ttfamily void A\+P\+I\+Server\+::begin (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+Start execution, includes starting the E\+S\+P\+Async\+Web\+Server backend. Do not call this when using Wifi\+Manger or when backend has been activated before by other means \mbox{\Hypertarget{class_a_p_i_server_a316e314306f06bfa93688ab88687029f}\label{class_a_p_i_server_a316e314306f06bfa93688ab88687029f}} 
+\index{APIServer@{APIServer}!register\_api\_cb@{register\_api\_cb}}
+\index{register\_api\_cb@{register\_api\_cb}!APIServer@{APIServer}}
+\doxysubsubsection{\texorpdfstring{register\_api\_cb()}{register\_api\_cb()}\hspace{0.1cm}{\footnotesize\ttfamily [1/4]}}
+{\footnotesize\ttfamily void A\+P\+I\+Server\+::register\+\_\+api\+\_\+cb (\begin{DoxyParamCaption}\item[{const char $\ast$}]{cmd\+\_\+name,  }\item[{Cb\+FloatT}]{cmd\+\_\+callback }\end{DoxyParamCaption})}
+
+Setup H\+T\+TP request callbacks to a common A\+PI endpoint, distinguished by individual command names.
+
+Overload for float argument callbacks\+: \mbox{\Hypertarget{class_a_p_i_server_aca68c6f8413d92e12b229c9ad25fc5f9}\label{class_a_p_i_server_aca68c6f8413d92e12b229c9ad25fc5f9}} 
+\index{APIServer@{APIServer}!register\_api\_cb@{register\_api\_cb}}
+\index{register\_api\_cb@{register\_api\_cb}!APIServer@{APIServer}}
+\doxysubsubsection{\texorpdfstring{register\_api\_cb()}{register\_api\_cb()}\hspace{0.1cm}{\footnotesize\ttfamily [2/4]}}
+{\footnotesize\ttfamily void A\+P\+I\+Server\+::register\+\_\+api\+\_\+cb (\begin{DoxyParamCaption}\item[{const char $\ast$}]{cmd\+\_\+name,  }\item[{Cb\+IntT}]{cmd\+\_\+callback }\end{DoxyParamCaption})}
+
+Setup H\+T\+TP request callbacks to a common A\+PI endpoint, distinguished by individual command names.
+
+Overload for integer argument callbacks\+: \mbox{\Hypertarget{class_a_p_i_server_a9e4fcd3aa702498fc2e2767a08bf99f3}\label{class_a_p_i_server_a9e4fcd3aa702498fc2e2767a08bf99f3}} 
+\index{APIServer@{APIServer}!register\_api\_cb@{register\_api\_cb}}
+\index{register\_api\_cb@{register\_api\_cb}!APIServer@{APIServer}}
+\doxysubsubsection{\texorpdfstring{register\_api\_cb()}{register\_api\_cb()}\hspace{0.1cm}{\footnotesize\ttfamily [3/4]}}
+{\footnotesize\ttfamily void A\+P\+I\+Server\+::register\+\_\+api\+\_\+cb (\begin{DoxyParamCaption}\item[{const char $\ast$}]{cmd\+\_\+name,  }\item[{Cb\+StringT}]{cmd\+\_\+callback }\end{DoxyParamCaption})}
+
+Setup H\+T\+TP request callbacks to a common A\+PI endpoint, distinguished by individual command names.
+
+Overload for string argument callbacks\+: \mbox{\Hypertarget{class_a_p_i_server_ad2514a1173d3252adc1aaf1991714a90}\label{class_a_p_i_server_ad2514a1173d3252adc1aaf1991714a90}} 
+\index{APIServer@{APIServer}!register\_api\_cb@{register\_api\_cb}}
+\index{register\_api\_cb@{register\_api\_cb}!APIServer@{APIServer}}
+\doxysubsubsection{\texorpdfstring{register\_api\_cb()}{register\_api\_cb()}\hspace{0.1cm}{\footnotesize\ttfamily [4/4]}}
+{\footnotesize\ttfamily void A\+P\+I\+Server\+::register\+\_\+api\+\_\+cb (\begin{DoxyParamCaption}\item[{const char $\ast$}]{cmd\+\_\+name,  }\item[{Cb\+VoidT}]{cmd\+\_\+callback }\end{DoxyParamCaption})}
+
+Setup H\+T\+TP request callbacks to a common A\+PI endpoint, distinguished by individual command names.
+
+Overload for void argument callbacks\+: \mbox{\Hypertarget{class_a_p_i_server_a1b7b38226d0c2f74fd5e60a0d35b5127}\label{class_a_p_i_server_a1b7b38226d0c2f74fd5e60a0d35b5127}} 
+\index{APIServer@{APIServer}!set\_template@{set\_template}}
+\index{set\_template@{set\_template}!APIServer@{APIServer}}
+\doxysubsubsection{\texorpdfstring{set\_template()}{set\_template()}}
+{\footnotesize\ttfamily void A\+P\+I\+Server\+::set\+\_\+template (\begin{DoxyParamCaption}\item[{const char $\ast$}]{placeholder,  }\item[{const char $\ast$}]{replacement }\end{DoxyParamCaption})}
+
+Set an entry in the template processor string $<$=$>$ string mapping 
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+D\+:/src/\+Platform\+I\+O/esp\+\_\+ajax\+\_\+if/src/api\+\_\+server.\+hpp\item 
+D\+:/src/\+Platform\+I\+O/esp\+\_\+ajax\+\_\+if/src/api\+\_\+server.\+cpp\end{DoxyCompactItemize}

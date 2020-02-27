@@ -1,0 +1,410 @@
+\hypertarget{ps__pwm_8h}{}\doxysection{D\+:/src/\+Platform\+I\+O/esp\+\_\+ajax\+\_\+if/src/ps\+\_\+pwm.h File Reference}
+\label{ps__pwm_8h}\index{D:/src/PlatformIO/esp\_ajax\_if/src/ps\_pwm.h@{D:/src/PlatformIO/esp\_ajax\_if/src/ps\_pwm.h}}
+{\ttfamily \#include $<$stdbool.\+h$>$}\newline
+{\ttfamily \#include \char`\"{}driver/mcpwm.\+h\char`\"{}}\newline
+\doxysubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+struct \mbox{\hyperlink{structpspwm__setpoint__t}{pspwm\+\_\+setpoint\+\_\+t}}
+\item 
+struct \mbox{\hyperlink{structpspwm__clk__conf__t}{pspwm\+\_\+clk\+\_\+conf\+\_\+t}}
+\item 
+struct \mbox{\hyperlink{structpspwm__setpoint__limits__t}{pspwm\+\_\+setpoint\+\_\+limits\+\_\+t}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{ps__pwm_8h_a3d6fc867425bdc69a4f6f20165348ba1}\label{ps__pwm_8h_a3d6fc867425bdc69a4f6f20165348ba1}} 
+\#define {\bfseries P\+S\+\_\+\+P\+W\+M\+\_\+\+L\+O\+G\+\_\+\+L\+E\+V\+EL}~E\+S\+P\+\_\+\+L\+O\+G\+\_\+\+D\+E\+B\+UG
+\item 
+\mbox{\Hypertarget{ps__pwm_8h_a8797701ac9b4def93778bf0adae4732c}\label{ps__pwm_8h_a8797701ac9b4def93778bf0adae4732c}} 
+\#define {\bfseries M\+C\+P\+W\+M\+\_\+\+I\+N\+P\+U\+T\+\_\+\+C\+LK}~160000000
+\item 
+\mbox{\Hypertarget{ps__pwm_8h_a4b0dd1bc9e7f45ae1c94bc276947a03f}\label{ps__pwm_8h_a4b0dd1bc9e7f45ae1c94bc276947a03f}} 
+\#define {\bfseries B\+A\+S\+E\+\_\+\+C\+L\+K\+\_\+\+P\+R\+E\+S\+C\+A\+L\+E\+\_\+\+D\+E\+F\+A\+U\+LT}~1
+\item 
+\mbox{\Hypertarget{ps__pwm_8h_a2ae5e16ad77ce7cb8bd077d9d057fd64}\label{ps__pwm_8h_a2ae5e16ad77ce7cb8bd077d9d057fd64}} 
+\#define {\bfseries T\+I\+M\+E\+R\+\_\+\+C\+L\+K\+\_\+\+P\+R\+E\+S\+C\+A\+L\+E\+\_\+\+D\+E\+F\+A\+U\+LT}~1
+\end{DoxyCompactItemize}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+esp\+\_\+err\+\_\+t \mbox{\hyperlink{ps__pwm_8h_aee579ae2e0f291a356d833a686f4d3fb}{pspwm\+\_\+up\+\_\+ctr\+\_\+mode\+\_\+init}} (mcpwm\+\_\+unit\+\_\+t mcpwm\+\_\+num, const int gpio\+\_\+lead\+\_\+a, const int gpio\+\_\+lead\+\_\+b, const int gpio\+\_\+lag\+\_\+a, const int gpio\+\_\+lag\+\_\+b, const float frequency, const float ps\+\_\+duty, const float lead\+\_\+red, const float lead\+\_\+fed, const float lag\+\_\+red, const float lag\+\_\+fed, const bool output\+\_\+enabled, mcpwm\+\_\+action\+\_\+on\+\_\+pwmxa\+\_\+t disable\+\_\+action\+\_\+lag\+\_\+leg, mcpwm\+\_\+action\+\_\+on\+\_\+pwmxa\+\_\+t disable\+\_\+action\+\_\+lead\+\_\+leg)
+\item 
+esp\+\_\+err\+\_\+t \mbox{\hyperlink{ps__pwm_8h_a7e3f48e28063050d0fbeaaa03cee28c5}{pspwm\+\_\+up\+\_\+ctr\+\_\+mode\+\_\+set\+\_\+frequency}} (mcpwm\+\_\+unit\+\_\+t mcpwm\+\_\+num, const float frequency)
+\item 
+esp\+\_\+err\+\_\+t \mbox{\hyperlink{ps__pwm_8h_a7fb014bf49a32018b32cfd6b881f4c34}{pspwm\+\_\+up\+\_\+ctr\+\_\+mode\+\_\+set\+\_\+deadtimes}} (mcpwm\+\_\+unit\+\_\+t mcpwm\+\_\+num, const float lead\+\_\+red, const float lead\+\_\+fed, const float lag\+\_\+red, const float lag\+\_\+fed)
+\item 
+esp\+\_\+err\+\_\+t \mbox{\hyperlink{ps__pwm_8h_a445bb8526a64fba0bc7a206b9c74032b}{pspwm\+\_\+up\+\_\+ctr\+\_\+mode\+\_\+set\+\_\+ps\+\_\+duty}} (mcpwm\+\_\+unit\+\_\+t mcpwm\+\_\+num, const float ps\+\_\+duty)
+\item 
+esp\+\_\+err\+\_\+t \mbox{\hyperlink{ps__pwm_8h_a0b02ebb3d71e317252e06a1a5b3cd1ef}{pspwm\+\_\+up\+\_\+down\+\_\+ctr\+\_\+mode\+\_\+init}} (mcpwm\+\_\+unit\+\_\+t mcpwm\+\_\+num, const int gpio\+\_\+lead\+\_\+a, const int gpio\+\_\+lead\+\_\+b, const int gpio\+\_\+lag\+\_\+a, const int gpio\+\_\+lag\+\_\+b, const float frequency, const float ps\+\_\+duty, const float lead\+\_\+dt, const float lag\+\_\+dt, const bool output\+\_\+enabled, mcpwm\+\_\+action\+\_\+on\+\_\+pwmxa\+\_\+t disable\+\_\+action\+\_\+lag\+\_\+leg, mcpwm\+\_\+action\+\_\+on\+\_\+pwmxa\+\_\+t disable\+\_\+action\+\_\+lead\+\_\+leg)
+\item 
+esp\+\_\+err\+\_\+t \mbox{\hyperlink{ps__pwm_8h_ab29d98ceed348ebe5c7e5f6b3565a5cf}{pspwm\+\_\+up\+\_\+down\+\_\+ctr\+\_\+mode\+\_\+set\+\_\+frequency}} (mcpwm\+\_\+unit\+\_\+t mcpwm\+\_\+num, const float frequency)
+\item 
+esp\+\_\+err\+\_\+t \mbox{\hyperlink{ps__pwm_8h_a41f4854e6a52c579fcc137df2be74142}{pspwm\+\_\+up\+\_\+down\+\_\+ctr\+\_\+mode\+\_\+set\+\_\+deadtimes}} (mcpwm\+\_\+unit\+\_\+t mcpwm\+\_\+num, const float lead\+\_\+dt, const float lag\+\_\+dt)
+\item 
+esp\+\_\+err\+\_\+t \mbox{\hyperlink{ps__pwm_8h_aaf6bfbd819bdf20c4148797a8477ca43}{pspwm\+\_\+up\+\_\+down\+\_\+ctr\+\_\+mode\+\_\+set\+\_\+ps\+\_\+duty}} (mcpwm\+\_\+unit\+\_\+t mcpwm\+\_\+num, const float ps\+\_\+duty)
+\item 
+bool \mbox{\hyperlink{ps__pwm_8h_a9324368d1cd7d3e8f0c0fa4d7e1b5bb1}{pspwm\+\_\+get\+\_\+hw\+\_\+fault\+\_\+shutdown\+\_\+present}} (mcpwm\+\_\+unit\+\_\+t mcpwm\+\_\+num)
+\item 
+bool \mbox{\hyperlink{ps__pwm_8h_a901715fdd774356f15e8dfca890a7a3b}{pspwm\+\_\+get\+\_\+hw\+\_\+fault\+\_\+shutdown\+\_\+occurred}} (mcpwm\+\_\+unit\+\_\+t mcpwm\+\_\+num)
+\item 
+void \mbox{\hyperlink{ps__pwm_8h_ad33f497fe3be5cbe41ae918fb775512f}{pspwm\+\_\+clear\+\_\+hw\+\_\+fault\+\_\+shutdown\+\_\+occurred}} (mcpwm\+\_\+unit\+\_\+t mcpwm\+\_\+num)
+\item 
+esp\+\_\+err\+\_\+t \mbox{\hyperlink{ps__pwm_8h_a9c3c611469c41ed1ae07c55360d5b490}{pspwm\+\_\+disable\+\_\+output}} (mcpwm\+\_\+unit\+\_\+t mcpwm\+\_\+num)
+\item 
+esp\+\_\+err\+\_\+t \mbox{\hyperlink{ps__pwm_8h_ad72e8ec85dfbb20872a028695c9dde6f}{pspwm\+\_\+resync\+\_\+enable\+\_\+output}} (mcpwm\+\_\+unit\+\_\+t mcpwm\+\_\+num)
+\item 
+esp\+\_\+err\+\_\+t \mbox{\hyperlink{ps__pwm_8h_ab72487b95590c7cf5bcfe9e4eb2ad43a}{pspwm\+\_\+enable\+\_\+hw\+\_\+fault\+\_\+shutdown}} (mcpwm\+\_\+unit\+\_\+t mcpwm\+\_\+num, const int gpio\+\_\+fault\+\_\+shutdown, mcpwm\+\_\+fault\+\_\+input\+\_\+level\+\_\+t fault\+\_\+pin\+\_\+active\+\_\+level)
+\item 
+esp\+\_\+err\+\_\+t \mbox{\hyperlink{ps__pwm_8h_a865fe5e36bfb4efa91224f3449ab44a1}{pspwm\+\_\+disable\+\_\+hw\+\_\+fault\+\_\+shutdown}} (mcpwm\+\_\+unit\+\_\+t mcpwm\+\_\+num, const int gpio\+\_\+fault\+\_\+shutdown)
+\item 
+esp\+\_\+err\+\_\+t \mbox{\hyperlink{ps__pwm_8h_ac7047c0a9227bee351af307ac76fe703}{pspwm\+\_\+get\+\_\+setpoint\+\_\+ptr}} (mcpwm\+\_\+unit\+\_\+t mcpwm\+\_\+num, \mbox{\hyperlink{structpspwm__setpoint__t}{pspwm\+\_\+setpoint\+\_\+t}} $\ast$$\ast$setpoint)
+\item 
+esp\+\_\+err\+\_\+t \mbox{\hyperlink{ps__pwm_8h_af7932614270524046433c7993130a438}{pspwm\+\_\+get\+\_\+setpoint\+\_\+limits\+\_\+ptr}} (mcpwm\+\_\+unit\+\_\+t mcpwm\+\_\+num, \mbox{\hyperlink{structpspwm__setpoint__limits__t}{pspwm\+\_\+setpoint\+\_\+limits\+\_\+t}} $\ast$$\ast$setpoint\+\_\+limits)
+\item 
+esp\+\_\+err\+\_\+t \mbox{\hyperlink{ps__pwm_8h_a809a0e93057954966377291fee48376f}{pspwm\+\_\+get\+\_\+clk\+\_\+conf\+\_\+ptr}} (mcpwm\+\_\+unit\+\_\+t mcpwm\+\_\+num, \mbox{\hyperlink{structpspwm__clk__conf__t}{pspwm\+\_\+clk\+\_\+conf\+\_\+t}} $\ast$$\ast$clk\+\_\+conf)
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Use Espressif E\+S\+P32 platform M\+C\+P\+WM hardware module for generating Phase-\/\+Shift-\/\+P\+WM waveform on 4 hardware pins. \begin{DoxyNote}{Note}
+Application in power electronics, e.\+g. Z\+V\+S-\/\+P\+S-\/\+P\+WM, D\+A\+B-\/\+D\+CM and L\+LC converters.
+
+This depends on the E\+S\+P-\/\+I\+DF S\+DK
+\end{DoxyNote}
+2020-\/01-\/31 Ulrich Lukas 
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{ps__pwm_8h_ad33f497fe3be5cbe41ae918fb775512f}\label{ps__pwm_8h_ad33f497fe3be5cbe41ae918fb775512f}} 
+\index{ps\_pwm.h@{ps\_pwm.h}!pspwm\_clear\_hw\_fault\_shutdown\_occurred@{pspwm\_clear\_hw\_fault\_shutdown\_occurred}}
+\index{pspwm\_clear\_hw\_fault\_shutdown\_occurred@{pspwm\_clear\_hw\_fault\_shutdown\_occurred}!ps\_pwm.h@{ps\_pwm.h}}
+\doxysubsubsection{\texorpdfstring{pspwm\_clear\_hw\_fault\_shutdown\_occurred()}{pspwm\_clear\_hw\_fault\_shutdown\_occurred()}}
+{\footnotesize\ttfamily void pspwm\+\_\+clear\+\_\+hw\+\_\+fault\+\_\+shutdown\+\_\+occurred (\begin{DoxyParamCaption}\item[{mcpwm\+\_\+unit\+\_\+t}]{mcpwm\+\_\+num }\end{DoxyParamCaption})}
+
+Resets the fault shutdown active flag without re-\/enabling the output
+
+If a hardware shutdown occurred, this flag must be reset first in order to re-\/enable the output. This acts as a safety feature. \mbox{\Hypertarget{ps__pwm_8h_a865fe5e36bfb4efa91224f3449ab44a1}\label{ps__pwm_8h_a865fe5e36bfb4efa91224f3449ab44a1}} 
+\index{ps\_pwm.h@{ps\_pwm.h}!pspwm\_disable\_hw\_fault\_shutdown@{pspwm\_disable\_hw\_fault\_shutdown}}
+\index{pspwm\_disable\_hw\_fault\_shutdown@{pspwm\_disable\_hw\_fault\_shutdown}!ps\_pwm.h@{ps\_pwm.h}}
+\doxysubsubsection{\texorpdfstring{pspwm\_disable\_hw\_fault\_shutdown()}{pspwm\_disable\_hw\_fault\_shutdown()}}
+{\footnotesize\ttfamily esp\+\_\+err\+\_\+t pspwm\+\_\+disable\+\_\+hw\+\_\+fault\+\_\+shutdown (\begin{DoxyParamCaption}\item[{mcpwm\+\_\+unit\+\_\+t}]{mcpwm\+\_\+num,  }\item[{const int}]{gpio\+\_\+fault\+\_\+shutdown }\end{DoxyParamCaption})}
+
+Disable hardware fault shutdown pin, resetting the G\+P\+IO to default state.
+
+
+\begin{DoxyParams}{Parameters}
+{\em mcpwm\+\_\+num} & P\+WM unit number (enum, M\+C\+P\+W\+M\+\_\+\+U\+N\+I\+T\+\_\+0 = 0, M\+C\+P\+W\+M\+\_\+\+U\+N\+I\+T\+\_\+1 = 1), \\
+\hline
+{\em gpio\+\_\+fault\+\_\+shutdown} & G\+P\+IO pin number for shutdown input \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{ps__pwm_8h_a9c3c611469c41ed1ae07c55360d5b490}\label{ps__pwm_8h_a9c3c611469c41ed1ae07c55360d5b490}} 
+\index{ps\_pwm.h@{ps\_pwm.h}!pspwm\_disable\_output@{pspwm\_disable\_output}}
+\index{pspwm\_disable\_output@{pspwm\_disable\_output}!ps\_pwm.h@{ps\_pwm.h}}
+\doxysubsubsection{\texorpdfstring{pspwm\_disable\_output()}{pspwm\_disable\_output()}}
+{\footnotesize\ttfamily esp\+\_\+err\+\_\+t pspwm\+\_\+disable\+\_\+output (\begin{DoxyParamCaption}\item[{mcpwm\+\_\+unit\+\_\+t}]{mcpwm\+\_\+num }\end{DoxyParamCaption})}
+
+Disable P\+WM output immediately by software-\/triggering the one-\/shot fault input of the \char`\"{}trip-\/zone\char`\"{} fault handler module.
+
+This sets the P\+WM output pins to predefined levels T\+R\+I\+P\+Z\+O\+N\+E\+\_\+\+A\+C\+T\+I\+O\+N\+\_\+\+P\+W\+MxA and T\+R\+I\+P\+Z\+O\+N\+E\+\_\+\+A\+C\+T\+I\+O\+N\+\_\+\+P\+W\+MxB, which can be configured in the header file.
+
+
+\begin{DoxyParams}{Parameters}
+{\em mcpwm\+\_\+num} & P\+WM unit number (enum, M\+C\+P\+W\+M\+\_\+\+U\+N\+I\+T\+\_\+0 = 0, M\+C\+P\+W\+M\+\_\+\+U\+N\+I\+T\+\_\+1 = 1), \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{ps__pwm_8h_ab72487b95590c7cf5bcfe9e4eb2ad43a}\label{ps__pwm_8h_ab72487b95590c7cf5bcfe9e4eb2ad43a}} 
+\index{ps\_pwm.h@{ps\_pwm.h}!pspwm\_enable\_hw\_fault\_shutdown@{pspwm\_enable\_hw\_fault\_shutdown}}
+\index{pspwm\_enable\_hw\_fault\_shutdown@{pspwm\_enable\_hw\_fault\_shutdown}!ps\_pwm.h@{ps\_pwm.h}}
+\doxysubsubsection{\texorpdfstring{pspwm\_enable\_hw\_fault\_shutdown()}{pspwm\_enable\_hw\_fault\_shutdown()}}
+{\footnotesize\ttfamily esp\+\_\+err\+\_\+t pspwm\+\_\+enable\+\_\+hw\+\_\+fault\+\_\+shutdown (\begin{DoxyParamCaption}\item[{mcpwm\+\_\+unit\+\_\+t}]{mcpwm\+\_\+num,  }\item[{const int}]{gpio\+\_\+fault\+\_\+shutdown,  }\item[{mcpwm\+\_\+fault\+\_\+input\+\_\+level\+\_\+t}]{fault\+\_\+pin\+\_\+active\+\_\+level }\end{DoxyParamCaption})}
+
+Enable hardware fault shutdown (\char`\"{}tripzone\char`\"{}) input on given G\+P\+IO pin.
+
+This registers the fault handler F\+H0 signal with the specified P\+WM unit. 
+\begin{DoxyParams}{Parameters}
+{\em mcpwm\+\_\+num} & P\+WM unit number (enum, M\+C\+P\+W\+M\+\_\+\+U\+N\+I\+T\+\_\+0 = 0, M\+C\+P\+W\+M\+\_\+\+U\+N\+I\+T\+\_\+1 = 1), \\
+\hline
+{\em gpio\+\_\+fault\+\_\+shutdown} & G\+P\+IO pin number for shutdown input \\
+\hline
+{\em fault\+\_\+pin\+\_\+active\+\_\+level} & Logic level setting the fault condition \mbox{[}M\+C\+P\+W\+M\+\_\+\+L\+O\+W\+\_\+\+L\+E\+V\+E\+L\+\_\+\+T\+GR $\vert$ M\+C\+P\+W\+M\+\_\+\+H\+I\+G\+H\+\_\+\+L\+E\+V\+E\+L\+\_\+\+T\+GR\mbox{]} \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{ps__pwm_8h_a809a0e93057954966377291fee48376f}\label{ps__pwm_8h_a809a0e93057954966377291fee48376f}} 
+\index{ps\_pwm.h@{ps\_pwm.h}!pspwm\_get\_clk\_conf\_ptr@{pspwm\_get\_clk\_conf\_ptr}}
+\index{pspwm\_get\_clk\_conf\_ptr@{pspwm\_get\_clk\_conf\_ptr}!ps\_pwm.h@{ps\_pwm.h}}
+\doxysubsubsection{\texorpdfstring{pspwm\_get\_clk\_conf\_ptr()}{pspwm\_get\_clk\_conf\_ptr()}}
+{\footnotesize\ttfamily esp\+\_\+err\+\_\+t pspwm\+\_\+get\+\_\+clk\+\_\+conf\+\_\+ptr (\begin{DoxyParamCaption}\item[{mcpwm\+\_\+unit\+\_\+t}]{mcpwm\+\_\+num,  }\item[{\mbox{\hyperlink{structpspwm__clk__conf__t}{pspwm\+\_\+clk\+\_\+conf\+\_\+t}} $\ast$$\ast$}]{clk\+\_\+conf }\end{DoxyParamCaption})}
+
+Read from P\+S\+P\+WM state the base clock and timer clock prescaler settings into the given pointer to struct \mbox{\hyperlink{structpspwm__clk__conf__t}{pspwm\+\_\+clk\+\_\+conf\+\_\+t}}.
+
+
+\begin{DoxyParams}{Parameters}
+{\em mcpwm\+\_\+num} & P\+WM unit number (enum, M\+C\+P\+W\+M\+\_\+\+U\+N\+I\+T\+\_\+0 = 0, M\+C\+P\+W\+M\+\_\+\+U\+N\+I\+T\+\_\+1 = 1), \\
+\hline
+{\em clk\+\_\+conf} & Pointer to a struct instance of \mbox{\hyperlink{structpspwm__setpoint__t}{pspwm\+\_\+setpoint\+\_\+t}} \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{ps__pwm_8h_a901715fdd774356f15e8dfca890a7a3b}\label{ps__pwm_8h_a901715fdd774356f15e8dfca890a7a3b}} 
+\index{ps\_pwm.h@{ps\_pwm.h}!pspwm\_get\_hw\_fault\_shutdown\_occurred@{pspwm\_get\_hw\_fault\_shutdown\_occurred}}
+\index{pspwm\_get\_hw\_fault\_shutdown\_occurred@{pspwm\_get\_hw\_fault\_shutdown\_occurred}!ps\_pwm.h@{ps\_pwm.h}}
+\doxysubsubsection{\texorpdfstring{pspwm\_get\_hw\_fault\_shutdown\_occurred()}{pspwm\_get\_hw\_fault\_shutdown\_occurred()}}
+{\footnotesize\ttfamily bool pspwm\+\_\+get\+\_\+hw\+\_\+fault\+\_\+shutdown\+\_\+occurred (\begin{DoxyParamCaption}\item[{mcpwm\+\_\+unit\+\_\+t}]{mcpwm\+\_\+num }\end{DoxyParamCaption})}
+
+Returns true when the hardware fault shutdown pin has been activated.
+
+The state remains true (shutdown activated) as long as hw status has not been cleared by a call to \mbox{\hyperlink{ps__pwm_8h_ad33f497fe3be5cbe41ae918fb775512f}{pspwm\+\_\+clear\+\_\+hw\+\_\+fault\+\_\+shutdown\+\_\+occurred()}}. \mbox{\Hypertarget{ps__pwm_8h_a9324368d1cd7d3e8f0c0fa4d7e1b5bb1}\label{ps__pwm_8h_a9324368d1cd7d3e8f0c0fa4d7e1b5bb1}} 
+\index{ps\_pwm.h@{ps\_pwm.h}!pspwm\_get\_hw\_fault\_shutdown\_present@{pspwm\_get\_hw\_fault\_shutdown\_present}}
+\index{pspwm\_get\_hw\_fault\_shutdown\_present@{pspwm\_get\_hw\_fault\_shutdown\_present}!ps\_pwm.h@{ps\_pwm.h}}
+\doxysubsubsection{\texorpdfstring{pspwm\_get\_hw\_fault\_shutdown\_present()}{pspwm\_get\_hw\_fault\_shutdown\_present()}}
+{\footnotesize\ttfamily bool pspwm\+\_\+get\+\_\+hw\+\_\+fault\+\_\+shutdown\+\_\+present (\begin{DoxyParamCaption}\item[{mcpwm\+\_\+unit\+\_\+t}]{mcpwm\+\_\+num }\end{DoxyParamCaption})}
+
+Returns true while the hardware fault shutdown pin is active i.\+e. for as long as the failure is still present. \mbox{\Hypertarget{ps__pwm_8h_af7932614270524046433c7993130a438}\label{ps__pwm_8h_af7932614270524046433c7993130a438}} 
+\index{ps\_pwm.h@{ps\_pwm.h}!pspwm\_get\_setpoint\_limits\_ptr@{pspwm\_get\_setpoint\_limits\_ptr}}
+\index{pspwm\_get\_setpoint\_limits\_ptr@{pspwm\_get\_setpoint\_limits\_ptr}!ps\_pwm.h@{ps\_pwm.h}}
+\doxysubsubsection{\texorpdfstring{pspwm\_get\_setpoint\_limits\_ptr()}{pspwm\_get\_setpoint\_limits\_ptr()}}
+{\footnotesize\ttfamily esp\+\_\+err\+\_\+t pspwm\+\_\+get\+\_\+setpoint\+\_\+limits\+\_\+ptr (\begin{DoxyParamCaption}\item[{mcpwm\+\_\+unit\+\_\+t}]{mcpwm\+\_\+num,  }\item[{\mbox{\hyperlink{structpspwm__setpoint__limits__t}{pspwm\+\_\+setpoint\+\_\+limits\+\_\+t}} $\ast$$\ast$}]{setpoint\+\_\+limits }\end{DoxyParamCaption})}
+
+Read from P\+S\+P\+WM state the calculated setpoint limits into the given pointer to struct \mbox{\hyperlink{structpspwm__setpoint__limits__t}{pspwm\+\_\+setpoint\+\_\+limits\+\_\+t}}.
+
+
+\begin{DoxyParams}{Parameters}
+{\em mcpwm\+\_\+num} & P\+WM unit number (enum, M\+C\+P\+W\+M\+\_\+\+U\+N\+I\+T\+\_\+0 = 0, M\+C\+P\+W\+M\+\_\+\+U\+N\+I\+T\+\_\+1 = 1), \\
+\hline
+{\em setpoint\+\_\+limits} & Pointer to a struct instance of \mbox{\hyperlink{structpspwm__setpoint__limits__t}{pspwm\+\_\+setpoint\+\_\+limits\+\_\+t}} \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{ps__pwm_8h_ac7047c0a9227bee351af307ac76fe703}\label{ps__pwm_8h_ac7047c0a9227bee351af307ac76fe703}} 
+\index{ps\_pwm.h@{ps\_pwm.h}!pspwm\_get\_setpoint\_ptr@{pspwm\_get\_setpoint\_ptr}}
+\index{pspwm\_get\_setpoint\_ptr@{pspwm\_get\_setpoint\_ptr}!ps\_pwm.h@{ps\_pwm.h}}
+\doxysubsubsection{\texorpdfstring{pspwm\_get\_setpoint\_ptr()}{pspwm\_get\_setpoint\_ptr()}}
+{\footnotesize\ttfamily esp\+\_\+err\+\_\+t pspwm\+\_\+get\+\_\+setpoint\+\_\+ptr (\begin{DoxyParamCaption}\item[{mcpwm\+\_\+unit\+\_\+t}]{mcpwm\+\_\+num,  }\item[{\mbox{\hyperlink{structpspwm__setpoint__t}{pspwm\+\_\+setpoint\+\_\+t}} $\ast$$\ast$}]{setpoint }\end{DoxyParamCaption})}
+
+Read from P\+S\+P\+WM state the calculated setpoint into the given pointer to struct \mbox{\hyperlink{structpspwm__setpoint__t}{pspwm\+\_\+setpoint\+\_\+t}}.
+
+
+\begin{DoxyParams}{Parameters}
+{\em mcpwm\+\_\+num} & P\+WM unit number (enum, M\+C\+P\+W\+M\+\_\+\+U\+N\+I\+T\+\_\+0 = 0, M\+C\+P\+W\+M\+\_\+\+U\+N\+I\+T\+\_\+1 = 1), \\
+\hline
+{\em setpoint} & Pointer to a struct instance of \mbox{\hyperlink{structpspwm__setpoint__t}{pspwm\+\_\+setpoint\+\_\+t}} \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{ps__pwm_8h_ad72e8ec85dfbb20872a028695c9dde6f}\label{ps__pwm_8h_ad72e8ec85dfbb20872a028695c9dde6f}} 
+\index{ps\_pwm.h@{ps\_pwm.h}!pspwm\_resync\_enable\_output@{pspwm\_resync\_enable\_output}}
+\index{pspwm\_resync\_enable\_output@{pspwm\_resync\_enable\_output}!ps\_pwm.h@{ps\_pwm.h}}
+\doxysubsubsection{\texorpdfstring{pspwm\_resync\_enable\_output()}{pspwm\_resync\_enable\_output()}}
+{\footnotesize\ttfamily esp\+\_\+err\+\_\+t pspwm\+\_\+resync\+\_\+enable\+\_\+output (\begin{DoxyParamCaption}\item[{mcpwm\+\_\+unit\+\_\+t}]{mcpwm\+\_\+num }\end{DoxyParamCaption})}
+
+(Re-\/)enable P\+WM output by clearing fault handler one-\/shot trigger after software-\/triggering a re-\/sync to the initial phase setpoint.
+
+If a hardware shutdown occurred, the shutdown flag must be reset first by calling \mbox{\hyperlink{ps__pwm_8h_ad33f497fe3be5cbe41ae918fb775512f}{pspwm\+\_\+clear\+\_\+hw\+\_\+fault\+\_\+shutdown\+\_\+occurred()}} in order to be able to re-\/enable the output. This acts as a safety feature.
+
+
+\begin{DoxyParams}{Parameters}
+{\em mcpwm\+\_\+num} & P\+WM unit number (enum, M\+C\+P\+W\+M\+\_\+\+U\+N\+I\+T\+\_\+0 = 0, M\+C\+P\+W\+M\+\_\+\+U\+N\+I\+T\+\_\+1 = 1), \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{ps__pwm_8h_aee579ae2e0f291a356d833a686f4d3fb}\label{ps__pwm_8h_aee579ae2e0f291a356d833a686f4d3fb}} 
+\index{ps\_pwm.h@{ps\_pwm.h}!pspwm\_up\_ctr\_mode\_init@{pspwm\_up\_ctr\_mode\_init}}
+\index{pspwm\_up\_ctr\_mode\_init@{pspwm\_up\_ctr\_mode\_init}!ps\_pwm.h@{ps\_pwm.h}}
+\doxysubsubsection{\texorpdfstring{pspwm\_up\_ctr\_mode\_init()}{pspwm\_up\_ctr\_mode\_init()}}
+{\footnotesize\ttfamily esp\+\_\+err\+\_\+t pspwm\+\_\+up\+\_\+ctr\+\_\+mode\+\_\+init (\begin{DoxyParamCaption}\item[{mcpwm\+\_\+unit\+\_\+t}]{mcpwm\+\_\+num,  }\item[{const int}]{gpio\+\_\+lead\+\_\+a,  }\item[{const int}]{gpio\+\_\+lead\+\_\+b,  }\item[{const int}]{gpio\+\_\+lag\+\_\+a,  }\item[{const int}]{gpio\+\_\+lag\+\_\+b,  }\item[{const float}]{frequency,  }\item[{const float}]{ps\+\_\+duty,  }\item[{const float}]{lead\+\_\+red,  }\item[{const float}]{lead\+\_\+fed,  }\item[{const float}]{lag\+\_\+red,  }\item[{const float}]{lag\+\_\+fed,  }\item[{const bool}]{output\+\_\+enabled,  }\item[{mcpwm\+\_\+action\+\_\+on\+\_\+pwmxa\+\_\+t}]{disable\+\_\+action\+\_\+lag\+\_\+leg,  }\item[{mcpwm\+\_\+action\+\_\+on\+\_\+pwmxa\+\_\+t}]{disable\+\_\+action\+\_\+lead\+\_\+leg }\end{DoxyParamCaption})}
+
+F\+U\+L\+L-\/\+S\+P\+E\+E\+D-\/\+M\+O\+DE, 4x I\+N\+D\+I\+V\+I\+D\+U\+AL D\+E\+A\+D-\/\+T\+I\+ME, H\+W-\/\+D\+E\+A\+D-\/\+T\+I\+M\+E-\/\+M\+O\+D\+U\+LE
+
+Initialize E\+S\+P32 M\+C\+P\+WM hardware module for output of Phase-\/\+Shift-\/\+P\+WM waveform on 4 hardware pins.
+
+This runs the P\+S-\/\+P\+WM generator module in up-\/counting mode, allowing 4x individual dead-\/time values for rising and falling edges for all four P\+WM outputs.
+
+To achieve this, this uses the hardware dead-\/band generator while also calculating and setting complementary timing values for the P\+WM operator compare registers.
+
+Combined output waveform of the phase-\/shifted full-\/bridge is D\+C-\/free symmetric nevertheless.
+
+
+\begin{DoxyParams}{Parameters}
+{\em mcpwm\+\_\+num} & P\+WM unit number (enum, M\+C\+P\+W\+M\+\_\+\+U\+N\+I\+T\+\_\+0 = 0, M\+C\+P\+W\+M\+\_\+\+U\+N\+I\+T\+\_\+1 = 1), \\
+\hline
+{\em gpio\+\_\+lead\+\_\+a} & G\+P\+IO number leading leg low\+\_\+side \\
+\hline
+{\em gpio\+\_\+lead\+\_\+b} & G\+P\+IO number leading leg high\+\_\+side \\
+\hline
+{\em gpio\+\_\+lag\+\_\+a} & G\+P\+IO number lagging leg low\+\_\+side \\
+\hline
+{\em gpio\+\_\+lag\+\_\+b} & G\+P\+IO number lagging leg high\+\_\+side \\
+\hline
+{\em gpio\+\_\+fault\+\_\+shutdown} & G\+P\+IO number for fault/tripzone HW input \\
+\hline
+{\em frequency} & Frequency of the non-\/rectified waveform in Hz, \\
+\hline
+{\em ps\+\_\+duty} & Duty cycle of the rectified waveform (0..1) \\
+\hline
+{\em lead\+\_\+red} & dead time value for rising edge, leading leg \\
+\hline
+{\em lead\+\_\+fed} & dead time value for falling edge, leading leg \\
+\hline
+{\em lag\+\_\+red} & dead time value for rising edge, lagging leg \\
+\hline
+{\em lag\+\_\+fed} & dead time value for falling edge, lagging leg \\
+\hline
+{\em output\+\_\+enabled} & initial output state (true $<$==$>$ ON) \\
+\hline
+{\em disable\+\_\+action\+\_\+lag\+\_\+leg} & Choice of actions when lag bridge leg is disabled (See typedef for mcpwm\+\_\+action\+\_\+on\+\_\+pwmxa\+\_\+t) \\
+\hline
+{\em disable\+\_\+action\+\_\+lead\+\_\+leg} & Same for lead leg \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{ps__pwm_8h_a7fb014bf49a32018b32cfd6b881f4c34}\label{ps__pwm_8h_a7fb014bf49a32018b32cfd6b881f4c34}} 
+\index{ps\_pwm.h@{ps\_pwm.h}!pspwm\_up\_ctr\_mode\_set\_deadtimes@{pspwm\_up\_ctr\_mode\_set\_deadtimes}}
+\index{pspwm\_up\_ctr\_mode\_set\_deadtimes@{pspwm\_up\_ctr\_mode\_set\_deadtimes}!ps\_pwm.h@{ps\_pwm.h}}
+\doxysubsubsection{\texorpdfstring{pspwm\_up\_ctr\_mode\_set\_deadtimes()}{pspwm\_up\_ctr\_mode\_set\_deadtimes()}}
+{\footnotesize\ttfamily esp\+\_\+err\+\_\+t pspwm\+\_\+up\+\_\+ctr\+\_\+mode\+\_\+set\+\_\+deadtimes (\begin{DoxyParamCaption}\item[{mcpwm\+\_\+unit\+\_\+t}]{mcpwm\+\_\+num,  }\item[{const float}]{lead\+\_\+red,  }\item[{const float}]{lead\+\_\+fed,  }\item[{const float}]{lag\+\_\+red,  }\item[{const float}]{lag\+\_\+fed }\end{DoxyParamCaption})}
+
+Set deadtime values individually for leading leg rising and falling edge as well as for lagging leg rising and falling edge for all four P\+WM outputs.
+
+
+\begin{DoxyParams}{Parameters}
+{\em mcpwm\+\_\+num} & P\+WM unit number (enum, M\+C\+P\+W\+M\+\_\+\+U\+N\+I\+T\+\_\+0 = 0, M\+C\+P\+W\+M\+\_\+\+U\+N\+I\+T\+\_\+1 = 1), \\
+\hline
+{\em lead\+\_\+red} & dead time value for rising edge, leading leg \\
+\hline
+{\em lead\+\_\+fed} & dead time value for falling edge, leading leg \\
+\hline
+{\em lag\+\_\+red} & dead time value for rising edge, lagging leg \\
+\hline
+{\em lag\+\_\+fed} & dead time value for falling edge, lagging leg \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{ps__pwm_8h_a7e3f48e28063050d0fbeaaa03cee28c5}\label{ps__pwm_8h_a7e3f48e28063050d0fbeaaa03cee28c5}} 
+\index{ps\_pwm.h@{ps\_pwm.h}!pspwm\_up\_ctr\_mode\_set\_frequency@{pspwm\_up\_ctr\_mode\_set\_frequency}}
+\index{pspwm\_up\_ctr\_mode\_set\_frequency@{pspwm\_up\_ctr\_mode\_set\_frequency}!ps\_pwm.h@{ps\_pwm.h}}
+\doxysubsubsection{\texorpdfstring{pspwm\_up\_ctr\_mode\_set\_frequency()}{pspwm\_up\_ctr\_mode\_set\_frequency()}}
+{\footnotesize\ttfamily esp\+\_\+err\+\_\+t pspwm\+\_\+up\+\_\+ctr\+\_\+mode\+\_\+set\+\_\+frequency (\begin{DoxyParamCaption}\item[{mcpwm\+\_\+unit\+\_\+t}]{mcpwm\+\_\+num,  }\item[{const float}]{frequency }\end{DoxyParamCaption})}
+
+Set frequency when running P\+S-\/\+P\+WM generator in up-\/counting mode \begin{DoxyNote}{Note}
+This does not alter prescaler settings.
+\end{DoxyNote}
+
+\begin{DoxyParams}{Parameters}
+{\em mcpwm\+\_\+num} & P\+WM unit number (enum, M\+C\+P\+W\+M\+\_\+\+U\+N\+I\+T\+\_\+0 = 0, M\+C\+P\+W\+M\+\_\+\+U\+N\+I\+T\+\_\+1 = 1), \\
+\hline
+{\em frequency} & Frequency of the non-\/rectified waveform in Hz, \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{ps__pwm_8h_a445bb8526a64fba0bc7a206b9c74032b}\label{ps__pwm_8h_a445bb8526a64fba0bc7a206b9c74032b}} 
+\index{ps\_pwm.h@{ps\_pwm.h}!pspwm\_up\_ctr\_mode\_set\_ps\_duty@{pspwm\_up\_ctr\_mode\_set\_ps\_duty}}
+\index{pspwm\_up\_ctr\_mode\_set\_ps\_duty@{pspwm\_up\_ctr\_mode\_set\_ps\_duty}!ps\_pwm.h@{ps\_pwm.h}}
+\doxysubsubsection{\texorpdfstring{pspwm\_up\_ctr\_mode\_set\_ps\_duty()}{pspwm\_up\_ctr\_mode\_set\_ps\_duty()}}
+{\footnotesize\ttfamily esp\+\_\+err\+\_\+t pspwm\+\_\+up\+\_\+ctr\+\_\+mode\+\_\+set\+\_\+ps\+\_\+duty (\begin{DoxyParamCaption}\item[{mcpwm\+\_\+unit\+\_\+t}]{mcpwm\+\_\+num,  }\item[{const float}]{ps\+\_\+duty }\end{DoxyParamCaption})}
+
+Set P\+S-\/\+P\+WM phase shift between lead and lag leg output pairs
+
+This is expressed in units of one where 1.\+0 means 180° phase-\/shift for the output pairs, giving maximum duty cycle after rectification. \begin{DoxyNote}{Note}
+The value is calculated based on current value of the P\+WM timer \char`\"{}period\char`\"{} register.
+\end{DoxyNote}
+
+\begin{DoxyParams}{Parameters}
+{\em mcpwm\+\_\+num} & P\+WM unit number (enum, M\+C\+P\+W\+M\+\_\+\+U\+N\+I\+T\+\_\+0 = 0, M\+C\+P\+W\+M\+\_\+\+U\+N\+I\+T\+\_\+1 = 1), \\
+\hline
+{\em ps\+\_\+duty} & Duty cycle of the rectified waveform (0..1) \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{ps__pwm_8h_a0b02ebb3d71e317252e06a1a5b3cd1ef}\label{ps__pwm_8h_a0b02ebb3d71e317252e06a1a5b3cd1ef}} 
+\index{ps\_pwm.h@{ps\_pwm.h}!pspwm\_up\_down\_ctr\_mode\_init@{pspwm\_up\_down\_ctr\_mode\_init}}
+\index{pspwm\_up\_down\_ctr\_mode\_init@{pspwm\_up\_down\_ctr\_mode\_init}!ps\_pwm.h@{ps\_pwm.h}}
+\doxysubsubsection{\texorpdfstring{pspwm\_up\_down\_ctr\_mode\_init()}{pspwm\_up\_down\_ctr\_mode\_init()}}
+{\footnotesize\ttfamily esp\+\_\+err\+\_\+t pspwm\+\_\+up\+\_\+down\+\_\+ctr\+\_\+mode\+\_\+init (\begin{DoxyParamCaption}\item[{mcpwm\+\_\+unit\+\_\+t}]{mcpwm\+\_\+num,  }\item[{const int}]{gpio\+\_\+lead\+\_\+a,  }\item[{const int}]{gpio\+\_\+lead\+\_\+b,  }\item[{const int}]{gpio\+\_\+lag\+\_\+a,  }\item[{const int}]{gpio\+\_\+lag\+\_\+b,  }\item[{const float}]{frequency,  }\item[{const float}]{ps\+\_\+duty,  }\item[{const float}]{lead\+\_\+dt,  }\item[{const float}]{lag\+\_\+dt,  }\item[{const bool}]{output\+\_\+enabled,  }\item[{mcpwm\+\_\+action\+\_\+on\+\_\+pwmxa\+\_\+t}]{disable\+\_\+action\+\_\+lag\+\_\+leg,  }\item[{mcpwm\+\_\+action\+\_\+on\+\_\+pwmxa\+\_\+t}]{disable\+\_\+action\+\_\+lead\+\_\+leg }\end{DoxyParamCaption})}
+
+T\+I\+M\+ER U\+P/\+D\+O\+W\+N-\/\+C\+O\+U\+N\+T\+I\+NG M\+O\+DE; D\+O\+ES N\+OT U\+SE H\+W-\/\+D\+E\+A\+D-\/\+T\+I\+M\+E-\/\+M\+O\+D\+U\+LE
+
+Initialize E\+S\+P32 M\+C\+P\+WM hardware module for output of a Phase-\/\+Shift-\/\+P\+WM waveform on 4 hardware pins.
+
+Individual dead-\/times are configured for both half-\/bridge P\+WM outputs.
+
+This P\+WM generation mode does not use the dead-\/band generator hardware. Instead, the dead-\/time for each two outputs of a half-\/bridge is configured by running the main timers in up-\/down-\/counting mode and using both compare registers for each timer to generate two symmetric outputs.
+
+Because of the up/down-\/counting mode, maximum output frequency is half of the value which is possible when using the hardware dead-\/band generator.
+
+
+\begin{DoxyParams}{Parameters}
+{\em mcpwm\+\_\+num} & P\+WM unit number (enum, M\+C\+P\+W\+M\+\_\+\+U\+N\+I\+T\+\_\+0 = 0, M\+C\+P\+W\+M\+\_\+\+U\+N\+I\+T\+\_\+1 = 1), \\
+\hline
+{\em gpio\+\_\+lead\+\_\+a} & G\+P\+IO number leading leg low\+\_\+side \\
+\hline
+{\em gpio\+\_\+lead\+\_\+b} & G\+P\+IO number leading leg high\+\_\+side \\
+\hline
+{\em gpio\+\_\+lag\+\_\+a} & G\+P\+IO number lagging leg low\+\_\+side \\
+\hline
+{\em gpio\+\_\+lag\+\_\+b} & G\+P\+IO number lagging leg high\+\_\+side \\
+\hline
+{\em gpio\+\_\+fault\+\_\+shutdown} & G\+P\+IO number for fault/tripzone HW input \\
+\hline
+{\em frequency} & Frequency of the non-\/rectified waveform in Hz, \\
+\hline
+{\em ps\+\_\+duty} & Duty cycle of the rectified waveform (0..1) \\
+\hline
+{\em lead\+\_\+dt} & leading bridge-\/leg dead-\/time in sec (0..), \\
+\hline
+{\em lag\+\_\+dt} & lagging bridge-\/leg dead-\/time in sec (0..) \\
+\hline
+{\em output\+\_\+enabled} & initial output state (true $<$==$>$ ON) \\
+\hline
+{\em disable\+\_\+action\+\_\+lag\+\_\+leg} & Choice of actions when lag bridge leg is disabled (See typedef for mcpwm\+\_\+action\+\_\+on\+\_\+pwmxa\+\_\+t) \\
+\hline
+{\em disable\+\_\+action\+\_\+lead\+\_\+leg} & Same for lead leg \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{ps__pwm_8h_a41f4854e6a52c579fcc137df2be74142}\label{ps__pwm_8h_a41f4854e6a52c579fcc137df2be74142}} 
+\index{ps\_pwm.h@{ps\_pwm.h}!pspwm\_up\_down\_ctr\_mode\_set\_deadtimes@{pspwm\_up\_down\_ctr\_mode\_set\_deadtimes}}
+\index{pspwm\_up\_down\_ctr\_mode\_set\_deadtimes@{pspwm\_up\_down\_ctr\_mode\_set\_deadtimes}!ps\_pwm.h@{ps\_pwm.h}}
+\doxysubsubsection{\texorpdfstring{pspwm\_up\_down\_ctr\_mode\_set\_deadtimes()}{pspwm\_up\_down\_ctr\_mode\_set\_deadtimes()}}
+{\footnotesize\ttfamily esp\+\_\+err\+\_\+t pspwm\+\_\+up\+\_\+down\+\_\+ctr\+\_\+mode\+\_\+set\+\_\+deadtimes (\begin{DoxyParamCaption}\item[{mcpwm\+\_\+unit\+\_\+t}]{mcpwm\+\_\+num,  }\item[{const float}]{lead\+\_\+dt,  }\item[{const float}]{lag\+\_\+dt }\end{DoxyParamCaption})}
+
+Set dead-\/time values for all four output signals of the phase-\/shift-\/\+P\+WM when using the timer in up/down counting mode.
+
+
+\begin{DoxyParams}{Parameters}
+{\em mcpwm\+\_\+num} & P\+WM unit number (enum, M\+C\+P\+W\+M\+\_\+\+U\+N\+I\+T\+\_\+0 = 0, M\+C\+P\+W\+M\+\_\+\+U\+N\+I\+T\+\_\+1 = 1), \\
+\hline
+{\em lead\+\_\+dt} & leading bridge-\/leg dead-\/time in sec (0..), \\
+\hline
+{\em lag\+\_\+dt} & lagging bridge-\/leg dead-\/time in sec (0..) \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{ps__pwm_8h_ab29d98ceed348ebe5c7e5f6b3565a5cf}\label{ps__pwm_8h_ab29d98ceed348ebe5c7e5f6b3565a5cf}} 
+\index{ps\_pwm.h@{ps\_pwm.h}!pspwm\_up\_down\_ctr\_mode\_set\_frequency@{pspwm\_up\_down\_ctr\_mode\_set\_frequency}}
+\index{pspwm\_up\_down\_ctr\_mode\_set\_frequency@{pspwm\_up\_down\_ctr\_mode\_set\_frequency}!ps\_pwm.h@{ps\_pwm.h}}
+\doxysubsubsection{\texorpdfstring{pspwm\_up\_down\_ctr\_mode\_set\_frequency()}{pspwm\_up\_down\_ctr\_mode\_set\_frequency()}}
+{\footnotesize\ttfamily esp\+\_\+err\+\_\+t pspwm\+\_\+up\+\_\+down\+\_\+ctr\+\_\+mode\+\_\+set\+\_\+frequency (\begin{DoxyParamCaption}\item[{mcpwm\+\_\+unit\+\_\+t}]{mcpwm\+\_\+num,  }\item[{const float}]{frequency }\end{DoxyParamCaption})}
+
+Set frequency (and update dead-\/time values) for all four output signals of the phase-\/shift-\/\+P\+WM when using the timer in up/down counting mode.
+
+Because of the up/down-\/counting mode, maximum output frequency is half of the value which is possible when using the hardware dead-\/band generator.
+
+\begin{DoxyNote}{Note}
+This does not alter prescaler settings.
+\end{DoxyNote}
+
+\begin{DoxyParams}{Parameters}
+{\em mcpwm\+\_\+num} & P\+WM unit number (enum, M\+C\+P\+W\+M\+\_\+\+U\+N\+I\+T\+\_\+0 = 0, M\+C\+P\+W\+M\+\_\+\+U\+N\+I\+T\+\_\+1 = 1), \\
+\hline
+{\em frequency} & Frequency of the non-\/rectified waveform in Hz, \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{ps__pwm_8h_aaf6bfbd819bdf20c4148797a8477ca43}\label{ps__pwm_8h_aaf6bfbd819bdf20c4148797a8477ca43}} 
+\index{ps\_pwm.h@{ps\_pwm.h}!pspwm\_up\_down\_ctr\_mode\_set\_ps\_duty@{pspwm\_up\_down\_ctr\_mode\_set\_ps\_duty}}
+\index{pspwm\_up\_down\_ctr\_mode\_set\_ps\_duty@{pspwm\_up\_down\_ctr\_mode\_set\_ps\_duty}!ps\_pwm.h@{ps\_pwm.h}}
+\doxysubsubsection{\texorpdfstring{pspwm\_up\_down\_ctr\_mode\_set\_ps\_duty()}{pspwm\_up\_down\_ctr\_mode\_set\_ps\_duty()}}
+{\footnotesize\ttfamily esp\+\_\+err\+\_\+t pspwm\+\_\+up\+\_\+down\+\_\+ctr\+\_\+mode\+\_\+set\+\_\+ps\+\_\+duty (\begin{DoxyParamCaption}\item[{mcpwm\+\_\+unit\+\_\+t}]{mcpwm\+\_\+num,  }\item[{const float}]{ps\+\_\+duty }\end{DoxyParamCaption})}
+
+Set P\+S-\/\+P\+WM phase shift based on the current period time setting i.\+e. state of the P\+WM hardware \char`\"{}period\char`\"{} register.
+
+The phase-\/shift value is valid for the symmetric dead-\/time setting
+
+
+\begin{DoxyParams}{Parameters}
+{\em mcpwm\+\_\+num} & P\+WM unit number (enum, M\+C\+P\+W\+M\+\_\+\+U\+N\+I\+T\+\_\+0 = 0, M\+C\+P\+W\+M\+\_\+\+U\+N\+I\+T\+\_\+1 = 1), \\
+\hline
+{\em ps\+\_\+duty} & Duty cycle of the rectified waveform (0..1) \\
+\hline
+\end{DoxyParams}
