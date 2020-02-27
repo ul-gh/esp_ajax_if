@@ -1,11 +1,12 @@
-/* Use Espressif ESP32 platform MCPWM hardware module for generating
- * Phase-Shift-PWM waveform on 4 hardware pins.
- *
- * Application in ZVS-PS-PWM, DAB-DCM and LLC power electronics converters.
+/* Driver for the MCPWM hardware modules on the Espressif ESP32 SoC for
+ * generating a Phase-Shift-PWM waveform between two pairs of output pins.
  * 
- * This depends on the ESP-IDF SDK
+ * @note Application in power electronics, e.g.
+ *       ZVS-PS-PWM, DAB-DCM and LLC converters.
+ * 
+ * @note This depends on the ESP-IDF SDK source files.
  *
- * 2020-01-31 Ulrich Lukas
+ * 2020-02-27 Ulrich Lukas
  */
 #include "freertos/FreeRTOS.h"
 #include "soc/mcpwm_struct.h"

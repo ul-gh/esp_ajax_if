@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.13"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>ESP32_PS_PWM: src/ps_pwm.h File Reference</title>
+<title>ESP32_PSPWM: src/ps_pwm.h File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -18,9 +18,9 @@
  <tbody>
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
-   <div id="projectname">ESP32_PS_PWM
+   <div id="projectname">ESP32_PSPWM
    </div>
-   <div id="projectbrief">Phase-Shift-PWM module for ESP32</div>
+   <div id="projectbrief">Phase-Shift-PWM module for the ESP32</div>
   </td>
  </tr>
  </tbody>
@@ -50,9 +50,6 @@ $(function() {
 <div class="title">ps_pwm.h File Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
-
-<p>Use any of the two MCPWM hardware modules on the Espressif ESP32 for generating a Phase-Shift-PWM waveform between two pairs of hardware pins.  
-<a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;stdbool.h&gt;</code><br />
 <code>#include &quot;driver/mcpwm.h&quot;</code><br />
 </div>
@@ -145,13 +142,7 @@ Functions</h2></td></tr>
 <tr class="memdesc:a809a0e93057954966377291fee48376f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read from PSPWM state the base clock and timer clock prescaler settings into the given pointer to struct <a class="el" href="structpspwm__clk__conf__t.html">pspwm_clk_conf_t</a>.  <a href="#a809a0e93057954966377291fee48376f">More...</a><br /></td></tr>
 <tr class="separator:a809a0e93057954966377291fee48376f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Use any of the two MCPWM hardware modules on the Espressif ESP32 for generating a Phase-Shift-PWM waveform between two pairs of hardware pins. </p>
-<dl class="section note"><dt>Note</dt><dd>Application in power electronics, e.g. ZVS-PS-PWM, DAB-DCM and LLC converters.</dd>
-<dd>
-This depends on the ESP-IDF SDK source files.</dd></dl>
-<p>2020-01-31 Ulrich Lukas </p>
-</div><h2 class="groupheader">Function Documentation</h2>
+<h2 class="groupheader">Function Documentation</h2>
 <a id="ad33f497fe3be5cbe41ae918fb775512f"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ad33f497fe3be5cbe41ae918fb775512f">&#9670;&nbsp;</a></span>pspwm_clear_hw_fault_shutdown_occurred()</h2>
 
