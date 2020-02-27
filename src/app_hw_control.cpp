@@ -35,9 +35,9 @@ PSPWMGen::PSPWMGen(APIServer* api_server)
     errors |= pspwm_get_setpoint_limits_ptr(mcpwm_num, &pspwm_setpoint_limits);
     errors |= pspwm_get_setpoint_ptr(mcpwm_num, &pspwm_setpoint);
     errors |= pspwm_get_clk_conf_ptr(mcpwm_num, &pspwm_clk_conf);
-    errors |= pspwm_enable_hw_fault_shutdown(mcpwm_num,
-                                             gpio_fault_shutdown,
-                                             MCPWM_LOW_LEVEL_TGR);
+//    errors |= pspwm_enable_hw_fault_shutdown(mcpwm_num,
+//                                             gpio_fault_shutdown,
+//                                             MCPWM_LOW_LEVEL_TGR);
     if (errors != ESP_OK) {
         error_print("Error initializing the PS-PWM module!");
         return;

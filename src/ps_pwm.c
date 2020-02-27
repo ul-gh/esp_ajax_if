@@ -414,9 +414,12 @@ esp_err_t pspwm_up_down_ctr_mode_set_frequency(mcpwm_unit_t mcpwm_num,
     // Phase shift value for Timer 1 needs updating when changing frequency.
     // Timer 0 is the reference phase and needs no update.
     uint32_t phase_setval = (uint32_t)(half_period * setpoints->ps_duty);
-    // This must not be equal to timer_top, otherwise timer seems to stop
+    // This must not be equal to timer_top, otherwise timer seems to stop.
+    // Instead, this is UNDOCUMENTED in the reference manual:
+    // Set the 17th bit to start the timer in down-counting mode.......
     if (phase_setval >= timer_top) {
-        phase_setval = timer_top - 1;
+        phase_setval = timer_top;
+        phase_setval |= 1<<16;
     } 
     mcpwm_dev_t* const module = MCPWM[mcpwm_num];
     portENTER_CRITICAL(&mcpwm_spinlock);
@@ -506,9 +509,12 @@ esp_err_t pspwm_up_down_ctr_mode_set_ps_duty(mcpwm_unit_t mcpwm_num,
     portENTER_CRITICAL(&mcpwm_spinlock);
     uint32_t timer_top = module->timer[MCPWM_TIMER_0].period.period;
     uint32_t phase_setval = (uint32_t)(timer_top * ps_duty);
-    // This must not be equal to timer_top, otherwise timer seems to stop
+    // This must not be equal to timer_top, otherwise timer seems to stop.
+    // Instead, this is UNDOCUMENTED in the reference manual:
+    // Set the 17th bit to start the timer in down-counting mode.......
     if (phase_setval >= timer_top) {
-        phase_setval = timer_top - 1;
+        phase_setval = timer_top;
+        phase_setval |= 1<<16;
     } 
     // Phase shift value is based on timer 0 period setting but intentionally
     // only set for timer 1. Timer 0 is the reference phase.
