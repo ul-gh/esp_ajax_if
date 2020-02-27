@@ -72,8 +72,8 @@ esp_err_t pspwm_up_ctr_mode_init(mcpwm_unit_t mcpwm_num,
                                  const float lead_red, const float lead_fed,
                                  const float lag_red, const float lag_fed,
                                  const bool output_enabled,
-                                 mcpwm_action_on_pwmxa_t disable_action_lag_leg,
-                                 mcpwm_action_on_pwmxa_t disable_action_lead_leg)
+                                 mcpwm_action_on_pwmxa_t disable_action_lead_leg,
+                                 mcpwm_action_on_pwmxa_t disable_action_lag_leg)
 {
     DBG("Call pspwm_up_ctr_mode_init");
     if (mcpwm_num != MCPWM_UNIT_0 && mcpwm_num != MCPWM_UNIT_1) {
@@ -131,30 +131,28 @@ esp_err_t pspwm_up_ctr_mode_init(mcpwm_unit_t mcpwm_num,
     // Basic setup for PS_PWM in up/down counting mode
     pspwm_up_ctr_mode_register_base_setup(mcpwm_num);
     // Setup the fault handler module as this is required for disabling the outputs
-    bool is_ok = true;
-    is_ok &= pspwm_setup_fault_handler_module(mcpwm_num,
-                                              disable_action_lag_leg,
-                                              disable_action_lead_leg) == ESP_OK;
+    esp_err_t errors = pspwm_setup_fault_handler_module(mcpwm_num,
+                                                        disable_action_lag_leg,
+                                                        disable_action_lead_leg);
     // Continue by setting a Fault Event forcing the GPIOs to defined "OFF" state
-    is_ok &= pspwm_disable_output(mcpwm_num) == ESP_OK;
-    is_ok &= mcpwm_gpio_init(mcpwm_num, MCPWM0A, gpio_lead_a) == ESP_OK;
-    is_ok &= mcpwm_gpio_init(mcpwm_num, MCPWM0B, gpio_lead_b) == ESP_OK;
-    is_ok &= mcpwm_gpio_init(mcpwm_num, MCPWM1A, gpio_lag_a) == ESP_OK;
-    is_ok &= mcpwm_gpio_init(mcpwm_num, MCPWM1B, gpio_lag_b) == ESP_OK;
-    is_ok &= pspwm_up_ctr_mode_set_frequency(mcpwm_num, frequency) == ESP_OK;
-    is_ok &= pspwm_up_ctr_mode_set_deadtimes(
-            mcpwm_num, lead_red, lead_fed, lag_red, lag_fed) == ESP_OK;
-    is_ok &= pspwm_up_ctr_mode_set_ps_duty(mcpwm_num, ps_duty) == ESP_OK;
+    errors |= pspwm_disable_output(mcpwm_num);
+    errors |= mcpwm_gpio_init(mcpwm_num, MCPWM0A, gpio_lead_a);
+    errors |= mcpwm_gpio_init(mcpwm_num, MCPWM0B, gpio_lead_b);
+    errors |= mcpwm_gpio_init(mcpwm_num, MCPWM1A, gpio_lag_a);
+    errors |= mcpwm_gpio_init(mcpwm_num, MCPWM1B, gpio_lag_b);
+    errors |= pspwm_up_ctr_mode_set_frequency(mcpwm_num, frequency);
+    errors |= pspwm_up_ctr_mode_set_deadtimes(
+            mcpwm_num, lead_red, lead_fed, lag_red, lag_fed);
+    errors |= pspwm_up_ctr_mode_set_ps_duty(mcpwm_num, ps_duty);
     if (output_enabled) {
-        is_ok &= pspwm_resync_enable_output(mcpwm_num) == ESP_OK;
+        errors |= pspwm_resync_enable_output(mcpwm_num);
     }
-    if (is_ok) {
+    if (errors == ESP_OK) {
         DBG("pspwm_up_ctr_mode_init OK!");
-        return ESP_OK;
     } else {
         ERROR("pspwm_up_ctr_mode_init failed!");
-        return ESP_FAIL;
     }
+    return errors;
 }
 
 esp_err_t pspwm_up_ctr_mode_set_frequency(mcpwm_unit_t mcpwm_num, 
@@ -310,8 +308,8 @@ esp_err_t pspwm_up_down_ctr_mode_init(mcpwm_unit_t mcpwm_num,
                                       const float ps_duty,
                                       const float lead_dt, const float lag_dt,
                                       const bool output_enabled,
-                                      mcpwm_action_on_pwmxa_t disable_action_lag_leg,
-                                      mcpwm_action_on_pwmxa_t disable_action_lead_leg)
+                                      mcpwm_action_on_pwmxa_t disable_action_lead_leg,
+                                      mcpwm_action_on_pwmxa_t disable_action_lag_leg)
 {
     DBG("Call pspwm_up_down_ctr_mode_init");
     if (mcpwm_num != MCPWM_UNIT_0 && mcpwm_num != MCPWM_UNIT_1) {
@@ -364,31 +362,29 @@ esp_err_t pspwm_up_down_ctr_mode_init(mcpwm_unit_t mcpwm_num,
     periph_module_enable(PERIPH_PWM0_MODULE + mcpwm_num);
     // Basic setup for PS_PWM in up/down counting mode
     pspwm_up_down_ctr_mode_register_base_setup(mcpwm_num);
-    bool is_ok = true;
     // Setup the fault handler module as this is required for disabling the outputs
-    is_ok &= pspwm_setup_fault_handler_module(mcpwm_num,
-                                              disable_action_lag_leg,
-                                              disable_action_lead_leg) == ESP_OK;
+    esp_err_t errors = pspwm_setup_fault_handler_module(mcpwm_num,
+                                                        disable_action_lag_leg,
+                                                        disable_action_lead_leg);
     // Continue by setting a Fault Event forcing the GPIOs to defined "OFF" state
-    is_ok &= pspwm_disable_output(mcpwm_num) == ESP_OK;
-    is_ok &= mcpwm_gpio_init(mcpwm_num, MCPWM0A, gpio_lead_a) == ESP_OK;
-    is_ok &= mcpwm_gpio_init(mcpwm_num, MCPWM0B, gpio_lead_b) == ESP_OK;
-    is_ok &= mcpwm_gpio_init(mcpwm_num, MCPWM1A, gpio_lag_a) == ESP_OK;
-    is_ok &= mcpwm_gpio_init(mcpwm_num, MCPWM1B, gpio_lag_b) == ESP_OK;
+    errors |= pspwm_disable_output(mcpwm_num);
+    errors |= mcpwm_gpio_init(mcpwm_num, MCPWM0A, gpio_lead_a);
+    errors |= mcpwm_gpio_init(mcpwm_num, MCPWM0B, gpio_lead_b);
+    errors |= mcpwm_gpio_init(mcpwm_num, MCPWM1A, gpio_lag_a);
+    errors |= mcpwm_gpio_init(mcpwm_num, MCPWM1B, gpio_lag_b);
     // In up_down_ctr_mode, this also sets the dead time; there should
     // be no need to call pspwm_up_down_ctr_mode_set_deadtimes() again.
-    is_ok &= pspwm_up_down_ctr_mode_set_frequency(mcpwm_num, frequency) == ESP_OK;
-    is_ok &= pspwm_up_down_ctr_mode_set_ps_duty(mcpwm_num, ps_duty) == ESP_OK;
+    errors |= pspwm_up_down_ctr_mode_set_frequency(mcpwm_num, frequency);
+    errors |= pspwm_up_down_ctr_mode_set_ps_duty(mcpwm_num, ps_duty);
     if (output_enabled) {
-        is_ok &= pspwm_resync_enable_output(mcpwm_num) == ESP_OK;
+        errors |= pspwm_resync_enable_output(mcpwm_num);
     }
-    if (is_ok) {
+    if (errors == ESP_OK) {
         DBG("pspwm_up_down_ctr_mode_init OK!");
-        return ESP_OK;
     } else {
         ERROR("pspwm_up_down_ctr_mode_init failed!");
-        return ESP_FAIL;
     }
+    return errors;
 }
 
 esp_err_t pspwm_up_down_ctr_mode_set_frequency(mcpwm_unit_t mcpwm_num,
@@ -724,7 +720,7 @@ static void pspwm_up_ctr_mode_register_base_setup(mcpwm_unit_t mcpwm_num) {
     // Datasheet 16.4: PWM_TIMER0_SYNC_REG (0x000c)
     module->timer[MCPWM_TIMER_0].sync.in_en = 0; // Off
     // Generate sync output at timer equals zero of first timer
-    module->timer[MCPWM_TIMER_0].sync.out_sel = 2;
+    module->timer[MCPWM_TIMER_0].sync.out_sel = 1;
     // Second timer is synchronized to first timer
     // Datasheet 16.8: PWM_TIMER1_SYNC_REG (0x001c)
     module->timer[MCPWM_TIMER_1].sync.in_en = 1; // On
@@ -787,7 +783,7 @@ static void pspwm_up_down_ctr_mode_register_base_setup(mcpwm_unit_t mcpwm_num) {
     // Datasheet 16.4: PWM_TIMER0_SYNC_REG (0x000c)
     module->timer[MCPWM_TIMER_0].sync.in_en = 0; // Off
     // Generate sync output at timer equals zero of first timer
-    module->timer[MCPWM_TIMER_0].sync.out_sel = 2;
+    module->timer[MCPWM_TIMER_0].sync.out_sel = 1;
     // Second timer is synchronized to first timer
     // Datasheet 16.8: PWM_TIMER1_SYNC_REG (0x001c)
     module->timer[MCPWM_TIMER_1].sync.in_en = 1; // On

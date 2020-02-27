@@ -4,5 +4,6 @@
 .vscode/launch.json
 .vscode/ipch
 doc/latex/*
+doc/xml/*
 src/data/www/*.svg
 src/wifi_config.hpp

@@ -9,7 +9,7 @@
 #include "api_server.hpp"
 
 
-/** PSPWMGen - Phase-Shift PWM output generation on ESP32 platform
+/** @brief PSPWMGen - Phase-Shift PWM output generation on ESP32 platform
  * 
  * By default, the symmetric-drive API is used.
  * This allows the setting of two individual dead-time values
@@ -24,8 +24,8 @@
  * the hardware dead-time generator module but output is not guaranteed
  * DC-free.
  */
-#define USE_ASYMMETRIC_FULL_SPEED_DRIVE_API
-//#define USE_SYMMETRIC_DC_FREE_DRIVE_API
+//#define USE_ASYMMETRIC_FULL_SPEED_DRIVE_API
+#define USE_SYMMETRIC_DC_FREE_DRIVE_API
 class PSPWMGen
 {
 public:

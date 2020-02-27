@@ -1,10 +1,11 @@
 /** @file ps_pwm.h
- * Use Espressif ESP32 platform MCPWM hardware module for generating
- * Phase-Shift-PWM waveform on 4 hardware pins.
+ * @brief Use any of the two MCPWM hardware modules on the Espressif ESP32 for
+ * generating a Phase-Shift-PWM waveform between two pairs of hardware pins.
+ * 
  * @note Application in power electronics, e.g.
  *       ZVS-PS-PWM, DAB-DCM and LLC converters.
  * 
- * @note This depends on the ESP-IDF SDK
+ * @note This depends on the ESP-IDF SDK source files.
  *
  * 2020-01-31 Ulrich Lukas
  */
@@ -28,7 +29,7 @@
 // Hardware prescaler factor for timer operator sub-modules
 // Valid values are 1...255
 #define TIMER_CLK_PRESCALE_DEFAULT 1
-// Minimum timer counter TOP value / timer resolution for calculation of
+// Minimum timer counter TOP value / timer resolution. Used for calculation of
 // frequency_min value and subsequent range checking of frequency setpoint
 static const uint16_t period_min = 4;
 
@@ -88,12 +89,9 @@ typedef struct {
 /********************************************************************//**
  *    FULL-SPEED-MODE, 4x INDIVIDUAL DEAD-TIME, HW-DEAD-TIME-MODULE
  ************************************************************************
- * Initialize ESP32 MCPWM hardware module for output of
- * Phase-Shift-PWM waveform on 4 hardware pins.
- * 
- * This runs the PS-PWM generator module in up-counting mode,
- * allowing 4x individual dead-time values for rising and falling
- * edges for all four PWM outputs.
+ * @brief Set up the PS-PWM generator module for up-counting mode,
+ * allowing individual dead-time values for rising and falling edges
+ * for both lead and lag output pairs.
  * 
  * To achieve this, this uses the hardware dead-band generator while
  * also calculating and setting complementary timing values for
@@ -115,9 +113,9 @@ typedef struct {
  * @param lag_red: dead time value for rising edge, lagging leg
  * @param lag_fed: dead time value for falling edge, lagging leg
  * @param output_enabled: initial output state (true <==> ON)
- * @param disable_action_lag_leg: Choice of actions when lag bridge leg is disabled
- *                                (See typedef for mcpwm_action_on_pwmxa_t)
- * @param disable_action_lead_leg: Same for lead leg
+ * @param disable_action_lead_leg: Choice of actions when lead bridge leg is disabled
+ *                                 (See typedef for mcpwm_action_on_pwmxa_t)
+ * @param disable_action_lag_leg: Same for lag leg
  */
 esp_err_t pspwm_up_ctr_mode_init(mcpwm_unit_t mcpwm_num,
                                  const int gpio_lead_a, const int gpio_lead_b,
@@ -127,10 +125,37 @@ esp_err_t pspwm_up_ctr_mode_init(mcpwm_unit_t mcpwm_num,
                                  const float lead_red, const float lead_fed,
                                  const float lag_red, const float lag_fed,
                                  const bool output_enabled,
-                                 mcpwm_action_on_pwmxa_t disable_action_lag_leg,
-                                 mcpwm_action_on_pwmxa_t disable_action_lead_leg);
+                                 mcpwm_action_on_pwmxa_t disable_action_lead_leg,
+                                 mcpwm_action_on_pwmxa_t disable_action_lag_leg);
 
-/** Set frequency when running PS-PWM generator in up-counting mode
+/** @brief Shortcut version of pspwm_up_ctr_mode_init() with identical
+ * rising and falling edge dead times applied for each of lead and lag leg.
+ * 
+ * This is for compatibility with the call signature of up_down_ctr_mode API.
+ */
+inline esp_err_t pspwm_up_ctr_mode_init_compat(
+        mcpwm_unit_t mcpwm_num,
+        const int gpio_lead_a, const int gpio_lead_b,
+        const int gpio_lag_a, const int gpio_lag_b,
+        const float frequency,
+        const float ps_duty,
+        const float lead_dt, const float lag_dt,
+        const bool output_enabled,
+        mcpwm_action_on_pwmxa_t disable_action_lead_leg,
+        mcpwm_action_on_pwmxa_t disable_action_lag_leg) {
+    return pspwm_up_ctr_mode_init(mcpwm_num,
+                                  gpio_lead_a, gpio_lead_b,
+                                  gpio_lag_a, gpio_lag_b,
+                                  frequency,
+                                  ps_duty,
+                                  lead_dt, lead_dt,
+                                  lag_dt, lag_dt,
+                                  output_enabled,
+                                  disable_action_lead_leg,
+                                  disable_action_lag_leg);
+}
+
+/** @brief Set frequency when running PS-PWM generator in up-counting mode
  * @note
  * This does not alter prescaler settings.
  * 
@@ -140,7 +165,7 @@ esp_err_t pspwm_up_ctr_mode_init(mcpwm_unit_t mcpwm_num,
 esp_err_t pspwm_up_ctr_mode_set_frequency(mcpwm_unit_t mcpwm_num,
                                           const float frequency);
 
-/** Set deadtime values individually for leading leg rising and
+/** @brief Set deadtime values individually for leading leg rising and
  * falling edge as well as for lagging leg rising and falling edge
  * for all four PWM outputs.
  * 
@@ -154,7 +179,17 @@ esp_err_t pspwm_up_ctr_mode_set_deadtimes(mcpwm_unit_t mcpwm_num,
                                           const float lead_red, const float lead_fed,
                                           const float lag_red, const float lag_fed);
 
-/** Set PS-PWM phase shift between lead and lag leg output pairs
+/** @brief Shortcut version of pspwm_up_ctr_mode_set_deadtimes() with identical
+ * rising and falling edge dead times applied for each of lead and lag leg.
+ * 
+ * This is for compatibility with the call signature of up_down_ctr_mode API.
+ */
+inline esp_err_t pspwm_up_ctr_mode_set_deadtimes_compat(
+        mcpwm_unit_t mcpwm_num, const float lead_dt, const float lag_dt) {
+    return pspwm_up_ctr_mode_set_deadtimes(mcpwm_num, lead_dt, lead_dt, lag_dt, lag_dt);
+}
+
+/** @brief Set PS-PWM phase shift between lead and lag leg output pairs
  * 
  * This is expressed in units of one where 1.0 means 180° phase-shift
  * for the output pairs, giving maximum duty cycle after rectification.
@@ -171,11 +206,10 @@ esp_err_t pspwm_up_ctr_mode_set_ps_duty(mcpwm_unit_t mcpwm_num, const float ps_d
 /*************************************************************//**
  * TIMER UP/DOWN-COUNTING MODE; DOES NOT USE HW-DEAD-TIME-MODULE
  *****************************************************************
- *
- * Initialize ESP32 MCPWM hardware module for output of a
- * Phase-Shift-PWM waveform on 4 hardware pins.
+ * @brief Set up the PS-PWM generator module for up-down-counting mode, which
+ * assures identical ON times for high side and low side outputs of each leg.
  * 
- * Individual dead-times are configured for both half-bridge PWM outputs.
+ * Individual dead-times both half-bridge PWM outputs are still possible.
  * 
  * This PWM generation mode does not use the dead-band generator hardware.
  * Instead, the dead-time for each two outputs of a half-bridge is configured
@@ -196,9 +230,9 @@ esp_err_t pspwm_up_ctr_mode_set_ps_duty(mcpwm_unit_t mcpwm_num, const float ps_d
  * @param lead_dt: leading bridge-leg dead-time in sec (0..),
  * @param lag_dt: lagging bridge-leg dead-time in sec (0..)
  * @param output_enabled: initial output state (true <==> ON)
- * @param disable_action_lag_leg: Choice of actions when lag bridge leg is disabled
- *                                (See typedef for mcpwm_action_on_pwmxa_t)
- * @param disable_action_lead_leg: Same for lead leg
+ * @param disable_action_lead_leg: Choice of actions when lead bridge leg is disabled
+ *                                 (See typedef for mcpwm_action_on_pwmxa_t)
+ * @param disable_action_lag_leg: Same for lag leg
  */
 esp_err_t pspwm_up_down_ctr_mode_init(mcpwm_unit_t mcpwm_num,
                                       const int gpio_lead_a, const int gpio_lead_b,
@@ -207,12 +241,11 @@ esp_err_t pspwm_up_down_ctr_mode_init(mcpwm_unit_t mcpwm_num,
                                       const float ps_duty,
                                       const float lead_dt, const float lag_dt,
                                       const bool output_enabled,
-                                      mcpwm_action_on_pwmxa_t disable_action_lag_leg,
-                                      mcpwm_action_on_pwmxa_t disable_action_lead_leg);
+                                      mcpwm_action_on_pwmxa_t disable_action_lead_leg,
+                                      mcpwm_action_on_pwmxa_t disable_action_lag_leg);
 
-/** Set frequency (and update dead-time values) for all four output
- * signals of the phase-shift-PWM when using the timer
- * in up/down counting mode.
+/** @brief Set frequency (and update dead-time values) for both output pairs
+ * signals of the phase-shift-PWM when using the timer in up/down counting mode.
  * 
  * Because of the up/down-counting mode, maximum output frequency is half of
  * the value which is possible when using the hardware dead-band generator.
@@ -226,9 +259,8 @@ esp_err_t pspwm_up_down_ctr_mode_init(mcpwm_unit_t mcpwm_num,
 esp_err_t pspwm_up_down_ctr_mode_set_frequency(mcpwm_unit_t mcpwm_num,
                                                const float frequency);
 
-/** Set dead-time values for all four output signals
- * of the phase-shift-PWM when using the timer
- * in up/down counting mode.
+/** @brief Set dead-time values for both output pairs of the phase-shift-PWM
+ * when using the timer in up/down counting mode.
  * 
  * @param mcpwm_num: PWM unit number (enum, MCPWM_UNIT_0 = 0, MCPWM_UNIT_1 = 1),
  * @param lead_dt: leading bridge-leg dead-time in sec (0..),
@@ -237,10 +269,8 @@ esp_err_t pspwm_up_down_ctr_mode_set_frequency(mcpwm_unit_t mcpwm_num,
 esp_err_t pspwm_up_down_ctr_mode_set_deadtimes(mcpwm_unit_t mcpwm_num,
                                                const float lead_dt, const float lag_dt);
 
-/** Set PS-PWM phase shift based on the current period time setting
- * i.e. state of the PWM hardware "period" register.
- *
- * The phase-shift value is valid for the symmetric dead-time setting
+/** @brief Set PS-PWM phase shift between the two output pairs based on the
+ * current period time setting as stored in the PWM hardware "period" register.
  * 
  * @param mcpwm_num: PWM unit number (enum, MCPWM_UNIT_0 = 0, MCPWM_UNIT_1 = 1),
  * @param ps_duty: Duty cycle of the rectified waveform (0..1)
@@ -253,27 +283,27 @@ esp_err_t pspwm_up_down_ctr_mode_set_ps_duty(mcpwm_unit_t mcpwm_num,
 /*****************************************************************
  *                         COMMON SETUP
  *****************************************************************/
-/** Returns true while the hardware fault shutdown pin is active
+/** @brief Returns true while the hardware fault shutdown pin is active
  * i.e. for as long as the failure is still present.
  * 
  */
 bool pspwm_get_hw_fault_shutdown_present(mcpwm_unit_t mcpwm_num);
 
-/** Returns true when the hardware fault shutdown pin has been activated.
+/** @brief Returns true when the hardware fault shutdown pin has been activated.
  * 
  * The state remains true (shutdown activated) as long as hw status has
  * not been cleared by a call to pspwm_clear_hw_fault_shutdown_occurred().
  */
 bool pspwm_get_hw_fault_shutdown_occurred(mcpwm_unit_t mcpwm_num);
 
-/** Resets the fault shutdown active flag without re-enabling the output
+/** @brief Resets the fault shutdown active flag without re-enabling the output
  * 
  * If a hardware shutdown occurred, this flag must be reset first
  * in order to re-enable the output. This acts as a safety feature.
  */
 void pspwm_clear_hw_fault_shutdown_occurred(mcpwm_unit_t mcpwm_num);
 
-/** Disable PWM output immediately by software-triggering the one-shot
+/** @brief Disable PWM output immediately by software-triggering the one-shot
  * fault input of the "trip-zone" fault handler module.
  * 
  * This sets the PWM output pins to predefined levels TRIPZONE_ACTION_PWMxA
@@ -283,7 +313,7 @@ void pspwm_clear_hw_fault_shutdown_occurred(mcpwm_unit_t mcpwm_num);
  */
 esp_err_t pspwm_disable_output(mcpwm_unit_t mcpwm_num);
 
-/** (Re-)enable PWM output by clearing fault handler one-shot trigger
+/** @brief (Re-)enable PWM output by clearing fault handler one-shot trigger
  * after software-triggering a re-sync to the initial phase setpoint.
  * 
  * If a hardware shutdown occurred, the shutdown flag must be reset first
@@ -294,7 +324,7 @@ esp_err_t pspwm_disable_output(mcpwm_unit_t mcpwm_num);
  */
 esp_err_t pspwm_resync_enable_output(mcpwm_unit_t mcpwm_num);
 
-/** Enable hardware fault shutdown ("tripzone") input on given GPIO pin.
+/** @brief Enable hardware fault shutdown ("tripzone") input on given GPIO pin.
  * 
  * This registers the fault handler FH0 signal with the specified PWM unit.
  * @param mcpwm_num: PWM unit number (enum, MCPWM_UNIT_0 = 0, MCPWM_UNIT_1 = 1),
@@ -306,7 +336,7 @@ esp_err_t pspwm_enable_hw_fault_shutdown(mcpwm_unit_t mcpwm_num,
                                          const int gpio_fault_shutdown,
                                          mcpwm_fault_input_level_t fault_pin_active_level);
 
-/** Disable hardware fault shutdown pin, resetting the GPIO to default state.
+/** @brief Disable hardware fault shutdown pin, resetting the GPIO to default state.
  * 
  * @param mcpwm_num: PWM unit number (enum, MCPWM_UNIT_0 = 0, MCPWM_UNIT_1 = 1),
  * @param gpio_fault_shutdown: GPIO pin number for shutdown input
@@ -314,7 +344,7 @@ esp_err_t pspwm_enable_hw_fault_shutdown(mcpwm_unit_t mcpwm_num,
 esp_err_t pspwm_disable_hw_fault_shutdown(mcpwm_unit_t mcpwm_num,
                                           const int gpio_fault_shutdown);
 
-/** Read from PSPWM state the calculated setpoint into the given
+/** @brief Read from PSPWM state the calculated setpoint into the given
  *  pointer to struct pspwm_setpoint_t.
  * 
  * @param mcpwm_num: PWM unit number (enum, MCPWM_UNIT_0 = 0, MCPWM_UNIT_1 = 1),
@@ -323,7 +353,7 @@ esp_err_t pspwm_disable_hw_fault_shutdown(mcpwm_unit_t mcpwm_num,
 esp_err_t pspwm_get_setpoint_ptr(mcpwm_unit_t mcpwm_num,
                                  pspwm_setpoint_t** setpoint);
 
-/** Read from PSPWM state the calculated setpoint limits into the given
+/** @brief Read from PSPWM state the calculated setpoint limits into the given
  *  pointer to struct pspwm_setpoint_limits_t.
  * 
  * @param mcpwm_num: PWM unit number (enum, MCPWM_UNIT_0 = 0, MCPWM_UNIT_1 = 1),
@@ -332,25 +362,14 @@ esp_err_t pspwm_get_setpoint_ptr(mcpwm_unit_t mcpwm_num,
 esp_err_t pspwm_get_setpoint_limits_ptr(mcpwm_unit_t mcpwm_num,
                                         pspwm_setpoint_limits_t** setpoint_limits);
 
-/** Read from PSPWM state the base clock and timer clock prescaler settings into
- *  the given pointer to struct pspwm_clk_conf_t.
+/** @brief Read from PSPWM state the base clock and timer clock prescaler
+ * settings into the given pointer to struct pspwm_clk_conf_t.
  * 
  * @param mcpwm_num: PWM unit number (enum, MCPWM_UNIT_0 = 0, MCPWM_UNIT_1 = 1),
  * @param clk_conf: Pointer to a struct instance of pspwm_setpoint_t
  */
 esp_err_t pspwm_get_clk_conf_ptr(mcpwm_unit_t mcpwm_num,
                                  pspwm_clk_conf_t** clk_conf);
-
-// Enable interrupts...
-/*esp_err_t pspwm_enable_interrupts(mcpwm_unit_t mcpwm_num,
-                                  uint32_t mcpwm_interrupt_enable_mask);
-*/
-/* Interrupt handler called on activation of MCPWM_UNIT_0 stage interrupts,
- * e.g. on hardware fault "tripzone" input trigger.
- * 
- * You need to implement this if needed.
- */
-//static void IRAM_ATTR pspwm_unit0_isr_handler(void* arg);
 
 #ifdef __cplusplus
 }
