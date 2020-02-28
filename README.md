@@ -7,47 +7,49 @@ Application in power electronics, e.g. Zero-Voltage-Switching (ZVS) Full-Bridge-
 Dual-Active-Bridge- and LLC converters.
 
 ## Low-Level-Driver (ESP-IDF compatible)
-See file: src/ps_pwm.h
+* See file:<br>
+[src/ps_pwm.h](ps__pwm_8h.html)
 
 ## C++ API
-See class reference: PSPWMGen (documentation is work-in-progress)
+* See class reference:<br>
+[PSPWMGen](class_p_s_p_w_m_gen.html) (documentation is work-in-progress)
 
 ## HTTP API Documentation
 
 ### Application is AJAX with static HTML5 + CSS + JavaScript ES7
-* Static HTTP content is served from SPI flash file system path in source tree:  
+* Static HTTP content is served from SPI flash file system path in source tree:<br>
 /data/www
 
 ### Hardware device is controlled via HTTP GET requests:
-* HTTP API endpoint:  
+* HTTP API endpoint:<br>
 /cmd
 
-* Server response to control requests:  
+* Server response to control requests:<br>
 HTTP Status 200 OK and plain text content "OK"
 
 ### List of HTTP GET requests for application control:
 
-* Set frequency in kHz:  
+* Set frequency in kHz:<br>
 /cmd?set_frequency=500
 
-* Set bridge output resulting duty cycle in %:  
+* Set bridge output resulting duty cycle in %:<br>
 /cmd?set_duty=45.3
 
-* set lead bridge leg dead time in nanoseconds:  
+* set lead bridge leg dead time in nanoseconds:<br>
 /cmd?set_lead_dt=300
 
-* set lag bridge leg dead time in nanoseconds:  
+* set lag bridge leg dead time in nanoseconds:<br>
 /cmd?set_lag_dt=300
 
-* Activate/deactivate the output:  
+* Activate/deactivate the output:<br>
 /cmd?set_output=off
 
-* Clear error shutdown condition:  
+* Clear error shutdown condition:<br>
 /cmd?clear_shutdown
 
 
 ### Server sends periodic application status update via Server-Sent Events:
-* SSE event source endpoint:  
+* SSE event source endpoint:<br>
 /events
 
 * Event source telegram content is JSON with content:
@@ -74,11 +76,12 @@ HTTP Status 200 OK and plain text content "OK"
 }
 ```
 
-### Example application control from PC side (Python):
+### Example application control from PC side:
+* Python example:
 ```
 import requests
 
-url = "http://kalorimeter.kostal.int/cmd"
+url = "http://pwm-generator.local/cmd"
 
 cmd1 = {"set_frequency": 500}
 cmd2 = {"set_duty": 45.3}
