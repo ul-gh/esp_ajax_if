@@ -1,16 +1,10 @@
 /** @file ps_pwm.h
- * @mainpage ESP32_PSPWM
- * Driver for the MCPWM hardware modules on the Espressif ESP32 SoC for
+ * @brief Driver for the MCPWM hardware modules on the Espressif ESP32 SoC for
  * generating a Phase-Shift-PWM waveform between two pairs of hardware pins.
  * 
  * Application in power electronics, e.g. Zero-Voltage-Switching (ZVS) Full-Bridge-,
  * Dual-Active-Bridge- and LLC converters.
  * 
- * @section lowlevel Low-Level-Driver (ESP-IDF compatible)
- * See file: src/ps_pwm.h
- *
- * @section highlevel C++ API
- * See class reference: PSPWMGen
  *
  * @note This depends on the ESP-IDF SDK source files.
  *

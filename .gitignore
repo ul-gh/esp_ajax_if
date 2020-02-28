@@ -7,3 +7,4 @@ doc/latex/*
 doc/xml/*
 src/data/www/*.svg
 src/wifi_config.hpp
+README.md
