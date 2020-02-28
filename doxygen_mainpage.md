@@ -1,3 +1,4 @@
+\mainpage
 # ESP32_PSPWM
 Driver for the MCPWM hardware modules on the Espressif ESP32 SoC for
 generating a Phase-Shift-PWM waveform between two pairs of hardware pins.
@@ -7,11 +8,11 @@ Dual-Active-Bridge- and LLC converters.
 
 ## Low-Level-Driver (ESP-IDF compatible)
 * See file:<br>
-[src/ps_pwm.h](https://github.com/ul-gh/esp_ajax_if/blob/gh-pages/ps__pwm_8h.html)
+[src/ps_pwm.h](ps__pwm_8h.html)
 
 ## C++ API
 * See class reference:<br>
-[PSPWMGen](https://github.com/ul-gh/esp_ajax_if/blob/gh-pages/class_p_s_p_w_m_gen.html) (documentation is work-in-progress)
+[PSPWMGen](class_p_s_p_w_m_gen.html) (documentation is work-in-progress)
 
 ## HTTP API Documentation
 
@@ -91,4 +92,4 @@ requests.get(url, cmd2)
 ```
 
 ## License
-[GPL v3.0](LICENSE)
+[GPL v3.0](license_gplv3.txt)
