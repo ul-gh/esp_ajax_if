@@ -15,7 +15,7 @@ See class reference: PSPWMGen (documentation is work-in-progress)
 ## HTTP API Documentation
 
 ### Application is AJAX with static HTML5 + CSS + JavaScript ES7
-* Static HTTP content is served from SPI flashh file system path in source tree:  
+* Static HTTP content is served from SPI flash file system path in source tree:  
 /data/www
 
 ### Hardware device is controlled via HTTP GET requests:
@@ -56,9 +56,9 @@ HTTP Status 200 OK and plain text content "OK"
     // Setpoint limits
     "frequency_min": 1.0,
     "frequency_max": 1000.0,
+    "dt_sum_max": 1200,
 
     // Operational settings
-    "dt_sum_max": 1200,
     "frequency": 500.0,
     "ps_duty": 79.0,
     "lead_dt": 100.0,
@@ -69,7 +69,7 @@ HTTP Status 200 OK and plain text content "OK"
     "base_div": 1,
     "timer_div": 1,
 
-        // Hardware Fault Shutdown Status
+    // Hardware Fault Shutdown Status
     "hw_shutdown_active": false,
 }
 ```
@@ -89,4 +89,4 @@ requests.get(url, cmd2)
 ```
 
 ## License
-[GPL v3.0](LICENSE)
+[GPL v3.0](license_gplv3.txt)
