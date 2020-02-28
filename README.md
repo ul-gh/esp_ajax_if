@@ -1,4 +1,4 @@
-<!-- \mainpage -->
+\mainpage
 # ESP32_PSPWM
 Driver for the MCPWM hardware modules on the Espressif ESP32 SoC for
 generating a Phase-Shift-PWM waveform between two pairs of hardware pins.
@@ -51,7 +51,8 @@ HTTP Status 200 OK and plain text content "OK"
 /events
 
 * Event source telegram content is JSON with content:
-    {
+```
+{
     // Setpoint limits
     "frequency_min": 1.0,
     "frequency_max": 1000.0,
@@ -70,20 +71,22 @@ HTTP Status 200 OK and plain text content "OK"
 
         // Hardware Fault Shutdown Status
     "hw_shutdown_active": false,
-    }
+}
+```
 
 ### Example application control from PC side (Python):
-    import requests
+```
+import requests
 
-    url = "http://kalorimeter.kostal.int/cmd"
+url = "http://kalorimeter.kostal.int/cmd"
 
-    cmd1 = {"set_frequency": 500}
-    cmd2 = {"set_duty": 45.3}
+cmd1 = {"set_frequency": 500}
+cmd2 = {"set_duty": 45.3}
 
-    requests.get(url, cmd1)
-    requests.get(url, cmd2)
-    …
-
+requests.get(url, cmd1)
+requests.get(url, cmd2)
+…
+```
 
 ## License
 [GPL v3.0](LICENSE)
