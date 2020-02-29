@@ -7,11 +7,11 @@ Dual-Active-Bridge- and LLC converters.
 
 ## Low-Level-Driver (ESP-IDF compatible)
 * See file:<br>
-[src/ps_pwm.h](https://github.com/ul-gh/esp_ajax_if/blob/gh-pages/ps__pwm_8h.html)
+[src/ps_pwm.h](https://ul-gh.github.io/esp_ajax_if/ps__pwm_8h.html)
 
 ## C++ API
 * See class reference:<br>
-[PSPWMGen](https://github.com/ul-gh/esp_ajax_if/blob/gh-pages/class_p_s_p_w_m_gen.html) (documentation is work-in-progress)
+[PSPWMGen](https://ul-gh.github.io/esp_ajax_if/class_p_s_p_w_m_gen.html) (documentation is work-in-progress)
 
 ## HTTP API Documentation
 
