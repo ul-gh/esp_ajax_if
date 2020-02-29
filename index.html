@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.13"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>ESP32_PSPWM: ESP32_PSPWM</title>
+<title>ESP32_PSPWM: Main Page</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -39,19 +39,72 @@ $(function() {
 </div><!-- top -->
 <div class="header">
   <div class="headertitle">
-<div class="title">ESP32_PSPWM </div>  </div>
+<div class="title">ESP32_PSPWM Documentation</div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p>Driver for the MCPWM hardware modules on the Espressif ESP32 SoC for generating a Phase-Shift-PWM waveform between two pairs of hardware pins.</p>
+<div class="textblock"><h1><a class="anchor" id="autotoc_md0"></a>
+ESP32_PSPWM</h1>
+<p>Driver for the MCPWM hardware modules on the Espressif ESP32 SoC for generating a Phase-Shift-PWM waveform between two pairs of hardware pins.</p>
 <p>Application in power electronics, e.g. Zero-Voltage-Switching (ZVS) Full-Bridge-, Dual-Active-Bridge- and LLC converters.</p>
-<h1><a class="anchor" id="lowlevel"></a>
-Low-Level-Driver (ESP-IDF compatible)</h1>
-<p>See file: <a class="el" href="ps__pwm_8h.html">src/ps_pwm.h</a></p>
-<h1><a class="anchor" id="highlevel"></a>
-C++ API</h1>
-<p>See class reference: <a class="el" href="class_p_s_p_w_m_gen.html">PSPWMGen</a></p>
-<dl class="section note"><dt>Note</dt><dd>This depends on the ESP-IDF SDK source files.</dd></dl>
-<p>2020-02-27 Ulrich Lukas </p>
+<h2><a class="anchor" id="autotoc_md1"></a>
+Low-Level-Driver (ESP-IDF compatible)</h2>
+<ul>
+<li>See file:<br />
+ <a href="ps__pwm_8h.html">src/ps_pwm.h</a></li>
+</ul>
+<h2><a class="anchor" id="autotoc_md2"></a>
+C++ API</h2>
+<ul>
+<li>See class reference:<br />
+ <a href="class_p_s_p_w_m_gen.html">PSPWMGen</a> (documentation is work-in-progress)</li>
+</ul>
+<h2><a class="anchor" id="autotoc_md3"></a>
+HTTP API Documentation</h2>
+<h3><a class="anchor" id="autotoc_md4"></a>
+Application is AJAX with static HTML5 + CSS + JavaScript ES7</h3>
+<ul>
+<li>Static HTTP content is served from SPI flash file system path in source tree:<br />
+ /data/www</li>
+</ul>
+<h3><a class="anchor" id="autotoc_md5"></a>
+Hardware device is controlled via HTTP GET requests:</h3>
+<ul>
+<li>HTTP API endpoint:<br />
+ /cmd</li>
+<li>Server response to control requests:<br />
+ HTTP Status 200 OK and plain text content "OK"</li>
+</ul>
+<h3><a class="anchor" id="autotoc_md6"></a>
+List of HTTP GET requests for application control:</h3>
+<ul>
+<li>Set frequency in kHz:<br />
+ /cmd?set_frequency=500</li>
+<li>Set bridge output resulting duty cycle in %:<br />
+ /cmd?set_duty=45.3</li>
+<li>set lead bridge leg dead time in nanoseconds:<br />
+ /cmd?set_lead_dt=300</li>
+<li>set lag bridge leg dead time in nanoseconds:<br />
+ /cmd?set_lag_dt=300</li>
+<li>Activate/deactivate the output:<br />
+ /cmd?set_output=off</li>
+<li>Clear error shutdown condition:<br />
+ /cmd?clear_shutdown</li>
+</ul>
+<h3><a class="anchor" id="autotoc_md7"></a>
+Server sends periodic application status update via Server-Sent Events:</h3>
+<ul>
+<li>SSE event source endpoint:<br />
+ /events</li>
+<li>Event source telegram content is JSON with content: <div class="fragment"><div class="line">{</div><div class="line">    // Setpoint limits</div><div class="line">    &quot;frequency_min&quot;: 1.0,</div><div class="line">    &quot;frequency_max&quot;: 1000.0,</div><div class="line">    &quot;dt_sum_max&quot;: 1200,</div><div class="line"></div><div class="line">    // Operational settings</div><div class="line">    &quot;frequency&quot;: 500.0,</div><div class="line">    &quot;ps_duty&quot;: 79.0,</div><div class="line">    &quot;lead_dt&quot;: 100.0,</div><div class="line">    &quot;lag_dt&quot;: 200.0,</div><div class="line">    &quot;output_enabled&quot;: true,</div><div class="line"></div><div class="line">    // Clock divider settings</div><div class="line">    &quot;base_div&quot;: 1,</div><div class="line">    &quot;timer_div&quot;: 1,</div><div class="line"></div><div class="line">    // Hardware Fault Shutdown Status</div><div class="line">    &quot;hw_shutdown_active&quot;: false,</div><div class="line">}</div></div><!-- fragment --></li>
+</ul>
+<h3><a class="anchor" id="autotoc_md8"></a>
+Example application control from PC side:</h3>
+<ul>
+<li>Python example: <div class="fragment"><div class="line">import requests</div><div class="line"></div><div class="line">url = &quot;http://pwm-generator.local/cmd&quot;</div><div class="line"></div><div class="line">cmd1 = {&quot;set_frequency&quot;: 500}</div><div class="line">cmd2 = {&quot;set_duty&quot;: 45.3}</div><div class="line"></div><div class="line">requests.get(url, cmd1)</div><div class="line">requests.get(url, cmd2)</div><div class="line">…</div></div><!-- fragment --></li>
+</ul>
+<h2><a class="anchor" id="autotoc_md9"></a>
+License</h2>
+<p><a href="license_gplv3.txt">GPL v3.0</a> </p>
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
