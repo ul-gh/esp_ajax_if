@@ -106,7 +106,6 @@ typedef struct {
  * @param gpio_lead_b: GPIO number leading leg high_side
  * @param gpio_lag_a: GPIO number lagging leg low_side
  * @param gpio_lag_b: GPIO number lagging leg high_side
- * @param gpio_fault_shutdown: GPIO number for fault/tripzone HW input
  * @param frequency: Frequency of the non-rectified waveform in Hz,
  * @param ps_duty: Duty cycle of the rectified waveform (0..1)
  * @param lead_red: dead time value for rising edge, leading leg
@@ -225,7 +224,6 @@ esp_err_t pspwm_up_ctr_mode_set_ps_duty(mcpwm_unit_t mcpwm_num, const float ps_d
  * @param gpio_lead_b: GPIO number leading leg high_side
  * @param gpio_lag_a: GPIO number lagging leg low_side
  * @param gpio_lag_b: GPIO number lagging leg high_side
- * @param gpio_fault_shutdown: GPIO number for fault/tripzone HW input
  * @param frequency: Frequency of the non-rectified waveform in Hz,
  * @param ps_duty: Duty cycle of the rectified waveform (0..1)
  * @param lead_dt: leading bridge-leg dead-time in sec (0..),
