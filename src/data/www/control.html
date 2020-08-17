@@ -1,251 +1,344 @@
-<!DOCTYPE html><!--Requires HTML5 + ES7 JavaScript-->
+<!DOCTYPE html>
+<!--Requires HTML5 + ES7 JavaScript-->
 <html>
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Main Page</title>
-        <link rel="stylesheet" type="text/css" href="u_lukas_style.css">
-        <script>
-            // Global object storing the application state, this is updated from
-            // server PUSH updates via the SSE event handler.
-            let app_state = {};
-            async function do_http_request(req_str) {
-                try {
-                    const response = await fetch(req_str);
-                    if (!response.ok) {
-                        throw new Error('Network error.');
-                    }
-                    //alert(await response.text());
-                } catch (err) {
-                    alert(err);
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Main Page</title>
+    <link rel="stylesheet" type="text/css" href="u_lukas_style.css">
+    <script>
+        // Global object storing the application state, this is updated from
+        // server PUSH updates via the SSE event handler.
+        let app_state = {};
+        async function do_http_request(req_str) {
+            try {
+                const response = await fetch(req_str);
+                if (!response.ok) {
+                    throw new Error('Network error.');
                 }
+                //alert(await response.text());
+            } catch (err) {
+                alert(err);
             }
-            async function submit_formdata(event) {
-                event.preventDefault(); // Disable default "GET" form action
-                const form_data = new FormData(event.target);
-                // form_data.forEach(console.log);
-                const req_str = "cmd?" + new URLSearchParams(form_data).toString();
+        }
+        async function submit_formdata(event) {
+            event.preventDefault(); // Disable default "GET" form action
+            const form_data = new FormData(event.target);
+            // form_data.forEach(console.log);
+            const req_str = "cmd?" + new URLSearchParams(form_data).toString();
+            await do_http_request(req_str);
+        }
+        // Sends button name and value pair as if it were in a form.
+        async function submit_single_buttons(event) {
+            target = event.target;
+            btns = Array.from(document.getElementsByClassName("request_source"));
+            if (btns.includes(target)) {
+                const req_str = "cmd?" + target.name + "=" + target.value;
                 await do_http_request(req_str);
             }
-            // Sends button name and value pair as if it were in a form.
-            async function submit_single_buttons(event) {
-                target = event.target;
-                btns = Array.from(document.getElementsByClassName("request_source"));
-                if (btns.includes(target)) {
-                    const req_str = "cmd?" + target.name + "=" + target.value;
-                    await do_http_request(req_str);
+        }
+        // Connect all document forms submit action
+        document.addEventListener("submit", submit_formdata, true);
+        // Connect single button click events
+        document.addEventListener("click", submit_single_buttons, true);
+        // Set connection state display to "nok" when heartbeats are missing
+        class HeartbeatWatchdog {
+            constructor(timeout) {
+                this.timeout = timeout;
+                this.display = document.getElementById("connection_display");
+                this.timer_id = this.start_timer();
+                this.reset_cb = event => this.reset(event.data);
+            }
+            start_timer() {
+                return window.setTimeout(() => this.set_nok(), this.timeout);
+            }
+            reset(data) {
+                if (data == "HB") {
+                    window.clearTimeout(this.timer_id);
+                    this.set_ok();
+                    this.timer_id = this.start_timer();
                 }
             }
-            // Connect all document forms submit action
-            document.addEventListener("submit", submit_formdata, true);
-            // Connect single button click events
-            document.addEventListener("click", submit_single_buttons, true);
-            // Set connection state display to "nok" when heartbeats are missing
-            class HeartbeatWatchdog {
-                constructor (timeout) {
-                    this.timeout = timeout;
-                    this.display = document.getElementById("connection_display");
-                    this.timer_id = this.start_timer();
-                    this.reset_cb = event => this.reset(event.data);
+            set_nok() {
+                this.display.setAttribute("state", "nok");
+                this.display.innerHTML = "No Connection <br> to Hardware!";
+            }
+            set_ok() {
+                this.display.setAttribute("state", "ok");
+                this.display.innerHTML = "OK";
+            }
+        } // class HartbeatTimer
+        // Update application state
+        class ViewUpdater {
+            constructor() {
+                this.output_state_display = document.getElementById("output_display");
+                this.shutdown_display = document.getElementById("shutdown_display");
+            }
+            update() {
+                if (app_state.output_enabled) {
+                    this.output_state_display.setAttribute("state", "on");
+                    this.output_state_display.innerText = "Output: ON";
+                } else {
+                    this.output_state_display.setAttribute("state", "off");
+                    this.output_state_display.innerText = "Output: OFF";
                 }
-                start_timer() {
-                    return window.setTimeout(() => this.set_nok(), this.timeout);
+                if (app_state.hw_shutdown_active) {
+                    this.shutdown_display.setAttribute("state", "nok");
+                    this.shutdown_display.innerHTML = "HW FAULT <br> SHUTDOWN ACTIVE!";
+                } else {
+                    this.shutdown_display.setAttribute("state", "ok");
+                    this.shutdown_display.innerText = "State: Normal";
                 }
-                reset(data) {
-                    if (data == "HB") {
-                        window.clearTimeout(this.timer_id);
-                        this.set_ok();
-                        this.timer_id = this.start_timer();
-                    }
+                if (app_state.output_ref_active) {
+                    this.output_ref_display.setAttribute("state", "on");
+                    this.output_ref_display.innerText = "REF Output Active";
+                } else {
+                    this.fan_display.setAttribute("state", "off");
+                    this.fan_display.innerText = "REF Output OFF";
                 }
-                set_nok() {
-                    this.display.setAttribute("state", "nok");
-                    this.display.innerText = "No Connection to Hardware!";
+                if (app_state.output_dut_active) {
+                    this.fan_display.setAttribute("state", "on");
+                    this.fan_display.innerText = "Heatsink Fan Active";
+                } else {
+                    this.fan_display.setAttribute("state", "off");
+                    this.fan_display.innerText = "Heatsink Fan OFF";
                 }
-                set_ok() {
-                    this.display.setAttribute("state", "ok");
-                    this.display.innerText = "Connection: OK";
+                if (app_state.fan_active) {
+                    this.fan_display.setAttribute("state", "on");
+                    this.fan_display.innerText = "Heatsink Fan Active";
+                } else {
+                    this.fan_display.setAttribute("state", "off");
+                    this.fan_display.innerText = "Heatsink Fan OFF";
                 }
-            } // class HartbeatTimer
-            // Update application state
-            class ViewUpdater {
-                constructor() {
-                    this.output_state_display = document.getElementById("output_display");
-                    this.shutdown_display = document.getElementById("shutdown_display");
+            }
+        } // class ViewUpdater
+        // Connect Server-Sent Events, with auto-reconnect timer
+        class ServerSentEventHandler {
+            constructor(endpoint, reconnect_timeout,
+                heartbeat_watchdog, view_updater) {
+                this.endpoint = endpoint;
+                this.heartbeat_watchdog = heartbeat_watchdog;
+                this.view_updater = view_updater;
+                this.source = null;
+                const timeout = reconnect_timeout;
+                this.reconnect_timer = () => window.setTimeout(
+                    () => this.connect(), timeout
+                );
+                this.connect();
+            }
+            connect() {
+                if (this.source != null) {
+                    console.log("Reconnecting Server-Sent Events...");
+                    this.source.close();
+                } else {
+                    console.log("Connecting Server-Sent Events...");
                 }
-                update() {
-                    if (app_state.output_enabled) {
-                        this.output_state_display.setAttribute("state", "on");
-                        this.output_state_display.innerText = "Output: ON";
-                    } else {
-                        this.output_state_display.setAttribute("state", "off");
-                        this.output_state_display.innerText = "Output: OFF";
-                    }
-                    if (app_state.hw_shutdown_active) {
-                        this.shutdown_display.setAttribute("state", "nok");
-                        this.shutdown_display.innerText = "HW FAULT SHUTDOWN ACTIVE!";
-                    } else {
-                        this.shutdown_display.setAttribute("state", "ok");
-                        this.shutdown_display.innerText = "State: Normal";
-                    }
-                }
-            } // class ViewUpdater
-            // Connect Server-Sent Events, with auto-reconnect timer
-            class ServerSentEventHandler {
-                constructor (endpoint, reconnect_timeout,
-                             heartbeat_watchdog, view_updater) {
-                    this.endpoint = endpoint;
-                    this.heartbeat_watchdog = heartbeat_watchdog;
-                    this.view_updater = view_updater;
-                    this.source = null;
-                    const timeout = reconnect_timeout;
-                    this.reconnect_timer = () => window.setTimeout(
-                        () => this.connect(), timeout
-                    );
-                    this.connect();
-                }
-                connect() {
-                    if (this.source != null) {
-                        console.log("Reconnecting Server-Sent Events...");
-                        this.source.close();
-                    } else {
-                        console.log("Connecting Server-Sent Events...");
-                    }
-                    this.source = new EventSource(this.endpoint);
-                    this.source.addEventListener(
-                        "heartbeat", this.heartbeat_watchdog.reset_cb, false);
-                    this.source.addEventListener(
-                        "open", event => {console.log("Events Connected");},
-                        false
-                    );
-                    this.source.addEventListener(
-                        "error", event => {
-                            if (event.target.readyState != EventSource.OPEN) {
-                                console.log("Events Disconnected!");
-                                // Start Auto-Reconnect
-                                this.reconnect_timer();
-                            }
-                        },
-                        false
-                    );
-                    this.source.addEventListener(
-                        "app_state", event => {
-                            // console.log(`App State: "${event.data}"`);
-                            // Set global object
-                            app_state = JSON.parse(event.data);
-                            this.view_updater.update();
-                        }, false
-                    );
-                } // connect()
-            } // class ServerSentEvents
-        </script>
-    </head>
-    <body>
-        <img src="logo.svg" alt="Application Logo">
+                this.source = new EventSource(this.endpoint);
+                this.source.addEventListener(
+                    "heartbeat", this.heartbeat_watchdog.reset_cb, false);
+                this.source.addEventListener(
+                    "open", event => { console.log("Events Connected"); },
+                    false
+                );
+                this.source.addEventListener(
+                    "error", event => {
+                        if (event.target.readyState != EventSource.OPEN) {
+                            console.log("Events Disconnected!");
+                            // Start Auto-Reconnect
+                            this.reconnect_timer();
+                        }
+                    },
+                    false
+                );
+                this.source.addEventListener(
+                    "app_state", event => {
+                        // console.log(`App State: "${event.data}"`);
+                        // Set global object
+                        app_state = JSON.parse(event.data);
+                        this.view_updater.update();
+                    }, false
+                );
+            } // connect()
+        } // class ServerSentEvents
+    </script>
+</head>
 
-        <form name="dead_time_settings">
-            <table>
-                <caption>Click the "Submit" button to update settings
-                    for the remote component!</caption>
-                <thead>
-                    <tr>
-                        <th colspan="4">Dead Time Settings</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>Lag Leg (ZCS) Dead Time /ns:</td>
-                        <td><input type="number" name="set_lag_dt" value="125"
-                                min="6.25" max="1000" step="6.25"></td>
-                    </tr>
-                    <tr>
-                        <td>Lead Leg (ZVS) Dead Time /ns:</td>
-                        <td><input type="number" name="set_lead_dt" value="125"
-                                min="6.25" max="1000" step="6.25"></td>
-                    </tr>
-                    <td colspan="2"><input type="submit" value="Submit"></td>
-                    </tr>
-                </tbody>
-            </table>
-        </form>
+<body>
+    <img src="logo.svg" alt="Application Logo">
 
-        <form name="operation_settings">
-            <table>
-                <thead>
-                    <tr>
-                        <th colspan="2">Operation Settings</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>Frequency /kHz:</td>
-                        <td><input type="number" name="set_frequency"
-                                value="100" min="5" max="1000"></td>
-                    </tr>
-                    <tr>
-                        <td>Duty Cycle /%:</td>
-                        <td><input type="number" name="set_duty"
-                                value="45" min="0" max="100"></td>
-                    </tr>
-                    <td colspan="2"><input type="submit" value="Submit"></td>
-                    </tr>
-                </tbody>
-            </table>
-        </form>
-        <br>
+    <table>
+        <thead>
+            <tr>
+                <th colspan="4">Operation Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Network Connection</td>
+                <td>Power Output State</td>
+                <td>HW Error Shutdown</td>
+                <td>Heatsink Fan</td>
+            </tr>
 
-        <form name="limit_values">
-            <table>
-                <thead>
-                    <tr>
-                        <th colspan="2">Limit Values</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>Current Limit /A:</td>
-                        <td><input type="number" name="set_curr_limit"
-                                                 value="35" min="5" max="100"></td>
-                    </tr>
-                    <td colspan="2"><input type="submit" value="Submit"></td>
-                    </tr>
-                </tbody>
-            </table>
-        </form>
-        <br><br>
-        <div id="connection_display" state="nok">Connection Status: ...</div>
-        <p>
-        <div id="shutdown_display" state="off">HW Shutdown Status: ...</div>
-        <input type="button" id="btn_clear" name="clear_shutdown"
-            value="Clear Shutdown" class="request_source">
-        </p>
-        <div id="output_display" state="off">Output Status: ...</div>
-        <br>
+            <tr>
+                <td>
+                    <div class="statedisplay" id="connection_display" state="nok">
+                        No Connection <br> to Hardware!
+                    </div>
+                </td>
+                <td>
+                    <div class="statedisplay" id="output_display" state="off">
+                        Unknown...
+                    </div>
+                </td>
+                <td>
+                    <div class="statedisplay" id="shutdown_display" state="off">
+                        Unknown...
+                    </div>
+                    <input type="button" id="btn_clear" name="clear_shutdown"
+                            value="Clear Shutdown" class="request_source">
+                </td>
+                <td>
+                    <div class="statedisplay" id="fan_display" state="off">
+                        Unknown...
+                    </div>
+                    <input type="checkbox" id="cb_fan" name="fan_state"
+                            value="ON" class="request_source" checked
+                            disabled="disabled">
+                    <label for="cb_fan">
+                        Fan Active
+                    </label>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <br>
 
+    <table>
+        <thead>
+            <tr>
+                <th colspan="3">Power Output Switches</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Bridge Output Main Switch</td>
+                <td>REF/CAL Load Switch</td>
+                <td>DUT Switch</td>
+            </tr>
+            <tr>
+                <td>
+                    <input type="button" id="btn_on" name="set_output" value="ON" class="request_source button_large">
+                    <input type="button" id="btn_off" name="set_output" value="OFF" class="request_source button_large">
+                </td>
+                <td>
+                    <div class="onoffswitch">
+                        <input type="checkbox" id="cb_relay_ref" name="relay_ref" value="ON"
+                            class="onoffswitch-checkbox">
+                        <label class="onoffswitch-label" for="cb_relay_ref">
+                            <span class="onoffswitch-inner"></span>
+                            <span class="onoffswitch-switch"></span>
+                        </label>
+                    </div>
+                </td>
+                <td>
+                    <div class="onoffswitch">
+                        <input type="checkbox" id="cb_relay_dut" name="relay_dut" value="ON"
+                            class="onoffswitch-checkbox">
+                        <label class="onoffswitch-label" for="cb_relay_dut">
+                            <span class="onoffswitch-inner"></span>
+                            <span class="onoffswitch-switch"></span>
+                        </label>
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <br>
+
+    <form name="dead_time_settings">
         <table>
+            <caption>
+                <small>Click the "Submit" button to update settings
+                        for the remote component!</small>
+            </caption>
             <thead>
                 <tr>
-                    <th colspan="2">Activate Outputs</th>
+                    <th colspan="4">Dead Time Settings</th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
-                    <td><input type="button" id="btn_on" name="set_output"
-                            value="ON" class="request_source button_large"></td>
-                    <td><input type="button" id="btn_off" name="set_output"
-                            value="OFF" class="request_source button_large"></td>
+                    <td>Lag Leg (ZCS) Dead Time /ns:</td>
+                    <td><input type="number" name="set_lag_dt" value="125" min="6.25" max="1000" step="6.25"></td>
+                </tr>
+                <tr>
+                    <td>Lead Leg (ZVS) Dead Time /ns:</td>
+                    <td><input type="number" name="set_lead_dt" value="125" min="6.25" max="1000" step="6.25"></td>
+                </tr>
+                <td colspan="2"><input type="submit" value="Submit"></td>
                 </tr>
             </tbody>
         </table>
+    </form>
+    <br>
 
-        <p>2019-10-31 Ulrich Lukas</p>
+    <form name="limit_values">
+        <table>
+            <thead>
+                <tr>
+                    <th colspan="2">Limit Values</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Current Limit /A:</td>
+                    <td><input type="number" name="set_curr_limit" value="35" min="5" max="100"></td>
+                </tr>
+                <td colspan="2"><input type="submit" value="Submit"></td>
+                </tr>
+            </tbody>
+        </table>
+    </form>
+    <br>
+
+    <form name="operation_settings">
+        <table>
+            <thead>
+                <tr>
+                    <th colspan="2">Operation Settings</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Frequency /kHz:</td>
+                    <td><input type="number" name="set_frequency" value="100" min="5" max="1000"></td>
+                </tr>
+                <tr>
+                    <td>Duty Cycle /%:</td>
+                    <td><input type="number" name="set_duty" value="45" min="0" max="100"></td>
+                </tr>
+                <td colspan="2"><input type="submit" value="Submit"></td>
+                </tr>
+            </tbody>
+        </table>
+    </form>
+    <br>
+
+    <p>
         <a href="update.html">Perform OTA Firmware Upload</a>
+    </p>
+    <p>
+        2019-10-31 Ulrich Lukas
+    </p>
 
-        <script>
-            const heartbeat_watchdog = new HeartbeatWatchdog(1500);
-            const view_updater = new ViewUpdater();
-            const sse_handler = new ServerSentEventHandler(
-                "/events", 3000, heartbeat_watchdog, view_updater);
-        </script>
-    </body>
+    <script>
+        const heartbeat_watchdog = new HeartbeatWatchdog(1500);
+        const view_updater = new ViewUpdater();
+        const sse_handler = new ServerSentEventHandler(
+            "/events", 3000, heartbeat_watchdog, view_updater);
+    </script>
+</body>
+
 </html>

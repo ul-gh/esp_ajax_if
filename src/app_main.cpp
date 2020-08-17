@@ -48,9 +48,17 @@ void setup() {
     ps_pwm_generator = new PSPWMGen{api_server};
     api_server->activate_events_on("/events");
     api_server->activate_default_callbacks();
+    // Test Overcurrent Reference PWM set to high
+    pinMode(17, OUTPUT);
+    // Test Overcurrent Reset pin set to high
+    pinMode(16, OUTPUT);
 }
 
 void loop() {
     // Application runs asynchronously, you can do anything here except
     // blocking for prolonged periods.
+    // Test Overcurrent Reference PWM set to high
+    digitalWrite(17, HIGH);
+    // Test Overcurrent Reset pin set to high
+    digitalWrite(16, HIGH);
 }
