@@ -188,24 +188,26 @@
                     </div>
                 </td>
                 <td>
-                    <div class="statedisplay" id="output_display" state="off">
+                    <div class="statedisplay" id="output_display" state="na">
                         Unknown...
                     </div>
                 </td>
                 <td>
-                    <div class="statedisplay" id="shutdown_display" state="off">
+                    <div class="statedisplay full-block" id="shutdown_display"
+                            state="na">
                         Unknown...
                     </div>
-                    <input type="button" id="btn_clear" name="clear_shutdown"
-                            value="Clear Shutdown" class="request_source">
+                    <input type="button" name="clear_shutdown"
+                                class="btn_full request_source"
+                                value="Clear Shutdown">
                 </td>
                 <td>
                     <div class="statedisplay" id="fan_display" state="off">
                         Unknown...
                     </div>
                     <input type="checkbox" id="cb_fan" name="fan_state"
-                            value="ON" class="request_source" checked
-                            disabled="disabled">
+                            class="request_source"
+                            value="ON" disabled="disabled" checked>
                     <label for="cb_fan">
                         Fan Active
                     </label>
@@ -229,8 +231,10 @@
             </tr>
             <tr>
                 <td>
-                    <input type="button" id="btn_on" name="set_output" value="ON" class="request_source button_large">
-                    <input type="button" id="btn_off" name="set_output" value="OFF" class="request_source button_large">
+                    <input type="button" id="btn_on" name="set_output" value="ON"
+                            class="request_source">
+                    <input type="button" id="btn_off" name="set_output" value="OFF"
+                            class="request_source">
                 </td>
                 <td>
                     <div class="onoffswitch">

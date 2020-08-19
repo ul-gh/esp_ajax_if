@@ -32,6 +32,11 @@ caption {
     caption-side: bottom;
 }
 
+.full_block {
+    display: block;
+    margin: auto;
+}
+
 table {
     margin: auto;
     border-collapse: collapse;
@@ -39,13 +44,6 @@ table {
     font-family: sans-serif;
 }
 
-div.statedisplay {
-    margin: auto;
-    content: "OK";
-    display: table;
-    background-color: rgb(139, 255, 143);
-    font-size: 1.0rem;
-}
 div[state="nok"] {
     content: "NOK";
     background-color: rgb(250, 84, 84);
@@ -56,6 +54,10 @@ div[state="on"] {
 }
 div[state="off"] {
     content: "OFF";
+    background-color: rgb(211, 211, 211);
+}
+div[state="na"] {
+    content: "Unknown...";
     background-color: rgb(211, 211, 211);
 }
 
@@ -79,32 +81,32 @@ p {
     text-align: center;
 }
 
-.button_large {
-    border: none;
-    color: white;
-    padding: 1rem 2rem;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 1.5rem;
-}
-
-.checkboxes {
-    text-align: left;
-}
-
-#btn_clear {
+.btn_full {
     display: block;
     margin: auto;
     text-align: center;
+    background-color: white;
+    width: 100%;
 }
 
 #btn_on {
+    display: inline-block;
+    font-size: 1.5rem;
+    padding: 1rem 2rem;
+    color: white;
     background-color: #4CAF50; /* Green */
 }
 
 #btn_off {
+    display: inline-block;
+    font-size: 1.5rem;
+    padding: 1rem 2rem;
+    color: white;
     background-color: #FF0000; /* Red */
+}
+
+.checkboxes {
+    text-align: left;
 }
 
 .onoffswitch {
