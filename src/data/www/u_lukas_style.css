@@ -8,6 +8,10 @@ body {
     font-size: 1rem;
 }
 
+* {
+    box-sizing: border-box;
+}
+
 img {
     margin: auto;
     margin-bottom: 1rem;

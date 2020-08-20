@@ -6,8 +6,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Main Page</title>
-    <link rel="stylesheet" type="text/css" href="u_lukas_style.css">
     <link rel="stylesheet" type="text/css" href="toggle-switchy.css">
+    <link rel="stylesheet" type="text/css" href="u_lukas_style.css">
     <script>
         // Global object storing the application state, this is updated from
         // server PUSH updates via the SSE event handler.
@@ -75,6 +75,9 @@
             constructor() {
                 this.output_state_display = document.getElementById("output_display");
                 this.shutdown_display = document.getElementById("shutdown_display");
+                this.fan_display = document.getElementById("fan_display");
+                this.ref_display = document.getElementById("ref_display");
+                this.dut_display = document.getElementById("dut_display");
             }
             update() {
                 if (app_state.output_enabled) {
@@ -92,25 +95,19 @@
                     this.shutdown_display.innerText = "State: Normal";
                 }
                 if (app_state.output_ref_active) {
-                    this.output_ref_display.setAttribute("state", "on");
-                    this.output_ref_display.innerText = "REF Output Active";
+                    this.dut_display.checked = true;
                 } else {
-                    this.fan_display.setAttribute("state", "off");
-                    this.fan_display.innerText = "REF Output OFF";
+                    this.dut_display.checked = false;
                 }
                 if (app_state.output_dut_active) {
-                    this.fan_display.setAttribute("state", "on");
-                    this.fan_display.innerText = "Heatsink Fan Active";
+                    this.fan_display.checked = true;
                 } else {
-                    this.fan_display.setAttribute("state", "off");
-                    this.fan_display.innerText = "Heatsink Fan OFF";
+                    this.fan_display.checked = false;
                 }
                 if (app_state.fan_active) {
-                    this.fan_display.setAttribute("state", "on");
-                    this.fan_display.innerText = "Heatsink Fan Active";
+                    this.fan_display.checked = true;
                 } else {
-                    this.fan_display.setAttribute("state", "off");
-                    this.fan_display.innerText = "Heatsink Fan OFF";
+                    this.fan_display.checked = false;
                 }
             }
         } // class ViewUpdater
@@ -183,12 +180,14 @@
 
             <tr>
                 <td>
-                    <div class="statedisplay flex-centered" id="connection_display" state="nok">
+                    <div class="statedisplay flex-centered" id="connection_display"
+                            state="nok">
                         No Connection to Hardware!
                     </div>
                 </td>
                 <td>
-                    <div class="statedisplay flex-centered" id="output_display" state="na">
+                    <div class="statedisplay flex-centered" id="output_display"
+                            state="na">
                         Unknown...
                     </div>
                 </td>
@@ -202,11 +201,11 @@
                     </div>
                 </td>
                 <td>
-                    <label class="toggle-switchy" for="sw_fan">
-                        <input type="checkbox"
-                                id="sw_fan" name=fan_state value="ON" checked>
+                    <label class="toggle-switchy" data-size="sm">
+                        <input type="checkbox" id="fan_display" name=fan_state
+                                class="statedisplay" state="na" value="ON" checked>
                         <span class="toggle">
-                          <span class="switch"></span>
+                            <span class="switch"></span>
                         </span>
                     </label>
                 </td>
@@ -235,23 +234,22 @@
                             class="request_source">
                 </td>
                 <td>
-                    <div class="onoffswitch">
-                        <input type="checkbox" id="cb_relay_ref" name="relay_ref" value="ON"
-                            class="onoffswitch-checkbox">
-                        <label class="onoffswitch-label" for="cb_relay_ref">
-                            <span class="onoffswitch-inner"></span>
-                            <span class="onoffswitch-switch"></span>
-                        </label>
-                    </div>
+                    <label class="toggle-switchy">
+                        <input type="checkbox" id="ref_display" name=relay_ref value="ON"
+                                class="statedisplay request_source" state="na">
+                        <span class="toggle">
+                            <span class="switch"></span>
+                        </span>
+                    </label>
                 </td>
                 <td>
-                    <div class="onoffswitch">
-                        <input type="checkbox" id="cb_relay_dut" name="relay_dut" value="ON"
-                            class="onoffswitch-checkbox">
-                        <label class="onoffswitch-label" for="cb_relay_dut">
-                            <span class="onoffswitch-inner"></span>
-                            <span class="onoffswitch-switch"></span>
-                        </label>
+                    <label class="toggle-switchy">
+                        <input type="checkbox" id="dut_display" name=relay_dut value="ON"
+                                class="statedisplay request_source" state="na">
+                        <span class="toggle">
+                            <span class="switch"></span>
+                        </span>
+                    </label>
                     </div>
                 </td>
             </tr>

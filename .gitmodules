@@ -1,0 +1,3 @@
+[submodule "lib/toggle-switchy"]
+	path = lib/toggle-switchy
+	url = https://github.com/adamculpepper/toggle-switchy.git
