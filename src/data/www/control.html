@@ -7,6 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Main Page</title>
     <link rel="stylesheet" type="text/css" href="u_lukas_style.css">
+    <link rel="stylesheet" type="text/css" href="toggle-switchy.css">
     <script>
         // Global object storing the application state, this is updated from
         // server PUSH updates via the SSE event handler.
@@ -166,7 +167,6 @@
 
 <body>
     <img src="logo.svg" alt="Application Logo">
-
     <table>
         <thead>
             <tr>
@@ -183,33 +183,31 @@
 
             <tr>
                 <td>
-                    <div class="statedisplay" id="connection_display" state="nok">
-                        No Connection <br> to Hardware!
+                    <div class="statedisplay flex-centered" id="connection_display" state="nok">
+                        No Connection to Hardware!
                     </div>
                 </td>
                 <td>
-                    <div class="statedisplay" id="output_display" state="na">
+                    <div class="statedisplay flex-centered" id="output_display" state="na">
                         Unknown...
                     </div>
                 </td>
                 <td>
-                    <div class="statedisplay full-block" id="shutdown_display"
+                    <div class="statedisplay flex-centered" id="shutdown_display"
                             state="na">
                         Unknown...
-                    </div>
-                    <input type="button" name="clear_shutdown"
+                        <input type="button" name="clear_shutdown"
                                 class="btn_full request_source"
                                 value="Clear Shutdown">
+                    </div>
                 </td>
                 <td>
-                    <div class="statedisplay" id="fan_display" state="off">
-                        Unknown...
-                    </div>
-                    <input type="checkbox" id="cb_fan" name="fan_state"
-                            class="request_source"
-                            value="ON" disabled="disabled" checked>
-                    <label for="cb_fan">
-                        Fan Active
+                    <label class="toggle-switchy" for="sw_fan">
+                        <input type="checkbox"
+                                id="sw_fan" name=fan_state value="ON" checked>
+                        <span class="toggle">
+                          <span class="switch"></span>
+                        </span>
                     </label>
                 </td>
             </tr>
@@ -334,7 +332,7 @@
         <a href="update.html">Perform OTA Firmware Upload</a>
     </p>
     <p>
-        2019-10-31 Ulrich Lukas
+        2020-08-19 Ulrich Lukas
     </p>
 
     <script>
