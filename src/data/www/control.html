@@ -8,10 +8,12 @@
     <title>Main Page</title>
     <link rel="stylesheet" type="text/css" href="toggle-switchy.css">
     <link rel="stylesheet" type="text/css" href="u_lukas_style.css">
+
     <script>
         // Global object storing the application state, this is updated from
         // server PUSH updates via the SSE event handler.
         let app_state = {};
+
         async function do_http_request(req_str) {
             try {
                 const response = await fetch(req_str);
@@ -23,6 +25,7 @@
                 alert(err);
             }
         }
+
         async function submit_formdata(event) {
             event.preventDefault(); // Disable default "GET" form action
             const form_data = new FormData(event.target);
@@ -30,24 +33,32 @@
             const req_str = "cmd?" + new URLSearchParams(form_data).toString();
             await do_http_request(req_str);
         }
-        // Sends button name and value pair as if it were in a form.
-        async function submit_single_buttons(event) {
+
+        // Sends control name and value pair
+        async function submit_single_ctrl(event) {
+            // These elements are supposed to reflect the remote state and are
+            // set later when the respective SSE event arrives with a state update
+            event.preventDefault();
             target = event.target;
-            btns = Array.from(document.getElementsByClassName("request_source"));
-            if (btns.includes(target)) {
+            all_ctrls = Array.from(document.getElementsByClassName("request_src"));
+            if (src_els.includes(target)) {
                 const req_str = "cmd?" + target.name + "=" + target.value;
                 await do_http_request(req_str);
             }
         }
+
+
         // Connect all document forms submit action
         document.addEventListener("submit", submit_formdata, true);
-        // Connect single button click events
-        document.addEventListener("click", submit_single_buttons, true);
+        // Connect single control click events
+        document.addEventListener("click", submit_single_ctrl, true);
+
+
         // Set connection state display to "nok" when heartbeats are missing
         class HeartbeatWatchdog {
             constructor(timeout) {
                 this.timeout = timeout;
-                this.display = document.getElementById("connection_display");
+                this.view = document.getElementById("connection_vw");
                 this.timer_id = this.start_timer();
                 this.reset_cb = event => this.reset(event.data);
             }
@@ -62,55 +73,49 @@
                 }
             }
             set_nok() {
-                this.display.setAttribute("state", "nok");
-                this.display.innerHTML = "No Connection <br> to Hardware!";
+                this.view.setAttribute("state", "nok");
+                this.view.innerHTML = "No Connection <br> to Hardware!";
             }
             set_ok() {
-                this.display.setAttribute("state", "ok");
-                this.display.innerHTML = "OK";
+                this.view.setAttribute("state", "ok");
+                this.view.innerHTML = "OK";
             }
-        } // class HartbeatTimer
-        // Update application state
+        }
+
+
+        // Update view with app state telegram when pushed via SSE
         class ViewUpdater {
             constructor() {
-                this.output_state_display = document.getElementById("output_display");
-                this.shutdown_display = document.getElementById("shutdown_display");
-                this.fan_display = document.getElementById("fan_display");
-                this.ref_display = document.getElementById("ref_display");
-                this.dut_display = document.getElementById("dut_display");
+                this.power_bridge_vw = document.getElementById("power_pwm_enable_vw");
+                this.shutdown_vw = document.getElementById("shutdown_vw");
+                this.fan_vw = document.getElementById("fan_vw");
+                this.ref_vw = document.getElementById("ref_vw");
+                this.dut_vw = document.getElementById("dut_vw");
+                this.current_limit_vw
             }
             update() {
-                if (app_state.output_enabled) {
-                    this.output_state_display.setAttribute("state", "on");
-                    this.output_state_display.innerText = "Output: ON";
+                if (app_state.power_pwm_enabled) {
+                    this.power_bridge_vw.setAttribute("state", "on");
+                    this.power_bridge_vw.innerText = "Output: ON";
                 } else {
-                    this.output_state_display.setAttribute("state", "off");
-                    this.output_state_display.innerText = "Output: OFF";
+                    this.power_bridge_vw.setAttribute("state", "off");
+                    this.power_bridge_vw.innerText = "Output: OFF";
                 }
                 if (app_state.hw_shutdown_active) {
-                    this.shutdown_display.setAttribute("state", "nok");
-                    this.shutdown_display.innerHTML = "HW FAULT <br> SHUTDOWN ACTIVE!";
+                    this.shutdown_vw.setAttribute("state", "nok");
+                    this.shutdown_vw.innerHTML = "HW FAULT <br> SHUTDOWN ACTIVE!";
                 } else {
-                    this.shutdown_display.setAttribute("state", "ok");
-                    this.shutdown_display.innerText = "State: Normal";
+                    this.shutdown_vw.setAttribute("state", "ok");
+                    this.shutdown_vw.innerText = "State: Normal";
                 }
-                if (app_state.output_ref_active) {
-                    this.dut_display.checked = true;
-                } else {
-                    this.dut_display.checked = false;
-                }
-                if (app_state.output_dut_active) {
-                    this.fan_display.checked = true;
-                } else {
-                    this.fan_display.checked = false;
-                }
-                if (app_state.fan_active) {
-                    this.fan_display.checked = true;
-                } else {
-                    this.fan_display.checked = false;
-                }
+                this.fan_vw.checked = Boolean(app_state.fan_active);
+                this.ref_vw.checked = Boolean(app_state.output_ref_active);
+                this.dut_vw.checked = Boolean(app_state.output_dut_active);
+                // Operational settings
             }
-        } // class ViewUpdater
+        }
+
+
         // Connect Server-Sent Events, with auto-reconnect timer
         class ServerSentEventHandler {
             constructor(endpoint, reconnect_timeout,
@@ -158,12 +163,18 @@
                     }, false
                 );
             } // connect()
-        } // class ServerSentEvents
+        }
     </script>
 </head>
 
+
+
 <body>
     <img src="logo.svg" alt="Application Logo">
+
+    <!--Responsive flow flex box for main content-->
+    <div class="flex-flow">
+    <div class="flex-one-item-center">
     <table>
         <thead>
             <tr>
@@ -180,30 +191,26 @@
 
             <tr>
                 <td>
-                    <div class="statedisplay flex-centered" id="connection_display"
-                            state="nok">
+                    <div class="bool_vw flex-centered" id="connection_vw" state="nok">
                         No Connection to Hardware!
                     </div>
                 </td>
                 <td>
-                    <div class="statedisplay flex-centered" id="output_display"
-                            state="na">
+                    <div class="bool_vw flex-centered" id="power_bridge_vw" state="na">
                         Unknown...
                     </div>
                 </td>
                 <td>
-                    <div class="statedisplay flex-centered" id="shutdown_display"
-                            state="na">
+                    <div class="bool_vw flex-centered" id="shutdown_vw" state="na">
                         Unknown...
-                        <input type="button" name="clear_shutdown"
-                                class="btn_full request_source"
-                                value="Clear Shutdown">
+                        <input type="button" class="btn_full request_src"
+                                name="clear_shutdown" value="true">
                     </div>
                 </td>
                 <td>
                     <label class="toggle-switchy" data-size="sm">
-                        <input type="checkbox" id="fan_display" name=fan_state
-                                class="statedisplay" state="na" value="ON" checked>
+                        <input type="checkbox" class="bool_vw" id="fan_vw"
+                                name=fan_state value="on" checked>
                         <span class="toggle">
                             <span class="switch"></span>
                         </span>
@@ -212,8 +219,10 @@
             </tr>
         </tbody>
     </table>
-    <br>
+    </div>
 
+
+    <div class="flex-two-items-center">
     <table>
         <thead>
             <tr>
@@ -228,15 +237,15 @@
             </tr>
             <tr>
                 <td>
-                    <input type="button" id="btn_on" name="set_output" value="ON"
-                            class="request_source">
-                    <input type="button" id="btn_off" name="set_output" value="OFF"
-                            class="request_source">
+                    <input type="button" class="request_src" id="btn_on"
+                            name="set_output" value="on">
+                    <input type="button" class="request_src" id="btn_off"
+                            name="set_output" value="off">
                 </td>
                 <td>
                     <label class="toggle-switchy">
-                        <input type="checkbox" id="ref_display" name=relay_ref value="ON"
-                                class="statedisplay request_source" state="na">
+                        <input type="checkbox" class="bool_vw request_src" id="ref_vw"
+                                name=set_relay_ref value="on" state="na">
                         <span class="toggle">
                             <span class="switch"></span>
                         </span>
@@ -244,8 +253,8 @@
                 </td>
                 <td>
                     <label class="toggle-switchy">
-                        <input type="checkbox" id="dut_display" name=relay_dut value="ON"
-                                class="statedisplay request_source" state="na">
+                        <input type="checkbox" class="bool_vw request_src" id="dut_vw"
+                                name=set_relay_dut value="on" state="na">
                         <span class="toggle">
                             <span class="switch"></span>
                         </span>
@@ -255,13 +264,15 @@
             </tr>
         </tbody>
     </table>
-    <br>
+    </div>
 
+
+    <div class="flex-two-items-center">
     <form name="dead_time_settings">
         <table>
             <caption>
                 <small>Click the "Submit" button to update settings
-                        for the remote component!</small>
+                    for the remote component!</small>
             </caption>
             <thead>
                 <tr>
@@ -271,19 +282,23 @@
             <tbody>
                 <tr>
                     <td>Lag Leg (ZCS) Dead Time /ns:</td>
-                    <td><input type="number" name="set_lag_dt" value="125" min="6.25" max="1000" step="6.25"></td>
+                    <td><input type="number"
+                            name="set_lag_dt" value="125" min="6.25" max="1000" step="6.25"></td>
                 </tr>
                 <tr>
                     <td>Lead Leg (ZVS) Dead Time /ns:</td>
-                    <td><input type="number" name="set_lead_dt" value="125" min="6.25" max="1000" step="6.25"></td>
+                    <td><input type="number"
+                            name="set_lead_dt" value="125" min="6.25" max="1000" step="6.25"></td>
                 </tr>
                 <td colspan="2"><input type="submit" value="Submit"></td>
                 </tr>
             </tbody>
         </table>
     </form>
-    <br>
+    </div>
 
+
+    <div class="flex-two-items-center">
     <form name="limit_values">
         <table>
             <thead>
@@ -294,15 +309,20 @@
             <tbody>
                 <tr>
                     <td>Current Limit /A:</td>
-                    <td><input type="number" name="set_curr_limit" value="35" min="5" max="100"></td>
+                    <td><input type="number"
+                            name="set_curr_limit" value="35" min="5" max="100"></td>
                 </tr>
-                <td colspan="2"><input type="submit" value="Submit"></td>
+                    <td colspan="2">
+                        <input type="submit" value="Submit">
+                    </td>
                 </tr>
             </tbody>
         </table>
     </form>
-    <br>
+    </div>
 
+
+    <div class="flex-two-items-center">
     <form name="operation_settings">
         <table>
             <thead>
@@ -313,18 +333,24 @@
             <tbody>
                 <tr>
                     <td>Frequency /kHz:</td>
-                    <td><input type="number" name="set_frequency" value="100" min="5" max="1000"></td>
+                    <td><input type="number"
+                            name="set_frequency" value="100" min="5" max="1000"></td>
                 </tr>
                 <tr>
                     <td>Duty Cycle /%:</td>
-                    <td><input type="number" name="set_duty" value="45" min="0" max="100"></td>
+                    <td>
+                        <input type="number" name="set_duty" value="45" min="0" max="100">
+                    </td>
                 </tr>
                 <td colspan="2"><input type="submit" value="Submit"></td>
                 </tr>
             </tbody>
         </table>
     </form>
-    <br>
+    </div>
+
+    <!--End responsive flow box-->
+    </div>
 
     <p>
         <a href="update.html">Perform OTA Firmware Upload</a>

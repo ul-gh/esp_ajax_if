@@ -95,7 +95,8 @@ private:
      *  "ps_duty": 79.0,
      *  "lead_dt": 100.0,
      *  "lag_dt": 200.0,
-     *  "output_enabled": true,
+     *  "current_limit": 35.0,
+     *  "power_bridge_enabled": true,
      * 
      * // Clock divider settings
      *  "base_div": 1,
