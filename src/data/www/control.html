@@ -172,9 +172,9 @@
 <body>
     <img src="logo.svg" alt="Application Logo">
 
-    <!--Responsive flow flex box for main content-->
-    <div class="flex-flow">
-    <div class="flex-one-item-center">
+    <!--Responsive grid layout for main content-->
+    <ul class="main_grid">
+    <li class="grid_item_two_cols">
     <table>
         <thead>
             <tr>
@@ -219,10 +219,10 @@
             </tr>
         </tbody>
     </table>
-    </div>
+    </li>
 
 
-    <div class="flex-two-items-center">
+    <li class="grid_item" id="first-left">
     <table>
         <thead>
             <tr>
@@ -264,10 +264,10 @@
             </tr>
         </tbody>
     </table>
-    </div>
+    </li>
 
 
-    <div class="flex-two-items-center">
+    <li class="grid_item" id="first-right">
     <form name="dead_time_settings">
         <table>
             <caption>
@@ -295,10 +295,10 @@
             </tbody>
         </table>
     </form>
-    </div>
+    </li>
 
 
-    <div class="flex-two-items-center">
+    <li class="grid_item">
     <form name="limit_values">
         <table>
             <thead>
@@ -319,10 +319,10 @@
             </tbody>
         </table>
     </form>
-    </div>
+    </li>
 
 
-    <div class="flex-two-items-center">
+    <li class="grid_item">
     <form name="operation_settings">
         <table>
             <thead>
@@ -347,10 +347,10 @@
             </tbody>
         </table>
     </form>
-    </div>
+    </li>
 
-    <!--End responsive flow box-->
-    </div>
+    <!--End responsive grid layout-->
+    </ul>
 
     <p>
         <a href="update.html">Perform OTA Firmware Upload</a>
