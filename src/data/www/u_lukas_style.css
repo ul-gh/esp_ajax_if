@@ -127,16 +127,16 @@ div.state_vw[disabled] {
 #connection_vw[state="nok"] { 
     background-color: rgb(250, 84, 84);
 }
-#power_pwm_vw[state="off"] {
+#power_pwm_vw[state="false"] {
     background-color: rgb(139, 255, 143);
 }
-#power_pwm_vw[state="on"] {
+#power_pwm_vw[state="true"] {
     background-color: red;
 }
-#shutdown_vw[state="active"] {
+#shutdown_vw[state="true"] {
     background-color: rgb(250, 84, 84);
 }
-#shutdown_vw[state="inactive"] {
+#shutdown_vw[state="false"] {
     background-color: rgb(139, 255, 143);
 }
 
