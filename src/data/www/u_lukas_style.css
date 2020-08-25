@@ -1,51 +1,46 @@
 html {
-    display: block;
-    margin: auto;
-    font-size: 85%;
+    /* font-size: 16px; */
 }
 
 body {
-    font-size: 1rem;
+    /* font-size: 1rem; */
 }
 
 * {
     box-sizing: border-box;
 }
 
-ul {
+ul.grid_container {
+    display: grid;
     list-style: none;
     padding: 0;
-    margin: 0;
 }
-
 ul.main_grid {
-    display: grid;
     grid-auto-rows: minmax(8rem, auto);
-    grid-gap: .5rem;
+    grid-gap: 0.5rem;
+    justify-content: center;
     justify-items: center;
 }
 
-@media screen and (min-width: 58rem) {
+@media screen and (min-width: 65rem) {
     ul.main_grid {
       grid-template-columns: repeat(2, 1fr);
-      grid-gap: 0.5rem;
     }
     li.grid_item_two_cols {
         grid-column: 1 / span 2;
     }
-    li.grid_item:nth-of-type(even) {
+    li.grid_item_lr:nth-of-type(even) {
         justify-self: right;
     }
-    li.grid_item:nth-of-type(odd) {
+    li.grid_item_lr:nth-of-type(odd) {
         justify-self: left;
     }
 }
 
 .flex-centered {
-    width: 100%;
     height: 100%;
     display: flex;
-    flex-flow: row wrap;
+    flex-flow: column nowrap;
     align-items: center;
     justify-content: center;
 }
@@ -75,26 +70,21 @@ tbody {
     background-color: #e4f0f5;
 }
 
-caption {
-    padding: 0.6rem;
-    caption-side: bottom;
+tr {
+    height: 100%;
+    vertical-align: middle;
 }
 
 th,
 td {
     border: 1px solid rgb(190, 190, 190);
     padding: 0.2rem 0.4rem;
-}
-
-tr {
-    height: 100%;
-    vertical-align: middle;
+    text-align: center;
 }
 
 td {
     height: 100%;
     min-width: 12rem;
-    text-align: center;
 }
 
 a,
@@ -103,15 +93,14 @@ p {
     text-align: center;
 }
 
-.btn_full {
+#btn_clear_shutdown {
     display: block;
     margin: auto;
-    text-align: center;
     background-color: white;
-    width: 100%;
+    /* width: 100%; */
 }
 
-#btn_on {
+#btn_pwm_on {
     display: inline-block;
     font-size: 1.5rem;
     padding: 1rem 2rem;
@@ -119,35 +108,47 @@ p {
     background-color: #4CAF50; /* Green */
 }
 
-#btn_off {
+#btn_pwm_off {
     display: inline-block;
     font-size: 1.5rem;
     padding: 1rem 2rem;
     color: white;
-    background-color: #FF0000; /* Red */
+    background-color: red;
 }
 
 
-div[state="nok"] {
-    content: "NOK";
-    background-color: rgb(250, 84, 84);
-}
-div[state="on"] {
-    content: "ON";
+#connection_vw[state="ok"] {
+    content: "OK";
     background-color: rgb(139, 255, 143);
 }
-div[state="off"] {
-    content: "OFF";
-    background-color: rgb(211, 211, 211);
+#connection_vw[state="nok"]{ 
+    content: "No Connection \Ato Hardware!";
+    background-color: rgb(250, 84, 84);
 }
-div[state="na"] {
+#power_pwm_vw[state="off"] {
+    content: "HV Power OFF";
+    background-color: rgb(139, 255, 143);
+}
+#power_pwm_vw[state="on"] {
+    content: "HV Power ON";
+    background-color: red;
+}
+#shutdown_vw[state="active"] {
+    content: "HW FAULT SHUTDOWN ACTIVE!";
+    background-color: rgb(250, 84, 84);
+}
+#shutdown_vw[state="inactive"] {
+    content: "State: Normal";
+    background-color: rgb(139, 255, 143);
+}
+div[disabled] {
     content: "Unknown...";
     background-color: rgb(211, 211, 211);
 }
 
 input {
-    width: 6rem;
+    font-size: 1rem;
 }
-input:disabled+label {
-    color: #ccc;
+input[type="number"] {
+    width: 6rem;
 }

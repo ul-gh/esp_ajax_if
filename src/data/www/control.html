@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!--Requires HTML5 + ES7 JavaScript-->
+<!--Requires at least ES7 JavaScript-->
 <html>
 
 <head>
@@ -13,6 +13,9 @@
         // Global object storing the application state, this is updated from
         // server PUSH updates via the SSE event handler.
         let app_state = {};
+        // All view elements - these are enabled/disabled
+        // when network connection status changes
+        let all_vws = [];
 
         async function do_http_request(req_str) {
             try {
@@ -54,64 +57,64 @@
         document.addEventListener("click", submit_single_ctrl, true);
 
 
-        // Set connection state display to "nok" when heartbeats are missing
-        class HeartbeatWatchdog {
-            constructor(timeout) {
-                this.timeout = timeout;
-                this.view = document.getElementById("connection_vw");
-                this.timer_id = this.start_timer();
-                this.reset_cb = event => this.reset(event.data);
-            }
-            start_timer() {
-                return window.setTimeout(() => this.set_nok(), this.timeout);
-            }
-            reset(data) {
-                if (data == "HB") {
-                    window.clearTimeout(this.timer_id);
-                    this.set_ok();
-                    this.timer_id = this.start_timer();
-                }
-            }
-            set_nok() {
-                this.view.setAttribute("state", "nok");
-                this.view.innerHTML = "No Connection <br> to Hardware!";
-            }
-            set_ok() {
-                this.view.setAttribute("state", "ok");
-                this.view.innerHTML = "OK";
-            }
-        }
-
-
         // Update view with app state telegram when pushed via SSE
         class ViewUpdater {
             constructor() {
-                this.power_bridge_vw = document.getElementById("power_pwm_enable_vw");
+                this.connection_vw = document.getElementById("connection_vw");
+                this.power_pwm_vw = document.getElementById("power_pwm_vw");
                 this.shutdown_vw = document.getElementById("shutdown_vw");
                 this.fan_vw = document.getElementById("fan_vw");
                 this.ref_vw = document.getElementById("ref_vw");
                 this.dut_vw = document.getElementById("dut_vw");
-                this.current_limit_vw
+                this.lead_dt_vw = document.getElementById("lead_dt_vw");
+                this.lag_dt_vw = document.getElementById("lag_dt_vw");
+                this.curr_limit_vw = document.getElementById("curr_limit_vw");
+                this.frequency_vw = document.getElementById("frequency_vw");
+                this.duty_vw = document.getElementById("duty_vw");
+                this.all_remote_vws = [
+                    this.power_pwm_vw, this.shutdown_vw, this.fan_vw, this.ref_vw, this.dut_vw,
+                    this.lead_dt_vw, this.lag_dt_vw, this.curr_limit_vw, this.frequency_vw,
+                    this.duty_vw];
+
             }
+
             update() {
                 if (app_state.power_pwm_enabled) {
-                    this.power_bridge_vw.setAttribute("state", "on");
-                    this.power_bridge_vw.innerText = "Output: ON";
+                    this.power_pwm_vw.setAttribute("state", "on");
+                    this.power_pwm_vw.innerText = "Power PWM Active";
                 } else {
-                    this.power_bridge_vw.setAttribute("state", "off");
-                    this.power_bridge_vw.innerText = "Output: OFF";
+                    this.power_pwm_vw.setAttribute("state", "off");
                 }
                 if (app_state.hw_shutdown_active) {
-                    this.shutdown_vw.setAttribute("state", "nok");
-                    this.shutdown_vw.innerHTML = "HW FAULT <br> SHUTDOWN ACTIVE!";
+                    this.shutdown_vw.setAttribute("state", "active");
                 } else {
-                    this.shutdown_vw.setAttribute("state", "ok");
-                    this.shutdown_vw.innerText = "State: Normal";
+                    this.shutdown_vw.setAttribute("state", "inactive");
                 }
                 this.fan_vw.checked = Boolean(app_state.fan_active);
                 this.ref_vw.checked = Boolean(app_state.output_ref_active);
                 this.dut_vw.checked = Boolean(app_state.output_dut_active);
                 // Operational settings
+                this.lead_dt_vw.value = app_state.lead_dt;
+                this.lag_dt_vw.value = app_state.lag_dt;
+                this.curr_limit_vw.value = app_state.curr_limit;
+                this.frequency_vw.value = app_state.frequency;
+                this.duty_vw.value = app_state.duty;
+            }
+
+            enable_all() {
+                this.connection_vw.setAttribute("state", "ok");
+                this.connection_vw.innerText = "OK";
+                this.all_remote_vws.forEach((item, index, arr) => {
+                    item.removeAttribute("disabled");
+                });
+            }
+
+            disable_all() {
+                this.connection_vw.setAttribute("state", "nok");
+                this.connection_vw.innerText = "No Connection \nto Hardware!";
+                this.all_remote_vws.forEach((item, index, arr) => {
+                    item.setAttribute("disabled", "disabled");
+                });
             }
         }
 
@@ -130,6 +133,7 @@
                 );
                 this.connect();
             }
+
             connect() {
                 if (this.source != null) {
                     console.log("Reconnecting Server-Sent Events...");
@@ -162,7 +166,38 @@
                         this.view_updater.update();
                     }, false
                 );
-            } // connect()
+            }
+        }
+
+
+        // Set connection state display to "nok" when heartbeats are missing
+        class HeartbeatWatchdog {
+            constructor(timeout, view_updater) {
+                this.timeout = timeout;
+                this.view_updater = view_updater;
+                this.timer_id = this.start_timer();
+                this.reset_cb = event => this.reset(event.data);
+            }
+
+            start_timer() {
+                return window.setTimeout(() => this.set_nok(), this.timeout);
+            }
+
+            reset(data) {
+                if (data == "HB") {
+                    window.clearTimeout(this.timer_id);
+                    this.set_ok();
+                    this.timer_id = this.start_timer();
+                }
+            }
+
+            set_nok() {
+                this.view_updater.disable_all();
+            }
+
+            set_ok() {
+                this.view_updater.enable_all();
+            }
         }
     </script>
 </head>
@@ -173,7 +208,7 @@
     <img src="logo.svg" alt="Application Logo">
 
     <!--Responsive grid layout for main content-->
-    <ul class="main_grid">
+    <ul class="grid_container main_grid">
     <li class="grid_item_two_cols">
     <table>
         <thead>
@@ -191,26 +226,23 @@
 
             <tr>
                 <td>
-                    <div class="bool_vw flex-centered" id="connection_vw" state="nok">
-                        No Connection to Hardware!
+                    <div class="flex-centered" id="connection_vw" state="nok">
                     </div>
                 </td>
                 <td>
-                    <div class="bool_vw flex-centered" id="power_bridge_vw" state="na">
-                        Unknown...
+                    <div class="flex-centered" id="power_pwm_vw" disabled>
                     </div>
                 </td>
                 <td>
-                    <div class="bool_vw flex-centered" id="shutdown_vw" state="na">
-                        Unknown...
-                        <input type="button" class="btn_full request_src"
-                                name="clear_shutdown" value="true">
+                    <div class="flex-centered" id="shutdown_vw" disabled>
+                        <input type="button" class="request_src" id="btn_clear_shutdown"
+                                name="clear_shutdown" value="Clear Shutdown">
                     </div>
                 </td>
                 <td>
-                    <label class="toggle-switchy" data-size="sm">
+                    <label class="toggle-switchy">
                         <input type="checkbox" class="bool_vw" id="fan_vw"
-                                name=fan_state value="on" checked>
+                                name=fan_state value="on" checked disabled>
                         <span class="toggle">
                             <span class="switch"></span>
                         </span>
@@ -222,7 +254,7 @@
     </li>
 
 
-    <li class="grid_item" id="first-left">
+    <li class="grid_item_lr" id="first-left">
     <table>
         <thead>
             <tr>
@@ -231,19 +263,19 @@
         </thead>
         <tbody>
             <tr>
-                <td>Bridge Output Main Switch</td>
+                <td>Power PWM Main Switch</td>
                 <td>REF/CAL Load Switch</td>
                 <td>DUT Switch</td>
             </tr>
             <tr>
                 <td>
-                    <input type="button" class="request_src" id="btn_on"
+                    <input type="button" class="request_src" id="btn_pwm_on"
                             name="set_output" value="on">
-                    <input type="button" class="request_src" id="btn_off"
+                    <input type="button" class="request_src" id="btn_pwm_off"
                             name="set_output" value="off">
                 </td>
                 <td>
-                    <label class="toggle-switchy">
+                    <label class="toggle-switchy" data-size="lg">
                         <input type="checkbox" class="bool_vw request_src" id="ref_vw"
                                 name=set_relay_ref value="on" state="na">
                         <span class="toggle">
@@ -252,7 +284,7 @@
                     </label>
                 </td>
                 <td>
-                    <label class="toggle-switchy">
+                    <label class="toggle-switchy" data-size="lg">
                         <input type="checkbox" class="bool_vw request_src" id="dut_vw"
                                 name=set_relay_dut value="on" state="na">
                         <span class="toggle">
@@ -267,13 +299,9 @@
     </li>
 
 
-    <li class="grid_item" id="first-right">
+    <li class="grid_item_lr" id="first-right">
     <form name="dead_time_settings">
         <table>
-            <caption>
-                <small>Click the "Submit" button to update settings
-                    for the remote component!</small>
-            </caption>
             <thead>
                 <tr>
                     <th colspan="4">Dead Time Settings</th>
@@ -282,12 +310,12 @@
             <tbody>
                 <tr>
                     <td>Lag Leg (ZCS) Dead Time /ns:</td>
-                    <td><input type="number"
+                    <td><input type="number" id="lag_dt_vw"
                             name="set_lag_dt" value="125" min="6.25" max="1000" step="6.25"></td>
                 </tr>
                 <tr>
                     <td>Lead Leg (ZVS) Dead Time /ns:</td>
-                    <td><input type="number"
+                    <td><input type="number" id="lead_dt_vw"
                             name="set_lead_dt" value="125" min="6.25" max="1000" step="6.25"></td>
                 </tr>
                 <td colspan="2"><input type="submit" value="Submit"></td>
@@ -298,7 +326,7 @@
     </li>
 
 
-    <li class="grid_item">
+    <li class="grid_item_lr">
     <form name="limit_values">
         <table>
             <thead>
@@ -309,7 +337,7 @@
             <tbody>
                 <tr>
                     <td>Current Limit /A:</td>
-                    <td><input type="number"
+                    <td><input type="number" id="curr_limit_vw"
                             name="set_curr_limit" value="35" min="5" max="100"></td>
                 </tr>
                     <td colspan="2">
@@ -322,7 +350,7 @@
     </li>
 
 
-    <li class="grid_item">
+    <li class="grid_item_lr">
     <form name="operation_settings">
         <table>
             <thead>
@@ -333,13 +361,14 @@
             <tbody>
                 <tr>
                     <td>Frequency /kHz:</td>
-                    <td><input type="number"
+                    <td><input type="number" id="frequency_vw"
                             name="set_frequency" value="100" min="5" max="1000"></td>
                 </tr>
                 <tr>
                     <td>Duty Cycle /%:</td>
                     <td>
-                        <input type="number" name="set_duty" value="45" min="0" max="100">
+                        <input type="number" id="duty_vw"
+                            name="set_duty" value="45" min="0" max="100">
                     </td>
                 </tr>
                 <td colspan="2"><input type="submit" value="Submit"></td>
@@ -360,8 +389,9 @@
     </p>
 
     <script>
-        const heartbeat_watchdog = new HeartbeatWatchdog(1500);
         const view_updater = new ViewUpdater();
+        view_updater.disable_all();
+        const heartbeat_watchdog = new HeartbeatWatchdog(1500);
         const sse_handler = new ServerSentEventHandler(
             "/events", 3000, heartbeat_watchdog, view_updater);
     </script>
