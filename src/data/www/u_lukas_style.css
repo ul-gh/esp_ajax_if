@@ -117,33 +117,27 @@ p {
 }
 
 
+div.state_vw[disabled] {
+    background-color: rgb(211, 211, 211);
+}
+
 #connection_vw[state="ok"] {
-    content: "OK";
     background-color: rgb(139, 255, 143);
 }
-#connection_vw[state="nok"]{ 
-    content: "No Connection \Ato Hardware!";
+#connection_vw[state="nok"] { 
     background-color: rgb(250, 84, 84);
 }
 #power_pwm_vw[state="off"] {
-    content: "HV Power OFF";
     background-color: rgb(139, 255, 143);
 }
 #power_pwm_vw[state="on"] {
-    content: "HV Power ON";
     background-color: red;
 }
 #shutdown_vw[state="active"] {
-    content: "HW FAULT SHUTDOWN ACTIVE!";
     background-color: rgb(250, 84, 84);
 }
 #shutdown_vw[state="inactive"] {
-    content: "State: Normal";
     background-color: rgb(139, 255, 143);
-}
-div[disabled] {
-    content: "Unknown...";
-    background-color: rgb(211, 211, 211);
 }
 
 input {

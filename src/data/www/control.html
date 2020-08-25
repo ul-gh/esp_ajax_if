@@ -81,14 +81,17 @@
             update() {
                 if (app_state.power_pwm_enabled) {
                     this.power_pwm_vw.setAttribute("state", "on");
-                    this.power_pwm_vw.innerText = "Power PWM Active";
+                    this.power_pwm_vw.innerText = "Power PWM ON";
                 } else {
                     this.power_pwm_vw.setAttribute("state", "off");
+                    this.power_pwm_vw.innerText = "Power PWM OFF";
                 }
                 if (app_state.hw_shutdown_active) {
                     this.shutdown_vw.setAttribute("state", "active");
+                    this.shutdown_vw.firstChild.innerText = "HW FAULT\nSHUTDOWN ACTIVE!";
                 } else {
                     this.shutdown_vw.setAttribute("state", "inactive");
+                    this.shutdown_vw.firstChild.innerText = "State: Normal";
                 }
                 this.fan_vw.checked = Boolean(app_state.fan_active);
                 this.ref_vw.checked = Boolean(app_state.output_ref_active);
@@ -104,6 +107,7 @@
             enable_all() {
                 this.connection_vw.setAttribute("state", "ok");
                 this.connection_vw.innerText = "OK";
+                this.shutdown_vw.childNodes[1].disabled = false;
                 this.all_remote_vws.forEach((item, index, arr) => {
                     item.removeAttribute("disabled");
                 });
@@ -111,7 +115,10 @@
 
             disable_all() {
                 this.connection_vw.setAttribute("state", "nok");
-                this.connection_vw.innerText = "No Connection \nto Hardware!";
+                this.connection_vw.innerText = "No Connection\nto Hardware!";
+                this.power_pwm_vw.innerText = "Unknown...";
+                this.shutdown_vw.childNodes[0].innerText = "Unknown...";
+                this.shutdown_vw.childNodes[1].disabled = true;
                 this.all_remote_vws.forEach((item, index, arr) => {
                     item.setAttribute("disabled", "disabled");
                 });
@@ -226,17 +233,18 @@
 
             <tr>
                 <td>
-                    <div class="flex-centered" id="connection_vw" state="nok">
+                    <div class="flex-centered state_vw" id="connection_vw" state="nok">
                     </div>
                 </td>
                 <td>
-                    <div class="flex-centered" id="power_pwm_vw" disabled>
+                    <div class="flex-centered state_vw" id="power_pwm_vw" disabled>
                     </div>
                 </td>
                 <td>
-                    <div class="flex-centered" id="shutdown_vw" disabled>
+                    <div class="flex-centered state_vw" id="shutdown_vw" disabled>
+                        <span>Unknown...</span>
                         <input type="button" class="request_src" id="btn_clear_shutdown"
-                                name="clear_shutdown" value="Clear Shutdown">
+                                name="clear_shutdown" value="Clear Shutdown" disabled>
                     </div>
                 </td>
                 <td>
