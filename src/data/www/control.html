@@ -32,7 +32,6 @@
         async function submit_formdata(event) {
             event.preventDefault(); // Disable default "GET" form action
             const form_data = new FormData(event.target);
-            // form_data.forEach(console.log);
             const req_str = "cmd?" + new URLSearchParams(form_data).toString();
             await do_http_request(req_str);
         }
@@ -41,25 +40,30 @@
         async function submit_single_ctrl(event) {
             // These elements are supposed to reflect the remote state and are
             // set later when the respective SSE event arrives with a state update
-            event.preventDefault();
             const target = event.target;
             let all_ctrls = Array.from(document.getElementsByClassName("request_src"));
             for (let i = 0; i < all_ctrls.length; i++) {
                 const ctrl = all_ctrls[i];
                 if (ctrl.contains(target)) {
+                    // For these iputs, we use custom actions
+                    event.preventDefault();
                     if (ctrl.classList.contains("toggle-switchy")) {
-                        var input_el = ctrl.firstElementChild;
-                        if (input_el.getAttribute("state") == "true") {
+                        const input_el = ctrl.firstElementChild;
+                        var disabled = input_el.hasAttribute("disabled");
+                        var req_name = input_el.getAttribute("name");
+                        // We want the state to toggle, requested state is inverted
+                        if (input_el.checked) {
                             var req_value = "false";
                         } else {
                             var req_value = "true";
                         }
                     } else {
-                        var input_el = ctrl;
-                        var req_value = input_el.value;
+                        var disabled = ctrl.hasAttribute("disabled");
+                        var req_name = ctrl.getAttribute("name");
+                        var req_value = ctrl.getAttribute("value");
                     }
-                    var req_str = "cmd?" + input_el.name + "=" + req_value;
-                    if (!input_el.hasAttribute("disabled")) {
+                    if (!disabled) {
+                        const req_str = "cmd?" + req_name + "=" + req_value;
                         await do_http_request(req_str);
                     }
                 }
@@ -71,6 +75,8 @@
         document.addEventListener("submit", submit_formdata, true);
         // Connect single control click events
         document.addEventListener("click", submit_single_ctrl, true);
+        // Input fields do not receive remote updates while its value is edited
+        document.addEventListener("input"), prevent_reentrant_updates, true);
 
 
         // Update view with app state telegram when pushed via SSE
@@ -114,8 +120,8 @@
                 this.ref_vw.firstElementChild.checked = Boolean(app_state.output_ref_active);
                 this.dut_vw.firstElementChild.checked = Boolean(app_state.output_dut_active);
                 // Operational settings
-                this.lead_dt_vw.value = app_state.lead_dt;
                 this.lag_dt_vw.value = app_state.lag_dt;
+                this.lead_dt_vw.value = app_state.lead_dt;
                 this.curr_limit_vw.value = app_state.curr_limit;
                 this.frequency_vw.value = app_state.frequency;
                 this.duty_vw.value = app_state.duty;
@@ -184,7 +190,8 @@
                         if (event.target.readyState != EventSource.OPEN) {
                             console.log("Events Disconnected!");
                             // Start Auto-Reconnect
-                            this.reconnect_timer_id = this.reconnect_timer();
+                            // FIXME: Disabled for debugging
+                            // this.reconnect_timer_id = this.reconnect_timer();
                         }
                     },
                     false
@@ -202,6 +209,7 @@
 
 
         // Set connection state display to "nok" when heartbeats are missing
+        // TODO: Also integrate SSE reconnection here
         class HeartbeatWatchdog {
             constructor(timeout, view_updater) {
                 this.timeout = timeout;
@@ -271,7 +279,7 @@
                 </td>
                 <td>
                     <label class="toggle-switchy request_src" id="fan_vw">
-                        <input type="checkbox" name=fan_state value="on" checked disabled>
+                        <input type="checkbox" name="set_fan" checked disabled>
                         <span class="toggle">
                             <span class="switch"></span>
                         </span>
@@ -305,7 +313,7 @@
                 </td>
                 <td>
                     <label class="toggle-switchy request_src" id="ref_vw" data-size="lg">
-                        <input type="checkbox" name=set_relay_ref value="on" disabled">
+                        <input type="checkbox" name="set_relay_ref" disabled>
                         <span class="toggle">
                             <span class="switch"></span>
                         </span>
@@ -313,7 +321,7 @@
                 </td>
                 <td>
                     <label class="toggle-switchy request_src" id="dut_vw" data-size="lg">
-                        <input type="checkbox" name=set_relay_dut value="on" disabled>
+                        <input type="checkbox" name="set_relay_dut" disabled>
                         <span class="toggle">
                             <span class="switch"></span>
                         </span>
@@ -345,7 +353,7 @@
                     <td><input type="number" id="lead_dt_vw"
                             name="set_lead_dt" value="125" min="6.25" max="1000" step="6.25"></td>
                 </tr>
-                <td colspan="2"><input type="submit" value="Submit"></td>
+                <td colspan="2"><input id="debug" type="submit" value="Submit"></td>
                 </tr>
             </tbody>
         </table>
@@ -417,13 +425,10 @@
 
     <script>
         const view_updater = new ViewUpdater();
-        view_updater.disable_all();
+        // view_updater.disable_all();
         const heartbeat_watchdog = new HeartbeatWatchdog(1500, view_updater);
         const sse_handler = new ServerSentEventHandler(
             "/events", 3000, heartbeat_watchdog, view_updater);
-        function disable_reconnect() {
-            window.clearTimeout(sse_handler.reconnect_timer_id);
-        }
     </script>
 </body>
 
