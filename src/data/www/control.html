@@ -12,10 +12,7 @@
     <script>
         // Global object storing the application state, this is updated from
         // server PUSH updates via the SSE event handler.
-        let app_state = {};
-        // All view elements - these are enabled/disabled
-        // when network connection status changes
-        let all_vws = [];
+        let remote_state = {};
 
         async function do_http_request(req_str) {
             try {
@@ -70,13 +67,10 @@
             }
         }
 
-
         // Connect all document forms submit action
         document.addEventListener("submit", submit_formdata, true);
         // Connect single control click events
         document.addEventListener("click", submit_single_ctrl, true);
-        // Input fields do not receive remote updates while its value is edited
-        document.addEventListener("input"), prevent_reentrant_updates, true);
 
 
         // Update view with app state telegram when pushed via SSE
@@ -99,32 +93,48 @@
                     this.power_pwm_vw, this.shutdown_vw, this.fan_vw, this.ref_vw,
                     this.dut_vw, this.lead_dt_vw, this.lag_dt_vw, this.curr_limit_vw,
                     this.frequency_vw, this.duty_vw, this.btn_pwm_on, this.btn_pwm_off];
+                // Prevent updating the input fields content with remote data
+                // when user starts entering a new value.
+                this.view_updates_inhibited = false;
+                document.addEventListener(
+                        "input",
+                        (event) => this.inhibit_view_updates(event.target),
+                        true);
+                // Allow again when editing is finished.
+                document.addEventListener(
+                        "change",
+                        (event) => this.allow_view_updates(event.target),
+                        true);
+                
             }
 
             update() {
-                if (app_state.power_pwm_enabled) {
+                if (this.view_updates_inhibited) {
+                    return;
+                } 
+                if (remote_state.power_pwm_enabled) {
                     this.power_pwm_vw.setAttribute("state", "on");
                     this.power_pwm_vw.innerText = "Power PWM ON";
                 } else {
                     this.power_pwm_vw.setAttribute("state", "off");
                     this.power_pwm_vw.innerText = "Power PWM OFF";
                 }
-                if (app_state.hw_shutdown_active) {
+                if (remote_state.hw_shutdown_active) {
                     this.shutdown_vw.setAttribute("state", "active");
                     this.shutdown_vw.firstElementChild.innerText = "HW FAULT SHUTDOWN ACTIVE!\n(Click to Reset)";
                 } else {
                     this.shutdown_vw.setAttribute("state", "inactive");
                     this.shutdown_vw.firstElementChild.innerText = "State: Normal";
                 }
-                this.fan_vw.firstElementChild.checked = Boolean(app_state.fan_active);
-                this.ref_vw.firstElementChild.checked = Boolean(app_state.output_ref_active);
-                this.dut_vw.firstElementChild.checked = Boolean(app_state.output_dut_active);
+                this.fan_vw.firstElementChild.checked = Boolean(remote_state.fan_active);
+                this.ref_vw.firstElementChild.checked = Boolean(remote_state.output_ref_active);
+                this.dut_vw.firstElementChild.checked = Boolean(remote_state.output_dut_active);
                 // Operational settings
-                this.lag_dt_vw.value = app_state.lag_dt;
-                this.lead_dt_vw.value = app_state.lead_dt;
-                this.curr_limit_vw.value = app_state.curr_limit;
-                this.frequency_vw.value = app_state.frequency;
-                this.duty_vw.value = app_state.duty;
+                this.lag_dt_vw.value = remote_state.lag_dt;
+                this.lead_dt_vw.value = remote_state.lead_dt;
+                this.curr_limit_vw.value = remote_state.curr_limit;
+                this.frequency_vw.value = remote_state.frequency;
+                this.duty_vw.value = remote_state.duty;
             }
 
             enable_all() {
@@ -152,6 +162,20 @@
                         item.setAttribute("disabled", "disabled");
                     }
                 });
+            }
+
+            inhibit_view_updates(input_el) {
+                if (this.all_remote_vws.includes(input_el)) {
+                    this.view_updates_inhibited = true;
+                    console.log("inhibited");
+                }
+            }
+
+            allow_view_updates(input_el) {
+                if (this.all_remote_vws.includes(input_el)) {
+                    this.view_updates_inhibited = false;
+                    console.log("re-allowed");
+                }
             }
         }
 
@@ -197,10 +221,10 @@
                     false
                 );
                 this.source.addEventListener(
-                    "app_state", event => {
+                    "remote_state", event => {
                         // console.log(`App State: "${event.data}"`);
                         // Set global object
-                        app_state = JSON.parse(event.data);
+                        remote_state = JSON.parse(event.data);
                         this.view_updater.update();
                     }, false
                 );
