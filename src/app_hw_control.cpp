@@ -19,7 +19,10 @@
 
 
 PsPwmAppHwControl::PsPwmAppHwControl(APIServer* api_server)
-    : api_server{api_server},
+    // Create instance of auxiliary HW control module
+    : aux_hw_drv{init_current_limit, init_relay_ref_active,
+                 init_relay_dut_active, init_fan_active},
+    api_server{api_server},
     periodic_update_timer{}
 {
     debug_print("Configuring Phase-Shift-PWM...");
@@ -42,11 +45,6 @@ PsPwmAppHwControl::PsPwmAppHwControl(APIServer* api_server)
         error_print("Error initializing the PS-PWM module!");
         return;
     }
-
-    // Create instance of auxiliary HW control module
-    debug_print("Configuring auxiliary HW control module...");
-    AuxHwDrv aux_hw_drv{init_current_limit, init_relay_ref_active,
-                        init_relay_dut_active, init_fan_active};
     
     register_remote_control(api_server);
     periodic_update_timer.attach_ms(api_state_periodic_update_interval_ms,
@@ -111,21 +109,23 @@ void PsPwmAppHwControl::register_remote_control(APIServer* api_server) {
 
     //////////////// Callbacks for aux HW driver module
     cb_float = [this](const float n) {
+        debug_print_sv("Request for set_current_limit received with value:", n);
         aux_hw_drv.set_current_limit(n);
     };
     api_server->register_api_cb("set_current_limit", cb_float);
 
-    CbStringT cb_text = [this](const String &text) {
+    cb_text = [this](const String &text) {
+        debug_print("Request for set_relay_ref_active received!");
         aux_hw_drv.set_relay_ref_active(text == "true");
     };
     api_server->register_api_cb("set_relay_ref_active", cb_text);
 
-    CbStringT cb_text = [this](const String &text) {
+    cb_text = [this](const String &text) {
         aux_hw_drv.set_relay_dut_active(text == "true");
     };
     api_server->register_api_cb("set_relay_dut_active", cb_text);
 
-    CbStringT cb_text = [this](const String &text) {
+    cb_text = [this](const String &text) {
         aux_hw_drv.set_fan_active(text == "true");
     };
     api_server->register_api_cb("set_fan_active", cb_text);
@@ -151,15 +151,15 @@ void PsPwmAppHwControl::on_periodic_update_timer(PsPwmAppHwControl* self) {
     constexpr size_t I_AM_SCARED_MARGIN = 50;
     // ArduinoJson JsonDocument object, see https://arduinojson.org
     StaticJsonDocument<json_object_size> json_doc;
-    // Setpoint limits
-    json_doc["frequency_min"] = self->pspwm_setpoint_limits->frequency_min;
-    json_doc["frequency_max"] = self->pspwm_setpoint_limits->frequency_max;
-    json_doc["dt_sum_max"] = self->pspwm_setpoint_limits->dt_sum_max;
+    // Setpoint limits. Scaled to kHz, ns and % respectively...
+    json_doc["frequency_min"] = self->pspwm_setpoint_limits->frequency_min/1e3;
+    json_doc["frequency_max"] = self->pspwm_setpoint_limits->frequency_max/1e3;
+    json_doc["dt_sum_max"] = self->pspwm_setpoint_limits->dt_sum_max*1e9;
     // Operational setpoints for PSPWM module
-    json_doc["frequency"] = self->pspwm_setpoint->frequency;
-    json_doc["duty"] = self->pspwm_setpoint->ps_duty;
-    json_doc["lead_dt"] = self->pspwm_setpoint->lead_red;
-    json_doc["lag_dt"] = self->pspwm_setpoint->lag_red;
+    json_doc["frequency"] = self->pspwm_setpoint->frequency/1e3;
+    json_doc["duty"] = self->pspwm_setpoint->ps_duty*100;
+    json_doc["lead_dt"] = self->pspwm_setpoint->lead_red*1e9;
+    json_doc["lag_dt"] = self->pspwm_setpoint->lag_red*1e9;
     json_doc["power_pwm_active"] = self->pspwm_setpoint->output_enabled;
     // Settings for auxiliary HW control module
     json_doc["current_limit"] = self->aux_hw_drv.current_limit;
@@ -175,5 +175,5 @@ void PsPwmAppHwControl::on_periodic_update_timer(PsPwmAppHwControl* self) {
 
     char json_str_buffer[json_object_size + strings_size + I_AM_SCARED_MARGIN];
     serializeJson(json_doc, json_str_buffer);
-    self->api_server->event_source->send(json_str_buffer, "app_state");
+    self->api_server->event_source->send(json_str_buffer, "hw_app_state");
 }

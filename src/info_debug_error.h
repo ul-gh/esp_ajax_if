@@ -5,7 +5,7 @@
 
 // Set to 1 to enable debug output
 #ifndef ENABLE_DEBUG_PRINT
-#define ENABLE_DEBUG_PRINT 0
+#define ENABLE_DEBUG_PRINT 1
 #endif
 
 

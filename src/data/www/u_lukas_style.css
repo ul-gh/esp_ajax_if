@@ -146,3 +146,6 @@ input {
 input[type="number"] {
     width: 6rem;
 }
+input[editing] {
+    background-color: rgb(255, 132, 60);
+}

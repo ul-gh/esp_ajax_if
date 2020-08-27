@@ -13,6 +13,8 @@
         // Global object storing the application state, this is updated from
         // server PUSH updates via the SSE event handler.
         let remote_state = {};
+        // Last edited input element
+        let last_edited_input_el = {};
 
         async function do_http_request(req_str) {
             try {
@@ -86,12 +88,12 @@
                 this.dut_vw = document.getElementById("dut_vw");
                 this.lead_dt_vw = document.getElementById("lead_dt_vw");
                 this.lag_dt_vw = document.getElementById("lag_dt_vw");
-                this.curr_limit_vw = document.getElementById("curr_limit_vw");
+                this.current_limit_vw = document.getElementById("current_limit_vw");
                 this.frequency_vw = document.getElementById("frequency_vw");
                 this.duty_vw = document.getElementById("duty_vw");
                 this.all_remote_vws = [
                     this.power_pwm_vw, this.shutdown_vw, this.fan_vw, this.ref_vw,
-                    this.dut_vw, this.lead_dt_vw, this.lag_dt_vw, this.curr_limit_vw,
+                    this.dut_vw, this.lead_dt_vw, this.lag_dt_vw, this.current_limit_vw,
                     this.frequency_vw, this.duty_vw, this.btn_pwm_on, this.btn_pwm_off];
                 // Prevent updating the input fields content with remote data
                 // when user starts entering a new value.
@@ -102,7 +104,10 @@
                         true);
                 // Allow again when editing is finished.
                 document.addEventListener(
-                        "change",
+                // This does only work when "change" event is also connected to
+                // fire HTTP requests immediately:
+                //        "change",
+                        "submit",
                         (event) => this.allow_view_updates(event.target),
                         true);
                 
@@ -121,10 +126,10 @@
                 }
                 if (remote_state.hw_shutdown_active) {
                     this.shutdown_vw.setAttribute("state", "active");
-                    this.shutdown_vw.firstElementChild.innerText = "HW FAULT SHUTDOWN ACTIVE!\n(Click to Reset)";
+                    this.shutdown_vw.innerText = "HW FAULT SHUTDOWN ACTIVE!\n(Click to Reset)";
                 } else {
                     this.shutdown_vw.setAttribute("state", "inactive");
-                    this.shutdown_vw.firstElementChild.innerText = "State: Normal";
+                    this.shutdown_vw.innerText = "State: Normal";
                 }
                 this.fan_vw.firstElementChild.checked = Boolean(remote_state.fan_active);
                 this.ref_vw.firstElementChild.checked = Boolean(remote_state.relay_ref_active);
@@ -132,7 +137,7 @@
                 // Operational settings
                 this.lag_dt_vw.value = remote_state.lag_dt;
                 this.lead_dt_vw.value = remote_state.lead_dt;
-                this.curr_limit_vw.value = remote_state.curr_limit;
+                this.current_limit_vw.value = remote_state.current_limit;
                 this.frequency_vw.value = remote_state.frequency;
                 this.duty_vw.value = remote_state.duty;
             }
@@ -166,13 +171,17 @@
             inhibit_view_updates(input_el) {
                 if (this.all_remote_vws.includes(input_el)) {
                     this.view_updates_inhibited = true;
+                    // Sets color highlight while aditing element
+                    input_el.setAttribute("editing", "editing");
+                    last_edited_input_el = input_el;
                 }
             }
 
             allow_view_updates(input_el) {
-                if (this.all_remote_vws.includes(input_el)) {
-                    this.view_updates_inhibited = false;
-                }
+                // This is called only when a submit button is pressed, so we
+                // just always reset everything and remove the highlighting
+                this.view_updates_inhibited = false;
+                last_edited_input_el.removeAttribute("editing");
             }
         }
 
@@ -218,7 +227,7 @@
                     false
                 );
                 this.source.addEventListener(
-                    "remote_state", event => {
+                    "hw_app_state", event => {
                         // console.log(`App State: "${event.data}"`);
                         // Set global object
                         remote_state = JSON.parse(event.data);
@@ -327,10 +336,14 @@
             </tr>
             <tr>
                 <td>
-                    <input type="button" class="request_src" id="btn_pwm_on"
+                    <button class="request_src" id="btn_pwm_on"
                             name="set_power_pwm_active" value="true" disabled>
-                    <input type="button" class="request_src" id="btn_pwm_off"
+                        ON
+                    </button>
+                    <button class="request_src" id="btn_pwm_off"
                             name="set_power_pwm_active" value="false" disabled>
+                        OFF
+                    </button>
                 </td>
                 <td>
                     <label class="toggle-switchy request_src" id="ref_vw" data-size="lg">
@@ -393,8 +406,8 @@
             <tbody>
                 <tr>
                     <td>Current Limit /A:</td>
-                    <td><input type="number" id="curr_limit_vw"
-                            name="set_curr_limit" value="35" min="5" max="100"></td>
+                    <td><input type="number" id="current_limit_vw"
+                            name="set_current_limit" value="35" min="5" max="100"></td>
                 </tr>
                     <td colspan="2">
                         <input type="submit" value="Submit">

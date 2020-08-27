@@ -5,6 +5,12 @@
 class AuxHwDrv
 {
 public:
+    // GPIO config
+    static constexpr int gpio_relay_ref{};
+    static constexpr int gpio_relay_dut{};
+    static constexpr int gpio_fan{};
+    static constexpr int gpio_curr_limit_reference_pwm{17};
+    static constexpr int gpio_overcurrent_reset{16};
     // Setpoints are public in order to be read-accessed by PsPwmAppHwControl
     float current_limit;
     bool relay_ref_active;

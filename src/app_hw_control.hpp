@@ -63,6 +63,7 @@ public:
     static constexpr bool init_power_pwm_active{false};
 
     /////////////////////////////  For AUX HW control module: /////////////////
+    // Initial setpoints
     static constexpr float init_current_limit{35.0};
     static constexpr bool init_relay_ref_active{false};
     static constexpr bool init_relay_dut_active{false};
