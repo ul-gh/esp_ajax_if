@@ -25,8 +25,8 @@ DNSServer* dns_server;
 // HTTP server provides REST API + HTML5 AJAX web interface on port 80
 APIServer* api_server;
 
-// PS-PWM generator instance is remote-controlled by the HTTP server
-PSPWMGen* ps_pwm_generator;
+// PS-PWM hardware controller instance runs the HTTP AJAX API server
+PsPwmAppHwControl* ps_pwm_controller;
 
 void setup() {
     //esp_log_level_set("*", ESP_LOG_DEBUG);
@@ -45,7 +45,7 @@ void setup() {
     api_server = new APIServer{&http_backend};
     esp_log_level_set("*", ESP_LOG_DEBUG);
     delay(100);
-    ps_pwm_generator = new PSPWMGen{api_server};
+    ps_pwm_controller = new PsPwmAppHwControl{api_server};
     api_server->activate_events_on("/events");
     api_server->activate_default_callbacks();
     // Test Overcurrent Reference PWM set to high

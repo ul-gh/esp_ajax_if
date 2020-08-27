@@ -6,21 +6,17 @@
 
 #include "driver/mcpwm.h"
 #include "ps_pwm.h"
+#include "aux_hw_drv.hpp"
 #include "api_server.hpp"
 
-class AUXHWCtrl
-{
-public:
-    void set_current_limit(lim_val);
 
-private:
-    float current_limit;
-}
-
-
-/** @brief PSPWMGen - Phase-Shift PWM output generation on ESP32 platform
+/** @brief PsPwmAppHwControl - Control ESP32 PWM hardware module using
+ * remote HTTP + AJAX web application.
  * 
- * By default, the symmetric-drive API is used.
+ * This configures all parameters of a four-channel Phase-Shift PWM waveform
+ * plus auxiliary hardware setpoints, relay outputs etc.
+ * 
+ * With respect to PSPWM module, by default, the symmetric-drive API is used.
  * This allows the setting of two individual dead-time values
  * for the leading and lagging driver output half-bridge-leg
  * and enforces a DC-free symmetric output waveform.
@@ -35,12 +31,12 @@ private:
  */
 //#define USE_ASYMMETRIC_FULL_SPEED_DRIVE_API
 #define USE_SYMMETRIC_DC_FREE_DRIVE_API
-class PSPWMGen
+class PsPwmAppHwControl
 {
 public:
     /************************ DEFAULT VALUES START ****************************
      */
-    /////////////////// For ps_pwm C module: //////////////////////////////////
+    ///////////////////////////// For ps_pwm C module: ////////////////////////
     // MCPWM unit can be [0,1]
     static constexpr mcpwm_unit_t mcpwm_num{MCPWM_UNIT_0};
     // GPIO config for PWM output
@@ -64,12 +60,15 @@ public:
     static constexpr float init_ps_duty{0.45};
     static constexpr float init_lead_dt{125e-9};
     static constexpr float init_lag_dt{125e-9};
-    static constexpr bool init_output_enabled{false};
+    static constexpr bool init_power_pwm_active{false};
 
-    /////////////////// For AUX HW control module: ////////////////////////////
-    static constexpr float current_limit{35.0};
+    /////////////////////////////  For AUX HW control module: /////////////////
+    static constexpr float init_current_limit{35.0};
+    static constexpr bool init_relay_ref_active{false};
+    static constexpr bool init_relay_dut_active{false};
+    static constexpr bool init_fan_active{35.0};
 
-    /////////////////// For API server ////////////////////////////////////////
+    /////////////////////////////  For API server /////////////////////////////
     // Update non-critical application state and send cyclic
     // state updates to the HTTP client using this time interval (ms)
     static constexpr uint32_t api_state_periodic_update_interval_ms{500};
@@ -81,11 +80,14 @@ public:
     pspwm_setpoint_t* pspwm_setpoint;
     pspwm_setpoint_limits_t* pspwm_setpoint_limits;
 
+    // Instance of auxiliary HW control module
+    AuxHwDrv aux_hw_drv;
+
     // Instance of HTTP API server. There must only be one.
     APIServer* api_server;
 
-    PSPWMGen(APIServer* api_server);
-    virtual ~PSPWMGen();
+    PsPwmAppHwControl(APIServer* api_server);
+    virtual ~PsPwmAppHwControl();
 
     // Register hw control functions as request handlers with the HTPP server
     void register_remote_control(APIServer* api_server);
@@ -110,7 +112,7 @@ private:
      *  "lead_dt": 100.0,
      *  "lag_dt": 200.0,
      *  "current_limit": 35.0,
-     *  "power_pwm_enabled": true,
+     *  "power_pwm_active": true,
      * 
      * // Clock divider settings
      *  "base_div": 1,
@@ -120,7 +122,7 @@ private:
      * "hw_shutdown_active": false,
      * }
      */
-    static void on_periodic_update_timer(PSPWMGen* self);
+    static void on_periodic_update_timer(PsPwmAppHwControl* self);
 
 };
 

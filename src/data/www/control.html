@@ -112,7 +112,7 @@
                 if (this.view_updates_inhibited) {
                     return;
                 } 
-                if (remote_state.power_pwm_enabled) {
+                if (remote_state.power_pwm_active) {
                     this.power_pwm_vw.setAttribute("state", "on");
                     this.power_pwm_vw.innerText = "Power PWM ON";
                 } else {
@@ -127,8 +127,8 @@
                     this.shutdown_vw.firstElementChild.innerText = "State: Normal";
                 }
                 this.fan_vw.firstElementChild.checked = Boolean(remote_state.fan_active);
-                this.ref_vw.firstElementChild.checked = Boolean(remote_state.output_ref_active);
-                this.dut_vw.firstElementChild.checked = Boolean(remote_state.output_dut_active);
+                this.ref_vw.firstElementChild.checked = Boolean(remote_state.relay_ref_active);
+                this.dut_vw.firstElementChild.checked = Boolean(remote_state.relay_dut_active);
                 // Operational settings
                 this.lag_dt_vw.value = remote_state.lag_dt;
                 this.lead_dt_vw.value = remote_state.lead_dt;
@@ -154,7 +154,6 @@
                 this.connection_vw.innerText = "No Connection\nto Hardware!";
                 this.power_pwm_vw.innerText = "Unknown...";
                 this.shutdown_vw.innerText = "Unknown...";
-                this.btn_
                 this.all_remote_vws.forEach((item) => {
                     if (item.classList.contains("toggle-switchy")) {
                         item.firstElementChild.disabled = true;
@@ -167,14 +166,12 @@
             inhibit_view_updates(input_el) {
                 if (this.all_remote_vws.includes(input_el)) {
                     this.view_updates_inhibited = true;
-                    console.log("inhibited");
                 }
             }
 
             allow_view_updates(input_el) {
                 if (this.all_remote_vws.includes(input_el)) {
                     this.view_updates_inhibited = false;
-                    console.log("re-allowed");
                 }
             }
         }
@@ -303,7 +300,7 @@
                 </td>
                 <td>
                     <label class="toggle-switchy request_src" id="fan_vw">
-                        <input type="checkbox" name="set_fan" checked disabled>
+                        <input type="checkbox" name="set_fan_active" checked disabled>
                         <span class="toggle">
                             <span class="switch"></span>
                         </span>
@@ -331,13 +328,13 @@
             <tr>
                 <td>
                     <input type="button" class="request_src" id="btn_pwm_on"
-                            name="set_output" value="on" disabled>
+                            name="set_power_pwm_active" value="true" disabled>
                     <input type="button" class="request_src" id="btn_pwm_off"
-                            name="set_output" value="off" disabled>
+                            name="set_power_pwm_active" value="false" disabled>
                 </td>
                 <td>
                     <label class="toggle-switchy request_src" id="ref_vw" data-size="lg">
-                        <input type="checkbox" name="set_relay_ref" disabled>
+                        <input type="checkbox" name="set_relay_ref_active" disabled>
                         <span class="toggle">
                             <span class="switch"></span>
                         </span>
@@ -345,7 +342,7 @@
                 </td>
                 <td>
                     <label class="toggle-switchy request_src" id="dut_vw" data-size="lg">
-                        <input type="checkbox" name="set_relay_dut" disabled>
+                        <input type="checkbox" name="set_relay_dut_active" disabled>
                         <span class="toggle">
                             <span class="switch"></span>
                         </span>
@@ -449,7 +446,7 @@
 
     <script>
         const view_updater = new ViewUpdater();
-        // view_updater.disable_all();
+        view_updater.disable_all();
         const heartbeat_watchdog = new HeartbeatWatchdog(1500, view_updater);
         const sse_handler = new ServerSentEventHandler(
             "/events", 3000, heartbeat_watchdog, view_updater);

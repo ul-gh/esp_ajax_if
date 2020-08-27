@@ -18,7 +18,7 @@
 #endif
 
 
-PSPWMGen::PSPWMGen(APIServer* api_server)
+PsPwmAppHwControl::PsPwmAppHwControl(APIServer* api_server)
     : api_server{api_server},
     periodic_update_timer{}
 {
@@ -29,7 +29,7 @@ PSPWMGen::PSPWMGen(APIServer* api_server)
                                        init_frequency,
                                        init_ps_duty,
                                        init_lead_dt, init_lag_dt,
-                                       init_output_enabled,
+                                       init_power_pwm_active,
                                        disable_action_lead_leg,
                                        disable_action_lag_leg);
     errors |= pspwm_get_setpoint_limits_ptr(mcpwm_num, &pspwm_setpoint_limits);
@@ -42,20 +42,26 @@ PSPWMGen::PSPWMGen(APIServer* api_server)
         error_print("Error initializing the PS-PWM module!");
         return;
     }
+
+    // Create instance of auxiliary HW control module
+    debug_print("Configuring auxiliary HW control module...");
+    AuxHwDrv aux_hw_drv{init_current_limit, init_relay_ref_active,
+                        init_relay_dut_active, init_fan_active};
+    
     register_remote_control(api_server);
     periodic_update_timer.attach_ms(api_state_periodic_update_interval_ms,
                                     on_periodic_update_timer,
                                     this);
 }
 
-PSPWMGen::~PSPWMGen() {
+PsPwmAppHwControl::~PsPwmAppHwControl() {
     periodic_update_timer.detach();
 }
 
 /* Registers hardware control function callbacks
  * as request handlers of the HTTP server
  */
-void PSPWMGen::register_remote_control(APIServer* api_server) {
+void PsPwmAppHwControl::register_remote_control(APIServer* api_server) {
     CbFloatT cb_float;
     cb_float = [this](const float n) {
         pspwm_setpoint->frequency = n * 1E3;
@@ -86,13 +92,13 @@ void PSPWMGen::register_remote_control(APIServer* api_server) {
     api_server->register_api_cb("set_lead_dt", cb_float);
 
     CbStringT cb_text = [this](const String &text) {
-        if (text == "ON") {
+        if (text == "true") {
             pspwm_resync_enable_output(mcpwm_num);
         } else {
             pspwm_disable_output(mcpwm_num);
         }
     };
-    api_server->register_api_cb("set_output", cb_text);
+    api_server->register_api_cb("set_power_pwm_active", cb_text);
 
     CbVoidT cb_void = [this](){
         if (!pspwm_get_hw_fault_shutdown_present(mcpwm_num)) {
@@ -102,10 +108,31 @@ void PSPWMGen::register_remote_control(APIServer* api_server) {
         }
     };
     api_server->register_api_cb("clear_shutdown", cb_void);
+
+    //////////////// Callbacks for aux HW driver module
+    cb_float = [this](const float n) {
+        aux_hw_drv.set_current_limit(n);
+    };
+    api_server->register_api_cb("set_current_limit", cb_float);
+
+    CbStringT cb_text = [this](const String &text) {
+        aux_hw_drv.set_relay_ref_active(text == "true");
+    };
+    api_server->register_api_cb("set_relay_ref_active", cb_text);
+
+    CbStringT cb_text = [this](const String &text) {
+        aux_hw_drv.set_relay_dut_active(text == "true");
+    };
+    api_server->register_api_cb("set_relay_dut_active", cb_text);
+
+    CbStringT cb_text = [this](const String &text) {
+        aux_hw_drv.set_fan_active(text == "true");
+    };
+    api_server->register_api_cb("set_fan_active", cb_text);
 }
 
 // Called periodicly submitting application state to the HTTP client
-void PSPWMGen::on_periodic_update_timer(PSPWMGen* self) {
+void PsPwmAppHwControl::on_periodic_update_timer(PsPwmAppHwControl* self) {
     bool shutdown_status = pspwm_get_hw_fault_shutdown_occurred(mcpwm_num);
     if (shutdown_status) {
         self->pspwm_setpoint->output_enabled = false;
@@ -114,10 +141,11 @@ void PSPWMGen::on_periodic_update_timer(PSPWMGen* self) {
     /* The sizes needs to be adapted accordingly if below structure
      * size is changed (!) (!!)
      */
-    constexpr size_t json_object_size = JSON_OBJECT_SIZE(12);
+    constexpr size_t json_object_size = JSON_OBJECT_SIZE(15);
     constexpr size_t strings_size = sizeof(
         "frequency_min""frequency_max""dt_sum_max"
-        "frequency""duty""lead_dt""lag_dt""power_pwm_enabled"
+        "frequency""duty""lead_dt""lag_dt""power_pwm_active"
+        "current_limit""relay_ref_active""relay_dut_active""fan_active"
         "base_div""timer_div""hw_shutdown_active"
         );
     constexpr size_t I_AM_SCARED_MARGIN = 50;
@@ -127,13 +155,18 @@ void PSPWMGen::on_periodic_update_timer(PSPWMGen* self) {
     json_doc["frequency_min"] = self->pspwm_setpoint_limits->frequency_min;
     json_doc["frequency_max"] = self->pspwm_setpoint_limits->frequency_max;
     json_doc["dt_sum_max"] = self->pspwm_setpoint_limits->dt_sum_max;
-    // Operational setpoints
+    // Operational setpoints for PSPWM module
     json_doc["frequency"] = self->pspwm_setpoint->frequency;
     json_doc["duty"] = self->pspwm_setpoint->ps_duty;
     json_doc["lead_dt"] = self->pspwm_setpoint->lead_red;
     json_doc["lag_dt"] = self->pspwm_setpoint->lag_red;
-    json_doc["current_limit"] = self->
-    json_doc["power_pwm_enabled"] = self->pspwm_setpoint->output_enabled;
+    json_doc["power_pwm_active"] = self->pspwm_setpoint->output_enabled;
+    // Settings for auxiliary HW control module
+    json_doc["current_limit"] = self->aux_hw_drv.current_limit;
+    json_doc["relay_ref_active"] = self->aux_hw_drv.relay_ref_active;
+    json_doc["relay_dut_active"] = self->aux_hw_drv.relay_dut_active;
+    json_doc["fan_active"] = self->aux_hw_drv.fan_active;
+
     // Clock divider settings
     json_doc["base_div"] = self->pspwm_clk_conf->base_clk_prescale;
     json_doc["timer_div"] = self->pspwm_clk_conf->timer_clk_prescale;
