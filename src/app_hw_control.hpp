@@ -8,6 +8,15 @@
 #include "ps_pwm.h"
 #include "api_server.hpp"
 
+class AUXHWCtrl
+{
+public:
+    void set_current_limit(lim_val);
+
+private:
+    float current_limit;
+}
+
 
 /** @brief PSPWMGen - Phase-Shift PWM output generation on ESP32 platform
  * 
@@ -31,6 +40,7 @@ class PSPWMGen
 public:
     /************************ DEFAULT VALUES START ****************************
      */
+    /////////////////// For ps_pwm C module: //////////////////////////////////
     // MCPWM unit can be [0,1]
     static constexpr mcpwm_unit_t mcpwm_num{MCPWM_UNIT_0};
     // GPIO config for PWM output
@@ -56,6 +66,10 @@ public:
     static constexpr float init_lag_dt{125e-9};
     static constexpr bool init_output_enabled{false};
 
+    /////////////////// For AUX HW control module: ////////////////////////////
+    static constexpr float current_limit{35.0};
+
+    /////////////////// For API server ////////////////////////////////////////
     // Update non-critical application state and send cyclic
     // state updates to the HTTP client using this time interval (ms)
     static constexpr uint32_t api_state_periodic_update_interval_ms{500};
@@ -92,11 +106,11 @@ private:
      * 
      * // Operational settings
      *  "frequency": 500.0,
-     *  "ps_duty": 79.0,
+     *  "duty": 79.0,
      *  "lead_dt": 100.0,
      *  "lag_dt": 200.0,
      *  "current_limit": 35.0,
-     *  "power_bridge_enabled": true,
+     *  "power_pwm_enabled": true,
      * 
      * // Clock divider settings
      *  "base_div": 1,

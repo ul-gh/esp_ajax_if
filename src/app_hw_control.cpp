@@ -114,10 +114,10 @@ void PSPWMGen::on_periodic_update_timer(PSPWMGen* self) {
     /* The sizes needs to be adapted accordingly if below structure
      * size is changed (!) (!!)
      */
-    constexpr size_t json_object_size = JSON_OBJECT_SIZE(11);
+    constexpr size_t json_object_size = JSON_OBJECT_SIZE(12);
     constexpr size_t strings_size = sizeof(
         "frequency_min""frequency_max""dt_sum_max"
-        "frequency""ps_duty""lead_dt""lag_dt""output_enabled"
+        "frequency""duty""lead_dt""lag_dt""power_pwm_enabled"
         "base_div""timer_div""hw_shutdown_active"
         );
     constexpr size_t I_AM_SCARED_MARGIN = 50;
@@ -129,10 +129,11 @@ void PSPWMGen::on_periodic_update_timer(PSPWMGen* self) {
     json_doc["dt_sum_max"] = self->pspwm_setpoint_limits->dt_sum_max;
     // Operational setpoints
     json_doc["frequency"] = self->pspwm_setpoint->frequency;
-    json_doc["ps_duty"] = self->pspwm_setpoint->ps_duty;
+    json_doc["duty"] = self->pspwm_setpoint->ps_duty;
     json_doc["lead_dt"] = self->pspwm_setpoint->lead_red;
     json_doc["lag_dt"] = self->pspwm_setpoint->lag_red;
-    json_doc["output_enabled"] = self->pspwm_setpoint->output_enabled;
+    json_doc["current_limit"] = self->
+    json_doc["power_pwm_enabled"] = self->pspwm_setpoint->output_enabled;
     // Clock divider settings
     json_doc["base_div"] = self->pspwm_clk_conf->base_clk_prescale;
     json_doc["timer_div"] = self->pspwm_clk_conf->timer_clk_prescale;
