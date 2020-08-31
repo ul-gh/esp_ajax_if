@@ -54,25 +54,32 @@ HTTP Status 200 OK and plain text content "OK"
 * Event source telegram content is JSON with content:
 ```
 {
-    // Setpoint limits
-    "frequency_min": 1.0,
-    "frequency_max": 1000.0,
-    "dt_sum_max": 1200,
-
-    // Operational settings
-    "frequency": 500.0,
-    "ps_duty": 79.0,
-    "lead_dt": 100.0,
-    "lag_dt": 200.0,
-    "output_enabled": true,
+    // Setpoint limits. Scaled to kHz, ns and % respectively...
+    "frequency_min": Frequency in kHz
+    "frequency_max": Frequency in kHz
+    "dt_sum_max": Dead-Time in nanoseconds
+    // Operational setpoints for PSPWM module
+    "frequency": Frequency in kHz
+    "duty": Duty Cycle in percent
+    "lead_dt": Dead-Time in nanoseconds
+    "lag_dt": Dead-Time in nanoseconds
+    "power_pwm_active": Self-Explanatory, Boolean JSON..
+    // Settings for auxiliary HW control module
+    "current_limit": Current limit in Amperes
+    "relay_ref_active": Self-Explanatory, Boolean JSON..
+    "relay_dut_active": Self-Explanatory, Boolean JSON..
+    "fan_active": Self-Explanatory, Boolean..
 
     // Clock divider settings
-    "base_div": 1,
-    "timer_div": 1,
-
+    "base_div": Integer clock divider factor
+    "timer_div": ditto.
+    // Gate driver supply and disable signals
+    "driver_supply_active": Self-Explanatory, Boolean JSON..
+    "drv_disabled": Self-Explanatory, Boolean..
     // Hardware Fault Shutdown Status
-    "hw_shutdown_active": false,
+    "hw_shutdown_active: Self-Explanatory, Boolean JSON..
 }
+
 ```
 
 ### Example application control from PC side:
