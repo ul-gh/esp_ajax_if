@@ -89,6 +89,7 @@ void AuxHwDrv::reset_oc_detect_shutdown(void (*callback)(void)) {
     // OC detect reset line is high active
     debug_print("Resetting overcurrent detect output!");
     oc_reset_callback = callback;
+    // Set pin high now. Pin is reset by oc_reset_terminate_pulse() callback
     gpio_set_level(static_cast<gpio_num_t>(gpio_overcurrent_reset), 1);
     BaseType_t errors;
     errors = xTimerReset(oc_reset_oneshot_timer,
