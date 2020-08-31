@@ -100,30 +100,7 @@ private:
     TimerHandle_t periodic_update_timer{NULL};
 
     /** Application state is sent as a push update via the SSE event source.
-     *
-     * The data is JSON structured as follows:
-     * 
-     * {
-     * // Setpoint limits
-     *  "frequency_min": 1.0,
-     *  "frequency_max": 1000.0,
-     *  "dt_sum_max": 1200,
-     * 
-     * // Operational settings
-     *  "frequency": 500.0,
-     *  "duty": 79.0,
-     *  "lead_dt": 100.0,
-     *  "lag_dt": 200.0,
-     *  "current_limit": 35.0,
-     *  "power_pwm_active": true,
-     * 
-     * // Clock divider settings
-     *  "base_div": 1,
-     *  "timer_div": 1,
-     * 
-     * // Hardware Fault Shutdown Status
-     * "hw_shutdown_active": false,
-     * }
+     *  See file: app_hw_control.cpp
      */
     // static void on_periodic_update_timer(PsPwmAppHwControl* self);
     static void on_periodic_update_timer(TimerHandle_t xTimer);
