@@ -118,17 +118,17 @@
                     return;
                 } 
                 if (remote_state.power_pwm_active) {
-                    this.power_pwm_vw.setAttribute("state", "on");
+                    this.power_pwm_vw.setAttribute("active", "active");
                     this.power_pwm_vw.innerText = "Power PWM ON";
                 } else {
-                    this.power_pwm_vw.setAttribute("state", "off");
+                    this.power_pwm_vw.removeAttribute("active");
                     this.power_pwm_vw.innerText = "Power PWM OFF";
                 }
                 if (remote_state.hw_shutdown_active) {
-                    this.shutdown_vw.setAttribute("state", "active");
+                    this.shutdown_vw.setAttribute("active", "active");
                     this.shutdown_vw.innerText = "HW FAULT SHUTDOWN ACTIVE!\n(Click to Reset)";
                 } else {
-                    this.shutdown_vw.setAttribute("state", "inactive");
+                    this.shutdown_vw.removeAttribute("active");
                     this.shutdown_vw.innerText = "State: Normal";
                 }
                 this.fan_vw.firstElementChild.checked = Boolean(remote_state.fan_active);
@@ -143,7 +143,7 @@
             }
 
             enable_all() {
-                this.connection_vw.setAttribute("state", "ok");
+                this.connection_vw.setAttribute("active", "active");
                 this.connection_vw.innerText = "OK";
                 this.all_remote_vws.forEach((item) => {
                     if (item.classList.contains("toggle-switchy")) {
@@ -155,7 +155,7 @@
             }
 
             disable_all() {
-                this.connection_vw.setAttribute("state", "nok");
+                this.connection_vw.removeAttribute("active");
                 this.connection_vw.innerText = "No Connection\nto Hardware!";
                 this.power_pwm_vw.innerText = "Unknown...";
                 this.shutdown_vw.innerText = "Unknown...";
@@ -181,7 +181,9 @@
                 // This is called only when a submit button is pressed, so we
                 // just always reset everything and remove the highlighting
                 this.view_updates_inhibited = false;
-                last_edited_input_el.removeAttribute("editing");
+                if (typeof(last_edited_input_el.removeAttribute) === "function") {
+                    last_edited_input_el.removeAttribute("editing");
+                }
             }
         }
 
@@ -189,7 +191,7 @@
         // Connect Server-Sent Events, with auto-reconnect timer
         class ServerSentEventHandler {
             constructor(endpoint, reconnect_timeout,
-                heartbeat_watchdog, view_updater) {
+                    heartbeat_watchdog, view_updater) {
                 this.endpoint = endpoint;
                 this.heartbeat_watchdog = heartbeat_watchdog;
                 this.view_updater = view_updater;
@@ -295,16 +297,16 @@
 
             <tr>
                 <td>
-                    <div class="flex-centered state_vw" id="connection_vw" state="nok">
+                    <div class="flex-centered state_vw" id="connection_vw">
                     </div>
                 </td>
                 <td>
-                    <div class="flex-centered state_vw" id="power_pwm_vw" state="on" disabled>
+                    <div class="flex-centered state_vw" id="power_pwm_vw" disabled>
                     </div>
                 </td>
                 <td>
                     <div class="flex-centered state_vw request_src" id="shutdown_vw"
-                            state="inactive" name="clear_shutdown" value="true" disabled>
+                            name="clear_shutdown" value="true" disabled>
                     </div>
                 </td>
                 <td>

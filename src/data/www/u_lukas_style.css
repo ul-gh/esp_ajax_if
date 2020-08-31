@@ -116,28 +116,29 @@ p {
     background-color: red;
 }
 
-
 div.state_vw[disabled] {
     background-color: rgb(211, 211, 211);
 }
 
-#connection_vw[state="ok"] {
-    background-color: rgb(139, 255, 143);
-}
-#connection_vw[state="nok"] { 
+#connection_vw { 
     background-color: rgb(250, 84, 84);
 }
-#power_pwm_vw[state="false"] {
+#connection_vw[active]:not([disabled]) {
     background-color: rgb(139, 255, 143);
 }
-#power_pwm_vw[state="true"] {
+
+#power_pwm_vw:not([disabled]) {
+    background-color: rgb(139, 255, 143);
+}
+#power_pwm_vw[active]:not([disabled]) {
     background-color: red;
 }
-#shutdown_vw[state="true"] {
-    background-color: rgb(250, 84, 84);
-}
-#shutdown_vw[state="false"] {
+
+#shutdown_vw:not([disabled]) {
     background-color: rgb(139, 255, 143);
+}
+#shutdown_vw[active]:not([disabled]) {
+    background-color: rgb(250, 84, 84);
 }
 
 input {
