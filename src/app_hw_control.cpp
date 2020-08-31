@@ -20,8 +20,7 @@
 
 PsPwmAppHwControl::PsPwmAppHwControl(APIServer* api_server)
     // Create instance of auxiliary HW control module
-    : aux_hw_drv{init_current_limit, init_relay_ref_active,
-                 init_relay_dut_active, init_fan_active},
+    : aux_hw_drv{},
     api_server{api_server},
     periodic_update_timer{}
 {
@@ -38,9 +37,11 @@ PsPwmAppHwControl::PsPwmAppHwControl(APIServer* api_server)
     errors |= pspwm_get_setpoint_limits_ptr(mcpwm_num, &pspwm_setpoint_limits);
     errors |= pspwm_get_setpoint_ptr(mcpwm_num, &pspwm_setpoint);
     errors |= pspwm_get_clk_conf_ptr(mcpwm_num, &pspwm_clk_conf);
-//    errors |= pspwm_enable_hw_fault_shutdown(mcpwm_num,
-//                                             gpio_fault_shutdown,
-//                                             MCPWM_LOW_LEVEL_TGR);
+    errors |= pspwm_enable_hw_fault_shutdown(mcpwm_num,
+                                             gpio_fault_shutdown,
+                                             MCPWM_LOW_LEVEL_TGR);
+    // Pull-down enabled for low-level shutdown active default state
+    errors |= gpio_pulldown_en((gpio_num_t)gpio_fault_shutdown);
     if (errors != ESP_OK) {
         error_print("Error initializing the PS-PWM module!");
         return;

@@ -5,6 +5,7 @@
 #include <ArduinoJson.h>
 
 #include "driver/mcpwm.h"
+#include "driver/gpio.h"
 #include "ps_pwm.h"
 #include "aux_hw_drv.hpp"
 #include "api_server.hpp"
@@ -64,11 +65,8 @@ public:
 
     /////////////////////////////  For AUX HW control module: /////////////////
     // Initial setpoints
-    static constexpr float init_current_limit{35.0};
-    static constexpr bool init_relay_ref_active{false};
-    static constexpr bool init_relay_dut_active{false};
-    static constexpr bool init_fan_active{35.0};
-
+    // ==> See aux_hw_drv.hpp <==
+    
     /////////////////////////////  For API server /////////////////////////////
     // Update non-critical application state and send cyclic
     // state updates to the HTTP client using this time interval (ms)
