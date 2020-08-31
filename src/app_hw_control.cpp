@@ -46,15 +46,30 @@ PsPwmAppHwControl::PsPwmAppHwControl(APIServer* api_server)
         error_print("Error initializing the PS-PWM module!");
         return;
     }
+
+    debug_print("Activating Gate driver power supply...");
+    aux_hw_drv.set_drv_supply_active("true");
     
     register_remote_control(api_server);
-    periodic_update_timer.attach_ms(api_state_periodic_update_interval_ms,
-                                    on_periodic_update_timer,
-                                    this);
+    // periodic_update_timer.attach_ms(api_state_periodic_update_interval_ms,
+    //                                 on_periodic_update_timer,
+    //                                 this);
+    /* Configure FreeRTOS timer for submitting periodic application state
+     * update telegram via Server-Sent Events
+     */
+    periodic_update_timer = xTimerCreate(
+        "SSE state update telegram timer",
+        pdMS_TO_TICKS(api_state_periodic_update_interval_ms),
+        pdTRUE,
+        static_cast<void*>(this),
+        on_periodic_update_timer
+    );
+    xTimerStart(periodic_update_timer, pdMS_TO_TICKS(1000));
 }
 
 PsPwmAppHwControl::~PsPwmAppHwControl() {
-    periodic_update_timer.detach();
+    //periodic_update_timer.detach();
+    xTimerDelete(periodic_update_timer, 0);
 }
 
 /* Registers hardware control function callbacks
@@ -92,16 +107,28 @@ void PsPwmAppHwControl::register_remote_control(APIServer* api_server) {
 
     CbStringT cb_text = [this](const String &text) {
         if (text == "true") {
+            aux_hw_drv.set_drv_disabled(false);
             pspwm_resync_enable_output(mcpwm_num);
         } else {
+            aux_hw_drv.set_drv_disabled(true);
             pspwm_disable_output(mcpwm_num);
         }
     };
     api_server->register_api_cb("set_power_pwm_active", cb_text);
 
+    /* Callback hell.. If HW overcurrent fault pin is cleared, we first reset
+     * the external hardware latch via aux_hw_drv.reset_oc_detect_shutdown()
+     * which receives as additional callback a lambda containing a call to
+     * pspwm_clear_hw_fault_shutdown_occurred() which on completion of
+     * hardware latch reset (1 ms delay via RTOS timer) then resets the PSPWM
+     * fault shutdown latch inside the SOC..
+     */
     CbVoidT cb_void = [this](){
         if (!pspwm_get_hw_fault_shutdown_present(mcpwm_num)) {
-            pspwm_clear_hw_fault_shutdown_occurred(mcpwm_num);
+            aux_hw_drv.reset_oc_detect_shutdown([](){
+                pspwm_clear_hw_fault_shutdown_occurred(mcpwm_num);
+                debug_print("External HW latch reset done. Resetting PSPWM SOC latch...");
+                });
         } else {
             error_print("Will Not Clear: Fault Shutdown Pin Still Active!");
         }
@@ -133,21 +160,20 @@ void PsPwmAppHwControl::register_remote_control(APIServer* api_server) {
 }
 
 // Called periodicly submitting application state to the HTTP client
-void PsPwmAppHwControl::on_periodic_update_timer(PsPwmAppHwControl* self) {
-    bool shutdown_status = pspwm_get_hw_fault_shutdown_occurred(mcpwm_num);
-    if (shutdown_status) {
-        self->pspwm_setpoint->output_enabled = false;
-    }
-
+// void PsPwmAppHwControl::on_periodic_update_timer(PsPwmAppHwControl* self) {
+void PsPwmAppHwControl::on_periodic_update_timer(TimerHandle_t xTimer) {
+    PsPwmAppHwControl* self = static_cast<PsPwmAppHwControl*>(pvTimerGetTimerID(xTimer));
     /* The sizes needs to be adapted accordingly if below structure
      * size is changed (!) (!!)
      */
-    constexpr size_t json_object_size = JSON_OBJECT_SIZE(15);
+    constexpr size_t json_object_size = JSON_OBJECT_SIZE(17);
     constexpr size_t strings_size = sizeof(
         "frequency_min""frequency_max""dt_sum_max"
         "frequency""duty""lead_dt""lag_dt""power_pwm_active"
         "current_limit""relay_ref_active""relay_dut_active""fan_active"
-        "base_div""timer_div""hw_shutdown_active"
+        "base_div""timer_div"
+        "driver_supply_active""drv_disabled"
+        "hw_shutdown_active"
         );
     constexpr size_t I_AM_SCARED_MARGIN = 50;
     // ArduinoJson JsonDocument object, see https://arduinojson.org
@@ -171,8 +197,11 @@ void PsPwmAppHwControl::on_periodic_update_timer(PsPwmAppHwControl* self) {
     // Clock divider settings
     json_doc["base_div"] = self->pspwm_clk_conf->base_clk_prescale;
     json_doc["timer_div"] = self->pspwm_clk_conf->timer_clk_prescale;
+    // Gate driver supply and disable signals
+    json_doc["driver_supply_active"] = self->aux_hw_drv.drv_supply_active;
+    json_doc["drv_disabled"] = self->aux_hw_drv.drv_disabled;
     // Hardware Fault Shutdown Status
-    json_doc["hw_shutdown_active"] = shutdown_status;
+    json_doc["hw_shutdown_active"] = pspwm_get_hw_fault_shutdown_present(mcpwm_num);
 
     char json_str_buffer[json_object_size + strings_size + I_AM_SCARED_MARGIN];
     serializeJson(json_doc, json_str_buffer);

@@ -1,11 +1,14 @@
 #ifndef APP_HW_CONTROL_HPP__
 #define APP_HW_CONTROL_HPP__
 
-#include <Ticker.h>
-#include <ArduinoJson.h>
-
+//#include <Ticker.h>
+#include "FreeRTOS.h"
+#include "freertos/timers.h"
 #include "driver/mcpwm.h"
 #include "driver/gpio.h"
+
+#include <ArduinoJson.h>
+
 #include "ps_pwm.h"
 #include "aux_hw_drv.hpp"
 #include "api_server.hpp"
@@ -93,7 +96,8 @@ public:
 
 private:
     // Event timer instance
-    Ticker periodic_update_timer;
+    //Ticker periodic_update_timer;
+    TimerHandle_t periodic_update_timer{NULL};
 
     /** Application state is sent as a push update via the SSE event source.
      *
@@ -121,7 +125,8 @@ private:
      * "hw_shutdown_active": false,
      * }
      */
-    static void on_periodic_update_timer(PsPwmAppHwControl* self);
+    // static void on_periodic_update_timer(PsPwmAppHwControl* self);
+    static void on_periodic_update_timer(TimerHandle_t xTimer);
 
 };
 

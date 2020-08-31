@@ -91,23 +91,25 @@ public:
     bool relay_ref_active{false};
     bool relay_dut_active{false};
     bool fan_active{true};
-    bool driver_supply_active{true};
+    bool drv_supply_active{true};
     bool drv_disabled{true};
 
     AuxHwDrv();
+    virtual ~AuxHwDrv();
 
     // Public API functions
     void set_current_limit(float value);
     void set_relay_ref_active(bool state);
     void set_relay_dut_active(bool state);
     void set_fan_active(bool state);
-    void set_driver_supply_active(bool state);
+    void set_drv_supply_active(bool state);
     void set_drv_disabled(bool state);
-    void reset_oc_detect_shutdown(void);
+    void reset_oc_detect_shutdown(void (*callback)(void));
 
 
 private:
     TimerHandle_t oc_reset_oneshot_timer{NULL};
+    void (*oc_reset_callback)(void);
     static void oc_reset_terminate_pulse(TimerHandle_t xTimer);
 };
 

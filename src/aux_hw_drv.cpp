@@ -27,10 +27,14 @@ AuxHwDrv::AuxHwDrv()
             "OC Reset Timer",
             pdMS_TO_TICKS(oc_reset_pulse_length_ms),
             pdFALSE,
-            static_cast<void * const>(0),
+            static_cast<void*>(this),
             oc_reset_terminate_pulse
         );
     }
+
+AuxHwDrv::~AuxHwDrv(){
+    xTimerDelete(oc_reset_oneshot_timer, 0);
+}
 
 void AuxHwDrv::set_current_limit(float value) {
     debug_print_sv("Setting new current limit:", value);
@@ -66,9 +70,9 @@ void AuxHwDrv::set_fan_active(bool state) {
                    static_cast<uint32_t>(state));
 }
 
-void AuxHwDrv::set_driver_supply_active(bool state) {
+void AuxHwDrv::set_drv_supply_active(bool state) {
     debug_print_sv("Setting driver supply active:", state);
-    driver_supply_active = state;
+    drv_supply_active = state;
     gpio_set_level(static_cast<gpio_num_t>(gpio_drv_supply_en),
                    static_cast<uint32_t>(state));
 }
@@ -81,9 +85,10 @@ void AuxHwDrv::set_drv_disabled(bool state) {
 }
 
 /* This needs a RTOS timer */
-void AuxHwDrv::reset_oc_detect_shutdown(void) {
+void AuxHwDrv::reset_oc_detect_shutdown(void (*callback)(void)) {
     // OC detect reset line is high active
     debug_print("Resetting overcurrent detect output!");
+    oc_reset_callback = callback;
     gpio_set_level(static_cast<gpio_num_t>(gpio_overcurrent_reset), 1);
     BaseType_t errors;
     errors = xTimerReset(oc_reset_oneshot_timer,
@@ -98,6 +103,9 @@ void AuxHwDrv::reset_oc_detect_shutdown(void) {
 //
 // Static callback function for reset pulse timing
 void AuxHwDrv::oc_reset_terminate_pulse(TimerHandle_t xTimer) {
-    debug_print("Reset pulse done!");
+    debug_print("Terminating rest pulse...");
     gpio_set_level(static_cast<gpio_num_t>(gpio_overcurrent_reset), 0);
+    AuxHwDrv* self = static_cast<AuxHwDrv*>(pvTimerGetTimerID(xTimer));
+    debug_print("Calling oc_reset_callback");
+    self->oc_reset_callback();
 }
