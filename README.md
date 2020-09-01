@@ -1,23 +1,34 @@
+\mainpage
 # ESP32_PSPWM
-Driver for the MCPWM hardware modules on the Espressif ESP32 SoC for
-generating a Phase-Shift-PWM waveform between two pairs of hardware pins.
+SoC hardware driver + HTTP API server + AJAX web interface controlling the MCPWM hardware modules on the Espressif ESP32 for generating a Phase-Shift-PWM waveform between two pairs of hardware pins.
 
 Application in power electronics, e.g. Zero-Voltage-Switching (ZVS) Full-Bridge-,
 Dual-Active-Bridge- and LLC converters.
 
+Features additional hardware driver functionality for cycle-by-cycle hardware
+overcurrent limiting, output relay control etc. via the HTTP + AJAX web interface.
+
+The web interface requires a browser with JavaScript ES 7.
+
 ## Low-Level-Driver (ESP-IDF compatible)
 * See file:<br>
-[src/ps_pwm.h](https://ul-gh.github.io/esp_ajax_if/ps__pwm_8h.html)
+[src/ps_pwm.h](ps__pwm_8h.html)
 
-## C++ API
-* See class reference:<br>
-[PSPWMGen](https://ul-gh.github.io/esp_ajax_if/class_p_s_p_w_m_gen.html) (documentation is work-in-progress)
+## C++ API for PWM generation
+* [PsPwmAppHwControl](class_ps_pwm_app_hw_control.html)
+
+## C++ API for auxiliary hardware control
+* [AuxHwDrv](class_aux_hw_drv.html)
+
+## C++ HTTP and SSE event server
+* [APIServer](class_a_p_i_server.html)
+
 
 ## HTTP API Documentation
 
-### Application is AJAX with static HTML5 + CSS + JavaScript ES7
-* Static HTTP content is served from SPI flash file system path in source tree:<br>
-/data/www
+### Application is AJAX with static HTML5 + CSS 3 + JavaScript ES 7
+* Static HTTP content is served from SPI flash file system<br>
+(Path in source directory: src/data/www)
 
 ### Hardware device is controlled via HTTP GET requests:
 * HTTP API endpoint:<br>
@@ -40,12 +51,21 @@ HTTP Status 200 OK and plain text content "OK"
 * set lag bridge leg dead time in nanoseconds:<br>
 /cmd?set_lag_dt=300
 
-* Activate/deactivate the output:<br>
-/cmd?set_output=off
+* Activate|deactivate the output:<br>
+/cmd?set_power_pwm_active=true|false
 
 * Clear error shutdown condition:<br>
 /cmd?clear_shutdown
 
+* Set hardware overcurrent detection circuit threshold current:<br>
+/cmd?set_current_limit=35
+
+* Activate|deactivate the power output load switches:<br>
+/cmd?set_relay_ref_active=true|false<br>
+/cmd?set_relay_dut_active=true|false
+
+* Activate|deactivate the heatsink fan:<br>
+/cmd?set_power_pwm_active=true|false
 
 ### Server sends periodic application status update via Server-Sent Events:
 * SSE event source endpoint:<br>
@@ -63,23 +83,24 @@ HTTP Status 200 OK and plain text content "OK"
     "duty": Duty Cycle in percent
     "lead_dt": Dead-Time in nanoseconds
     "lag_dt": Dead-Time in nanoseconds
-    "power_pwm_active": Self-Explanatory, Boolean JSON..
+    "power_pwm_active": Boolean
     // Settings for auxiliary HW control module
     "current_limit": Current limit in Amperes
-    "relay_ref_active": Self-Explanatory, Boolean JSON..
-    "relay_dut_active": Self-Explanatory, Boolean JSON..
-    "fan_active": Self-Explanatory, Boolean..
+    "relay_ref_active": Boolean
+    "relay_dut_active": Boolean
+    "fan_active": Boolean
 
     // Clock divider settings
-    "base_div": Integer clock divider factor
-    "timer_div": ditto.
+    "base_div": Integer clock divider factor for MCPWM hardware timer
+    "timer_div": ditto, second clock divider for MCPWM hardware timer
     // Gate driver supply and disable signals
-    "driver_supply_active": Self-Explanatory, Boolean JSON..
-    "drv_disabled": Self-Explanatory, Boolean..
-    // Hardware Fault Shutdown Status
-    "hw_shutdown_active: Self-Explanatory, Boolean JSON..
+    "driver_supply_active": Boolean
+    "drv_disabled": Boolean
+    // True when hardware OC shutdown condition is present
+    "hw_oc_fault_present": Boolean
+    // Hardware Fault Shutdown Status is latched using this flag
+    "hw_oc_fault_occurred": Boolean
 }
-
 ```
 
 ### Example application control from PC side:
@@ -98,4 +119,4 @@ requests.get(url, cmd2)
 ```
 
 ## License
-[GPL v3.0](LICENSE)
+[GPL v3.0](license_gplv3.txt)

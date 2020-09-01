@@ -45,8 +45,10 @@ $(function() {
 <div class="contents">
 <div class="textblock"><h1><a class="anchor" id="autotoc_md0"></a>
 ESP32_PSPWM</h1>
-<p>Driver for the MCPWM hardware modules on the Espressif ESP32 SoC for generating a Phase-Shift-PWM waveform between two pairs of hardware pins.</p>
+<p>SoC hardware driver + HTTP API server + AJAX web interface controlling the MCPWM hardware modules on the Espressif ESP32 for generating a Phase-Shift-PWM waveform between two pairs of hardware pins.</p>
 <p>Application in power electronics, e.g. Zero-Voltage-Switching (ZVS) Full-Bridge-, Dual-Active-Bridge- and LLC converters.</p>
+<p>Features additional hardware driver functionality for cycle-by-cycle hardware overcurrent limiting, output relay control etc. via the HTTP + AJAX web interface.</p>
+<p>The web interface requires a browser with JavaScript ES 7.</p>
 <h2><a class="anchor" id="autotoc_md1"></a>
 Low-Level-Driver (ESP-IDF compatible)</h2>
 <ul>
@@ -54,20 +56,29 @@ Low-Level-Driver (ESP-IDF compatible)</h2>
  <a href="ps__pwm_8h.html">src/ps_pwm.h</a></li>
 </ul>
 <h2><a class="anchor" id="autotoc_md2"></a>
-C++ API</h2>
+C++ API for PWM generation</h2>
 <ul>
-<li>See class reference:<br  />
- <a href="class_p_s_p_w_m_gen.html">PSPWMGen</a> (documentation is work-in-progress)</li>
+<li><a href="class_ps_pwm_app_hw_control.html">PsPwmAppHwControl</a></li>
 </ul>
 <h2><a class="anchor" id="autotoc_md3"></a>
-HTTP API Documentation</h2>
-<h3><a class="anchor" id="autotoc_md4"></a>
-Application is AJAX with static HTML5 + CSS + JavaScript ES7</h3>
+C++ API for auxiliary hardware control</h2>
 <ul>
-<li>Static HTTP content is served from SPI flash file system path in source tree:<br  />
- /data/www</li>
+<li><a href="class_aux_hw_drv.html">AuxHwDrv</a></li>
 </ul>
-<h3><a class="anchor" id="autotoc_md5"></a>
+<h2><a class="anchor" id="autotoc_md4"></a>
+C++ HTTP and SSE event server</h2>
+<ul>
+<li><a href="class_a_p_i_server.html">APIServer</a></li>
+</ul>
+<h2><a class="anchor" id="autotoc_md5"></a>
+HTTP API Documentation</h2>
+<h3><a class="anchor" id="autotoc_md6"></a>
+Application is AJAX with static HTML5 + CSS 3 + JavaScript ES 7</h3>
+<ul>
+<li>Static HTTP content is served from SPI flash file system<br  />
+ (Path in source directory: src/data/www)</li>
+</ul>
+<h3><a class="anchor" id="autotoc_md7"></a>
 Hardware device is controlled via HTTP GET requests:</h3>
 <ul>
 <li>HTTP API endpoint:<br  />
@@ -75,7 +86,7 @@ Hardware device is controlled via HTTP GET requests:</h3>
 <li>Server response to control requests:<br  />
  HTTP Status 200 OK and plain text content "OK"</li>
 </ul>
-<h3><a class="anchor" id="autotoc_md6"></a>
+<h3><a class="anchor" id="autotoc_md8"></a>
 List of HTTP GET requests for application control:</h3>
 <ul>
 <li>Set frequency in kHz:<br  />
@@ -86,12 +97,19 @@ List of HTTP GET requests for application control:</h3>
  /cmd?set_lead_dt=300</li>
 <li>set lag bridge leg dead time in nanoseconds:<br  />
  /cmd?set_lag_dt=300</li>
-<li>Activate/deactivate the output:<br  />
- /cmd?set_output=off</li>
+<li>Activate|deactivate the output:<br  />
+ /cmd?set_power_pwm_active=true|false</li>
 <li>Clear error shutdown condition:<br  />
  /cmd?clear_shutdown</li>
+<li>Set hardware overcurrent detection circuit threshold current:<br  />
+ /cmd?set_current_limit=35</li>
+<li>Activate|deactivate the power output load switches:<br  />
+ /cmd?set_relay_ref_active=true|false<br  />
+ /cmd?set_relay_dut_active=true|false</li>
+<li>Activate|deactivate the heatsink fan:<br  />
+ /cmd?set_power_pwm_active=true|false</li>
 </ul>
-<h3><a class="anchor" id="autotoc_md7"></a>
+<h3><a class="anchor" id="autotoc_md9"></a>
 Server sends periodic application status update via Server-Sent Events:</h3>
 <ul>
 <li>SSE event source endpoint:<br  />
@@ -106,25 +124,27 @@ Server sends periodic application status update via Server-Sent Events:</h3>
 <div class="line">    &quot;duty&quot;: Duty Cycle in percent</div>
 <div class="line">    &quot;lead_dt&quot;: Dead-Time in nanoseconds</div>
 <div class="line">    &quot;lag_dt&quot;: Dead-Time in nanoseconds</div>
-<div class="line">    &quot;power_pwm_active&quot;: Self-Explanatory, Boolean JSON..</div>
+<div class="line">    &quot;power_pwm_active&quot;: Boolean</div>
 <div class="line">    // Settings for auxiliary HW control module</div>
 <div class="line">    &quot;current_limit&quot;: Current limit in Amperes</div>
-<div class="line">    &quot;relay_ref_active&quot;: Self-Explanatory, Boolean JSON..</div>
-<div class="line">    &quot;relay_dut_active&quot;: Self-Explanatory, Boolean JSON..</div>
-<div class="line">    &quot;fan_active&quot;: Self-Explanatory, Boolean..</div>
+<div class="line">    &quot;relay_ref_active&quot;: Boolean</div>
+<div class="line">    &quot;relay_dut_active&quot;: Boolean</div>
+<div class="line">    &quot;fan_active&quot;: Boolean</div>
 <div class="line"> </div>
 <div class="line">    // Clock divider settings</div>
-<div class="line">    &quot;base_div&quot;: Integer clock divider factor</div>
-<div class="line">    &quot;timer_div&quot;: ditto.</div>
+<div class="line">    &quot;base_div&quot;: Integer clock divider factor for MCPWM hardware timer</div>
+<div class="line">    &quot;timer_div&quot;: ditto, second clock divider for MCPWM hardware timer</div>
 <div class="line">    // Gate driver supply and disable signals</div>
-<div class="line">    &quot;driver_supply_active&quot;: Self-Explanatory, Boolean JSON..</div>
-<div class="line">    &quot;drv_disabled&quot;: Self-Explanatory, Boolean..</div>
-<div class="line">    // Hardware Fault Shutdown Status</div>
-<div class="line">    &quot;hw_shutdown_active: Self-Explanatory, Boolean JSON..</div>
+<div class="line">    &quot;driver_supply_active&quot;: Boolean</div>
+<div class="line">    &quot;drv_disabled&quot;: Boolean</div>
+<div class="line">    // True when hardware OC shutdown condition is present</div>
+<div class="line">    &quot;hw_oc_fault_present&quot;: Boolean</div>
+<div class="line">    // Hardware Fault Shutdown Status is latched using this flag</div>
+<div class="line">    &quot;hw_oc_fault_occurred&quot;: Boolean</div>
 <div class="line">}</div>
 </div><!-- fragment --></li>
 </ul>
-<h3><a class="anchor" id="autotoc_md8"></a>
+<h3><a class="anchor" id="autotoc_md10"></a>
 Example application control from PC side:</h3>
 <ul>
 <li>Python example: <div class="fragment"><div class="line">import requests</div>
@@ -139,7 +159,7 @@ Example application control from PC side:</h3>
 <div class="line">…</div>
 </div><!-- fragment --></li>
 </ul>
-<h2><a class="anchor" id="autotoc_md9"></a>
+<h2><a class="anchor" id="autotoc_md11"></a>
 License</h2>
 <p><a href="license_gplv3.txt">GPL v3.0</a> </p>
 </div></div><!-- PageDoc -->
