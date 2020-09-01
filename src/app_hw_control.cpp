@@ -1,7 +1,9 @@
+#include "FreeRTOS.h"
+#include "freertos/timers.h"
+#include "driver/mcpwm.h"
 #include <Arduino.h>
 
 #include "info_debug_error.h"
-#include "driver/mcpwm.h"
 #include "ps_pwm.h"
 #include "app_hw_control.hpp"
 
@@ -57,6 +59,8 @@ PsPwmAppHwControl::PsPwmAppHwControl(APIServer* api_server)
     /* Configure FreeRTOS timer for submitting periodic application state
      * update telegram via Server-Sent Events
      */
+    debug_print_sv("SSE hw_app_state update interval in timer ticks: ",
+                   pdMS_TO_TICKS(api_state_periodic_update_interval_ms));
     periodic_update_timer = xTimerCreate(
         "SSE state update telegram timer",
         pdMS_TO_TICKS(api_state_periodic_update_interval_ms),
@@ -166,14 +170,14 @@ void PsPwmAppHwControl::on_periodic_update_timer(TimerHandle_t xTimer) {
     /* The sizes needs to be adapted accordingly if below structure
      * size is changed (!) (!!)
      */
-    constexpr size_t json_object_size = JSON_OBJECT_SIZE(17);
+    constexpr size_t json_object_size = JSON_OBJECT_SIZE(18);
     constexpr size_t strings_size = sizeof(
         "frequency_min""frequency_max""dt_sum_max"
         "frequency""duty""lead_dt""lag_dt""power_pwm_active"
         "current_limit""relay_ref_active""relay_dut_active""fan_active"
         "base_div""timer_div"
         "driver_supply_active""drv_disabled"
-        "hw_shutdown_active"
+        "hw_oc_fault_present""hw_oc_fault_occurred"
         );
     constexpr size_t I_AM_SCARED_MARGIN = 50;
     // ArduinoJson JsonDocument object, see https://arduinojson.org
@@ -200,8 +204,10 @@ void PsPwmAppHwControl::on_periodic_update_timer(TimerHandle_t xTimer) {
     // Gate driver supply and disable signals
     json_doc["driver_supply_active"] = self->aux_hw_drv.drv_supply_active;
     json_doc["drv_disabled"] = self->aux_hw_drv.drv_disabled;
-    // Hardware Fault Shutdown Status
-    json_doc["hw_shutdown_active"] = pspwm_get_hw_fault_shutdown_present(mcpwm_num);
+    // True when hardware OC shutdown condition is present
+    json_doc["hw_oc_fault_present"] = pspwm_get_hw_fault_shutdown_present(mcpwm_num);
+    // Hardware Fault Shutdown Status is latched using this flag
+    json_doc["hw_oc_fault_occurred"] = pspwm_get_hw_fault_shutdown_occurred(mcpwm_num);
 
     char json_str_buffer[json_object_size + strings_size + I_AM_SCARED_MARGIN];
     serializeJson(json_doc, json_str_buffer);

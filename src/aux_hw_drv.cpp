@@ -21,7 +21,8 @@ AuxHwDrv::AuxHwDrv()
         // Configure PWM for current limit analog reference output
         ledc_timer_config(&pwm_timer_config);
         ledc_channel_config(&curr_lim_pwm_ch_config);
-
+        debug_print_sv("OC reset pin pulse length in timer ticks: ",
+                       pdMS_TO_TICKS(oc_reset_pulse_length_ms));
         // Configure FreeRTOS timer for generation of one-shot oc reset pulse
         oc_reset_oneshot_timer = xTimerCreate(
             "OC Reset Timer",

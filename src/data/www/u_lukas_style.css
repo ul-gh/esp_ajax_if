@@ -137,7 +137,10 @@ div.state_vw[disabled] {
 #shutdown_vw:not([disabled]) {
     background-color: rgb(139, 255, 143);
 }
-#shutdown_vw[active]:not([disabled]) {
+#shutdown_vw[fault_occurred]:not([disabled]) {
+    background-color: rgb(250, 192, 84);
+}
+#shutdown_vw[fault_present]:not([disabled]) {
     background-color: rgb(250, 84, 84);
 }
 

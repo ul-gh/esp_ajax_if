@@ -124,12 +124,19 @@
                     this.power_pwm_vw.removeAttribute("active");
                     this.power_pwm_vw.innerText = "Power PWM OFF";
                 }
-                if (remote_state.hw_shutdown_active) {
-                    this.shutdown_vw.setAttribute("active", "active");
-                    this.shutdown_vw.innerText = "HW FAULT SHUTDOWN ACTIVE!\n(Click to Reset)";
+
+                if (remote_state.hw_oc_fault_present) {
+                    this.shutdown_vw.setAttribute("fault_present", "true");
+                    this.shutdown_vw.innerText = "HW OC FAULT\nSHUTDOWN ACTIVE!";
                 } else {
-                    this.shutdown_vw.removeAttribute("active");
-                    this.shutdown_vw.innerText = "State: Normal";
+                    this.shutdown_vw.removeAttribute("fault_present")
+                    if (remote_state.hw_oc_fault_occurred) {
+                        this.shutdown_vw.setAttribute("fault_occurred", "true");
+                        this.shutdown_vw.innerText = "HW OC fault latched!\nClick here to Reset!";
+                    } else {
+                        this.shutdown_vw.removeAttribute("fault_occurred");;
+                        this.shutdown_vw.innerText = "State: Normal";
+                    }
                 }
                 this.fan_vw.firstElementChild.checked = Boolean(remote_state.fan_active);
                 this.ref_vw.firstElementChild.checked = Boolean(remote_state.relay_ref_active);

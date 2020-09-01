@@ -76,8 +76,9 @@ public:
         .hpoint = 0
     };
 
-    // Overcurrent reset output pulse length
-    static constexpr int oc_reset_pulse_length_ms{1};
+    // Overcurrent reset output pulse length. Must be at least equal to
+    // FreeRTOS scheduler tick period.
+    static constexpr int oc_reset_pulse_length_ms{10};
 
     // Calibration values for current limit PWM
     static constexpr float curr_limit_pwm_scale = 1.0/100 * (
