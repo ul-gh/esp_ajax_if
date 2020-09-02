@@ -7,6 +7,9 @@
 #include "driver/adc.h"
 #include "esp_adc_cal.h"
 
+#include <soc/sens_reg.h>
+#include <soc/sens_struct.h>
+
 #include "HardwareSerial.h"
 
 #define DEFAULT_VREF 1100
@@ -85,6 +88,18 @@ void adc_test_sample(void)
     //Convert adc_reading to voltage in mV
     uint32_t voltage = esp_adc_cal_raw_to_voltage(adc_reading, adc_chars);
     Serial.printf("Raw: %d\tVoltage: %dmV\n", adc_reading, voltage);
+}
+
+void adc_test_register_direct(void)
+{
+    uint16_t adc_value;
+    SENS.sar_meas_start1.sar1_en_pad = (1 << channel); // only one channel is selected
+    while (SENS.sar_slave_addr1.meas_status != 0);
+    SENS.sar_meas_start1.meas1_start_sar = 0;
+    SENS.sar_meas_start1.meas1_start_sar = 1;
+    while (SENS.sar_meas_start1.meas1_done_sar == 0);
+    adc_value = SENS.sar_meas_start1.meas1_data_sar;
+    Serial.printf("Register direct, sampled value: %d\n", adc_value);
 }
 
 #endif

@@ -57,4 +57,5 @@ void loop() {
     // Application runs asynchronously, you can do anything here.
     delay(2000);
     adc_test_sample();
+    adc_test_register_direct();
 }
