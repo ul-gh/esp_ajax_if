@@ -2,7 +2,7 @@
 #define APP_HW_CONTROL_HPP__
 
 //#include <Ticker.h>
-#include "FreeRTOS.h"
+#include "freertos/FreeRTOS.h"
 #include "freertos/timers.h"
 #include "driver/mcpwm.h"
 #include "driver/gpio.h"

@@ -1,7 +1,7 @@
 #ifndef APP_HW_DRV_HPP__
 #define APP_HW_DRV_HPP__
 
-#include "FreeRTOS.h"
+#include "freertos/FreeRTOS.h"
 #include "freertos/timers.h"
 #include "driver/ledc.h"
 #include "driver/gpio.h"

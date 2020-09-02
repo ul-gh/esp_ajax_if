@@ -11,6 +11,8 @@
 #include "api_server.hpp"
 #include "app_hw_control.hpp"
 
+#include "adc_temp.hpp"
+
 constexpr unsigned long serial_baudrate = 115200;
 // TCP socket port number
 constexpr uint16_t tcp_port = 80;
@@ -48,8 +50,11 @@ void setup() {
     ps_pwm_controller = new PsPwmAppHwControl{api_server};
     api_server->activate_events_on("/events");
     api_server->activate_default_callbacks();
+    adc_init_test_capabilities();
 }
 
 void loop() {
     // Application runs asynchronously, you can do anything here.
+    delay(2000);
+    adc_test_sample();
 }
