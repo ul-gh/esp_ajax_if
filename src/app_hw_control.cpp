@@ -111,10 +111,13 @@ void PsPwmAppHwControl::register_remote_control(APIServer* api_server) {
 
     CbStringT cb_text = [this](const String &text) {
         if (text == "true") {
-            aux_hw_drv.set_drv_disabled(false);
+            // FIXME: Hardware has redundant latch but no separate oc detect line.
+            //        So this currently does not recognize if error is present or only latched.
+            // aux_hw_drv.set_drv_disabled(false);
             pspwm_resync_enable_output(mcpwm_num);
         } else {
-            aux_hw_drv.set_drv_disabled(true);
+            // FIXME: Same as above
+            // aux_hw_drv.set_drv_disabled(true);
             pspwm_disable_output(mcpwm_num);
         }
     };
@@ -128,7 +131,10 @@ void PsPwmAppHwControl::register_remote_control(APIServer* api_server) {
      * fault shutdown latch inside the SOC..
      */
     CbVoidT cb_void = [this](){
-        if (!pspwm_get_hw_fault_shutdown_present(mcpwm_num)) {
+        // FIXME: Hardware has redundant latch but no separate oc detect line.
+        //        So this currently does not recognize if error is present or only latched.
+        // if (!pspwm_get_hw_fault_shutdown_present(mcpwm_num)) {
+        if (true) {
             aux_hw_drv.reset_oc_detect_shutdown([](){
                 pspwm_clear_hw_fault_shutdown_occurred(mcpwm_num);
                 debug_print("External HW latch reset done. Resetting PSPWM SOC latch...");

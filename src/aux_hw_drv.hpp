@@ -93,7 +93,7 @@ public:
     bool relay_dut_active{false};
     bool fan_active{true};
     bool drv_supply_active{true};
-    bool drv_disabled{true};
+    bool drv_disabled{false};
 
     AuxHwDrv();
     virtual ~AuxHwDrv();

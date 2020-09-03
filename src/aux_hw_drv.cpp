@@ -31,6 +31,13 @@ AuxHwDrv::AuxHwDrv()
             static_cast<void*>(this),
             oc_reset_terminate_pulse
         );
+        // Set initial state for the outputs
+        set_current_limit(current_limit);
+        set_relay_ref_active(relay_ref_active);
+        set_relay_dut_active(relay_dut_active);
+        set_fan_active(fan_active);
+        set_drv_supply_active(drv_supply_active);
+        set_drv_disabled(drv_disabled);
     }
 
 AuxHwDrv::~AuxHwDrv(){
