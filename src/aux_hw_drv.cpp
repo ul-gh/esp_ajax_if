@@ -1,6 +1,13 @@
 #include "aux_hw_drv.hpp"
 #include "info_debug_error.h"
 
+#include "esp_wifi.h"
+#include "esp_event_loop.h"
+#include "nvs_flash.h"
+#include "driver/i2s.h"
+#include "soc/syscon_reg.h"
+
+
 // Following redundant declarations of static constexpr data members are
 // deprecated since C++17 but provided to prevent linker errors with
 // outdated versions of the toolchain:
