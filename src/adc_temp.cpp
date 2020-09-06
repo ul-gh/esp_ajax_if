@@ -124,9 +124,20 @@ float get_kty_temp_lin(uint16_t adc_filtered_value) {
     constexpr uint16_t adc_fsr = adc_fsr_upper - adc_fsr_lower;
     constexpr float temp_offset = -20;
     constexpr float temp_gain = (150 -(-20)) / adc_fsr;
-    return temp_offset + (adc_filtered_value-adc_fsr_lower) * temp_gain;
+    return temp_offset + (adc_filtered_value - adc_fsr_lower) * temp_gain;
 }
 
 float get_kty_temp_pwl(uint16_t adc_filtered_value) {
-    return u_16_piecewise_linear(adc_filtered_value);
+    constexpr uint_16_t adc_fsr_lower = 0;
+    constexpr uint_16_t adc_fsr_upper = (1<<16) - 4000;
+    constexpr uint16_t adc_fsr = adc_fsr_upper - adc_fsr_lower;
+    constexpr float v_adc_lower = 0.0;
+    constexpr float v_adc_upper = 1.25;
+    constexpr float v_adc_fsr = v_adc_upper - v_adc_lower;
+    constexpr float r_v = 2.2e3;
+    constexpr float v_cc = 3.3;
+    float v_in = v_adc_lower + (adc_filtered_value - adc_fsr_lower)
+                               * v_adc_fsr / adc_fsr;
+    float r_kty = r_v * v_in / (v_cc - v_in);
+    return float_piecewise_linear(r_kty);
 }
