@@ -7,6 +7,8 @@
 #include "driver/gpio.h"
 #include "esp_err.h"
 
+#include "adc_temp.hpp"
+
 class AuxHwDrv
 {
 public:
@@ -88,9 +90,11 @@ public:
 
     ////////////////////////////// Setpoints with initial values
     // These are public in order to be read-accessed by PsPwmAppHwControl
-    float current_limit{0};
+    float current_limit{0.0};
     bool relay_ref_active{false};
     bool relay_dut_active{false};
+    float aux_temp{150};
+    float heatsink_temp{150};
     bool fan_active{true};
     bool drv_supply_active{true};
     bool drv_disabled{false};
@@ -106,6 +110,7 @@ public:
     void set_drv_supply_active(bool state);
     void set_drv_disabled(bool state);
     void reset_oc_detect_shutdown(void (*callback)(void));
+    void update_temperature_sensors();
 
 
 private:

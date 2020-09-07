@@ -50,12 +50,11 @@ void setup() {
     ps_pwm_controller = new PsPwmAppHwControl{api_server};
     api_server->activate_events_on("/events");
     api_server->activate_default_callbacks();
-    adc_init_test_capabilities();
+    AdcTemp::adc_init_test_capabilities();
 }
 
 void loop() {
     // Application runs asynchronously, you can do anything here.
     delay(2000);
-    adc_test_sample();
-    adc_test_register_direct();
+    // Serial.println(ESP.getFreeHeap());
 }

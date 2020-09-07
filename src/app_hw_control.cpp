@@ -169,20 +169,31 @@ void PsPwmAppHwControl::register_remote_control(APIServer* api_server) {
     api_server->register_api_cb("set_fan_active", cb_text);
 }
 
-// Called periodicly submitting application state to the HTTP client
-// void PsPwmAppHwControl::on_periodic_update_timer(PsPwmAppHwControl* self) {
+/* Called periodicly submitting application state to the HTTP client.
+ *
+ * This static method runs in FreeRTOS timer task.
+ * It uses a lot of stack space due to string processing.
+ * 
+ * The default stack size when setting up ESP32 platform in Platformio
+ * is not sufficient and must be increased.
+ */
 void PsPwmAppHwControl::on_periodic_update_timer(TimerHandle_t xTimer) {
     PsPwmAppHwControl* self = static_cast<PsPwmAppHwControl*>(pvTimerGetTimerID(xTimer));
+    debug_print_sv("Timer task free stack size (!): ",
+                   uxTaskGetStackHighWaterMark(NULL));
     /* The sizes needs to be adapted accordingly if below structure
      * size is changed (!) (!!)
      */
-    constexpr size_t json_object_size = JSON_OBJECT_SIZE(18);
+    // Update temperature sensor values on this occasion
+    self->aux_hw_drv.update_temperature_sensors();
+    constexpr size_t json_object_size = JSON_OBJECT_SIZE(20);
     constexpr size_t strings_size = sizeof(
         "frequency_min""frequency_max""dt_sum_max"
         "frequency""duty""lead_dt""lag_dt""power_pwm_active"
-        "current_limit""relay_ref_active""relay_dut_active""fan_active"
+        "current_limit""relay_ref_active""relay_dut_active"
+        "aux_temp""heatsink_temp""fan_active"
         "base_div""timer_div"
-        "driver_supply_active""drv_disabled"
+        "drv_supply_active""drv_disabled"
         "hw_oc_fault_present""hw_oc_fault_occurred"
         );
     constexpr size_t I_AM_SCARED_MARGIN = 50;
@@ -202,13 +213,16 @@ void PsPwmAppHwControl::on_periodic_update_timer(TimerHandle_t xTimer) {
     json_doc["current_limit"] = self->aux_hw_drv.current_limit;
     json_doc["relay_ref_active"] = self->aux_hw_drv.relay_ref_active;
     json_doc["relay_dut_active"] = self->aux_hw_drv.relay_dut_active;
+    // Temperatures and fan
+    json_doc["aux_temp"] = self->aux_hw_drv.aux_temp;
+    json_doc["heatsink_temp"] = self->aux_hw_drv.heatsink_temp;
     json_doc["fan_active"] = self->aux_hw_drv.fan_active;
 
     // Clock divider settings
     json_doc["base_div"] = self->pspwm_clk_conf->base_clk_prescale;
     json_doc["timer_div"] = self->pspwm_clk_conf->timer_clk_prescale;
     // Gate driver supply and disable signals
-    json_doc["driver_supply_active"] = self->aux_hw_drv.drv_supply_active;
+    json_doc["drv_supply_active"] = self->aux_hw_drv.drv_supply_active;
     json_doc["drv_disabled"] = self->aux_hw_drv.drv_disabled;
     // True when hardware OC shutdown condition is present
     json_doc["hw_oc_fault_present"] = pspwm_get_hw_fault_shutdown_present(mcpwm_num);

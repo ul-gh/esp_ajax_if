@@ -144,6 +144,8 @@ void APIServer::activate_default_callbacks() {
     // Handler called when any DNS query is made via access point
     // addHandler(new CaptiveRequestHandler()).setFilter(ON_AP_FILTER);
     debug_print("Default callbacks set up");
+    debug_print_sv("Main task (???) free stack size (!): ",
+                   uxTaskGetStackHighWaterMark(NULL));
 }
 
 

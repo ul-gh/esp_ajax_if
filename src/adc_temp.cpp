@@ -1,6 +1,10 @@
 #include <array>
 #include "adc_temp.hpp"
 
+using namespace AdcTemp;
+
+static esp_adc_cal_characteristics_t *adc_chars;
+
 static void check_efuse(void)
 {
     //Check TP is burned into eFuse
@@ -40,29 +44,15 @@ static void print_char_val_type(esp_adc_cal_value_t val_type)
     }
 }
 
-void adc_init_test_capabilities(void)
-{
-    check_efuse();
-
-    adc1_config_width(width);
-    adc1_config_channel_atten(temp_ch1, atten);
-
-    adc_chars = static_cast<esp_adc_cal_characteristics_t *>(
-        calloc(1, sizeof(esp_adc_cal_characteristics_t)));
-    esp_adc_cal_value_t val_type = esp_adc_cal_characterize(
-        unit, atten, width, DEFAULT_VREF, adc_chars);
-    print_char_val_type(val_type);
-}
-
 void adc_test_sample(void)
 {
     uint32_t adc_reading = 0;
     //Multisampling
-    for (int i = 0; i < NO_OF_SAMPLES; i++)
+    for (int i = 0; i < oversampling_ratio; i++)
     {
         adc_reading += adc1_get_raw((adc1_channel_t)temp_ch1);
     }
-    adc_reading /= NO_OF_SAMPLES;
+    adc_reading /= oversampling_ratio;
 
     //Convert adc_reading to voltage in mV
     uint32_t voltage = esp_adc_cal_raw_to_voltage(adc_reading, adc_chars);
@@ -81,7 +71,7 @@ void adc_test_register_direct(void)
     Serial.printf("Register direct, sampled value: %d\n", adc_value);
 }
 
-float u_16_piecewise_linear(uint16_t in_value) {
+float u16_piecewise_linear(uint16_t in_value) {
     constexpr uint16_t in_fsr_lower = 0;
     constexpr uint16_t in_fsr_upper = (1<<16) - 4000;
     constexpr uint16_t in_fsr = in_fsr_upper - in_fsr_lower;
@@ -128,8 +118,8 @@ float get_kty_temp_lin(uint16_t adc_filtered_value) {
 }
 
 float get_kty_temp_pwl(uint16_t adc_filtered_value) {
-    constexpr uint_16_t adc_fsr_lower = 0;
-    constexpr uint_16_t adc_fsr_upper = (1<<16) - 4000;
+    constexpr uint16_t adc_fsr_lower = 0;
+    constexpr uint16_t adc_fsr_upper = (1<<16) - 4000;
     constexpr uint16_t adc_fsr = adc_fsr_upper - adc_fsr_lower;
     constexpr float v_adc_lower = 0.0;
     constexpr float v_adc_upper = 1.25;
@@ -139,5 +129,50 @@ float get_kty_temp_pwl(uint16_t adc_filtered_value) {
     float v_in = v_adc_lower + (adc_filtered_value - adc_fsr_lower)
                                * v_adc_fsr / adc_fsr;
     float r_kty = r_v * v_in / (v_cc - v_in);
-    return float_piecewise_linear(r_kty);
+    return u16_piecewise_linear(static_cast<uint16_t>(r_kty));
+}
+
+float get_kty_temp_calc(float voltage) {
+    return 0.0;
+}
+
+float get_adc_ch_voltage(adc1_channel_t channel){
+    uint32_t adc_reading = 0;
+    //Multisampling
+    for (int i = 0; i < oversampling_ratio; i++)
+    {
+        adc_reading += adc1_get_raw(channel);
+    }
+    adc_reading /= oversampling_ratio;
+
+    //Convert adc_reading to voltage in mV
+    uint32_t voltage = esp_adc_cal_raw_to_voltage(adc_reading, adc_chars);
+    Serial.printf("Raw: %d\tVoltage: %dmV\n", adc_reading, voltage);
+    return static_cast<float>(voltage) / 1000;
+}
+
+
+void AdcTemp::adc_init_test_capabilities(void)
+{
+    check_efuse();
+
+    adc1_config_width(bit_width);
+    adc1_config_channel_atten(temp_ch1, temp_sense_attenuation);
+    adc1_config_channel_atten(temp_ch2, temp_sense_attenuation);
+
+    adc_chars = static_cast<esp_adc_cal_characteristics_t *>(
+        calloc(1, sizeof(esp_adc_cal_characteristics_t)));
+    esp_adc_cal_value_t val_type = esp_adc_cal_characterize(
+        unit, temp_sense_attenuation, bit_width, default_vref, adc_chars);
+    print_char_val_type(val_type);
+}
+
+float AdcTemp::get_aux_temp() {
+    return 77.7;
+    //return get_kty_temp_calc(get_adc_ch_voltage(temp_ch1));
+}
+
+float AdcTemp::get_heatsink_temp() {
+    return 88.8;
+    //return get_kty_temp_calc(get_adc_ch_voltage(temp_ch2));
 }

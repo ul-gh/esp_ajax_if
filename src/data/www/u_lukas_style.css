@@ -2,9 +2,15 @@ html {
     /* font-size: 16px; */
 }
 
-@media screen and (max-width: 800px) {
+@media screen and (max-width: 670px) and (min-width: 501px) {
     html {
         font-size: 13px;
+    }
+}
+
+@media screen and (max-width: 500px) {
+    html {
+        font-size: 10px;
     }
 }
 
@@ -28,17 +34,17 @@ ul.main_grid {
     justify-items: center;
 }
 
-@media screen and (min-width: 68rem) {
+@media screen and (min-width: 75rem) {
     ul.main_grid {
       grid-template-columns: repeat(2, 1fr);
     }
     li.grid_item.two_cols {
         grid-column: 1 / span 2;
     }
-    li.grid_item.lr_center:nth-of-type(even) {
+    li.grid_item.lr_center:nth-of-type(odd) {
         justify-self: right;
     }
-    li.grid_item.lr_center:nth-of-type(odd) {
+    li.grid_item.lr_center:nth-of-type(even) {
         justify-self: left;
     }
 }
@@ -127,7 +133,8 @@ p {
     background-color: red;
 }
 
-div.state_vw[disabled] {
+div.state_vw[disabled],
+div.number_vw[disabled] {
     background-color: rgb(211, 211, 211);
 }
 

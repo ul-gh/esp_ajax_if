@@ -13,8 +13,9 @@
         // Global object storing the application state, this is updated from
         // server PUSH updates via the SSE event handler.
         let remote_state = {};
-        // Last edited input element
-        let last_edited_input_el = {};
+        // Last edited input elements. These are blocked from receiving state
+        // updates when they are being edited.
+        let last_edited_input_els = [];
 
         async function do_http_request(req_str) {
             try {
@@ -81,6 +82,8 @@
                 this.connection_vw = document.getElementById("connection_vw");
                 this.power_pwm_vw = document.getElementById("power_pwm_vw");
                 this.shutdown_vw = document.getElementById("shutdown_vw");
+                this.aux_temp_vw = document.getElementById("aux_temp_vw");
+                this.heatsink_temp_vw = document.getElementById("heatsink_temp_vw");
                 this.fan_vw = document.getElementById("fan_vw");
                 this.btn_pwm_on = document.getElementById("btn_pwm_on");
                 this.btn_pwm_off = document.getElementById("btn_pwm_off");
@@ -92,8 +95,9 @@
                 this.frequency_vw = document.getElementById("frequency_vw");
                 this.duty_vw = document.getElementById("duty_vw");
                 this.all_remote_vws = [
-                    this.power_pwm_vw, this.shutdown_vw, this.fan_vw, this.ref_vw,
-                    this.dut_vw, this.lead_dt_vw, this.lag_dt_vw, this.current_limit_vw,
+                    this.power_pwm_vw, this.shutdown_vw, this.aux_temp_vw,
+                    this.heatsink_temp_vw, this.fan_vw, this.ref_vw, this.dut_vw,
+                    this.lead_dt_vw, this.lag_dt_vw, this.current_limit_vw,
                     this.frequency_vw, this.duty_vw, this.btn_pwm_on, this.btn_pwm_off];
                 // Prevent updating the input fields content with remote data
                 // when user starts entering a new value.
@@ -138,9 +142,16 @@
                         this.shutdown_vw.innerText = "State: Normal";
                     }
                 }
-                this.fan_vw.firstElementChild.checked = Boolean(remote_state.fan_active);
-                this.ref_vw.firstElementChild.checked = Boolean(remote_state.relay_ref_active);
-                this.dut_vw.firstElementChild.checked = Boolean(remote_state.relay_dut_active);
+                this.aux_temp_vw.innerText = Number(
+                    remote_state.aux_temp).toString() + " °C";
+                this.heatsink_temp_vw.innerText = Number(
+                    remote_state.heatsink_temp).toString() + " °C";
+                this.fan_vw.firstElementChild.checked = Boolean(
+                    remote_state.fan_active);
+                this.ref_vw.firstElementChild.checked = Boolean(
+                    remote_state.relay_ref_active);
+                this.dut_vw.firstElementChild.checked = Boolean(
+                    remote_state.relay_dut_active);
                 // Operational settings
                 this.lag_dt_vw.value = remote_state.lag_dt;
                 this.lead_dt_vw.value = remote_state.lead_dt;
@@ -166,6 +177,8 @@
                 this.connection_vw.innerText = "No Connection\nto Hardware!";
                 this.power_pwm_vw.innerText = "Unknown...";
                 this.shutdown_vw.innerText = "Unknown...";
+                this.aux_temp_vw.innerText = "Unknown...";
+                this.heatsink_temp_vw.innerText = "Unknown...";
                 this.all_remote_vws.forEach((item) => {
                     if (item.classList.contains("toggle-switchy")) {
                         item.firstElementChild.disabled = true;
@@ -180,7 +193,7 @@
                     this.view_updates_inhibited = true;
                     // Sets color highlight while aditing element
                     input_el.setAttribute("editing", "editing");
-                    last_edited_input_el = input_el;
+                    last_edited_input_els.push(input_el);
                 }
             }
 
@@ -188,8 +201,9 @@
                 // This is called only when a submit button is pressed, so we
                 // just always reset everything and remove the highlighting
                 this.view_updates_inhibited = false;
-                if (typeof(last_edited_input_el.removeAttribute) === "function") {
-                    last_edited_input_el.removeAttribute("editing");
+                for (let i = last_edited_input_els.length-1; i >= 0; i--) {
+                    last_edited_input_els[i].removeAttribute("editing");
+                    last_edited_input_els.pop();
                 }
             }
         }
@@ -286,11 +300,12 @@
 
     <!--Responsive grid layout for main content-->
     <ul class="grid_container main_grid">
-    <li class="grid_item two_cols">
+
+    <li class="grid_item lr_center">
     <table>
         <thead>
             <tr>
-                <th colspan="4">Operation Status</th>
+                <th colspan="3">Operation Status</th>
             </tr>
         </thead>
         <tbody>
@@ -298,7 +313,6 @@
                 <td>Network Connection</td>
                 <td>Power Output State</td>
                 <td>HW Error Shutdown</td>
-                <td>Heatsink Fan</td>
             </tr>
 
             <tr>
@@ -315,21 +329,47 @@
                             name="clear_shutdown" value="true" disabled>
                     </div>
                 </td>
-                <td>
-                    <label class="toggle-switchy request_src" id="fan_vw">
-                        <input type="checkbox" name="set_fan_active" checked disabled>
-                        <span class="toggle">
-                            <span class="switch"></span>
-                        </span>
-                    </label>
-                </td>
             </tr>
         </tbody>
     </table>
     </li>
 
+    <li class="grid_item lr_center">
+        <table>
+            <thead>
+                <tr>
+                    <th colspan="3">Temperatures and Fan</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>AUX Temp</td>
+                    <td>Heatsink Temp</td>
+                    <td>Heatsink Fan</td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="flex-centered number_vw" id="aux_temp_vw">
+                        </div>
+                    </td>
+                    <td>
+                        <div class="flex-centered number_vw" id="heatsink_temp_vw" disabled>
+                        </div>
+                    </td>
+                    <td>
+                        <label class="toggle-switchy request_src" id="fan_vw">
+                            <input type="checkbox" name="set_fan_active" checked disabled>
+                            <span class="toggle">
+                                <span class="switch"></span>
+                            </span>
+                        </label>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </li>
 
-    <li class="grid_item lr_center" id="first-left">
+    <li class="grid_item lr_center">
     <table>
         <thead>
             <tr>
@@ -378,7 +418,7 @@
     </li>
 
 
-    <li class="grid_item lr_center" id="first-right">
+    <li class="grid_item lr_center">
     <form name="dead_time_settings">
         <table>
             <thead>

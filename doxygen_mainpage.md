@@ -88,6 +88,9 @@ HTTP Status 200 OK and plain text content "OK"
     "current_limit": Current limit in Amperes
     "relay_ref_active": Boolean
     "relay_dut_active": Boolean
+    // Temperatures and fan
+    "aux_temp": Temperature in °C
+    "heatsink_temp": Temperature in °C
     "fan_active": Boolean
 
     // Clock divider settings

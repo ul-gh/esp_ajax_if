@@ -114,6 +114,15 @@ void AuxHwDrv::reset_oc_detect_shutdown(void (*callback)(void)) {
     }
 }
 
+/* Get temperature sensor values via ADC, updates respective public attributes
+ *
+ * To be called periodically from PsPWMAppHwControl::on_periodic_update_timer().
+ */
+void AuxHwDrv::update_temperature_sensors() {
+    aux_temp = AdcTemp::get_aux_temp();
+    heatsink_temp = AdcTemp::get_heatsink_temp();
+}
+
 
 // Private Non-API part
 //
