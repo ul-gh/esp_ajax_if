@@ -256,6 +256,7 @@ void PsPwmAppHwControl::on_periodic_update_timer(TimerHandle_t xTimer) {
         if (json_str_buffer == nullptr) {
             // Allocation has failed .. But we can skip sending the telegram
             // and try again later..
+            error_print("Allocation failed in PsPwmAppHwControl::on_periodic_update_timer!");
             return;
         }
     }
