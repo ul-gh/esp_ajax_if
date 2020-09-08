@@ -260,7 +260,7 @@ void PsPwmAppHwControl::on_periodic_update_timer(TimerHandle_t xTimer) {
         }
     }
     serializeJson(json_doc, json_str_buffer, total_content_size-1);
-    json_str_buffer[total_content_size] = '\0';
+    json_str_buffer[total_content_size-1] = '\0';
     self->api_server->event_source->send(json_str_buffer, "hw_app_state");
     reentry_guard_active = false;
 }
