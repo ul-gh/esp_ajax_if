@@ -172,20 +172,36 @@ void PsPwmAppHwControl::register_remote_control(APIServer* api_server) {
 /* Called periodicly submitting application state to the HTTP client.
  *
  * This static method runs in FreeRTOS timer task.
- * It uses a lot of stack space due to string processing.
+ * It uses a lot of stack space due to string processing when using a
+ * StaticJsonDocument.
+ * See: https://arduinojson.org/v6/faq/why-does-my-device-crash-or-reboot/
  * 
- * The default stack size when setting up ESP32 platform in Platformio
- * is not sufficient and must be increased.
+ * The default stack size when setting up ESP32 platform using Arduino framwork
+ * on platformio is not sufficient and there is no easy way to increase it.
+ * 
+ * This is why a DynamicJsonDocument is used.
  */
 void PsPwmAppHwControl::on_periodic_update_timer(TimerHandle_t xTimer) {
     PsPwmAppHwControl* self = static_cast<PsPwmAppHwControl*>(pvTimerGetTimerID(xTimer));
-    debug_print_sv("Timer task free stack size (!): ",
-                   uxTaskGetStackHighWaterMark(NULL));
-    /* The sizes needs to be adapted accordingly if below structure
-     * size is changed (!) (!!)
-     */
+    // In case the timer fires again when telegram has not been sent yet
+    static bool reentry_guard_active = false;
+    if (reentry_guard_active) {
+        debug_print("Reentry detected into PsPwmAppHwControl::on_periodic_update_timer!");
+        return;
+    }
+    reentry_guard_active = true;
+    static int cycle_no = 0;
+    cycle_no++;
+    if (cycle_no == 16) {
+        debug_print_sv("Timer task free stack size (!): ",
+                       uxTaskGetStackHighWaterMark(NULL));
+        cycle_no = 0;
+    }
     // Update temperature sensor values on this occasion
     self->aux_hw_drv.update_temperature_sensors();
+    /* These sizes need to be adapted accordingly if below structure
+     * size is changed (!) (!!)
+     */
     constexpr size_t json_object_size = JSON_OBJECT_SIZE(20);
     constexpr size_t strings_size = sizeof(
         "frequency_min""frequency_max""dt_sum_max"
@@ -197,8 +213,11 @@ void PsPwmAppHwControl::on_periodic_update_timer(TimerHandle_t xTimer) {
         "hw_oc_fault_present""hw_oc_fault_occurred"
         );
     constexpr size_t I_AM_SCARED_MARGIN = 50;
+    constexpr size_t total_content_size = json_object_size
+                                          + strings_size + I_AM_SCARED_MARGIN;
+    
     // ArduinoJson JsonDocument object, see https://arduinojson.org
-    StaticJsonDocument<json_object_size> json_doc;
+    DynamicJsonDocument json_doc{json_object_size};
     // Setpoint limits. Scaled to kHz, ns and % respectively...
     json_doc["frequency_min"] = self->pspwm_setpoint_limits->frequency_min/1e3;
     json_doc["frequency_max"] = self->pspwm_setpoint_limits->frequency_max/1e3;
@@ -217,7 +236,6 @@ void PsPwmAppHwControl::on_periodic_update_timer(TimerHandle_t xTimer) {
     json_doc["aux_temp"] = self->aux_hw_drv.aux_temp;
     json_doc["heatsink_temp"] = self->aux_hw_drv.heatsink_temp;
     json_doc["fan_active"] = self->aux_hw_drv.fan_active;
-
     // Clock divider settings
     json_doc["base_div"] = self->pspwm_clk_conf->base_clk_prescale;
     json_doc["timer_div"] = self->pspwm_clk_conf->timer_clk_prescale;
@@ -229,7 +247,20 @@ void PsPwmAppHwControl::on_periodic_update_timer(TimerHandle_t xTimer) {
     // Hardware Fault Shutdown Status is latched using this flag
     json_doc["hw_oc_fault_occurred"] = pspwm_get_hw_fault_shutdown_occurred(mcpwm_num);
 
-    char json_str_buffer[json_object_size + strings_size + I_AM_SCARED_MARGIN];
-    serializeJson(json_doc, json_str_buffer);
+    // Stack-allocated version
+    //char json_str_buffer[total_content_size];
+    //serializeJson(json_doc, json_str_buffer);
+    static char* json_str_buffer = nullptr;
+    if (!json_str_buffer) {
+        json_str_buffer = static_cast<char*>(malloc(total_content_size));
+        if (json_str_buffer == nullptr) {
+            // Allocation has failed .. But we can skip sending the telegram
+            // and try again later..
+            return;
+        }
+    }
+    serializeJson(json_doc, json_str_buffer, total_content_size-1);
+    json_str_buffer[total_content_size] = '\0';
     self->api_server->event_source->send(json_str_buffer, "hw_app_state");
+    reentry_guard_active = false;
 }

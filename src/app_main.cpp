@@ -7,6 +7,7 @@
 #include <ESPAsyncWebServer.h>
 //#include <ESPAsyncWiFiManager.h>
 
+#include "info_debug_error.h"
 #include "wifi_setup.hpp"
 #include "api_server.hpp"
 #include "app_hw_control.hpp"
@@ -55,6 +56,6 @@ void setup() {
 
 void loop() {
     // Application runs asynchronously, you can do anything here.
-    delay(2000);
-    // Serial.println(ESP.getFreeHeap());
+    delay(5000);
+    debug_print_sv("Free Heap: ", ESP.getFreeHeap());
 }
