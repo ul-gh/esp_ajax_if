@@ -127,9 +127,18 @@ void APIServer::activate_default_callbacks() {
             onCmdRequest(request);
         }
     );
-    // respond to GET requests on URL /heap
+    // DEBUG: GET requests on /heap return system free heap size
     backend->on("/heap", HTTP_GET, [](AsyncWebServerRequest *request) {
             request->send(200, "text/plain", String(ESP.getFreeHeap()));
+       }
+    );
+    // DEBUG: GET requests on /stack return server task free stack size
+    backend->on("/stack", HTTP_GET, [](AsyncWebServerRequest *request) {
+            request->send(200,
+                          "text/plain",
+                          "Server callback task free stack size: "
+                          + String(uxTaskGetStackHighWaterMark(NULL))
+                          );
        }
     );
     // OTA Firmware Upgrade, see form method in data/www/upload.html
@@ -144,8 +153,6 @@ void APIServer::activate_default_callbacks() {
     // Handler called when any DNS query is made via access point
     // addHandler(new CaptiveRequestHandler()).setFilter(ON_AP_FILTER);
     debug_print("Default callbacks set up");
-    debug_print_sv("Main task (???) free stack size (!): ",
-                   uxTaskGetStackHighWaterMark(NULL));
 }
 
 
