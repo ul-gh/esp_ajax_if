@@ -73,7 +73,7 @@ public:
     /////////////////////////////  For API server /////////////////////////////
     // Update non-critical application state and send cyclic
     // state updates to the HTTP client using this time interval (ms)
-    static constexpr uint32_t api_state_periodic_update_interval_ms{250};
+    static constexpr uint32_t api_state_periodic_update_interval_ms{500};
     /************************* END DEFAULT VALUES *****************************
      */
 

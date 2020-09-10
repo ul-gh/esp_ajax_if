@@ -141,6 +141,17 @@ void APIServer::activate_default_callbacks() {
                           );
        }
     );
+    // DEBUG: GET requests on /sse_packets_waiting return average SSE event queue length
+    backend->on("/sse_packets_waiting", HTTP_GET, [this](AsyncWebServerRequest *request) {
+            String response_text;
+            if (event_source) {
+                response_text = event_source->avgPacketsWaiting();
+            } else {
+                response_text = "Event Source not registered!";
+            }
+            request->send(200, "text/plain", response_text);
+       }
+    );
     // OTA Firmware Upgrade, see form method in data/www/upload.html
     backend->on("/update", HTTP_POST, [this](AsyncWebServerRequest *request) {
             onUpdateRequest(request);

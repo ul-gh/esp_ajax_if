@@ -57,5 +57,8 @@ void setup() {
 void loop() {
     // Application runs asynchronously, you can do anything here.
     delay(5000);
-    debug_print_sv("Free Heap: ", ESP.getFreeHeap());
+    String debug_msg = "Free Heap: " + String(ESP.getFreeHeap());
+    debug_msg += "  SSE queue length: ";
+    debug_msg += api_server->event_source->avgPacketsWaiting();
+    Serial.println(debug_msg);
 }
