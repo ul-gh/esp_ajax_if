@@ -1,3 +1,9 @@
 [submodule "lib/toggle-switchy"]
 	path = lib/toggle-switchy
 	url = https://github.com/adamculpepper/toggle-switchy.git
+[submodule "lib/AsyncTCP"]
+	path = lib/AsyncTCP
+	url = https://github.com/me-no-dev/AsyncTCP.git
+[submodule "lib/ESPAsyncWebServer"]
+	path = lib/ESPAsyncWebServer
+	url = https://github.com/me-no-dev/ESPAsyncWebServer.git

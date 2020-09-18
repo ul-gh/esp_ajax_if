@@ -1,3 +1,6 @@
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
+#include "sdkconfig.h"
 #include <Arduino.h>
 #include "esp32-hal-log.h"
 #include <DNSServer.h>

@@ -54,7 +54,7 @@ public:
     // freq_hz = 80 MHz / 2^N
     static constexpr ledc_timer_config_t pwm_timer_config {
         .speed_mode = LEDC_HIGH_SPEED_MODE,
-        {.duty_resolution = LEDC_TIMER_12_BIT},
+        .duty_resolution = LEDC_TIMER_12_BIT,
         .timer_num = LEDC_TIMER_0,
         .freq_hz = 19500
     };
