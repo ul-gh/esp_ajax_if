@@ -232,8 +232,8 @@
                     console.log("Connecting Server-Sent Events...");
                 }
                 this.source = new EventSource(this.endpoint);
-                this.source.addEventListener(
-                    "heartbeat", this.heartbeat_watchdog.reset_cb, false);
+                //this.source.addEventListener(
+                //    "heartbeat", this.heartbeat_watchdog.reset_cb, false);
                 this.source.addEventListener(
                     "open", event => { console.log("Events Connected"); },
                     false
@@ -250,6 +250,9 @@
                 );
                 this.source.addEventListener(
                     "hw_app_state", event => {
+                        // Since app state update telegram is emitted
+                        // periodically, we use this to reset the watchdog.
+                        this.heartbeat_watchdog.reset("HB");
                         // console.log(`App State: "${event.data}"`);
                         // Set global object
                         remote_state = JSON.parse(event.data);

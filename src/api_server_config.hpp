@@ -17,7 +17,7 @@ constexpr const char* ajax_return_text = "OK";
 
 // Send heartbeat message via SSE event source in regular intervals when
 // set to true. This needs regular calling of update_timer().
-constexpr bool sending_heartbeats = true;
+constexpr bool sending_heartbeats = false;
 // Interval time in milliseconds
 constexpr unsigned long heartbeat_interval = 500;
 // Text string sent with the heartbeat event if enabled

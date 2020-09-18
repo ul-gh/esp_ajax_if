@@ -34,7 +34,7 @@ APIServer::APIServer(AsyncWebServer* http_backend)
 
 APIServer::~APIServer() {
     event_timer.detach();
-    free(event_source);
+    delete event_source;
 }
 
 // Set an entry in the template processor string <=> string mapping 

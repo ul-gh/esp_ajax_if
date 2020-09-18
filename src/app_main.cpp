@@ -60,5 +60,7 @@ void loop() {
     String debug_msg = "Free Heap: " + String(ESP.getFreeHeap());
     debug_msg += "  SSE queue length: ";
     debug_msg += api_server->event_source->avgPacketsWaiting();
+    debug_msg += "\n Wifi stations connected: ";
+    debug_msg += WiFi.softAPgetStationNum();
     Serial.println(debug_msg);
 }
