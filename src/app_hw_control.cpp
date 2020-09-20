@@ -193,13 +193,13 @@ void PsPwmAppHwControl::on_periodic_update_timer(TimerHandle_t xTimer) {
     static int cycle_no = 0;
     cycle_no++;
     if (cycle_no == 16) {
-      // FIXME: Debug
-      char* task_name = pcTaskGetTaskName(NULL);
-      Serial.print("app_hw_control periodic task name: ");
-      Serial.print(task_name);
-      Serial.print("  Free stack size (!!): ");
-      Serial.println(uxTaskGetStackHighWaterMark(NULL));
         cycle_no = 0;
+        // FIXME: Debug
+        char* task_name = pcTaskGetTaskName(NULL);
+        Serial.print("app_hw_control periodic task name: ");
+        Serial.print(task_name);
+        Serial.print("  Free stack size (!!): ");
+        Serial.println(uxTaskGetStackHighWaterMark(NULL));
     }
     // Update temperature sensor values on this occasion
     self->aux_hw_drv.update_temperature_sensors();

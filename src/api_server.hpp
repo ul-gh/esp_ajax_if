@@ -2,6 +2,9 @@
  *
  * Based on ESPAsyncWebServer, see:
  * https://github.com/me-no-dev/ESPAsyncWebServer
+ * 
+ * License: GPL v.3 
+ * U. Lukas 2020-09-20
  */
 #ifndef API_SERVER_HPP__
 #define API_SERVER_HPP__

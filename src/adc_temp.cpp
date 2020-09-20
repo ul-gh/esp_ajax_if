@@ -1,3 +1,9 @@
+/* ADC access and KTY-xx type silicon temperature sensor conversion functions
+ * for ESP32 HTTP-AJAX API module
+ * 
+ * License: GPL v.3 
+ * U. Lukas 2020-09-20
+ */
 #include <array>
 #include "adc_temp.hpp"
 
@@ -71,41 +77,44 @@ void adc_test_register_direct(void)
     Serial.printf("Register direct, sampled value: %d\n", adc_value);
 }
 
-float u16_piecewise_linear(uint16_t in_value) {
-    constexpr uint16_t in_fsr_lower = 0;
-    constexpr uint16_t in_fsr_upper = (1<<16) - 4000;
-    constexpr uint16_t in_fsr = in_fsr_upper - in_fsr_lower;
-    // temp_lut must represent equidistant definition range points
-    constexpr std::array<const float, 3>lut {1.0, 2.0, 3.0};
-    static_assert(lut.size() <= (1<<16), "LUT must have max. 2^16 elements!");
-    constexpr uint32_t lut_intervals = lut.size() - 1;
-
+/** Piecewise linear interpolation of input values using a look-up-table (LUT)
+ * (lut_y) representing function values for X starting with Y(X=in_fsr_lower)
+ * and ending with Y(X=in_fsr_upper). Y-values of the LUT must correspond
+ * to equidistant X-axis points.
+ */
+float equidistant_piecewise_linear(uint32_t in_value) {
+    constexpr uint32_t in_fsr_lower = 0;
+    constexpr uint32_t in_fsr_upper = (1<<16) - 4000;
+    constexpr uint32_t in_fsr = in_fsr_upper - in_fsr_lower;
+    constexpr std::array<const float, 3>lut_y {22.0, 50.0, 88.0};
+    static_assert(lut_y.size() <= (1<<16), "LUT must have max. 2^16 elements!");
+    constexpr uint32_t n_lut_intervals = lut_y.size() - 1;
     uint32_t lut_index;
-    float lut_offset;
+    float partial_intervals;
     if (in_value > in_fsr_lower) {
         if (in_value < in_fsr_upper) {
-        uint32_t n_fsr_in = lut_intervals * (in_value - in_fsr_lower);
-        lut_index =  n_fsr_in / in_fsr; // Floor division!
-        lut_offset = static_cast<float>(n_fsr_in % in_fsr) / in_fsr;
+        partial_intervals = n_lut_intervals * (in_value-in_fsr_lower) / in_fsr;
+        // Rounding down gives number of whole intervals as index into the LUT
+        lut_index = static_cast<uint32_t>(partial_intervals);
+        // By subtracting the whole intervals, only the partial rest remains
+        partial_intervals -= lut_index;
         } else {
-            lut_index = lut_intervals;
-            lut_offset = 0.0;
+            lut_index = n_lut_intervals;
+            partial_intervals = 0.0;
         }
     } else {
         lut_index = 0;
-        lut_offset = 0.0;
+        partial_intervals = 0.0;
     }
-
     // Interpolation interval start and end values
-    float interval_start = lut[lut_index];
+    float interval_start = lut_y[lut_index];
     float interval_end;
-    if (lut_index < lut_intervals) {
-        interval_end = lut[lut_index + 1];
+    if (lut_index < n_lut_intervals) {
+        interval_end = lut_y[lut_index + 1];
     } else {
         interval_end = interval_start;
     }
-
-    return interval_start + lut_offset * (interval_end - interval_start);
+    return interval_start + partial_intervals * (interval_end-interval_start);
 }
 
 float get_kty_temp_lin(uint16_t adc_filtered_value) {
@@ -128,12 +137,8 @@ float get_kty_temp_pwl(uint16_t adc_filtered_value) {
     constexpr float v_cc = 3.3;
     float v_in = v_adc_lower + (adc_filtered_value - adc_fsr_lower)
                                * v_adc_fsr / adc_fsr;
-    float r_kty = r_v * v_in / (v_cc - v_in);
-    return u16_piecewise_linear(static_cast<uint16_t>(r_kty));
-}
-
-float get_kty_temp_calc(float voltage) {
-    return 0.0;
+    uint32_t r_kty = r_v * v_in / (v_cc - v_in);
+    return equidistant_piecewise_linear(r_kty);
 }
 
 float get_adc_ch_voltage(adc1_channel_t channel){
