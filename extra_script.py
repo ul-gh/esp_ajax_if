@@ -13,7 +13,7 @@ env.Append(CXXFLAGS=["-std=gnu++17"])
 print("UL ===> COMMAND_LINE_TARGETS: ", COMMAND_LINE_TARGETS)
 ####################################################################################
 # Ulrich Lukas 2020-09-19: Account for changed bootloader and partition offsets
-if False and "upload" in COMMAND_LINE_TARGETS and "uploadfs" not in COMMAND_LINE_TARGETS:
+if "upload" in COMMAND_LINE_TARGETS and "uploadfs" not in COMMAND_LINE_TARGETS:
     print("UL ===> Using custom upload command for non-standard partitioning scheme...")
     # From .platformio/platforms/espressif32/builder/frameworks/espidf.py
     env.Replace(FLASH_EXTRA_IMAGES=[
