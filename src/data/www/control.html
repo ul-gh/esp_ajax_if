@@ -16,6 +16,8 @@
         // Last edited input elements. These are blocked from receiving state
         // updates when they are being edited.
         let last_edited_input_els = [];
+        // Requtest rate limiting for continuous inputs
+        let rate_limit_timer_expired = true;
 
         async function do_http_request(req_str) {
             try {
@@ -70,10 +72,28 @@
             }
         }
 
+        // Sends control name and value pair for range input change events
+        async function submit_range_input(event) {
+            const t = event.target;
+            if (t.nodeName == "INPUT" && t.type == "range"
+                && ! t.hasAttribute("disabled")
+                && rate_limit_timer_expired) {
+                    rate_limit_timer_expired = false;
+                    window.setTimeout(
+                        () => rate_limit_timer_expired = true,
+                        250)
+                    const req_str = "cmd?" + t.name + "=" + t.value;
+                    await do_http_request(req_str);
+            }
+
+        }
+
         // Connect all document forms submit action
         document.addEventListener("submit", submit_formdata, true);
         // Connect single control click events
         document.addEventListener("click", submit_single_ctrl, true);
+        // Connect range input change events
+        document.addEventListener("change", submit_range_input, true);
 
 
         // Update view with app state telegram when pushed via SSE
@@ -92,28 +112,50 @@
                 this.lead_dt_vw = document.getElementById("lead_dt_vw");
                 this.lag_dt_vw = document.getElementById("lag_dt_vw");
                 this.current_limit_vw = document.getElementById("current_limit_vw");
-                this.frequency_vw = document.getElementById("frequency_vw");
-                this.duty_vw = document.getElementById("duty_vw");
+                this.frequency_number_vw = document.getElementById("frequency_number_vw");
+                this.frequency_range_vw = document.getElementById("frequency_range_vw");
+                this.duty_number_vw = document.getElementById("duty_number_vw");
+                this.duty_range_vw = document.getElementById("duty_range_vw");
                 this.all_remote_vws = [
                     this.power_pwm_vw, this.shutdown_vw, this.aux_temp_vw,
                     this.heatsink_temp_vw, this.fan_vw, this.ref_vw, this.dut_vw,
                     this.lead_dt_vw, this.lag_dt_vw, this.current_limit_vw,
-                    this.frequency_vw, this.duty_vw, this.btn_pwm_on, this.btn_pwm_off];
+                    this.frequency_number_vw, this.frequency_range_vw,
+                    this.duty_number_vw, this.duty_range_vw,
+                    this.btn_pwm_on, this.btn_pwm_off];
                 // Prevent updating the input fields content with remote data
                 // when user starts entering a new value.
                 this.view_updates_inhibited = false;
                 document.addEventListener(
                         "input",
                         (event) => this.inhibit_view_updates(event.target),
-                        true);
+                        true
+                        );
                 // Allow again when editing is finished.
                 document.addEventListener(
-                // This does only work when "change" event is also connected to
-                // fire HTTP requests immediately:
-                //        "change",
                         "submit",
                         (event) => this.allow_view_updates(event.target),
-                        true);
+                        true
+                        );
+                document.addEventListener(
+                        "keydown",
+                        (event) => {
+                            if (event.key === "Enter") {
+                                this.allow_view_updates(event.target);
+                                }
+                            },
+                        true
+                        );
+                document.addEventListener(
+                        "mouseleave",
+                        (event) => {
+                            const t = event.target;
+                            if (t.nodeName == "INPUT" && t.type == "range") {
+                                this.allow_view_updates(t);
+                                }
+                            },
+                        true
+                        );
                 
             }
 
@@ -143,9 +185,9 @@
                     }
                 }
                 this.aux_temp_vw.innerText = Number(
-                    remote_state.aux_temp).toString() + " °C";
+                    remote_state.aux_temp).toFixed(1) + " °C";
                 this.heatsink_temp_vw.innerText = Number(
-                    remote_state.heatsink_temp).toString() + " °C";
+                    remote_state.heatsink_temp).toFixed(1) + " °C";
                 this.fan_vw.firstElementChild.checked = Boolean(
                     remote_state.fan_active);
                 this.ref_vw.firstElementChild.checked = Boolean(
@@ -153,11 +195,13 @@
                 this.dut_vw.firstElementChild.checked = Boolean(
                     remote_state.relay_dut_active);
                 // Operational settings
-                this.lag_dt_vw.value = remote_state.lag_dt;
-                this.lead_dt_vw.value = remote_state.lead_dt;
-                this.current_limit_vw.value = remote_state.current_limit;
-                this.frequency_vw.value = remote_state.frequency;
-                this.duty_vw.value = remote_state.duty;
+                this.lag_dt_vw.value = remote_state.lag_dt.toFixed(0);
+                this.lead_dt_vw.value = remote_state.lead_dt.toFixed(0);
+                this.current_limit_vw.value = remote_state.current_limit.toFixed(1);
+                this.frequency_number_vw.value = remote_state.frequency.toFixed(1);
+                this.frequency_range_vw.value = remote_state.frequency.toFixed(1);
+                this.duty_number_vw.value = remote_state.duty.toFixed(1);
+                this.duty_range_vw.value = remote_state.duty.toFixed(1);
             }
 
             enable_all() {
@@ -317,7 +361,6 @@
                 <td>Power Output State</td>
                 <td>HW Error Shutdown</td>
             </tr>
-
             <tr>
                 <td>
                     <div class="flex-centered state_vw" id="connection_vw">
@@ -440,6 +483,7 @@
                     <td><input type="number" id="lead_dt_vw"
                             name="set_lead_dt" value="125" min="6" max="1000"></td>
                 </tr>
+                <tr>
                 <td colspan="2"><input id="debug" type="submit" value="Submit"></td>
                 </tr>
             </tbody>
@@ -460,8 +504,9 @@
                 <tr>
                     <td>Current Limit /A:</td>
                     <td><input type="number" id="current_limit_vw"
-                            name="set_current_limit" value="35" min="0" max="100"></td>
+                            name="set_current_limit" value="35" min="0" max="100" step=0.1></td>
                 </tr>
+                <tr>
                     <td colspan="2">
                         <input type="submit" value="Submit">
                     </td>
@@ -473,7 +518,6 @@
 
 
     <li class="grid_item lr_center">
-    <form name="operation_settings">
         <table>
             <thead>
                 <tr>
@@ -481,23 +525,34 @@
                 </tr>
             </thead>
             <tbody>
-                <tr>
+                <tr class="alternating_bg">
                     <td>Frequency /kHz:</td>
-                    <td><input type="number" id="frequency_vw"
-                            name="set_frequency" value="100" min="5" max="1000"></td>
-                </tr>
-                <tr>
-                    <td>Duty Cycle /%:</td>
-                    <td>
-                        <input type="number" id="duty_vw"
-                            name="set_duty" value="45" min="0" max="100">
+                    <td><input type="number" id="frequency_number_vw"
+                            value="100" min="5" max="1000" step=0.1>
                     </td>
                 </tr>
-                <td colspan="2"><input type="submit" value="Submit"></td>
+                <tr class="alternating_bg">
+                    <td colspan="2">
+                        <input type="range" id="frequency_range_vw"
+                            value="100" min="5" max="1000" step=0.1>
+                    </td>
+                </tr>
+                
+                <tr class="alternating_bg">
+                    <td>Duty Cycle /%:</td>
+                    <td>
+                        <input type="number" id="duty_number_vw"
+                            value="45" min="0" max="100" step=0.1>
+                    </td>
+                </tr>
+                <tr class="alternating_bg">
+                    <td colspan="2">
+                        <input type="range" id="duty_range_vw"
+                            value="100" min="5" max="1000" step=0.1>
+                    </td>
                 </tr>
             </tbody>
         </table>
-    </form>
     </li>
 
     <!--End responsive grid layout-->

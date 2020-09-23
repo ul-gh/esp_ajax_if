@@ -73,7 +73,7 @@ img {
 table {
     margin: 0;
     border-collapse: collapse;
-    border: 2px solid rgb(200, 200, 200);
+    border: 2px solid rgb(177, 177, 177);
     font-family: sans-serif;
 }
 
@@ -91,10 +91,14 @@ tr {
     height: 100%;
     vertical-align: middle;
 }
+tr.alternating_bg:nth-child(4n + 3),
+tr.alternating_bg:nth-child(4n + 4) {
+    background-color: #dfdcff;
+}
 
 th,
 td {
-    border: 1px solid rgb(190, 190, 190);
+    border: 1px solid rgb(150, 150, 150);
     padding: 0.2rem 0.4rem;
     text-align: center;
 }
@@ -167,6 +171,9 @@ input {
 }
 input[type="number"] {
     width: 6rem;
+}
+input[type="range"] {
+    width: 95%;
 }
 input[editing] {
     background-color: rgb(255, 132, 60);

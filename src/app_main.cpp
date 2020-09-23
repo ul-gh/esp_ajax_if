@@ -3,6 +3,7 @@
 #include "sdkconfig.h"
 #include <Arduino.h>
 #include "esp32-hal-log.h"
+#include "esp_spiffs.h"
 #include <DNSServer.h>
 #include <ESPmDNS.h>
 #include <WiFi.h>
@@ -54,6 +55,12 @@ void setup() {
     ps_pwm_controller = new PsPwmAppHwControl{api_server};
     api_server->activate_events_on("/events");
     api_server->activate_default_callbacks();
+    size_t tot_bytes, used_bytes;
+    esp_spiffs_info(NULL, &tot_bytes, &used_bytes);
+    Serial.print("SPIFFS filesystem size in bytes: ");
+    Serial.print(tot_bytes);
+    Serial.print("   Used bytes: ");
+    Serial.println(used_bytes);
     AdcTemp::adc_init_test_capabilities();
 }
 
