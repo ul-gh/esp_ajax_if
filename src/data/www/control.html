@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--Requires at least ES7 JavaScript-->
+<!--2020-09-24 Ulrich Lukas-->
 <html>
-
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -40,19 +40,21 @@
             await do_http_request(req_str);
         }
 
-        // Sends control name and value pair
+        // Sends control name and value pair for different DOM element used as input
         async function submit_single_ctrl(event) {
-            // These elements are supposed to reflect the remote state and are
-            // set later when the respective SSE event arrives with a state update
             const target = event.target;
             let all_ctrls = Array.from(document.getElementsByClassName("request_src"));
-            for (let i = 0; i < all_ctrls.length; i++) {
-                const ctrl = all_ctrls[i];
+            for (let i=0; i < all_ctrls.length; i++) {
+                let ctrl = all_ctrls[i];
+                // An element "contains" itself so this yields a valid result
+                // even when the control is a single HTML DOM element
                 if (ctrl.contains(target)) {
                     if (ctrl.classList.contains("toggle-switchy")) {
-                        // For these iputs, we use custom actions
+                        // For these iputs, we use custom actions. The inputs
+                        // are not immediately toggled visibly but only when an
+                        // SSE response from the server is received.
                         event.preventDefault();
-                        const input_el = ctrl.firstElementChild;
+                        let input_el = ctrl.firstElementChild;
                         var disabled = input_el.hasAttribute("disabled");
                         var req_name = input_el.getAttribute("name");
                         // We want the state to toggle, requested state is inverted
@@ -64,14 +66,21 @@
                     } else {
                         if (    event.type == "click"
                                 && !ctrl.classList.contains("click_src")) {
-                            return
+                            return;
                         }
                         var disabled = ctrl.hasAttribute("disabled");
                         var req_name = ctrl.getAttribute("name");
                         var req_value = ctrl.getAttribute("value");
                     }
                     if (!disabled) {
-                        const req_str = "cmd?" + req_name + "=" + req_value;
+                        let req_str = "cmd?" + req_name + "=" + req_value;
+                        console.log("Event.target: ");
+                        console.log(event.target);
+                        console.log("Target: ");
+                        console.log(target);
+                        console.log("Control: ");
+                        console.log(ctrl);
+                        console.log("Request: " + req_str);
                         await do_http_request(req_str);
                     }
                 }
@@ -80,6 +89,8 @@
 
         // Sends control name and value pair for range input change events
         async function submit_range_input(event) {
+            console.log("Input event: ");
+            console.log(event);
             const t = event.target;
             if (    t.nodeName == "INPUT" && t.type == "range"
                     && !t.hasAttribute("disabled")
@@ -91,23 +102,21 @@
                 const req_str = "cmd?" + t.name + "=" + t.value;
                 await do_http_request(req_str);
             }
-
         }
 
         // Connect all document forms submit action
         document.addEventListener("submit", submit_formdata, true);
         // Connect single control click events
         document.addEventListener("click", submit_single_ctrl, true);
+        document.addEventListener(
+            "keydown",
+            (e) => {if (e.key == "Enter") {submit_single_ctrl(e);
+        console.log("FOOOO______0000000000");
+        console.log(e.target);}},
+            true);
         // Connect range input change events
         document.addEventListener("input", submit_range_input, true);
-        document.addEventListener("keydown",
-                                  (event) => {
-                                      if (event.key == "Enter") {
-                                          submit_single_ctrl(event)
-                                      }
-                                  },
-                                  true
-                                  );
+
 
         // Update view with app state telegram when pushed via SSE
         class ViewUpdater {
@@ -143,35 +152,28 @@
                 this.range_input_updates_inhibited = false;
                 document.addEventListener(
                         "input",
-                        (event) => this.inhibit_view_updates(event.target),
-                        true
-                        );
+                        (e) => {this.inhibit_view_updates(e.target);
+                        },
+                        true);
                 // Allow again when editing is finished.
                 document.addEventListener(
                         "submit",
-                        (event) => this.allow_view_updates(event.target),
-                        true
-                        );
+                        (e) => this.allow_view_updates(e.target),
+                        true);
                 document.addEventListener(
                         "keydown",
-                        (event) => {
-                            if (event.key == "Enter") {
-                                this.allow_view_updates(event.target);
-                                }
-                            },
-                        true
-                        );
+                        (e) => {if (e.key == "Enter") {
+                            console.log("ENTER pressed with value: " + e.target.value);
+                            this.allow_view_updates(e.target);}},
+                        true);
                 document.addEventListener(
                         "change",
-                        (event) => {
-                            const t = event.target;
-                            if (t.nodeName == "INPUT" && t.type == "range") {
-                                this.allow_view_updates(t);
-                                }
-                            },
-                        true
-                        );
-                
+                        (e) => {const t = e.target;
+                                if (t.nodeName == "INPUT" && t.type == "range") {
+                                    this.allow_view_updates(t);
+                                    }
+                                },
+                        true);
             }
 
             update() {
@@ -214,9 +216,11 @@
                 this.lead_dt_vw.value = remote_state.lead_dt.toFixed(0);
                 this.current_limit_vw.value = remote_state.current_limit.toFixed(1);
                 this.frequency_number_vw.value = remote_state.frequency.toFixed(1);
-                this.frequency_range_vw.value = remote_state.frequency.toFixed(1);
                 this.duty_number_vw.value = remote_state.duty.toFixed(1);
-                this.duty_range_vw.value = remote_state.duty.toFixed(1);
+                if (!this.range_input_updates_inhibited) {
+                    this.frequency_range_vw.value = remote_state.frequency.toFixed(1);
+                    this.duty_range_vw.value = remote_state.duty.toFixed(1);
+                }
             }
 
             enable_all() {
@@ -250,6 +254,7 @@
             inhibit_view_updates(input_el) {
                 if (input_el.type == "range") {
                     this.range_input_updates_inhibited = true;
+                    return;
                 }
                 if (this.all_remote_vws.includes(input_el)) {
                     this.view_updates_inhibited = true;
@@ -263,6 +268,7 @@
                 // When range slider is released, re-allow updates for this only
                 if (input_el.type == "range") {
                     this.range_input_updates_inhibited = false;
+                    return;
                 }
                 // Otherwise, re-allow all
                 this.view_updates_inhibited = false;
