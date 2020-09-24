@@ -6,7 +6,8 @@
         "periph_ctrl.h": "c",
         "dport_reg.h": "c",
         "esp_log.h": "c",
-        "functional": "cpp"
+        "functional": "cpp",
+        "*.ipp": "cpp"
     },
     "cmake.configureOnOpen": false,
     "workbench.editor.enablePreview": false,

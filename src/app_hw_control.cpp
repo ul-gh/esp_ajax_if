@@ -172,14 +172,14 @@ void PsPwmAppHwControl::register_remote_control(APIServer* api_server) {
 /* Called periodicly submitting application state to the HTTP client.
  *
  * This static method runs in FreeRTOS timer task.
- * It uses a lot of stack space due to string processing when using a
- * StaticJsonDocument.
+ * It uses a lot of memory due to string processing.
  * See: https://arduinojson.org/v6/faq/why-does-my-device-crash-or-reboot/
  * 
  * The default stack size when setting up ESP32 platform using Arduino framwork
- * on platformio is not sufficient and there is no easy way to increase it.
+ * is not sufficient and must be increased using ESP-IDF configuration
+ * (menuconfig option) for this to work using stack allocation.
  * 
- * This is why a DynamicJsonDocument is used.
+ * Another option is to use the DynamicJsonDocument, see commented lines below.
  */
 void PsPwmAppHwControl::on_periodic_update_timer(TimerHandle_t xTimer) {
     PsPwmAppHwControl* self = static_cast<PsPwmAppHwControl*>(pvTimerGetTimerID(xTimer));
@@ -190,21 +190,19 @@ void PsPwmAppHwControl::on_periodic_update_timer(TimerHandle_t xTimer) {
         return;
     }
     reentry_guard_active = true;
+    //// Debug print output
     static int cycle_no = 0;
     cycle_no++;
     if (cycle_no == 16) {
         cycle_no = 0;
-        // FIXME: Debug
-        char* task_name = pcTaskGetTaskName(NULL);
-        Serial.print("app_hw_control periodic task name: ");
-        Serial.print(task_name);
-        Serial.print("  Free stack size (!!): ");
+        Serial.print("AppHwControl SSE periodic task free stack size: ");
         Serial.println(uxTaskGetStackHighWaterMark(NULL));
     }
+    ////
     // Update temperature sensor values on this occasion
     self->aux_hw_drv.update_temperature_sensors();
     /* These sizes need to be adapted accordingly if below structure
-     * size is changed (!) (!!)
+     * size is changed (!)
      */
     constexpr size_t json_object_size = JSON_OBJECT_SIZE(20);
     constexpr size_t strings_size = sizeof(
@@ -216,12 +214,18 @@ void PsPwmAppHwControl::on_periodic_update_timer(TimerHandle_t xTimer) {
         "drv_supply_active""drv_disabled"
         "hw_oc_fault_present""hw_oc_fault_occurred"
         );
+    // Prevent buffer overflow even if above calculations are wrong...
     constexpr size_t I_AM_SCARED_MARGIN = 50;
     constexpr size_t total_content_size = json_object_size
-                                          + strings_size + I_AM_SCARED_MARGIN;
+                                          + strings_size
+                                          + I_AM_SCARED_MARGIN;
     
     // ArduinoJson JsonDocument object, see https://arduinojson.org
-    DynamicJsonDocument json_doc{json_object_size};
+    //// Stack-allocated version has better performance and is likely safer
+    StaticJsonDocument<json_object_size> json_doc;
+    //// Heap-allocated version is useful when stack size can not be changed
+    //DynamicJsonDocument json_doc{json_object_size};
+
     // Setpoint limits. Scaled to kHz, ns and % respectively...
     json_doc["frequency_min"] = self->pspwm_setpoint_limits->frequency_min/1e3;
     json_doc["frequency_max"] = self->pspwm_setpoint_limits->frequency_max/1e3;
@@ -251,22 +255,22 @@ void PsPwmAppHwControl::on_periodic_update_timer(TimerHandle_t xTimer) {
     // Hardware Fault Shutdown Status is latched using this flag
     json_doc["hw_oc_fault_occurred"] = pspwm_get_hw_fault_shutdown_occurred(mcpwm_num);
 
-    // Stack-allocated version
-    //char json_str_buffer[total_content_size];
-    //serializeJson(json_doc, json_str_buffer);
-    static char* json_str_buffer = nullptr;
-    if (!json_str_buffer) {
-        json_str_buffer = static_cast<char*>(malloc(total_content_size));
-        if (json_str_buffer == nullptr) {
-            // Allocation has failed .. But we can skip sending the telegram
-            // and try again later..
-            error_print("Allocation failed in PsPwmAppHwControl::on_periodic_update_timer!");
-            return;
-        }
-    }
-    serializeJson(json_doc, json_str_buffer, total_content_size-1);
-    json_str_buffer[total_content_size-1] = '\0';
-    
+    //// Stack-allocated version
+    char json_str_buffer[total_content_size];
+    serializeJson(json_doc, json_str_buffer);
+    //// Heap version
+    //static char* json_str_buffer = nullptr;
+    //if (!json_str_buffer) {
+    //    json_str_buffer = static_cast<char*>(malloc(total_content_size));
+    //    if (json_str_buffer == nullptr) {
+    //        // Allocation has failed .. But we can skip sending the telegram
+    //        // and try again later..
+    //        error_print("Allocation failed in PsPwmAppHwControl::on_periodic_update_timer!");
+    //        return;
+    //    }
+    //}
+    //serializeJson(json_doc, json_str_buffer, total_content_size);
+    ////
     self->api_server->event_source->send(json_str_buffer, "hw_app_state");
     reentry_guard_active = false;
 }

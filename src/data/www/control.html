@@ -10,6 +10,8 @@
     <link rel="stylesheet" type="text/css" href="u_lukas_style.css">
 
     <script>
+        // Minimum delay between two requests sent to the HTTP server in ms
+        const request_interval_min = 200;
         // Global object storing the application state, this is updated from
         // server PUSH updates via the SSE event handler.
         let remote_state = {};
@@ -47,9 +49,9 @@
             for (let i = 0; i < all_ctrls.length; i++) {
                 const ctrl = all_ctrls[i];
                 if (ctrl.contains(target)) {
-                    // For these iputs, we use custom actions
-                    event.preventDefault();
                     if (ctrl.classList.contains("toggle-switchy")) {
+                        // For these iputs, we use custom actions
+                        event.preventDefault();
                         const input_el = ctrl.firstElementChild;
                         var disabled = input_el.hasAttribute("disabled");
                         var req_name = input_el.getAttribute("name");
@@ -60,6 +62,10 @@
                             var req_value = "true";
                         }
                     } else {
+                        if (    event.type == "click"
+                                && !ctrl.classList.contains("click_src")) {
+                            return
+                        }
                         var disabled = ctrl.hasAttribute("disabled");
                         var req_name = ctrl.getAttribute("name");
                         var req_value = ctrl.getAttribute("value");
@@ -75,15 +81,15 @@
         // Sends control name and value pair for range input change events
         async function submit_range_input(event) {
             const t = event.target;
-            if (t.nodeName == "INPUT" && t.type == "range"
-                && ! t.hasAttribute("disabled")
-                && rate_limit_timer_expired) {
-                    rate_limit_timer_expired = false;
-                    window.setTimeout(
-                        () => rate_limit_timer_expired = true,
-                        250)
-                    const req_str = "cmd?" + t.name + "=" + t.value;
-                    await do_http_request(req_str);
+            if (    t.nodeName == "INPUT" && t.type == "range"
+                    && !t.hasAttribute("disabled")
+                    && rate_limit_timer_expired) {
+                rate_limit_timer_expired = false;
+                window.setTimeout(() => rate_limit_timer_expired = true,
+                                  request_interval_min
+                                  )
+                const req_str = "cmd?" + t.name + "=" + t.value;
+                await do_http_request(req_str);
             }
 
         }
@@ -93,8 +99,15 @@
         // Connect single control click events
         document.addEventListener("click", submit_single_ctrl, true);
         // Connect range input change events
-        document.addEventListener("change", submit_range_input, true);
-
+        document.addEventListener("input", submit_range_input, true);
+        document.addEventListener("keydown",
+                                  (event) => {
+                                      if (event.key == "Enter") {
+                                          submit_single_ctrl(event)
+                                      }
+                                  },
+                                  true
+                                  );
 
         // Update view with app state telegram when pushed via SSE
         class ViewUpdater {
@@ -126,6 +139,8 @@
                 // Prevent updating the input fields content with remote data
                 // when user starts entering a new value.
                 this.view_updates_inhibited = false;
+                // Same but only inhibits range slider updates
+                this.range_input_updates_inhibited = false;
                 document.addEventListener(
                         "input",
                         (event) => this.inhibit_view_updates(event.target),
@@ -140,14 +155,14 @@
                 document.addEventListener(
                         "keydown",
                         (event) => {
-                            if (event.key === "Enter") {
+                            if (event.key == "Enter") {
                                 this.allow_view_updates(event.target);
                                 }
                             },
                         true
                         );
                 document.addEventListener(
-                        "mouseleave",
+                        "change",
                         (event) => {
                             const t = event.target;
                             if (t.nodeName == "INPUT" && t.type == "range") {
@@ -233,6 +248,9 @@
             }
 
             inhibit_view_updates(input_el) {
+                if (input_el.type == "range") {
+                    this.range_input_updates_inhibited = true;
+                }
                 if (this.all_remote_vws.includes(input_el)) {
                     this.view_updates_inhibited = true;
                     // Sets color highlight while aditing element
@@ -242,8 +260,11 @@
             }
 
             allow_view_updates(input_el) {
-                // This is called only when a submit button is pressed, so we
-                // just always reset everything and remove the highlighting
+                // When range slider is released, re-allow updates for this only
+                if (input_el.type == "range") {
+                    this.range_input_updates_inhibited = false;
+                }
+                // Otherwise, re-allow all
                 this.view_updates_inhibited = false;
                 for (let i = last_edited_input_els.length-1; i >= 0; i--) {
                     last_edited_input_els[i].removeAttribute("editing");
@@ -303,6 +324,9 @@
                         this.view_updater.update();
                     }, false
                 );
+            }
+            disable_reconnect() {
+                window.clearTimeout(this.reconnect_timer_id);
             }
         }
 
@@ -371,7 +395,7 @@
                     </div>
                 </td>
                 <td>
-                    <div class="flex-centered state_vw request_src" id="shutdown_vw"
+                    <div class="flex-centered state_vw request_src click_src" id="shutdown_vw"
                             name="clear_shutdown" value="true" disabled>
                     </div>
                 </td>
@@ -431,11 +455,11 @@
             <tr>
                 <td>
                     <span style="white-space: nowrap">
-                    <button class="request_src" id="btn_pwm_on"
+                    <button class="request_src click_src" id="btn_pwm_on"
                             name="set_power_pwm_active" value="true" disabled>
                         ON
                     </button>
-                    <button class="request_src" id="btn_pwm_off"
+                    <button class="request_src click_src" id="btn_pwm_off"
                             name="set_power_pwm_active" value="false" disabled>
                         OFF
                     </button>
@@ -527,28 +551,28 @@
             <tbody>
                 <tr class="alternating_bg">
                     <td>Frequency /kHz:</td>
-                    <td><input type="number" id="frequency_number_vw"
-                            value="100" min="5" max="1000" step=0.1>
+                    <td><input type="number" class="request_src" id="frequency_number_vw"
+                            name="set_frequency" value="100" min="5" max="1000" step=0.1>
                     </td>
                 </tr>
                 <tr class="alternating_bg">
                     <td colspan="2">
                         <input type="range" id="frequency_range_vw"
-                            value="100" min="5" max="1000" step=0.1>
+                            name="set_frequency" value="100" min="5" max="1000" step=0.1>
                     </td>
                 </tr>
                 
                 <tr class="alternating_bg">
                     <td>Duty Cycle /%:</td>
                     <td>
-                        <input type="number" id="duty_number_vw"
-                            value="45" min="0" max="100" step=0.1>
+                        <input type="number" class="request_src" id="duty_number_vw"
+                            name="set_duty" value="45" min="0" max="100" step=0.1>
                     </td>
                 </tr>
                 <tr class="alternating_bg">
                     <td colspan="2">
                         <input type="range" id="duty_range_vw"
-                            value="100" min="5" max="1000" step=0.1>
+                            name="set_duty" value="45" min="0" max="100" step=0.1>
                     </td>
                 </tr>
             </tbody>

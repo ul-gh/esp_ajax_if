@@ -1,6 +1,5 @@
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
-#include "sdkconfig.h"
 #include <Arduino.h>
 #include "esp32-hal-log.h"
 #include "esp_spiffs.h"
@@ -9,7 +8,9 @@
 #include <WiFi.h>
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
+#include "sdkconfig.h"
 //#include <ESPAsyncWiFiManager.h>
+
 
 #include "info_debug_error.h"
 #include "wifi_setup.hpp"

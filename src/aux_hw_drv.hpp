@@ -56,7 +56,8 @@ public:
         .speed_mode = LEDC_HIGH_SPEED_MODE,
         .duty_resolution = LEDC_TIMER_12_BIT,
         .timer_num = LEDC_TIMER_0,
-        .freq_hz = 19500
+        .freq_hz = 19500,
+        .clk_cfg = LEDC_USE_APB_CLK // 80 MHz
     };
     static constexpr ledc_channel_config_t curr_lim_pwm_ch_config {
         .gpio_num = gpio_curr_limit_reference_pwm,
