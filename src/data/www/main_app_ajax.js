@@ -18,20 +18,31 @@ class AsyncRequestGenerator {
         // All HTML elements which are of class "ajax_btn" and have a "name"
         // and a "value" attribute can be used to generate HTTP requests.
         this.all_btns = Array.from(document.getElementsByClassName("ajax_btn"));
+        // All form inputs. These are only be supposed to be submitted as
+        // part of the form they belong to, not as a single input.
+        this.all_forminputs = [];
+        for (let form of document.forms) {
+            for (let input of form) {
+                this.all_forminputs.push(input);
+            }
+        }
         // For assuring a minimum delay between HTTP requests
         this._rate_limit_active = false;
         // Last request string received which could not be sent due rate limit
         this._pending_req_str = "";
-        // Connect HTML document events.
-        document.addEventListener("submit", this.submit_formdata, true);
-        // Connect single control click events
-        document.addEventListener("click", this.submit_button, true);
+        //// Connect HTML document events
+        document.addEventListener("click", e => this.submit_button(e), true);
+        // FIXME: Do we need this?
         //document.addEventListener(
         //    "keydown",
         //    (e) => {if (e.key == "Enter") {this.submit_input(e);}},
         //    true);
-        // Connect "input" events, e.g. from number and range type inputs
-        document.addEventListener("input", this.submit_input, true);
+        document.addEventListener("submit", e => this.submit_formdata(e), true);
+        // Button click events
+        document.addEventListener("change", e => this.submit_nonform_input(e), true);
+        // Connect "input" events, only used here for range type inputs
+        document.addEventListener("input", e => this.submit_range_input(e), true);
+
     }
 
     /** Send HTTP requests rate-limited by a minimum delay timer.
@@ -54,7 +65,7 @@ class AsyncRequestGenerator {
                 return;
             }
         }
-        rate_limit_active = true;
+        this.rate_limit_active = true;
         // Recursive call. If no requests are pending when timer expires,
         // only the timer_expired flag is reset.
         window.setTimeout(() => {this.rate_limit_active = false;
@@ -79,7 +90,11 @@ class AsyncRequestGenerator {
 
     async submit_formdata(event) {
         event.preventDefault(); // Disable default "GET" form action
-        const form_data = new FormData(event.target);
+        const t = event.target;
+        if (t.hasAttribute("disabled")) {
+            return;
+        }
+        const form_data = new FormData(t);
         const req_str = "cmd?" + new URLSearchParams(form_data).toString();
         await this.do_http_request(req_str);
     }
@@ -113,10 +128,20 @@ class AsyncRequestGenerator {
         }
     }
 
-    // Sends control name and value pair for "input" or similar events
-    async submit_input(event) {
+    // Sends control name and value pair for slider "range" input or similar
+    async submit_range_input(event) {
         const t = event.target;
-        if (t.hasAttribute("disabled")) {
+        if (t.type != "range" || t.hasAttribute("disabled")) {
+            return;
+        }
+        await this.send_cmd(t.name, t.value);
+    }
+
+    // Sends control name and value pair for number input or similar,
+    // but only if this is not part of a form
+    async submit_nonform_input(event) {
+        const t = event.target;
+        if (this.all_forminputs.includes(t) || t.hasAttribute("disabled")) {
             return;
         }
         await this.send_cmd(t.name, t.value);
@@ -152,7 +177,8 @@ class ViewUpdater {
         this.frequency_range_vw = document.getElementById("frequency_range_vw");
         this.duty_number_vw = document.getElementById("duty_number_vw");
         this.duty_range_vw = document.getElementById("duty_range_vw");
-        this.all_remote_vws = [
+        // All disable items
+        this.all_disable_items = [
             this.power_pwm_vw, this.shutdown_vw, this.aux_temp_vw,
             this.heatsink_temp_vw, this.fan_vw, this.ref_vw, this.dut_vw,
             this.lead_dt_vw, this.lag_dt_vw, this.current_limit_vw,
@@ -160,11 +186,15 @@ class ViewUpdater {
             this.duty_number_vw, this.duty_range_vw,
             this.btn_pwm_on, this.btn_pwm_off,
             ];
+        // We also want to disable the submit buttons
+        for (let form of document.forms) {
+            for (let input of form) {
+                if (input.type == "submit") this.all_disable_items.push(input);
+            }
+        }
         document.addEventListener(
             "input",
-            (e) => {
-                this.inhibit_view_updates(e.target);
-            },
+            (e) => this.inhibit_view_updates(e.target),
             true);
         // Allow again when editing is finished.
         document.addEventListener(
@@ -177,8 +207,7 @@ class ViewUpdater {
                 if (e.key == "Enter") {
                     console.log("ENTER pressed with value: " + e.target.value);
                     this.allow_view_updates(e.target);
-                }
-            },
+                }},
             true);
         document.addEventListener(
             "change",
@@ -186,8 +215,7 @@ class ViewUpdater {
                 const t = e.target;
                 if (t.nodeName == "INPUT" && t.type == "range") {
                     this.allow_view_updates(t);
-                }
-            },
+                }},
             true);
     }
 
@@ -241,7 +269,7 @@ class ViewUpdater {
     enable_all() {
         this.connection_vw.setAttribute("active", "active");
         this.connection_vw.innerText = "OK";
-        this.all_remote_vws.forEach((item) => {
+        this.all_disable_items.forEach((item) => {
             if (item.classList.contains("toggle-switchy")) {
                 item.firstElementChild.disabled = false;
             } else {
@@ -257,7 +285,7 @@ class ViewUpdater {
         this.shutdown_vw.innerText = "Unknown...";
         this.aux_temp_vw.innerText = "Unknown...";
         this.heatsink_temp_vw.innerText = "Unknown...";
-        this.all_remote_vws.forEach((item) => {
+        this.all_disable_items.forEach((item) => {
             if (item.classList.contains("toggle-switchy")) {
                 item.firstElementChild.disabled = true;
             } else {
@@ -271,7 +299,7 @@ class ViewUpdater {
             this.range_input_updates_inhibited = true;
             return;
         }
-        if (this.all_remote_vws.includes(input_el)) {
+        if (this.all_disable_items.includes(input_el)) {
             this.view_updates_inhibited = true;
             this.last_edited_input_els.push(input_el);
             // Sets color highlight while aditing element

@@ -72,7 +72,7 @@
                         </div>
                     </td>
                     <td>
-                        <label class="toggle-switchy request_src" id="fan_vw">
+                        <label class="toggle-switchy ajax_btn" id="fan_vw">
                             <input type="checkbox" name="set_fan_active" checked disabled>
                             <span class="toggle">
                                 <span class="switch"></span>
@@ -100,18 +100,18 @@
             <tr>
                 <td>
                     <span style="white-space: nowrap">
-                    <button class="request_src click_src" id="btn_pwm_on"
+                    <button class="ajax_btn" id="btn_pwm_on"
                             name="set_power_pwm_active" value="true" disabled>
                         ON
                     </button>
-                    <button class="request_src click_src" id="btn_pwm_off"
+                    <button class="ajax_btn" id="btn_pwm_off"
                             name="set_power_pwm_active" value="false" disabled>
                         OFF
                     </button>
                     </span>
                 </td>
                 <td>
-                    <label class="toggle-switchy request_src" id="ref_vw" data-size="lg">
+                    <label class="toggle-switchy ajax_btn" id="ref_vw" data-size="lg">
                         <input type="checkbox" name="set_relay_ref_active" disabled>
                         <span class="toggle">
                             <span class="switch"></span>
@@ -119,7 +119,7 @@
                     </label>
                 </td>
                 <td>
-                    <label class="toggle-switchy request_src" id="dut_vw" data-size="lg">
+                    <label class="toggle-switchy ajax_btn" id="dut_vw" data-size="lg">
                         <input type="checkbox" name="set_relay_dut_active" disabled>
                         <span class="toggle">
                             <span class="switch"></span>
@@ -193,7 +193,7 @@
             <tbody>
                 <tr class="alternating_bg">
                     <td>Frequency /kHz:</td>
-                    <td><input type="number" class="request_src" id="frequency_number_vw"
+                    <td><input type="number" id="frequency_number_vw"
                             name="set_frequency" value="100" min="5" max="1000" step=0.1>
                     </td>
                 </tr>
@@ -207,7 +207,7 @@
                 <tr class="alternating_bg">
                     <td>Duty Cycle /%:</td>
                     <td>
-                        <input type="number" class="request_src" id="duty_number_vw"
+                        <input type="number" id="duty_number_vw"
                             name="set_duty" value="45" min="0" max="100" step=0.1>
                     </td>
                 </tr>
