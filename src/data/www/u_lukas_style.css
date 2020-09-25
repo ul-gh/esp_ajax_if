@@ -1,6 +1,12 @@
-html {
-    /* font-size: 16px; */
-}
+/* Styling for responsive grid layout sigle-page web application
+ * switching between two- or one columns which are center-aligned.
+ * Content uses somehow old-fashioned table views.
+ * 2020-09-24 Ulrich Lukas
+ */
+
+/*html {
+    font-size: 16px;
+}*/
 
 @media screen and (max-width: 670px) and (min-width: 501px) {
     html {
@@ -62,6 +68,12 @@ ul.main_grid {
     justify-content: center;
 }
 
+a,
+p {
+    display: block;
+    text-align: center;
+}
+
 img {
     margin: auto;
     margin-bottom: 1rem;
@@ -108,33 +120,17 @@ td {
     min-width: 12rem;
 }
 
-a,
-p {
-    display: block;
-    text-align: center;
+input {
+    font-size: 1rem;
 }
-
-#btn_clear_shutdown {
-    display: block;
-    margin: auto;
-    background-color: white;
-    /* width: 100%; */
+input[type="number"] {
+    width: 6rem;
 }
-
-#btn_pwm_on {
-    display: inline-block;
-    font-size: 1.3rem;
-    padding: 1rem 2rem;
-    color: white;
-    background-color: #4CAF50; /* Green */
+input[type="range"] {
+    width: 95%;
 }
-
-#btn_pwm_off {
-    display: inline-block;
-    font-size: 1.3rem;
-    padding: 1rem 2rem;
-    color: white;
-    background-color: red;
+input[editing] {
+    background-color: rgb(255, 132, 60);
 }
 
 div.state_vw[disabled],
@@ -166,15 +162,25 @@ div.number_vw[disabled] {
     background-color: rgb(250, 84, 84);
 }
 
-input {
-    font-size: 1rem;
+#btn_clear_shutdown {
+    display: block;
+    margin: auto;
+    background-color: white;
+    /* width: 100%; */
 }
-input[type="number"] {
-    width: 6rem;
+
+#btn_pwm_on {
+    display: inline-block;
+    font-size: 1.3rem;
+    padding: 1rem 2rem;
+    color: white;
+    background-color: #4CAF50; /* Green */
 }
-input[type="range"] {
-    width: 95%;
-}
-input[editing] {
-    background-color: rgb(255, 132, 60);
+
+#btn_pwm_off {
+    display: inline-block;
+    font-size: 1.3rem;
+    padding: 1rem 2rem;
+    color: white;
+    background-color: red;
 }

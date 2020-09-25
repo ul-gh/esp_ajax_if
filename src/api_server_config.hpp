@@ -2,7 +2,7 @@
 // from files contained in data/www at the "/" endpoint.
 constexpr bool mount_spiffs_requested = true;
 // Default filename served from SPIFFS when "/" without filename is requested
-constexpr const char* index_html_filename = "control.html";
+constexpr const char* index_html_filename = "main_app.html";
 
 // Activate template processing when defined
 constexpr bool template_processing_activated = false;
@@ -21,7 +21,7 @@ constexpr bool sending_heartbeats = false;
 // Interval time in milliseconds
 constexpr unsigned long heartbeat_interval = 500;
 // Text string sent with the heartbeat event if enabled
-static constexpr const char* heartbeat_message{"HB"};
+static constexpr const char* heartbeat_message = "HB";
 
 // Activate HTTP Basic Authentication, set to true when user/password is given
 constexpr bool http_auth_requested = false;
