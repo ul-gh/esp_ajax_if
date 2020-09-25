@@ -232,11 +232,9 @@
     </p>
     <script>
         const request_gen = new AsyncRequestGenerator();
-        const view_updater = new ViewUpdater();
-        view_updater.disable_all();
-        const heartbeat_watchdog = new HeartbeatWatchdog(1500, view_updater);
-        const sse_handler = new ServerSentEventHandler(
-            "/events", 3000, heartbeat_watchdog, view_updater);
+        const updater = new ViewUpdater();
+        const watchdog = new AppWatchdog(1500, view_updater);
+        const sse_handler = new ServerSentEventHandler("/events", updater, watchdog);
     </script>
 </body>
 </html>

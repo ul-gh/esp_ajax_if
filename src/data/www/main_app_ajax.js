@@ -7,12 +7,17 @@
  * 2020-09-24 Ulrich Lukas
  */
 
-// Minimum delay between two requests sent to the HTTP server in ms
-const request_interval_min_ms = 200;
-// Global object storing the application state, this is updated from
-// server PUSH updates via the SSE event handler.
-let remote_state = {};
+// Configure minimum delay between two requests sent to the HTTP server in ms
+const request_interval_min_ms = 300;
+// Configure Server-Sent-Event source reconnect timer timeout in ms
+const sse_reconnect_timeout = 3000;
 
+/** Singleton class implementing methods for performing asynchronous
+ * HTTP requests from received HTML DOM input events.
+ * 
+ * HTML DOM input events are connected to the request emitting methods
+ * in the constructor.
+ */
 class AsyncRequestGenerator {
     constructor () {
         // All HTML elements which are of class "ajax_btn" and have a "name"
@@ -35,14 +40,13 @@ class AsyncRequestGenerator {
         // FIXME: Do we need this?
         //document.addEventListener(
         //    "keydown",
-        //    (e) => {if (e.key == "Enter") {this.submit_input(e);}},
+        //    e => {if (e.key == "Enter") this.submit_input(e)},
         //    true);
         document.addEventListener("submit", e => this.submit_formdata(e), true);
         // Button click events
         document.addEventListener("change", e => this.submit_nonform_input(e), true);
         // Connect "input" events, only used here for range type inputs
         document.addEventListener("input", e => this.submit_range_input(e), true);
-
     }
 
     /** Send HTTP requests rate-limited by a minimum delay timer.
@@ -58,17 +62,20 @@ class AsyncRequestGenerator {
         }
         // Rate limit timer expired, ready to send any request...
         if (!req_str) {
+            // Empty request means either the timer expired or a bug..
             if (this._pending_req_str) {
                 req_str = this._pending_req_str;
                 this._pending_req_str = "";
             } else {
+                // This is always reached when timer expires and
+                // there is no pending request.
                 return;
             }
         }
-        this.rate_limit_active = true;
-        // Recursive call. If no requests are pending when timer expires,
-        // only the timer_expired flag is reset.
-        window.setTimeout(() => {this.rate_limit_active = false;
+        this._rate_limit_active = true;
+        // Recursive call. If no requests are pending when timer expires, the
+        // called method exits early and only rate_limit_active flag is reset.
+        window.setTimeout(() => {this._rate_limit_active = false;
                                  this.do_http_request("");
                                  },
                           request_interval_min_ms
@@ -83,11 +90,16 @@ class AsyncRequestGenerator {
         }
     }
 
+    /** Send name=value pair as a rate-limited HTTP request
+     */
     async send_cmd(name, value) {
         const req_str = "cmd?" + name + "=" + value;
         await this.do_http_request(req_str);
     }
 
+    /** This has no check if the event was targeted at a form input element,
+     * so this should only be connected to the form "submit" event
+     */
     async submit_formdata(event) {
         event.preventDefault(); // Disable default "GET" form action
         const t = event.target;
@@ -99,6 +111,8 @@ class AsyncRequestGenerator {
         await this.do_http_request(req_str);
     }
 
+    /* This only reacts on events targeted at one of the registered buttons
+     */
     async submit_button(event) {
         const target = event.target;
         for (let i = 0; i < this.all_btns.length; i++) {
@@ -128,7 +142,8 @@ class AsyncRequestGenerator {
         }
     }
 
-    // Sends control name and value pair for slider "range" input or similar
+    /* Sends control name=value pair for slider "range" input or similar
+     */
     async submit_range_input(event) {
         const t = event.target;
         if (t.type != "range" || t.hasAttribute("disabled")) {
@@ -137,8 +152,9 @@ class AsyncRequestGenerator {
         await this.send_cmd(t.name, t.value);
     }
 
-    // Sends control name and value pair for number input or similar,
-    // but only if this is not part of a form
+    /* Sends control name and value pair for number input or similar,
+     * but only if this is not part of a form
+     */
     async submit_nonform_input(event) {
         const t = event.target;
         if (this.all_forminputs.includes(t) || t.hasAttribute("disabled")) {
@@ -148,17 +164,18 @@ class AsyncRequestGenerator {
     }
 }
 
-// Update view with app state telegram when pushed via SSE
+/** Update all application view elements representing the remote state
+ * with data recieved as "push" update from the hardware server.
+ * 
+ * For this, the update() method is called from the SSE handler
+ * when data is received.
+ * 
+ * This also connects some HTML DOM input events in order to inhibit
+ * view updates from the remote side when view elements are being edited.
+ */
 class ViewUpdater {
     constructor() {
-        // Prevent updating the input fields content with remote data
-        // when user starts entering a new value.
-        this.view_updates_inhibited = false;
-        // Same but only inhibits range slider updates
-        this.range_input_updates_inhibited = false;
-        // Array of currently edited elements which are not receiving updates
-        this.last_edited_input_els = [];
-        // Register all application elements representing the
+        // First register all application elements representing the
         // remote state view handled and updated by this class.
         this.connection_vw = document.getElementById("connection_vw");
         this.power_pwm_vw = document.getElementById("power_pwm_vw");
@@ -177,7 +194,7 @@ class ViewUpdater {
         this.frequency_range_vw = document.getElementById("frequency_range_vw");
         this.duty_number_vw = document.getElementById("duty_number_vw");
         this.duty_range_vw = document.getElementById("duty_range_vw");
-        // All disable items
+        // All items which are disabled when connection to server is lost
         this.all_disable_items = [
             this.power_pwm_vw, this.shutdown_vw, this.aux_temp_vw,
             this.heatsink_temp_vw, this.fan_vw, this.ref_vw, this.dut_vw,
@@ -192,34 +209,47 @@ class ViewUpdater {
                 if (input.type == "submit") this.all_disable_items.push(input);
             }
         }
+        ///////////////////////////////////////////////////////////////////////
+        // Prevent updating the input fields content with remote data
+        // when user starts entering a new value.
+        this.view_updates_inhibited = false;
+        // Same but only inhibits range slider updates
+        this.range_input_updates_inhibited = false;
+        // Form elements edited before submit. These are highlighted as changed.
+        this.form_edited_inputs = [];
+        // The methods are registered as event handlers using a lambda
+        // for correct binding of the instance via "this" object
         document.addEventListener(
             "input",
-            (e) => this.inhibit_view_updates(e.target),
+            e => this.inhibit_view_updates(e.target),
             true);
-        // Allow again when editing is finished.
         document.addEventListener(
             "submit",
-            (e) => this.allow_view_updates(e.target),
+            e => this.allow_view_updates(e.target),
             true);
         document.addEventListener(
             "keydown",
-            (e) => {
+            e => {
                 if (e.key == "Enter") {
                     console.log("ENTER pressed with value: " + e.target.value);
                     this.allow_view_updates(e.target);
-                }},
+                }
+            },
             true);
         document.addEventListener(
             "change",
-            (e) => {
+            e => {
                 const t = e.target;
                 if (t.nodeName == "INPUT" && t.type == "range") {
                     this.allow_view_updates(t);
-                }},
+                }
+            },
             true);
     }
 
-    update() {
+    /** Refresh the view with data from the SSE event source
+     */
+    update(remote_state) {
         if (this.view_updates_inhibited) {
             return;
         }
@@ -266,6 +296,8 @@ class ViewUpdater {
         }
     }
 
+    /** Called when connection to the server is established
+     */
     enable_all() {
         this.connection_vw.setAttribute("active", "active");
         this.connection_vw.innerText = "OK";
@@ -278,6 +310,8 @@ class ViewUpdater {
         });
     }
 
+    /** Called when connection to server is lost
+     */
     disable_all() {
         this.connection_vw.removeAttribute("active");
         this.connection_vw.innerText = "No Connection\nto Hardware!";
@@ -294,6 +328,9 @@ class ViewUpdater {
         });
     }
 
+    /** Called when user starts editing an input also receiving updates
+     * from the remote side to prevent clashing of inputs
+     */
     inhibit_view_updates(input_el) {
         if (input_el.type == "range") {
             this.range_input_updates_inhibited = true;
@@ -301,12 +338,14 @@ class ViewUpdater {
         }
         if (this.all_disable_items.includes(input_el)) {
             this.view_updates_inhibited = true;
-            this.last_edited_input_els.push(input_el);
+            this.form_edited_inputs.push(input_el);
             // Sets color highlight while aditing element
             input_el.setAttribute("editing", "editing");
         }
     }
 
+    /** Opposite of inhibit_view_updates 
+     */
     allow_view_updates(input_el) {
         // When range slider is released, re-allow updates for this only
         if (input_el.type == "range") {
@@ -315,26 +354,25 @@ class ViewUpdater {
         }
         // Otherwise, re-allow all
         this.view_updates_inhibited = false;
-        for (let i = this.last_edited_input_els.length-1; i >= 0; i--) {
-            this.last_edited_input_els[i].removeAttribute("editing");
-            this.last_edited_input_els.pop();
+        for (let i = this.form_edited_inputs.length-1; i >= 0; i--) {
+            this.form_edited_inputs[i].removeAttribute("editing");
+            this.form_edited_inputs.pop();
         }
     }
 }
 
 
-// Connect Server-Sent Events, with auto-reconnect timer
+/** Connect Server-Sent Events to the view_updater.update() method.
+ * This also features an auto-reconnect timer. Also, watchdog.reset() is
+ * triggered on periodic SSE updates
+ */
 class ServerSentEventHandler {
-    constructor(endpoint, reconnect_timeout,
-        heartbeat_watchdog, view_updater) {
+    constructor(endpoint, view_updater, watchdog) {
         this.endpoint = endpoint;
-        this.heartbeat_watchdog = heartbeat_watchdog;
         this.view_updater = view_updater;
+        this.watchdog = watchdog;
+        // The backend SSE source
         this.source = null;
-        const timeout = reconnect_timeout;
-        this.reconnect_timer = () => window.setTimeout(
-            () => this.connect(), timeout
-        );
         this.connect();
     }
 
@@ -346,60 +384,54 @@ class ServerSentEventHandler {
             console.log("Connecting Server-Sent Events...");
         }
         this.source = new EventSource(this.endpoint);
-        //this.source.addEventListener(
-        //    "heartbeat", this.heartbeat_watchdog.reset_cb, false);
         this.source.addEventListener(
-            "open", event => { console.log("Events Connected"); },
-            false
-        );
+            "open", e => console.log("Events Connected"), false);
         this.source.addEventListener(
-            "error", event => {
-                if (event.target.readyState != EventSource.OPEN) {
+            "error",
+            e => {
+                if (e.target.readyState != EventSource.OPEN) {
                     console.log("Events Disconnected!");
                     // Start Auto-Reconnect
-                    this.reconnect_timer_id = this.reconnect_timer();
+                    this.reconnect_timer_id = window.setTimeout(
+                        () => this.connect(), sse_reconnect_timeout);
                 }
             },
-            false
-        );
+            false);
         this.source.addEventListener(
-            "hw_app_state", event => {
+            "hw_app_state",
+            e => {
                 // Since app state update telegram is emitted
                 // periodically, we use this to reset the watchdog.
-                this.heartbeat_watchdog.reset("HB");
-                // console.log(`App State: "${event.data}"`);
-                // Set global object
-                remote_state = JSON.parse(event.data);
-                this.view_updater.update();
-            }, false
-        );
+                this.watchdog.reset();
+                const remote_state = JSON.parse(e.data);
+                this.view_updater.update(remote_state);
+            },
+            false);
     }
+    
+    // For debugging, reconnect clutters the console on failure
     disable_reconnect() {
         window.clearTimeout(this.reconnect_timer_id);
     }
 }
 
 
-// Set connection state display to "nok" when heartbeats are missing
-// TODO: Also integrate SSE reconnection here
-class HeartbeatWatchdog {
+// Inactivate all view elements when periodic updates are missing
+class AppWatchdog {
     constructor(timeout, view_updater) {
         this.timeout = timeout;
         this.view_updater = view_updater;
         this.timer_id = this.start_timer();
-        this.reset_cb = event => this.reset(event.data);
     }
 
     start_timer() {
         return window.setTimeout(() => this.set_nok(), this.timeout);
     }
 
-    reset(data) {
-        if (data == "HB") {
-            window.clearTimeout(this.timer_id);
-            this.set_ok();
-            this.timer_id = this.start_timer();
-        }
+    reset() {
+        window.clearTimeout(this.timer_id);
+        this.set_ok();
+        this.timer_id = this.start_timer();
     }
 
     set_nok() {
