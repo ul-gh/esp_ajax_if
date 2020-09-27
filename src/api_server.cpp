@@ -1,7 +1,10 @@
-/* HTTP server
+/* AJAX HTTP API server for ESP32
  *
  * Based on ESPAsyncWebServer, see:
  * https://github.com/me-no-dev/ESPAsyncWebServer
+ * 
+ * License: GPL v.3 
+ * U. Lukas 2020-09-20
  */
 #include <Update.h>
 #include <SPIFFS.h>

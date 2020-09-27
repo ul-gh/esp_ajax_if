@@ -1,3 +1,16 @@
+/* Application interface implementation for PS-PWM generator hardware
+ *
+ * This features the main control functions for PWM frequency, duty cycle etc.
+ * 
+ * Also, periodic state feedback for all hardware functions is sent to the
+ * HTTP remote interface using Server-Sent Events from a FreeRTOS timer task.
+ * 
+ * Some auxiliary functions like GPIO and temperature readouts is outsourced
+ * to the AuxHwDrv class, see aux_hw_drv.hpp.
+ * 
+ * License: GPL v.3 
+ * U. Lukas 2020-09-27
+ */
 #ifndef APP_HW_CONTROL_HPP__
 #define APP_HW_CONTROL_HPP__
 

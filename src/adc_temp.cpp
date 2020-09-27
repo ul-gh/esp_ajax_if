@@ -9,64 +9,52 @@
 
 using namespace AdcTemp;
 
-static esp_adc_cal_characteristics_t *adc_chars;
+static esp_adc_cal_characteristics_t *adc_cal_characteristics;
 
-static void check_efuse(void)
-{
+static void check_efuse(void) {
     //Check TP is burned into eFuse
-    if (esp_adc_cal_check_efuse(ESP_ADC_CAL_VAL_EFUSE_TP) == ESP_OK)
-    {
+    if (esp_adc_cal_check_efuse(ESP_ADC_CAL_VAL_EFUSE_TP) == ESP_OK) {
         Serial.print(F("eFuse Two Point: Supported\n"));
     }
-    else
-    {
+    else {
         Serial.print(F("eFuse Two Point: NOT supported\n"));
     }
 
     //Check Vref is burned into eFuse
-    if (esp_adc_cal_check_efuse(ESP_ADC_CAL_VAL_EFUSE_VREF) == ESP_OK)
-    {
+    if (esp_adc_cal_check_efuse(ESP_ADC_CAL_VAL_EFUSE_VREF) == ESP_OK) {
         Serial.print(F("eFuse Vref: Supported\n"));
     }
-    else
-    {
+    else {
         Serial.print(F("eFuse Vref: NOT supported\n"));
     }
 }
 
-static void print_char_val_type(esp_adc_cal_value_t val_type)
-{
-    if (val_type == ESP_ADC_CAL_VAL_EFUSE_TP)
-    {
+static void print_char_val_type(esp_adc_cal_value_t val_type) {
+    if (val_type == ESP_ADC_CAL_VAL_EFUSE_TP) {
         Serial.print(F("Characterized using Two Point Value\n"));
     }
-    else if (val_type == ESP_ADC_CAL_VAL_EFUSE_VREF)
-    {
+    else if (val_type == ESP_ADC_CAL_VAL_EFUSE_VREF) {
         Serial.print(F("Characterized using eFuse Vref\n"));
     }
-    else
-    {
+    else {
         Serial.print(F("Characterized using Default Vref\n"));
     }
 }
 
-void adc_test_sample(void)
-{
+void adc_test_sample(void) {
     uint32_t adc_reading = 0;
     //Multisampling
-    for (int i = 0; i < oversampling_ratio; i++)
-    {
+    for (int i=0; i < oversampling_ratio; i++) {
         adc_reading += adc1_get_raw((adc1_channel_t)temp_ch1);
     }
     adc_reading /= oversampling_ratio;
 
     //Convert adc_reading to voltage in mV
-    uint32_t voltage = esp_adc_cal_raw_to_voltage(adc_reading, adc_chars);
+    uint32_t voltage = esp_adc_cal_raw_to_voltage(adc_reading, adc_cal_characteristics);
     Serial.printf("Raw: %d\tVoltage: %dmV\n", adc_reading, voltage);
 }
 
-void adc_test_register_direct(void)
-{
+void adc_test_register_direct(void) {
     uint16_t adc_value;
     SENS.sar_meas_start1.sar1_en_pad = (1 << temp_ch1); // only one channel is selected
     while (SENS.sar_slave_addr1.meas_status != 0);
@@ -151,24 +139,23 @@ float get_adc_ch_voltage(adc1_channel_t channel){
     adc_reading /= oversampling_ratio;
 
     //Convert adc_reading to voltage in mV
-    uint32_t voltage = esp_adc_cal_raw_to_voltage(adc_reading, adc_chars);
+    uint32_t voltage = esp_adc_cal_raw_to_voltage(adc_reading, adc_cal_characteristics);
     Serial.printf("Raw: %d\tVoltage: %dmV\n", adc_reading, voltage);
     return static_cast<float>(voltage) / 1000;
 }
 
 
-void AdcTemp::adc_init_test_capabilities(void)
-{
+void AdcTemp::adc_init_test_capabilities(void) {
     check_efuse();
 
     adc1_config_width(bit_width);
     adc1_config_channel_atten(temp_ch1, temp_sense_attenuation);
     adc1_config_channel_atten(temp_ch2, temp_sense_attenuation);
 
-    adc_chars = static_cast<esp_adc_cal_characteristics_t *>(
+    adc_cal_characteristics = static_cast<esp_adc_cal_characteristics_t *>(
         calloc(1, sizeof(esp_adc_cal_characteristics_t)));
     esp_adc_cal_value_t val_type = esp_adc_cal_characterize(
-        unit, temp_sense_attenuation, bit_width, default_vref, adc_chars);
+        unit, temp_sense_attenuation, bit_width, default_vref, adc_cal_characteristics);
     print_char_val_type(val_type);
 }
 

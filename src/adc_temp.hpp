@@ -16,7 +16,7 @@
 namespace AdcTemp {
     // Configuration
     static constexpr uint32_t default_vref{1100};
-    static constexpr int oversampling_ratio{32};
+    static constexpr uint16_t oversampling_ratio{32};
 
     static constexpr adc1_channel_t temp_ch1 = ADC1_CHANNEL_0; // Sensor VP
     static constexpr adc1_channel_t temp_ch2 = ADC1_CHANNEL_3; // Sensor VN
