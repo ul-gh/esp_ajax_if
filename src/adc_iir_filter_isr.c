@@ -1,3 +1,4 @@
+#ifdef DOES_NOT_COMPILE
 #include "esp_types.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -65,3 +66,4 @@ void setup_and_run_dsp_backend()
 
     timer_start(TIMER_GROUP_0, timer_idx);
 }
+#endif

@@ -7,7 +7,8 @@
         "dport_reg.h": "c",
         "esp_log.h": "c",
         "functional": "cpp",
-        "*.ipp": "cpp"
+        "*.ipp": "cpp",
+        "array": "cpp"
     },
     "cmake.configureOnOpen": false,
     "workbench.editor.enablePreview": false,

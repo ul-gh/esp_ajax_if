@@ -6,6 +6,8 @@
  */
 #include <array>
 #include "adc_temp.hpp"
+#include "esp_adc_cal.h"
+#include "info_debug_error.h"
 
 using namespace AdcTemp;
 
@@ -41,7 +43,7 @@ static void print_char_val_type(esp_adc_cal_value_t val_type) {
     }
 }
 
-void adc_test_sample(void) {
+uint32_t adc_test_sample(void) {
     uint32_t adc_reading = 0;
     //Multisampling
     for (int i=0; i < oversampling_ratio; i++) {
@@ -51,7 +53,9 @@ void adc_test_sample(void) {
 
     //Convert adc_reading to voltage in mV
     uint32_t voltage = esp_adc_cal_raw_to_voltage(adc_reading, adc_cal_characteristics);
-    Serial.printf("Raw: %d\tVoltage: %dmV\n", adc_reading, voltage);
+    debug_print_sv("Raw ADC value:", adc_reading);
+    debug_print_sv("Fuse calibration ADC input voltage /mv:", voltage);
+    return adc_reading;
 }
 
 void adc_test_register_direct(void) {
@@ -62,7 +66,7 @@ void adc_test_register_direct(void) {
     SENS.sar_meas_start1.meas1_start_sar = 1;
     while (SENS.sar_meas_start1.meas1_done_sar == 0);
     adc_value = SENS.sar_meas_start1.meas1_data_sar;
-    Serial.printf("Register direct, sampled value: %d\n", adc_value);
+    debug_print_sv("Register direct, sampled value:", adc_value);
 }
 
 /** Piecewise linear interpolation of input values using a look-up-table (LUT)
@@ -70,20 +74,20 @@ void adc_test_register_direct(void) {
  * and ending with Y(X=in_fsr_upper). Y-values of the LUT must correspond
  * to equidistant X-axis points.
  */
-float equidistant_piecewise_linear(uint32_t in_value) {
-    constexpr uint32_t in_fsr_lower = 0;
-    constexpr uint32_t in_fsr_upper = (1<<16) - 4000;
-    constexpr uint32_t in_fsr = in_fsr_upper - in_fsr_lower;
-    constexpr std::array<const float, 3>lut_y {22.0, 50.0, 88.0};
-    static_assert(lut_y.size() <= (1<<16), "LUT must have max. 2^16 elements!");
-    constexpr uint32_t n_lut_intervals = lut_y.size() - 1;
+static float equidistant_piecewise_linear(
+        const uint32_t in_value, const uint32_t in_fsr_lower,
+        const uint32_t in_fsr_upper, const std::array<const float, 32> &lut_y) {
+    const uint32_t in_fsr = in_fsr_upper - in_fsr_lower;
+    const uint32_t n_lut_intervals = lut_y.size() - 1;
     uint32_t lut_index;
     float partial_intervals;
     if (in_value > in_fsr_lower) {
         if (in_value < in_fsr_upper) {
         partial_intervals = n_lut_intervals * (in_value-in_fsr_lower) / in_fsr;
+        debug_print_sv("Partial intervals:", partial_intervals);
         // Rounding down gives number of whole intervals as index into the LUT
         lut_index = static_cast<uint32_t>(partial_intervals);
+        debug_print_sv("LUT index: ", lut_index);
         // By subtracting the whole intervals, only the partial rest remains
         partial_intervals -= lut_index;
         } else {
@@ -96,6 +100,7 @@ float equidistant_piecewise_linear(uint32_t in_value) {
     }
     // Interpolation interval start and end values
     float interval_start = lut_y[lut_index];
+    debug_print_sv("LUT value at index:", interval_start);
     float interval_end;
     if (lut_index < n_lut_intervals) {
         interval_end = lut_y[lut_index + 1];
@@ -105,7 +110,7 @@ float equidistant_piecewise_linear(uint32_t in_value) {
     return interval_start + partial_intervals * (interval_end-interval_start);
 }
 
-float get_kty_temp_lin(uint16_t adc_filtered_value) {
+static float get_kty_temp_lin(uint16_t adc_filtered_value) {
     constexpr uint16_t adc_fsr_lower = 0;
     constexpr uint16_t adc_fsr_upper = (1<<16) - 4000;
     constexpr uint16_t adc_fsr = adc_fsr_upper - adc_fsr_lower;
@@ -114,22 +119,7 @@ float get_kty_temp_lin(uint16_t adc_filtered_value) {
     return temp_offset + (adc_filtered_value - adc_fsr_lower) * temp_gain;
 }
 
-float get_kty_temp_pwl(uint16_t adc_filtered_value) {
-    constexpr uint16_t adc_fsr_lower = 0;
-    constexpr uint16_t adc_fsr_upper = (1<<16) - 4000;
-    constexpr uint16_t adc_fsr = adc_fsr_upper - adc_fsr_lower;
-    constexpr float v_adc_lower = 0.0;
-    constexpr float v_adc_upper = 1.25;
-    constexpr float v_adc_fsr = v_adc_upper - v_adc_lower;
-    constexpr float r_v = 2.2e3;
-    constexpr float v_cc = 3.3;
-    float v_in = v_adc_lower + (adc_filtered_value - adc_fsr_lower)
-                               * v_adc_fsr / adc_fsr;
-    uint32_t r_kty = r_v * v_in / (v_cc - v_in);
-    return equidistant_piecewise_linear(r_kty);
-}
-
-float get_adc_ch_voltage(adc1_channel_t channel){
+static float get_adc_ch_voltage(adc1_channel_t channel){
     uint32_t adc_reading = 0;
     //Multisampling
     for (int i = 0; i < oversampling_ratio; i++)
@@ -157,6 +147,44 @@ void AdcTemp::adc_init_test_capabilities(void) {
     esp_adc_cal_value_t val_type = esp_adc_cal_characterize(
         unit, temp_sense_attenuation, bit_width, default_vref, adc_cal_characteristics);
     print_char_val_type(val_type);
+}
+
+float AdcTemp::get_kty_temp_pwl() {
+    constexpr int coeff_a_scale = 65536;
+    constexpr int coeff_a_round = coeff_a_scale/2;
+    // constexpr float r_s = 2200.0;
+    // constexpr float v_cc = 3.3;
+    // Voltages in mV!
+    constexpr float v_in_fsr_lower = 0.596 * 1000;
+    constexpr float v_in_fsr_upper = 1.646 * 1000;
+    // Table only valid for linearised circuit using 2.2 kOhms series resistor
+    // where 31 equidistant steps of output voltage correspond to the following
+    // temperature values in °C. More than 32 values make no sense here.
+    constexpr std::array<const float, 32> lut_y {
+        -55.0, -48.21633884, -41.4355129, -34.82058319, -28.41377729,
+        -22.14982999, -15.87831084, -9.61498446, -3.44681992, 2.69080486,
+        8.8525326, 15.03360508, 21.15724271, 27.19458337, 33.28858446,
+        39.46431559, 45.63181044, 51.77828562, 57.93204667, 64.14532885,
+        70.45432559, 76.84910407, 83.21804075, 89.62168478, 96.23635248,
+        102.8945437, 109.53437885, 116.34641919, 123.53946052, 131.23185819,
+        139.76216906, 150.0};
+    static_assert(lut_y.size() <= (1<<16), "LUT limited to max. 2^16 elements");
+    // (((coeff_a * adc_reading) + LIN_COEFF_A_ROUND) / LIN_COEFF_A_SCALE) + coeff_b
+    const uint32_t adc_fsr_lower = static_cast<uint32_t>(
+        (((v_in_fsr_lower - adc_cal_characteristics->coeff_b)
+          * coeff_a_scale)
+         - coeff_a_round) / adc_cal_characteristics->coeff_a);
+    const uint32_t adc_fsr_upper = static_cast<uint32_t>(
+        (((v_in_fsr_upper - adc_cal_characteristics->coeff_b)
+          * coeff_a_scale)
+         - coeff_a_round) / adc_cal_characteristics->coeff_a);
+    debug_print_sv("coeff_a:", adc_cal_characteristics->coeff_a);
+    debug_print_sv("coeff_b:", adc_cal_characteristics->coeff_b);
+    debug_print_sv("adc_fsr_lower: ", adc_fsr_lower);
+    debug_print_sv("adc_fsr_upper: ", adc_fsr_upper);
+    uint32_t adc_raw_filtered = adc_test_sample();
+    return equidistant_piecewise_linear(
+        adc_raw_filtered, adc_fsr_lower, adc_fsr_upper, lut_y);
 }
 
 float AdcTemp::get_aux_temp() {
