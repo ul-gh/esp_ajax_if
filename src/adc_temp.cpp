@@ -55,7 +55,7 @@ static void adc_test_register_direct(void) {
 }
 
 /** Piecewise linear interpolation of input values using a look-up-table (LUT)
- * (lut_y) representing function values for X starting with Y(X=in_fsr_lower)
+ * (lut_y) representing function values starting with Y(X=in_fsr_lower)
  * and ending with Y(X=in_fsr_upper). Y-values of the LUT must correspond
  * to equidistant X-axis points.
  */
@@ -161,7 +161,7 @@ float AdcTemp::get_kty_temp_pwl(uint16_t adc_raw_value) {
     constexpr uint32_t coeff_a_round = coeff_a_scale/2;
     // Table only valid for linearised circuit using 2.2 kOhms series resistor
     // where 31 equidistant steps of output voltage correspond to the following
-    // temperature values in °C. More than 32 values make no sense here.
+    // temperature values in °C.
     constexpr std::array<const float, 32> lut_y {
         -55.0, -48.21633884, -41.4355129, -34.82058319, -28.41377729,
         -22.14982999, -15.87831084, -9.61498446, -3.44681992, 2.69080486,
@@ -170,7 +170,9 @@ float AdcTemp::get_kty_temp_pwl(uint16_t adc_raw_value) {
         70.45432559, 76.84910407, 83.21804075, 89.62168478, 96.23635248,
         102.8945437, 109.53437885, 116.34641919, 123.53946052, 131.23185819,
         139.76216906, 150.0};
-    static_assert(lut_y.size() <= (1<<16), "LUT limited to max. 2^16 elements");
+    // In theory this could be up to 2^16 values but that would make no sense
+    static_assert(lut_y.size() <= 64, "LUT limited to max. 64 elements");
+    // Same as in calculate_voltage_linear() function in esp_adc_cal.c
     // (((coeff_a * adc_reading) + LIN_COEFF_A_ROUND) / LIN_COEFF_A_SCALE) + coeff_b
     const uint16_t adc_fsr_lower = static_cast<uint16_t>(
         (((v_in_fsr_lower - adc_cal_characteristics->coeff_b)
