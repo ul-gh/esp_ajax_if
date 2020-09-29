@@ -74,6 +74,9 @@ void loop() {
     debug_msg += "\n Wifi stations connected: ";
     debug_msg += WiFi.softAPgetStationNum();
     Serial.println(debug_msg);
-    const float temperature = AdcTemp::get_kty_temp_pwl();
-    debug_print_sv("Temperature: ", temperature);
+    uint16_t adc_raw = AdcTemp::adc_sample(AdcTemp::temp_ch1);
+    float temperature = AdcTemp::get_kty_temp_pwl(adc_raw);
+    debug_print_sv("Temperature PWL: ", temperature);
+    temperature = AdcTemp::get_kty_temp_lin(adc_raw);
+    debug_print_sv("Temperature LIN: ", temperature);
 }

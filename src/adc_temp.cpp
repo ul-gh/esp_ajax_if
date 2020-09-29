@@ -16,49 +16,34 @@ static esp_adc_cal_characteristics_t *adc_cal_characteristics;
 static void check_efuse(void) {
     //Check TP is burned into eFuse
     if (esp_adc_cal_check_efuse(ESP_ADC_CAL_VAL_EFUSE_TP) == ESP_OK) {
-        Serial.print(F("eFuse Two Point: Supported\n"));
+        debug_print("eFuse Two Point: Supported");
     }
     else {
-        Serial.print(F("eFuse Two Point: NOT supported\n"));
+        debug_print("eFuse Two Point: NOT supported");
     }
 
     //Check Vref is burned into eFuse
     if (esp_adc_cal_check_efuse(ESP_ADC_CAL_VAL_EFUSE_VREF) == ESP_OK) {
-        Serial.print(F("eFuse Vref: Supported\n"));
+        debug_print("eFuse Vref: Supported");
     }
     else {
-        Serial.print(F("eFuse Vref: NOT supported\n"));
+        debug_print("eFuse Vref: NOT supported");
     }
 }
 
-static void print_char_val_type(esp_adc_cal_value_t val_type) {
+static void print_characterisation_val_type(esp_adc_cal_value_t val_type) {
     if (val_type == ESP_ADC_CAL_VAL_EFUSE_TP) {
-        Serial.print(F("Characterized using Two Point Value\n"));
+        debug_print("Characterized using Two Point Value");
     }
     else if (val_type == ESP_ADC_CAL_VAL_EFUSE_VREF) {
-        Serial.print(F("Characterized using eFuse Vref\n"));
+        debug_print("Characterized using eFuse Vref");
     }
     else {
-        Serial.print(F("Characterized using Default Vref\n"));
+        debug_print("Characterized using Default Vref");
     }
 }
 
-uint32_t adc_test_sample(void) {
-    uint32_t adc_reading = 0;
-    //Multisampling
-    for (int i=0; i < oversampling_ratio; i++) {
-        adc_reading += adc1_get_raw((adc1_channel_t)temp_ch1);
-    }
-    adc_reading /= oversampling_ratio;
-
-    //Convert adc_reading to voltage in mV
-    uint32_t voltage = esp_adc_cal_raw_to_voltage(adc_reading, adc_cal_characteristics);
-    debug_print_sv("Raw ADC value:", adc_reading);
-    debug_print_sv("Fuse calibration ADC input voltage /mv:", voltage);
-    return adc_reading;
-}
-
-void adc_test_register_direct(void) {
+static void adc_test_register_direct(void) {
     uint16_t adc_value;
     SENS.sar_meas_start1.sar1_en_pad = (1 << temp_ch1); // only one channel is selected
     while (SENS.sar_slave_addr1.meas_status != 0);
@@ -75,19 +60,19 @@ void adc_test_register_direct(void) {
  * to equidistant X-axis points.
  */
 static float equidistant_piecewise_linear(
-        const uint32_t in_value, const uint32_t in_fsr_lower,
-        const uint32_t in_fsr_upper, const std::array<const float, 32> &lut_y) {
-    const uint32_t in_fsr = in_fsr_upper - in_fsr_lower;
-    const uint32_t n_lut_intervals = lut_y.size() - 1;
-    uint32_t lut_index;
+        const uint16_t in_value, const uint16_t in_fsr_lower,
+        const uint16_t in_fsr_upper, const std::array<const float, 32> &lut_y) {
+    const uint16_t in_fsr = in_fsr_upper - in_fsr_lower;
+    const uint16_t n_lut_intervals = lut_y.size() - 1;
+    uint16_t lut_index;
     float partial_intervals;
     if (in_value > in_fsr_lower) {
         if (in_value < in_fsr_upper) {
-        partial_intervals = n_lut_intervals * (in_value-in_fsr_lower) / in_fsr;
-        debug_print_sv("Partial intervals:", partial_intervals);
+        partial_intervals = static_cast<float>(
+            n_lut_intervals * (in_value - in_fsr_lower)
+            ) / in_fsr;
         // Rounding down gives number of whole intervals as index into the LUT
-        lut_index = static_cast<uint32_t>(partial_intervals);
-        debug_print_sv("LUT index: ", lut_index);
+        lut_index = static_cast<uint16_t>(partial_intervals);
         // By subtracting the whole intervals, only the partial rest remains
         partial_intervals -= lut_index;
         } else {
@@ -100,7 +85,6 @@ static float equidistant_piecewise_linear(
     }
     // Interpolation interval start and end values
     float interval_start = lut_y[lut_index];
-    debug_print_sv("LUT value at index:", interval_start);
     float interval_end;
     if (lut_index < n_lut_intervals) {
         interval_end = lut_y[lut_index + 1];
@@ -110,31 +94,8 @@ static float equidistant_piecewise_linear(
     return interval_start + partial_intervals * (interval_end-interval_start);
 }
 
-static float get_kty_temp_lin(uint16_t adc_filtered_value) {
-    constexpr uint16_t adc_fsr_lower = 0;
-    constexpr uint16_t adc_fsr_upper = (1<<16) - 4000;
-    constexpr uint16_t adc_fsr = adc_fsr_upper - adc_fsr_lower;
-    constexpr float temp_offset = -20;
-    constexpr float temp_gain = (150 -(-20)) / adc_fsr;
-    return temp_offset + (adc_filtered_value - adc_fsr_lower) * temp_gain;
-}
 
-static float get_adc_ch_voltage(adc1_channel_t channel){
-    uint32_t adc_reading = 0;
-    //Multisampling
-    for (int i = 0; i < oversampling_ratio; i++)
-    {
-        adc_reading += adc1_get_raw(channel);
-    }
-    adc_reading /= oversampling_ratio;
-
-    //Convert adc_reading to voltage in mV
-    uint32_t voltage = esp_adc_cal_raw_to_voltage(adc_reading, adc_cal_characteristics);
-    Serial.printf("Raw: %d\tVoltage: %dmV\n", adc_reading, voltage);
-    return static_cast<float>(voltage) / 1000;
-}
-
-
+///////////// API part
 void AdcTemp::adc_init_test_capabilities(void) {
     check_efuse();
 
@@ -146,17 +107,58 @@ void AdcTemp::adc_init_test_capabilities(void) {
         calloc(1, sizeof(esp_adc_cal_characteristics_t)));
     esp_adc_cal_value_t val_type = esp_adc_cal_characterize(
         unit, temp_sense_attenuation, bit_width, default_vref, adc_cal_characteristics);
-    print_char_val_type(val_type);
+    print_characterisation_val_type(val_type);
 }
 
-float AdcTemp::get_kty_temp_pwl() {
-    constexpr int coeff_a_scale = 65536;
-    constexpr int coeff_a_round = coeff_a_scale/2;
-    // constexpr float r_s = 2200.0;
-    // constexpr float v_cc = 3.3;
+uint16_t AdcTemp::adc_sample(adc1_channel_t channel) {
+    uint32_t adc_reading = 0;
+    //Multisampling
+    for (int i=0; i < oversampling_ratio; i++) {
+        adc_reading += adc1_get_raw(channel);
+    }
+    adc_reading /= oversampling_ratio;
+
+    //debug_print_sv("Raw ADC value:", adc_reading);
+    //debug_print_sv("Fuse calibrated ADC conversion yields input voltage /mv:",
+    //               esp_adc_cal_raw_to_voltage(adc_reading, adc_cal_characteristics));
+    return static_cast<uint16_t>(adc_reading);
+}
+
+/** Fairly precise temperature conversion if the temperature sensor
+ * voltage has good linearisation
+ */
+float AdcTemp::get_kty_temp_lin(uint16_t adc_raw_value) {
+    constexpr float temp_fsr_lower = 0.0;
+    constexpr float temp_fsr_upper = 100.0;
+    constexpr uint32_t v_in_fsr_lower = 886; // Corresponds to 0°C
+    constexpr uint32_t v_in_fsr_upper = 1428; // Corresponds to 100°C
+    constexpr uint32_t coeff_a_scale = 65536;
+    constexpr uint32_t coeff_a_round = coeff_a_scale/2;
+    const uint16_t adc_fsr_lower = static_cast<uint16_t>(
+        (((v_in_fsr_lower - adc_cal_characteristics->coeff_b)
+          * coeff_a_scale)
+         - coeff_a_round) / adc_cal_characteristics->coeff_a);
+    const uint16_t adc_fsr_upper = static_cast<uint16_t>(
+        (((v_in_fsr_upper - adc_cal_characteristics->coeff_b)
+          * coeff_a_scale)
+         - coeff_a_round) / adc_cal_characteristics->coeff_a);
+    constexpr float temp_fsr = temp_fsr_upper - temp_fsr_lower;
+    const uint16_t adc_fsr = adc_fsr_upper - adc_fsr_lower;
+    const float temp_gain = temp_fsr / adc_fsr;
+    //debug_print_sv("adc_fsr_lower: ", adc_fsr_lower);
+    //debug_print_sv("adc_fsr_upper: ", adc_fsr_upper);
+    return temp_fsr_lower + ((float)adc_raw_value - adc_fsr_lower) * temp_gain;
+}
+
+/** Excellent precision temperature sensing using piecewise linear
+ * interpolation of Look-Up-Table values for a KTY81-121 type sensor
+ */
+float AdcTemp::get_kty_temp_pwl(uint16_t adc_raw_value) {
     // Voltages in mV!
-    constexpr float v_in_fsr_lower = 0.596 * 1000;
-    constexpr float v_in_fsr_upper = 1.646 * 1000;
+    constexpr uint32_t v_in_fsr_lower = 596; // Corresponds to -55°C
+    constexpr uint32_t v_in_fsr_upper = 1646; // Corresponds to 150°C
+    constexpr uint32_t coeff_a_scale = 65536;
+    constexpr uint32_t coeff_a_round = coeff_a_scale/2;
     // Table only valid for linearised circuit using 2.2 kOhms series resistor
     // where 31 equidistant steps of output voltage correspond to the following
     // temperature values in °C. More than 32 values make no sense here.
@@ -170,29 +172,28 @@ float AdcTemp::get_kty_temp_pwl() {
         139.76216906, 150.0};
     static_assert(lut_y.size() <= (1<<16), "LUT limited to max. 2^16 elements");
     // (((coeff_a * adc_reading) + LIN_COEFF_A_ROUND) / LIN_COEFF_A_SCALE) + coeff_b
-    const uint32_t adc_fsr_lower = static_cast<uint32_t>(
+    const uint16_t adc_fsr_lower = static_cast<uint16_t>(
         (((v_in_fsr_lower - adc_cal_characteristics->coeff_b)
           * coeff_a_scale)
          - coeff_a_round) / adc_cal_characteristics->coeff_a);
-    const uint32_t adc_fsr_upper = static_cast<uint32_t>(
+    const uint16_t adc_fsr_upper = static_cast<uint16_t>(
         (((v_in_fsr_upper - adc_cal_characteristics->coeff_b)
           * coeff_a_scale)
          - coeff_a_round) / adc_cal_characteristics->coeff_a);
-    debug_print_sv("coeff_a:", adc_cal_characteristics->coeff_a);
-    debug_print_sv("coeff_b:", adc_cal_characteristics->coeff_b);
-    debug_print_sv("adc_fsr_lower: ", adc_fsr_lower);
-    debug_print_sv("adc_fsr_upper: ", adc_fsr_upper);
-    uint32_t adc_raw_filtered = adc_test_sample();
+    //debug_print_sv("coeff_a:", adc_cal_characteristics->coeff_a);
+    //debug_print_sv("coeff_b:", adc_cal_characteristics->coeff_b);
+    //debug_print_sv("adc_fsr_lower: ", adc_fsr_lower);
+    //debug_print_sv("adc_fsr_upper: ", adc_fsr_upper);
     return equidistant_piecewise_linear(
-        adc_raw_filtered, adc_fsr_lower, adc_fsr_upper, lut_y);
+        adc_raw_value, adc_fsr_lower, adc_fsr_upper, lut_y);
 }
 
 float AdcTemp::get_aux_temp() {
-    return 77.7;
-    //return get_kty_temp_calc(get_adc_ch_voltage(temp_ch1));
+    uint16_t adc_raw_filtered = adc_sample(temp_ch1);
+    return get_kty_temp_pwl(adc_raw_filtered);
 }
 
 float AdcTemp::get_heatsink_temp() {
-    return 88.8;
-    //return get_kty_temp_calc(get_adc_ch_voltage(temp_ch2));
+    uint16_t adc_raw_filtered = adc_sample(temp_ch2);
+    return get_kty_temp_pwl(adc_raw_filtered);
 }
