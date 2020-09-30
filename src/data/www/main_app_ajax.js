@@ -5,6 +5,7 @@
  * with state updates sent back from the remote hardware server.
  * 
  * 2020-09-24 Ulrich Lukas
+ * License: GPL v.3
  */
 
 // Configure minimum delay between two requests sent to the HTTP server in ms
@@ -111,7 +112,7 @@ class AsyncRequestGenerator {
         await this.do_http_request(req_str);
     }
 
-    /* This only reacts on events targeted at one of the registered buttons
+    /** This only reacts on events targeted at one of the registered buttons
      */
     async submit_button(event) {
         const target = event.target;
@@ -142,7 +143,7 @@ class AsyncRequestGenerator {
         }
     }
 
-    /* Sends control name=value pair for slider "range" input or similar
+    /** Sends control name=value pair for slider "range" input or similar
      */
     async submit_range_input(event) {
         const t = event.target;
@@ -152,7 +153,7 @@ class AsyncRequestGenerator {
         await this.send_cmd(t.name, t.value);
     }
 
-    /* Sends control name and value pair for number input or similar,
+    /** Sends control name and value pair for number input or similar,
      * but only if this is not part of a form
      */
     async submit_nonform_input(event) {
@@ -245,6 +246,9 @@ class ViewUpdater {
                 }
             },
             true);
+
+        // Set initial state of all view elements, which is "unknown" by default
+        this.disable_all();
     }
 
     /** Refresh the view with data from the SSE event source
@@ -376,6 +380,8 @@ class ServerSentEventHandler {
         this.connect();
     }
 
+    /** Connect to the SSE server
+     */
     connect() {
         if (this.source != null) {
             console.log("Reconnecting Server-Sent Events...");
@@ -409,14 +415,16 @@ class ServerSentEventHandler {
             false);
     }
     
-    // For debugging, reconnect clutters the console on failure
+    /** For debugging, reconnect clutters the console on failure
+     */
     disable_reconnect() {
         window.clearTimeout(this.reconnect_timer_id);
     }
 }
 
 
-// Inactivate all view elements when periodic updates are missing
+/** Watchdog timer inactivates all view elements when periodic updates are missing
+ */
 class AppWatchdog {
     constructor(timeout, view_updater) {
         this.timeout = timeout;

@@ -1,3 +1,9 @@
+/** @file aux_hw_drv.hpp
+ * @brief Auxiliary hardware driver for ESP-AJAX-Lab
+ * 
+ * U. Lukas 2020-09-30
+ * License: GPL v.3
+ */
 #ifndef APP_HW_DRV_HPP__
 #define APP_HW_DRV_HPP__
 
@@ -9,10 +15,22 @@
 
 #include "adc_temp.hpp"
 
+/** @brief Auxiliary hardware driver for ESP-AJAX-Lab
+ * This implements GPIO control for relays, fan, enable and reset signals and
+ * PWM generation used as a reference signal for hardware overcurrent limiter.
+ * 
+ * Further, temperature sensor readout is triggered here by calling
+ * update_temperature_sensors() member peroiodically from timer task in
+ * PsPWMAppHwControl::on_periodic_update_timer().
+ * 
+ * This class is also used as a container for its public attribute members
+ * which represent the hardware state and are read-accessed externally.
+ */
 class AuxHwDrv
 {
 public:
-    //////////////////////////// Configuration and default values
+    /***************** Configuration and default values ********************//**
+     */
     // GPIO config, outputs //
     static constexpr int gpio_fan{2};
     static constexpr int gpio_overcurrent_reset{16};
@@ -87,10 +105,11 @@ public:
     static constexpr float curr_limit_pwm_scale = 1.0/100 * (
         1 << pwm_timer_config.duty_resolution);
     static constexpr uint32_t curr_limit_pwm_offset = 0;
-    ////////////////////////////// End Configuration
+    ///////////////////////////////////////////////////////// End Configuration
 
-    ////////////////////////////// Setpoints with initial values
-    // These are public in order to be read-accessed by PsPwmAppHwControl
+    /******************* Setpoints with initial values ********************//**
+     * Also public for read-access by PsPwmAppHwControl module
+     */
     float current_limit{0.0};
     bool relay_ref_active{false};
     bool relay_dut_active{false};
@@ -100,10 +119,11 @@ public:
     bool drv_supply_active{true};
     bool drv_disabled{false};
 
+    /**************************** API *************************************//**
+     */
     AuxHwDrv();
     virtual ~AuxHwDrv();
 
-    // Public API functions
     void set_current_limit(float value);
     void set_relay_ref_active(bool state);
     void set_relay_dut_active(bool state);

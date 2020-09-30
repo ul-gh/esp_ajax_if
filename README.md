@@ -1,27 +1,41 @@
 \mainpage
-# ESP32_PSPWM
-SoC hardware driver + HTTP API server + AJAX web interface controlling the MCPWM hardware modules on the Espressif ESP32 for generating a Phase-Shift-PWM waveform between two pairs of hardware pins.
+# ESP-AJAX-Lab
+HTTP server, AJAX API backend, web application and Soc hardware drivers
+for WiFi remote control of the MCPWM hardware modules on the
+Espressif ESP32 SoC
 
-Application in power electronics, e.g. Zero-Voltage-Switching (ZVS) Full-Bridge-,
-Dual-Active-Bridge- and LLC converters.
+Default configuration set up for generating a Phase-Shift-PWM waveform
+between two pairs of hardware pins. This also features auxiliary
+measurement and control functions:
 
-Features additional hardware driver functionality for cycle-by-cycle hardware
-overcurrent limiting, output relay control etc. via the HTTP + AJAX web interface.
+* LUT-calibrated temperature sensor readout for KTY81-121 type silicon
+  temperature sensors using the ESP32 ADC in its high-linearity region
+* PWM reference signal generation for hardware overcurrent detector
+* External GPIO output control for relays, fan, enable and error-reset
+* TBD: Delta-Sigma conversion control and filter for insulated measurement
+  of power stage current
 
-The web interface requires a browser with JavaScript ES 7.
+The HTML web application interface features a responsive CSS grid layout and
+requires a newer web browser with at least JavaScript ES 7 support.
 
 ## Low-Level-Driver (ESP-IDF compatible)
 * See file:<br>
 [src/ps_pwm.h](ps__pwm_8h.html)
 
+## C++ API for auxiliary hardware control and temperature sensor readout
+* [AuxHwDrv](class_aux_hw_drv.html)
+* [AdcTemp](adc__temp_8hpp.html)
+
 ## C++ API for PWM generation
 * [PsPwmAppHwControl](class_ps_pwm_app_hw_control.html)
 
-## C++ API for auxiliary hardware control
-* [AuxHwDrv](class_aux_hw_drv.html)
-
 ## C++ HTTP and SSE event server
 * [APIServer](class_a_p_i_server.html)
+
+## HTML+CSS+JS Single-Page Web Application
+* [JS in main_app_ajax.js](../../src/data/www/main_app_ajax.js)
+* [HTML in main_app.html](../../src/data/www/main_app.html)
+* [CSS in main_app.css](../../src/data/www/main_app.css)
 
 
 ## HTTP API Documentation
@@ -88,6 +102,9 @@ HTTP Status 200 OK and plain text content "OK"
     "current_limit": Current limit in Amperes
     "relay_ref_active": Boolean
     "relay_dut_active": Boolean
+    // Temperatures and fan
+    "aux_temp": Temperature in °C
+    "heatsink_temp": Temperature in °C
     "fan_active": Boolean
 
     // Clock divider settings

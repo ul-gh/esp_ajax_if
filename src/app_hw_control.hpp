@@ -1,13 +1,5 @@
-/* Application interface implementation for PS-PWM generator hardware
+/** @file app_hw_control.hpp
  *
- * This features the main control functions for PWM frequency, duty cycle etc.
- * 
- * Also, periodic state feedback for all hardware functions is sent to the
- * HTTP remote interface using Server-Sent Events from a FreeRTOS timer task.
- * 
- * Some auxiliary functions like GPIO and temperature readouts is outsourced
- * to the AuxHwDrv class, see aux_hw_drv.hpp.
- * 
  * License: GPL v.3 
  * U. Lukas 2020-09-27
  */
@@ -26,10 +18,20 @@
 #include "aux_hw_drv.hpp"
 #include "api_server.hpp"
 
+//#define USE_ASYMMETRIC_FULL_SPEED_DRIVE_API
+#define USE_SYMMETRIC_DC_FREE_DRIVE_API
 
-/** @brief PsPwmAppHwControl - Control ESP32 PWM hardware module using
- * remote HTTP + AJAX web application.
+/** @brief Application interface implementation for PS-PWM generator hardware
+ *
+ * This features the main control functions for PWM frequency, duty cycle etc.
  * 
+ * Also, periodic state feedback for all hardware functions is sent to the
+ * HTTP remote interface using Server-Sent Events from a FreeRTOS timer task.
+ * 
+ * Some auxiliary functions like GPIO and temperature readouts is outsourced
+ * to the AuxHwDrv class, see aux_hw_drv.hpp.
+ * 
+ * In more detail:
  * This configures all parameters of a four-channel Phase-Shift PWM waveform
  * plus auxiliary hardware setpoints, relay outputs etc.
  * 
@@ -38,20 +40,18 @@
  * for the leading and lagging driver output half-bridge-leg
  * and enforces a DC-free symmetric output waveform.
  * 
- * In order to allow four individual dead-time values, i.e. different
- * settings for both outputs of each half-bridge-leg, uncomment the
- * #define USE_ASYMMETRIC_FULL_SPEED_DRIVE_API line.
+ * In order to allow four individual dead-time values, i.e. different settings
+ * for both outputs of each half-bridge-leg, adjust the defines enabling
+ * "USE_ASYMMETRIC_FULL_SPEED_DRIVE_API"
  * 
  * Asymmetric drive allows twice the maximum output frequency by using
  * the hardware dead-time generator module but output is not guaranteed
  * DC-free.
  */
-//#define USE_ASYMMETRIC_FULL_SPEED_DRIVE_API
-#define USE_SYMMETRIC_DC_FREE_DRIVE_API
 class PsPwmAppHwControl
 {
 public:
-    /************************ DEFAULT VALUES START ****************************
+    /************************ DEFAULT VALUES START ************************//**
      */
     ///////////////////////////// For ps_pwm C module: ////////////////////////
     // MCPWM unit can be [0,1]
@@ -72,11 +72,15 @@ public:
     // Lead leg might have a different configuration, e.g. stay at last output level
     static constexpr mcpwm_action_on_pwmxa_t disable_action_lead_leg{MCPWM_FORCE_MCPWMXA_LOW};
 
-    // Initial state
+    // Initial frequency setpoint
     static constexpr float init_frequency{100e3};
+    // Initial phase-shift setpoint
     static constexpr float init_ps_duty{0.45};
+    // Initial leading leg dead-time value
     static constexpr float init_lead_dt{125e-9};
+    // Initial lagging leg dead-time value
     static constexpr float init_lag_dt{125e-9};
+    // Initial output state should be "false" representing "off"
     static constexpr bool init_power_pwm_active{false};
 
     /////////////////////////////  For AUX HW control module: /////////////////
@@ -84,8 +88,9 @@ public:
     // ==> See aux_hw_drv.hpp <==
     
     /////////////////////////////  For API server /////////////////////////////
-    // Update non-critical application state and send cyclic
-    // state updates to the HTTP client using this time interval (ms)
+    /** Update non-critical application state and send cyclic
+     * state updates to the HTTP client using this time interval (ms)
+     */
     static constexpr uint32_t api_state_periodic_update_interval_ms{500};
     /************************* END DEFAULT VALUES *****************************
      */

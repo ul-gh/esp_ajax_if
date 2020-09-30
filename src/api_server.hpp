@@ -1,7 +1,4 @@
-/* AJAX HTTP API server for ESP32
- *
- * Based on ESPAsyncWebServer, see:
- * https://github.com/me-no-dev/ESPAsyncWebServer
+/** @file api_server.hpp
  * 
  * License: GPL v.3 
  * U. Lukas 2020-09-20
@@ -36,6 +33,15 @@ using CmdMapT = std::map<String, CbStringT>;
 // String replacement mapping for template processor
 using TemplateMapT = std::map<String, String>;
 
+/** @brief AJAX HTTP API server for ESP-AJAX-Lab
+ *
+ * Based on ESPAsyncWebServer, see:
+ * https://github.com/me-no-dev/ESPAsyncWebServer
+ * 
+ * This implements higher-level API callbacks on the /cmd endpoint
+ * 
+ * For details, see README.md
+ */
 class APIServer
 {
 public:

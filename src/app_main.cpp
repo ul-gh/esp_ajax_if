@@ -1,3 +1,23 @@
+/** @file app_main.cpp
+ * @brief ESP-AJAX-Lab
+ * HTTP server, AJAX API backend, web application and Soc hardware drivers
+ * for WiFi remote control of the MCPWM hardware modules on the
+ * Espressif ESP32 SoC
+ * 
+ * Default configuration set up for generating a Phase-Shift-PWM waveform
+ * between two pairs of hardware pins. This also features auxiliary
+ * measurement and control functions:
+ * 
+ * - LUT-calibrated temperature sensor readout for KTY81-121 type silicon
+ *   temperature sensors using the ESP32 ADC in its high-linearity region
+ * - PWM reference signal generation for hardware overcurrent detector
+ * - External GPIO output control for relays, fan, enable and error-reset
+ * - TBD: Delta-Sigma conversion control and filter for insulated measurement
+ *   of power stage current
+ * 
+ * License: GPL v.3 
+ * U. Lukas 2020-09-30
+ */
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 #include <Arduino.h>

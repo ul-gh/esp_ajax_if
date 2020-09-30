@@ -1,3 +1,7 @@
+/** Auxiliary hardware driver for ESP-AJAX-Lab
+ * U. Lukas 2020-09-30
+ * License: GPL v.3
+ */
 #include "aux_hw_drv.hpp"
 #include "info_debug_error.h"
 
@@ -17,6 +21,8 @@ constexpr ledc_channel_config_t AuxHwDrv::delta_sigma_out_pwm_ch_config;
 constexpr gpio_config_t AuxHwDrv::aux_periph_gpio_output_config;
 constexpr gpio_config_t AuxHwDrv::aux_periph_gpio_input_config;
 
+/******************************** API *************************************//**
+ */
 AuxHwDrv::AuxHwDrv()
     {
         debug_print("Configuring auxiliary HW control module...");
@@ -124,8 +130,7 @@ void AuxHwDrv::update_temperature_sensors() {
 }
 
 
-// Private Non-API part
-//
+//////////////////////////////////////////////////////////////// Non-API private
 // Static callback function for reset pulse timing
 void AuxHwDrv::oc_reset_terminate_pulse(TimerHandle_t xTimer) {
     debug_print("Terminating rest pulse...");
