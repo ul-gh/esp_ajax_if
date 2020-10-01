@@ -35,8 +35,8 @@ void AdcTemp::adc_init_test_capabilities(void) {
     check_efuse();
 
     adc1_config_width(bit_width);
-    adc1_config_channel_atten(temp_ch1, temp_sense_attenuation);
-    adc1_config_channel_atten(temp_ch2, temp_sense_attenuation);
+    adc1_config_channel_atten(temp_ch_aux, temp_sense_attenuation);
+    adc1_config_channel_atten(temp_ch_heatsink, temp_sense_attenuation);
 
     adc_cal_characteristics = static_cast<esp_adc_cal_characteristics_t *>(
         calloc(1, sizeof(esp_adc_cal_characteristics_t)));
@@ -45,17 +45,19 @@ void AdcTemp::adc_init_test_capabilities(void) {
     print_characterisation_val_type(val_type);
 }
 
-/** Perform complete readout of temperature sensor of temp_ch1
+/** Perform complete readout of temp_ch_aux
+ * This uses the LUT for value conversion.
  */
 float AdcTemp::get_aux_temp() {
-    uint16_t adc_raw_filtered = adc_sample(temp_ch1);
+    uint16_t adc_raw_filtered = adc_sample(temp_ch_aux);
     return get_kty_temp_pwl(adc_raw_filtered);
 }
 
-/** Perform complete readout of temperature sensor of temp_ch2
+/** Perform complete readout of temp_ch_heatsink
+ * This uses the LUT for value conversion.
  */
 float AdcTemp::get_heatsink_temp() {
-    uint16_t adc_raw_filtered = adc_sample(temp_ch2);
+    uint16_t adc_raw_filtered = adc_sample(temp_ch_heatsink);
     return get_kty_temp_pwl(adc_raw_filtered);
 }
 
@@ -122,26 +124,23 @@ float AdcTemp::equidistant_piecewise_linear(
  * voltage has good linearisation. Does not work well at temperature extremes.
  */
 float AdcTemp::get_kty_temp_lin(uint16_t adc_raw_value) {
-    constexpr float temp_fsr_lower = 0.0;
-    constexpr float temp_fsr_upper = 100.0;
-    constexpr uint32_t v_in_fsr_lower = 886; // Corresponds to 0°C
-    constexpr uint32_t v_in_fsr_upper = 1428; // Corresponds to 100°C
     constexpr uint32_t coeff_a_scale = 65536;
     constexpr uint32_t coeff_a_round = coeff_a_scale/2;
     const uint16_t adc_fsr_lower = static_cast<uint16_t>(
-        (((v_in_fsr_lower - adc_cal_characteristics->coeff_b)
+        (((v_in_fsr_lower_lin - adc_cal_characteristics->coeff_b)
           * coeff_a_scale)
          - coeff_a_round) / adc_cal_characteristics->coeff_a);
     const uint16_t adc_fsr_upper = static_cast<uint16_t>(
-        (((v_in_fsr_upper - adc_cal_characteristics->coeff_b)
+        (((v_in_fsr_upper_lin - adc_cal_characteristics->coeff_b)
           * coeff_a_scale)
          - coeff_a_round) / adc_cal_characteristics->coeff_a);
-    constexpr float temp_fsr = temp_fsr_upper - temp_fsr_lower;
+    constexpr float temp_fsr = temp_fsr_upper_lin - temp_fsr_lower_lin;
     const uint16_t adc_fsr = adc_fsr_upper - adc_fsr_lower;
     const float temp_gain = temp_fsr / adc_fsr;
     //debug_print_sv("adc_fsr_lower: ", adc_fsr_lower);
     //debug_print_sv("adc_fsr_upper: ", adc_fsr_upper);
-    return temp_fsr_lower + ((float)adc_raw_value - adc_fsr_lower) * temp_gain;
+    return temp_fsr_lower_lin + temp_gain * (
+        static_cast<int>(adc_raw_value) - adc_fsr_lower);
 }
 
 /** Excellent precision temperature sensing using piecewise linear
@@ -149,32 +148,18 @@ float AdcTemp::get_kty_temp_lin(uint16_t adc_raw_value) {
  * Use this if temperatures above 100°C ore below 0°C are to be measured.
  */
 float AdcTemp::get_kty_temp_pwl(uint16_t adc_raw_value) {
-    // Voltages in mV!
-    constexpr uint32_t v_in_fsr_lower = 596; // Corresponds to -55°C
-    constexpr uint32_t v_in_fsr_upper = 1646; // Corresponds to 150°C
     constexpr uint32_t coeff_a_scale = 65536;
     constexpr uint32_t coeff_a_round = coeff_a_scale/2;
-    // Table only valid for linearised circuit using 2.2 kOhms series resistor
-    // where 31 equidistant steps of output voltage correspond to the following
-    // temperature values in °C.
-    constexpr std::array<const float, 32> lut_y {
-        -55.0, -48.21633884, -41.4355129, -34.82058319, -28.41377729,
-        -22.14982999, -15.87831084, -9.61498446, -3.44681992, 2.69080486,
-        8.8525326, 15.03360508, 21.15724271, 27.19458337, 33.28858446,
-        39.46431559, 45.63181044, 51.77828562, 57.93204667, 64.14532885,
-        70.45432559, 76.84910407, 83.21804075, 89.62168478, 96.23635248,
-        102.8945437, 109.53437885, 116.34641919, 123.53946052, 131.23185819,
-        139.76216906, 150.0};
     // In theory this could be up to 2^16 values but that would make no sense
-    static_assert(lut_y.size() <= 64, "LUT limited to max. 64 elements");
+    static_assert(lut_temp.size() <= 64, "LUT limited to max. 64 elements");
     // Same as in calculate_voltage_linear() function in esp_adc_cal.c
     // (((coeff_a * adc_reading) + LIN_COEFF_A_ROUND) / LIN_COEFF_A_SCALE) + coeff_b
     const uint16_t adc_fsr_lower = static_cast<uint16_t>(
-        (((v_in_fsr_lower - adc_cal_characteristics->coeff_b)
+        (((v_in_fsr_lower_lut - adc_cal_characteristics->coeff_b)
           * coeff_a_scale)
          - coeff_a_round) / adc_cal_characteristics->coeff_a);
     const uint16_t adc_fsr_upper = static_cast<uint16_t>(
-        (((v_in_fsr_upper - adc_cal_characteristics->coeff_b)
+        (((v_in_fsr_upper_lut - adc_cal_characteristics->coeff_b)
           * coeff_a_scale)
          - coeff_a_round) / adc_cal_characteristics->coeff_a);
     //debug_print_sv("coeff_a:", adc_cal_characteristics->coeff_a);
@@ -182,7 +167,7 @@ float AdcTemp::get_kty_temp_pwl(uint16_t adc_raw_value) {
     //debug_print_sv("adc_fsr_lower: ", adc_fsr_lower);
     //debug_print_sv("adc_fsr_upper: ", adc_fsr_upper);
     return equidistant_piecewise_linear(
-        adc_raw_value, adc_fsr_lower, adc_fsr_upper, lut_y);
+        adc_raw_value, adc_fsr_lower, adc_fsr_upper, lut_temp);
 }
 
 static void check_efuse(void) {
@@ -217,7 +202,7 @@ static void print_characterisation_val_type(esp_adc_cal_value_t val_type) {
 
 static void adc_test_register_direct(void) {
     uint16_t adc_value;
-    SENS.sar_meas_start1.sar1_en_pad = (1 << temp_ch1); // only one channel is selected
+    SENS.sar_meas_start1.sar1_en_pad = (1 << temp_ch_aux); // only one channel is selected
     while (SENS.sar_slave_addr1.meas_status != 0);
     SENS.sar_meas_start1.meas1_start_sar = 0;
     SENS.sar_meas_start1.meas1_start_sar = 1;

@@ -27,45 +27,76 @@
 #include "soc/sens_struct.h"
 
 namespace AdcTemp {
-    /***************************** Configuration **************************//**
-     **************************************************************************/
+    /************************************************************************
+     * Configuration
+     */
+
+    /** @brief ADC channel for AUX temperature sensor */
+    constexpr adc1_channel_t temp_ch_aux = ADC1_CHANNEL_0; // Sensor VP
+    /** @brief ADC channel for heatsink temperature sensor */
+    constexpr adc1_channel_t temp_ch_heatsink = ADC1_CHANNEL_3; // Sensor VN
+
+    ////////// Configuration constants for get_kty_temp_lin()
+    static constexpr float temp_fsr_lower_lin = 0.0;
+    static constexpr float temp_fsr_upper_lin = 100.0;
+    /** Voltages defining full-scale-range in mV */
+    static constexpr uint32_t v_in_fsr_lower_lin = 886; // Corresponds to 0°C
+    static constexpr uint32_t v_in_fsr_upper_lin = 1428; // Corresponds to 100°C
+    ////////// Configuration constants for get_kty_temp_pwl()
+    /** Voltages defining full-scale-range in mV */
+    static constexpr uint32_t v_in_fsr_lower_lut = 596; // Corresponds to -55°C
+    static constexpr uint32_t v_in_fsr_upper_lut = 1646; // Corresponds to 150°C
+    /** Table only valid for linearised circuit using 2.2 kOhms series resistor
+     * where 31 equidistant steps of output voltage correspond to the following
+     * temperature values in °C.
+     */
+    static constexpr std::array<const float, 32> lut_temp {
+        -55.0, -48.21633884, -41.4355129, -34.82058319, -28.41377729,
+        -22.14982999, -15.87831084, -9.61498446, -3.44681992, 2.69080486,
+        8.8525326, 15.03360508, 21.15724271, 27.19458337, 33.28858446,
+        39.46431559, 45.63181044, 51.77828562, 57.93204667, 64.14532885,
+        70.45432559, 76.84910407, 83.21804075, 89.62168478, 96.23635248,
+        102.8945437, 109.53437885, 116.34641919, 123.53946052, 131.23185819,
+        139.76216906, 150.0};
+    ////////// ADC hardware initialisation constants
     static constexpr uint32_t default_vref{1100};
     static constexpr uint16_t oversampling_ratio{32};
     static constexpr adc_bits_width_t bit_width = ADC_WIDTH_BIT_12;
-    // Suggested ADC input voltage Range for ESP32 using ADC_ATTEN_DB_6 acc.
-    // to the API reference for adc1_config_channel_atten() function is
-    // 150 ~ 1750 millivolts. Max. FSR with reduced accuracy is approx. 2.2V
+    /** Suggested ADC input voltage Range for ESP32 using ADC_ATTEN_DB_6 acc.
+     * to the API reference for adc1_config_channel_atten() function is
+     * 150 ~ 1750 millivolts. Max. FSR with reduced accuracy is approx. 2.2V
+     */
     static constexpr adc_atten_t temp_sense_attenuation = ADC_ATTEN_DB_6;
     static constexpr adc_unit_t unit = ADC_UNIT_1;
 
-    /***************************** API ************************************//**
-     **************************************************************************/
-    constexpr adc1_channel_t temp_ch1 = ADC1_CHANNEL_0; // Sensor VP
-    constexpr adc1_channel_t temp_ch2 = ADC1_CHANNEL_3; // Sensor VN
+    /************************************************************************
+     * API
+     */
 
     /** @brief Initialisation of ADC
      * Must be called once before reading sensor values.
      */
     void adc_init_test_capabilities(void);
 
-    /** @brief Perform complete readout of temperature sensor of temp_ch1
+    /** @brief Perform complete readout of temp_ch_aux
      * This uses the LUT for value conversion.
      */
     float get_aux_temp();
 
-    /** @brief Perform complete readout of temperature sensor of temp_ch2
+    /** @brief Perform complete readout of temp_ch_heatsink
      * This uses the LUT for value conversion.
      */
     float get_heatsink_temp();
 
-    /***************** Helper and debug functions *************************//**
-     **************************************************************************/
+    /************************************************************************
+     * Helper and debug functions
+     */
 
-    /** @brief Get raw ADC channel conversion value, for debugging and calibration
+    /** Get raw ADC channel conversion value, for debugging and calibration
      */
     uint16_t adc_sample(adc1_channel_t channel);
 
-    /** @brief Piecewise linear interpolation of look-up-table (LUT) values
+    /** Piecewise linear interpolation of look-up-table (LUT) values
      * representing function values starting with Y(X=in_fsr_lower)
      * and ending with Y(X=in_fsr_upper). Y-values of the LUT must correspond
      * to equidistant X-axis points.
@@ -74,12 +105,12 @@ namespace AdcTemp {
         const uint16_t in_value, const uint16_t in_fsr_lower,
         const uint16_t in_fsr_upper, const std::array<const float, 32> &lut_y);
 
-    /** @brief Fairly precise temperature conversion if the temperature sensor
-     * voltage has good linearisation. Does not work well at temperature extremes.
+    /** Fairly precise temperature conversion if the temperature sensor voltage
+     * has good linearisation. Does not work well at temperature extremes.
      */
     float get_kty_temp_lin(uint16_t adc_raw_value);
 
-    /** @brief Excellent precision temperature sensing using piecewise linear
+    /** Excellent precision temperature sensing using piecewise linear
      * interpolation of Look-Up-Table values for a KTY81-121 type sensor.
      * Use this if temperatures above 100°C ore below 0°C are to be measured.
      */
