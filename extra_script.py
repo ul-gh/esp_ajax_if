@@ -10,7 +10,7 @@ Import("env")
 # General options that are passed to the C++ compiler
 env.Append(CXXFLAGS=["-std=gnu++17"])
 
-print("UL ===> COMMAND_LINE_TARGETS: ", COMMAND_LINE_TARGETS)
+print("UL ===> COMMAND_LINE_TARGETS: {}".format(COMMAND_LINE_TARGETS))
 ####################################################################################
 # Ulrich Lukas 2020-09-19: Account for changed bootloader and partition offsets
 if "upload" in COMMAND_LINE_TARGETS and "uploadfs" not in COMMAND_LINE_TARGETS:
@@ -36,5 +36,16 @@ if "upload" in COMMAND_LINE_TARGETS and "uploadfs" not in COMMAND_LINE_TARGETS:
     for image in env.get("FLASH_EXTRA_IMAGES", []):
         env.Append(UPLOADERFLAGS=[image[0], env.subst(image[1])])
         env.Replace(UPLOADCMD='"$PYTHONEXE" "$UPLOADER" $UPLOADERFLAGS 0x20000 $SOURCE')
-    print("UL ===> UPLOADCMD: ", env.subst("$UPLOADCMD"))
 ####################################################################################
+
+def after_upload(source, target, env):
+    print("UL ===> UPLOADCMD: {}\n".format(env.subst("$UPLOADCMD")))
+
+def after_build(source, target, env):
+    print(["FOOOO\n"] * 6)
+
+#env.AddPreAction("uploadfs", before_upload)
+env.AddPostAction("upload", after_upload)
+env.AddPostAction("uploadfs", after_upload)
+
+env.AddPostAction("buildprog", after_build)
