@@ -77,8 +77,8 @@ Functions</h2></td></tr>
 <tr class="separator:a1e164435275ad74f8b67ad876f1b9923"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1e18fe50d63c6e6f9daeebc7864a2167"><td class="memItemLeft" align="right" valign="top">uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="adc__temp_8hpp.html#a1e18fe50d63c6e6f9daeebc7864a2167">AdcTemp::adc_sample</a> (adc1_channel_t channel)</td></tr>
 <tr class="separator:a1e18fe50d63c6e6f9daeebc7864a2167"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae8db58d24d0d9acd7b809dba2155d8c9"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="adc__temp_8hpp.html#ae8db58d24d0d9acd7b809dba2155d8c9">AdcTemp::equidistant_piecewise_linear</a> (const uint16_t in_value, const uint16_t in_fsr_lower, const uint16_t in_fsr_upper, const std::array&lt; const float, 32 &gt; &amp;lut_y)</td></tr>
-<tr class="separator:ae8db58d24d0d9acd7b809dba2155d8c9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3f644d0482213cdacb7b0b054ba6609a"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="adc__temp_8hpp.html#a3f644d0482213cdacb7b0b054ba6609a">AdcTemp::equidistant_piecewise_linear</a> (const int32_t in_value, const int32_t in_fsr_lower, const int32_t in_fsr_upper, const std::array&lt; const float, 32 &gt; &amp;lut_y)</td></tr>
+<tr class="separator:a3f644d0482213cdacb7b0b054ba6609a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a93fad332daeb898b63bfd675c7a17874"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="adc__temp_8hpp.html#a93fad332daeb898b63bfd675c7a17874">AdcTemp::get_kty_temp_lin</a> (uint16_t adc_raw_value)</td></tr>
 <tr class="separator:a93fad332daeb898b63bfd675c7a17874"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3c4bbef324f0fd770c54589fbe6ca241"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="adc__temp_8hpp.html#a3c4bbef324f0fd770c54589fbe6ca241">AdcTemp::get_kty_temp_pwl</a> (uint16_t adc_raw_value)</td></tr>
@@ -142,8 +142,8 @@ constexpr adc1_channel_t&#160;</td><td class="memItemRight" valign="bottom"><a c
 
 </div>
 </div>
-<a id="ae8db58d24d0d9acd7b809dba2155d8c9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae8db58d24d0d9acd7b809dba2155d8c9">&#9670;&nbsp;</a></span>equidistant_piecewise_linear()</h2>
+<a id="a3f644d0482213cdacb7b0b054ba6609a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3f644d0482213cdacb7b0b054ba6609a">&#9670;&nbsp;</a></span>equidistant_piecewise_linear()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -151,19 +151,19 @@ constexpr adc1_channel_t&#160;</td><td class="memItemRight" valign="bottom"><a c
         <tr>
           <td class="memname">float AdcTemp::equidistant_piecewise_linear </td>
           <td>(</td>
-          <td class="paramtype">const uint16_t&#160;</td>
+          <td class="paramtype">const int32_t&#160;</td>
           <td class="paramname"><em>in_value</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const uint16_t&#160;</td>
+          <td class="paramtype">const int32_t&#160;</td>
           <td class="paramname"><em>in_fsr_lower</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const uint16_t&#160;</td>
+          <td class="paramtype">const int32_t&#160;</td>
           <td class="paramname"><em>in_fsr_upper</em>, </td>
         </tr>
         <tr>

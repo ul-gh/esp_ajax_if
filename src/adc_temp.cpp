@@ -86,11 +86,13 @@ uint16_t AdcTemp::adc_sample(adc1_channel_t channel) {
  * correspond to equidistant X-axis points.
  */
 float AdcTemp::equidistant_piecewise_linear(
-        const uint16_t in_value, const uint16_t in_fsr_lower,
-        const uint16_t in_fsr_upper, const std::array<const float, 32> &lut_y) {
-    const uint16_t in_fsr = in_fsr_upper - in_fsr_lower;
-    const uint16_t n_lut_intervals = lut_y.size() - 1;
-    uint16_t lut_index;
+        const int32_t in_value, const int32_t in_fsr_lower,
+        const int32_t in_fsr_upper, const std::array<const float, 32> &lut_y) {
+    const int32_t in_fsr = in_fsr_upper - in_fsr_lower;
+    const int32_t n_lut_intervals = lut_y.size() - 1;
+    assert(in_fsr > 0);
+    assert(n_lut_intervals > 0);
+    int32_t lut_index;
     float partial_intervals;
     if (in_value > in_fsr_lower) {
         if (in_value < in_fsr_upper) {
@@ -98,7 +100,7 @@ float AdcTemp::equidistant_piecewise_linear(
             n_lut_intervals * (in_value - in_fsr_lower)
             ) / in_fsr;
         // Rounding down gives number of whole intervals as index into the LUT
-        lut_index = static_cast<uint16_t>(partial_intervals);
+        lut_index = static_cast<int32_t>(partial_intervals);
         // By subtracting the whole intervals, only the partial rest remains
         partial_intervals -= lut_index;
         } else {
@@ -124,23 +126,22 @@ float AdcTemp::equidistant_piecewise_linear(
  * voltage has good linearisation. Does not work well at temperature extremes.
  */
 float AdcTemp::get_kty_temp_lin(uint16_t adc_raw_value) {
-    constexpr uint32_t coeff_a_scale = 65536;
-    constexpr uint32_t coeff_a_round = coeff_a_scale/2;
-    const uint16_t adc_fsr_lower = static_cast<uint16_t>(
-        (((v_in_fsr_lower_lin - adc_cal_characteristics->coeff_b)
-          * coeff_a_scale)
-         - coeff_a_round) / adc_cal_characteristics->coeff_a);
-    const uint16_t adc_fsr_upper = static_cast<uint16_t>(
-        (((v_in_fsr_upper_lin - adc_cal_characteristics->coeff_b)
-          * coeff_a_scale)
-         - coeff_a_round) / adc_cal_characteristics->coeff_a);
+    constexpr int32_t coeff_a_scale = 65536;
+    constexpr int32_t coeff_a_round = coeff_a_scale/2;
+    const int32_t adc_fsr_lower = (
+        ((v_in_fsr_lower_lin - adc_cal_characteristics->coeff_b)
+         * coeff_a_scale)
+        - coeff_a_round) / adc_cal_characteristics->coeff_a;
+    const int32_t adc_fsr_upper = (
+        ((v_in_fsr_upper_lin - adc_cal_characteristics->coeff_b)
+         * coeff_a_scale)
+        - coeff_a_round) / adc_cal_characteristics->coeff_a;
     constexpr float temp_fsr = temp_fsr_upper_lin - temp_fsr_lower_lin;
-    const uint16_t adc_fsr = adc_fsr_upper - adc_fsr_lower;
+    const int32_t adc_fsr = adc_fsr_upper - adc_fsr_lower;
     const float temp_gain = temp_fsr / adc_fsr;
     //debug_print_sv("adc_fsr_lower: ", adc_fsr_lower);
     //debug_print_sv("adc_fsr_upper: ", adc_fsr_upper);
-    return temp_fsr_lower_lin + temp_gain * (
-        static_cast<int>(adc_raw_value) - adc_fsr_lower);
+    return temp_fsr_lower_lin + temp_gain * (adc_raw_value - adc_fsr_lower);
 }
 
 /** Excellent precision temperature sensing using piecewise linear
@@ -148,20 +149,20 @@ float AdcTemp::get_kty_temp_lin(uint16_t adc_raw_value) {
  * Use this if temperatures above 100°C ore below 0°C are to be measured.
  */
 float AdcTemp::get_kty_temp_pwl(uint16_t adc_raw_value) {
-    constexpr uint32_t coeff_a_scale = 65536;
-    constexpr uint32_t coeff_a_round = coeff_a_scale/2;
+    constexpr int32_t coeff_a_scale = 65536;
+    constexpr int32_t coeff_a_round = coeff_a_scale/2;
     // In theory this could be up to 2^16 values but that would make no sense
     static_assert(lut_temp.size() <= 64, "LUT limited to max. 64 elements");
     // Same as in calculate_voltage_linear() function in esp_adc_cal.c
     // (((coeff_a * adc_reading) + LIN_COEFF_A_ROUND) / LIN_COEFF_A_SCALE) + coeff_b
-    const uint16_t adc_fsr_lower = static_cast<uint16_t>(
-        (((v_in_fsr_lower_lut - adc_cal_characteristics->coeff_b)
-          * coeff_a_scale)
-         - coeff_a_round) / adc_cal_characteristics->coeff_a);
-    const uint16_t adc_fsr_upper = static_cast<uint16_t>(
-        (((v_in_fsr_upper_lut - adc_cal_characteristics->coeff_b)
-          * coeff_a_scale)
-         - coeff_a_round) / adc_cal_characteristics->coeff_a);
+    const int32_t adc_fsr_lower = (
+        ((v_in_fsr_lower_lut - adc_cal_characteristics->coeff_b)
+         * coeff_a_scale)
+        - coeff_a_round) / adc_cal_characteristics->coeff_a;
+    const int32_t adc_fsr_upper = (
+        ((v_in_fsr_upper_lut - adc_cal_characteristics->coeff_b)
+         * coeff_a_scale)
+        - coeff_a_round) / adc_cal_characteristics->coeff_a;
     //debug_print_sv("coeff_a:", adc_cal_characteristics->coeff_a);
     //debug_print_sv("coeff_b:", adc_cal_characteristics->coeff_b);
     //debug_print_sv("adc_fsr_lower: ", adc_fsr_lower);

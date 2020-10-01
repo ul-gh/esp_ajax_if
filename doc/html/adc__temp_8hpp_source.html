@@ -71,59 +71,59 @@ $(function() {
 <div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160; </div>
 <div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;    <span class="keyword">static</span> constexpr <span class="keywordtype">float</span> temp_fsr_lower_lin = 0.0;</div>
 <div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;    <span class="keyword">static</span> constexpr <span class="keywordtype">float</span> temp_fsr_upper_lin = 100.0;</div>
-<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;    <span class="keyword">static</span> constexpr uint32_t v_in_fsr_lower_lin = 886; <span class="comment">// Corresponds to 0°C</span></div>
-<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;    <span class="keyword">static</span> constexpr uint32_t v_in_fsr_upper_lin = 1428; <span class="comment">// Corresponds to 100°C</span></div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;    <span class="keyword">static</span> constexpr int32_t v_in_fsr_lower_lin = 886; <span class="comment">// Corresponds to 0°C</span></div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;    <span class="keyword">static</span> constexpr int32_t v_in_fsr_upper_lin = 1428; <span class="comment">// Corresponds to 100°C</span></div>
 <div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;    <span class="keyword">static</span> constexpr uint32_t v_in_fsr_lower_lut = 596; <span class="comment">// Corresponds to -55°C</span></div>
-<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;    <span class="keyword">static</span> constexpr uint32_t v_in_fsr_upper_lut = 1646; <span class="comment">// Corresponds to 150°C</span></div>
-<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;<span class="comment"></span>    <span class="keyword">static</span> constexpr std::array&lt;const float, 32&gt; lut_temp {</div>
-<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;        -55.0, -48.21633884, -41.4355129, -34.82058319, -28.41377729,</div>
-<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;        -22.14982999, -15.87831084, -9.61498446, -3.44681992, 2.69080486,</div>
-<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;        8.8525326, 15.03360508, 21.15724271, 27.19458337, 33.28858446,</div>
-<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;        39.46431559, 45.63181044, 51.77828562, 57.93204667, 64.14532885,</div>
-<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;        70.45432559, 76.84910407, 83.21804075, 89.62168478, 96.23635248,</div>
-<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;        102.8945437, 109.53437885, 116.34641919, 123.53946052, 131.23185819,</div>
-<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;        139.76216906, 150.0};</div>
-<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;    <span class="keyword">static</span> constexpr uint32_t default_vref{1100};</div>
-<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;    <span class="keyword">static</span> constexpr uint16_t oversampling_ratio{32};</div>
-<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;    <span class="keyword">static</span> constexpr adc_bits_width_t bit_width = ADC_WIDTH_BIT_12;</div>
-<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;    <span class="keyword">static</span> constexpr adc_atten_t temp_sense_attenuation = ADC_ATTEN_DB_6;</div>
-<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;    <span class="keyword">static</span> constexpr adc_unit_t unit = ADC_UNIT_1;</div>
-<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160; </div>
-<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;<span class="comment">    /************************************************************************</span></div>
-<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;<span class="comment">     * API</span></div>
-<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;<span class="comment">     */</span></div>
-<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160; </div>
-<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="adc__temp_8hpp.html#aeefa532bf13b870c70ac65e366c23059">adc_init_test_capabilities</a>(<span class="keywordtype">void</span>);</div>
-<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160; </div>
-<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;    <span class="keywordtype">float</span> <a class="code" href="adc__temp_8hpp.html#a7aceb2b62d1e5aa7a52afa63bdf5bf65">get_aux_temp</a>();</div>
-<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160; </div>
-<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;    <span class="keywordtype">float</span> <a class="code" href="adc__temp_8hpp.html#a1e164435275ad74f8b67ad876f1b9923">get_heatsink_temp</a>();</div>
-<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160; </div>
-<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;<span class="comment">    /************************************************************************</span></div>
-<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;<span class="comment">     * Helper and debug functions</span></div>
-<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;<span class="comment">     */</span></div>
-<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160; </div>
-<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;    uint16_t <a class="code" href="adc__temp_8hpp.html#a1e18fe50d63c6e6f9daeebc7864a2167">adc_sample</a>(adc1_channel_t channel);</div>
-<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160; </div>
-<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;    <span class="keywordtype">float</span> <a class="code" href="adc__temp_8hpp.html#ae8db58d24d0d9acd7b809dba2155d8c9">equidistant_piecewise_linear</a>(</div>
-<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;        <span class="keyword">const</span> uint16_t in_value, <span class="keyword">const</span> uint16_t in_fsr_lower,</div>
-<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;        <span class="keyword">const</span> uint16_t in_fsr_upper, <span class="keyword">const</span> std::array&lt;const float, 32&gt; &amp;lut_y);</div>
-<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160; </div>
-<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;    <span class="keywordtype">float</span> <a class="code" href="adc__temp_8hpp.html#a93fad332daeb898b63bfd675c7a17874">get_kty_temp_lin</a>(uint16_t adc_raw_value);</div>
-<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160; </div>
-<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;    <span class="keywordtype">float</span> <a class="code" href="adc__temp_8hpp.html#a3c4bbef324f0fd770c54589fbe6ca241">get_kty_temp_pwl</a>(uint16_t adc_raw_value);</div>
-<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;}</div>
-<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160; </div>
-<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;    <span class="keyword">static</span> constexpr int32_t v_in_fsr_lower_lut = 596; <span class="comment">// Corresponds to -55°C</span></div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;    <span class="keyword">static</span> constexpr int32_t v_in_fsr_upper_lut = 1646; <span class="comment">// Corresponds to 150°C</span></div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;<span class="comment"></span>    <span class="keyword">static</span> constexpr std::array&lt;const float, 32&gt; lut_temp {</div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;        -55.0, -48.21633884, -41.4355129, -34.82058319, -28.41377729,</div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;        -22.14982999, -15.87831084, -9.61498446, -3.44681992, 2.69080486,</div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;        8.8525326, 15.03360508, 21.15724271, 27.19458337, 33.28858446,</div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;        39.46431559, 45.63181044, 51.77828562, 57.93204667, 64.14532885,</div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;        70.45432559, 76.84910407, 83.21804075, 89.62168478, 96.23635248,</div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;        102.8945437, 109.53437885, 116.34641919, 123.53946052, 131.23185819,</div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;        139.76216906, 150.0};</div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;    <span class="keyword">static</span> constexpr uint32_t default_vref{1100};</div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;    <span class="keyword">static</span> constexpr uint16_t oversampling_ratio{32};</div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;    <span class="keyword">static</span> constexpr adc_bits_width_t bit_width = ADC_WIDTH_BIT_12;</div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;    <span class="keyword">static</span> constexpr adc_atten_t temp_sense_attenuation = ADC_ATTEN_DB_6;</div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;    <span class="keyword">static</span> constexpr adc_unit_t unit = ADC_UNIT_1;</div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160; </div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;<span class="comment">    /************************************************************************</span></div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;<span class="comment">     * API</span></div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;<span class="comment">     */</span></div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160; </div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="adc__temp_8hpp.html#aeefa532bf13b870c70ac65e366c23059">adc_init_test_capabilities</a>(<span class="keywordtype">void</span>);</div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160; </div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;    <span class="keywordtype">float</span> <a class="code" href="adc__temp_8hpp.html#a7aceb2b62d1e5aa7a52afa63bdf5bf65">get_aux_temp</a>();</div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160; </div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;    <span class="keywordtype">float</span> <a class="code" href="adc__temp_8hpp.html#a1e164435275ad74f8b67ad876f1b9923">get_heatsink_temp</a>();</div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160; </div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;<span class="comment">    /************************************************************************</span></div>
+<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;<span class="comment">     * Helper and debug functions</span></div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;<span class="comment">     */</span></div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160; </div>
+<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;    uint16_t <a class="code" href="adc__temp_8hpp.html#a1e18fe50d63c6e6f9daeebc7864a2167">adc_sample</a>(adc1_channel_t channel);</div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160; </div>
+<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;    <span class="keywordtype">float</span> <a class="code" href="adc__temp_8hpp.html#a3f644d0482213cdacb7b0b054ba6609a">equidistant_piecewise_linear</a>(</div>
+<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;        <span class="keyword">const</span> int32_t in_value, <span class="keyword">const</span> int32_t in_fsr_lower,</div>
+<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;        <span class="keyword">const</span> int32_t in_fsr_upper, <span class="keyword">const</span> std::array&lt;const float, 32&gt; &amp;lut_y);</div>
+<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160; </div>
+<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;    <span class="keywordtype">float</span> <a class="code" href="adc__temp_8hpp.html#a93fad332daeb898b63bfd675c7a17874">get_kty_temp_lin</a>(uint16_t adc_raw_value);</div>
+<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160; </div>
+<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;    <span class="keywordtype">float</span> <a class="code" href="adc__temp_8hpp.html#a3c4bbef324f0fd770c54589fbe6ca241">get_kty_temp_pwl</a>(uint16_t adc_raw_value);</div>
+<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;}</div>
+<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160; </div>
+<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;<span class="preprocessor">#endif</span></div>
 </div><!-- fragment --></div><!-- contents -->
 <div class="ttc" id="aadc__temp_8hpp_html_a7aceb2b62d1e5aa7a52afa63bdf5bf65"><div class="ttname"><a href="adc__temp_8hpp.html#a7aceb2b62d1e5aa7a52afa63bdf5bf65">AdcTemp::get_aux_temp</a></div><div class="ttdeci">float get_aux_temp()</div><div class="ttdoc">Perform complete readout of temp_ch_aux This uses the LUT for value conversion.</div><div class="ttdef"><b>Definition:</b> adc_temp.cpp:51</div></div>
-<div class="ttc" id="aadc__temp_8hpp_html_a3c4bbef324f0fd770c54589fbe6ca241"><div class="ttname"><a href="adc__temp_8hpp.html#a3c4bbef324f0fd770c54589fbe6ca241">AdcTemp::get_kty_temp_pwl</a></div><div class="ttdeci">float get_kty_temp_pwl(uint16_t adc_raw_value)</div><div class="ttdef"><b>Definition:</b> adc_temp.cpp:150</div></div>
-<div class="ttc" id="aadc__temp_8hpp_html_a93fad332daeb898b63bfd675c7a17874"><div class="ttname"><a href="adc__temp_8hpp.html#a93fad332daeb898b63bfd675c7a17874">AdcTemp::get_kty_temp_lin</a></div><div class="ttdeci">float get_kty_temp_lin(uint16_t adc_raw_value)</div><div class="ttdef"><b>Definition:</b> adc_temp.cpp:126</div></div>
+<div class="ttc" id="aadc__temp_8hpp_html_a3c4bbef324f0fd770c54589fbe6ca241"><div class="ttname"><a href="adc__temp_8hpp.html#a3c4bbef324f0fd770c54589fbe6ca241">AdcTemp::get_kty_temp_pwl</a></div><div class="ttdeci">float get_kty_temp_pwl(uint16_t adc_raw_value)</div><div class="ttdef"><b>Definition:</b> adc_temp.cpp:151</div></div>
+<div class="ttc" id="aadc__temp_8hpp_html_a93fad332daeb898b63bfd675c7a17874"><div class="ttname"><a href="adc__temp_8hpp.html#a93fad332daeb898b63bfd675c7a17874">AdcTemp::get_kty_temp_lin</a></div><div class="ttdeci">float get_kty_temp_lin(uint16_t adc_raw_value)</div><div class="ttdef"><b>Definition:</b> adc_temp.cpp:128</div></div>
+<div class="ttc" id="aadc__temp_8hpp_html_a3f644d0482213cdacb7b0b054ba6609a"><div class="ttname"><a href="adc__temp_8hpp.html#a3f644d0482213cdacb7b0b054ba6609a">AdcTemp::equidistant_piecewise_linear</a></div><div class="ttdeci">float equidistant_piecewise_linear(const int32_t in_value, const int32_t in_fsr_lower, const int32_t in_fsr_upper, const std::array&lt; const float, 32 &gt; &amp;lut_y)</div><div class="ttdef"><b>Definition:</b> adc_temp.cpp:88</div></div>
 <div class="ttc" id="aadc__temp_8hpp_html_a0abcac5c77a89b04c2f710029c2037ba"><div class="ttname"><a href="adc__temp_8hpp.html#a0abcac5c77a89b04c2f710029c2037ba">AdcTemp::temp_ch_aux</a></div><div class="ttdeci">constexpr adc1_channel_t temp_ch_aux</div><div class="ttdoc">ADC channel for AUX temperature sensor.</div><div class="ttdef"><b>Definition:</b> adc_temp.hpp:35</div></div>
 <div class="ttc" id="aadc__temp_8hpp_html_a1e164435275ad74f8b67ad876f1b9923"><div class="ttname"><a href="adc__temp_8hpp.html#a1e164435275ad74f8b67ad876f1b9923">AdcTemp::get_heatsink_temp</a></div><div class="ttdeci">float get_heatsink_temp()</div><div class="ttdoc">Perform complete readout of temp_ch_heatsink This uses the LUT for value conversion.</div><div class="ttdef"><b>Definition:</b> adc_temp.cpp:59</div></div>
 <div class="ttc" id="aadc__temp_8hpp_html_adb89d3d8671c993c5d72a9644a4611e9"><div class="ttname"><a href="adc__temp_8hpp.html#adb89d3d8671c993c5d72a9644a4611e9">AdcTemp::temp_ch_heatsink</a></div><div class="ttdeci">constexpr adc1_channel_t temp_ch_heatsink</div><div class="ttdoc">ADC channel for heatsink temperature sensor.</div><div class="ttdef"><b>Definition:</b> adc_temp.hpp:37</div></div>
-<div class="ttc" id="aadc__temp_8hpp_html_ae8db58d24d0d9acd7b809dba2155d8c9"><div class="ttname"><a href="adc__temp_8hpp.html#ae8db58d24d0d9acd7b809dba2155d8c9">AdcTemp::equidistant_piecewise_linear</a></div><div class="ttdeci">float equidistant_piecewise_linear(const uint16_t in_value, const uint16_t in_fsr_lower, const uint16_t in_fsr_upper, const std::array&lt; const float, 32 &gt; &amp;lut_y)</div><div class="ttdef"><b>Definition:</b> adc_temp.cpp:88</div></div>
 <div class="ttc" id="aadc__temp_8hpp_html_aeefa532bf13b870c70ac65e366c23059"><div class="ttname"><a href="adc__temp_8hpp.html#aeefa532bf13b870c70ac65e366c23059">AdcTemp::adc_init_test_capabilities</a></div><div class="ttdeci">void adc_init_test_capabilities(void)</div><div class="ttdoc">Initialisation of ADC Must be called once before reading sensor values.</div><div class="ttdef"><b>Definition:</b> adc_temp.cpp:34</div></div>
 <div class="ttc" id="aadc__temp_8hpp_html_a1e18fe50d63c6e6f9daeebc7864a2167"><div class="ttname"><a href="adc__temp_8hpp.html#a1e18fe50d63c6e6f9daeebc7864a2167">AdcTemp::adc_sample</a></div><div class="ttdeci">uint16_t adc_sample(adc1_channel_t channel)</div><div class="ttdef"><b>Definition:</b> adc_temp.cpp:69</div></div>
 <!-- start footer part -->

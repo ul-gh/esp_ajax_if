@@ -40,14 +40,15 @@ namespace AdcTemp {
     static constexpr float temp_fsr_lower_lin = 0.0;
     static constexpr float temp_fsr_upper_lin = 100.0;
     /** Voltages defining full-scale-range in mV */
-    static constexpr uint32_t v_in_fsr_lower_lin = 886; // Corresponds to 0°C
-    static constexpr uint32_t v_in_fsr_upper_lin = 1428; // Corresponds to 100°C
+    static constexpr int32_t v_in_fsr_lower_lin = 886; // Corresponds to 0°C
+    static constexpr int32_t v_in_fsr_upper_lin = 1428; // Corresponds to 100°C
     ////////// Configuration constants for get_kty_temp_pwl()
     /** Voltages defining full-scale-range in mV */
-    static constexpr uint32_t v_in_fsr_lower_lut = 596; // Corresponds to -55°C
-    static constexpr uint32_t v_in_fsr_upper_lut = 1646; // Corresponds to 150°C
-    /** Table only valid for linearised circuit using 2.2 kOhms series resistor
-     * where 31 equidistant steps of output voltage correspond to the following
+    static constexpr int32_t v_in_fsr_lower_lut = 596; // Corresponds to -55°C
+    static constexpr int32_t v_in_fsr_upper_lut = 1646; // Corresponds to 150°C
+    /** @brief Look-Up-Table temperatures for 31 equidistant voltage steps.
+     * Table only valid for linearised circuit using 2.2 kOhms series resistor
+     * where ADC input voltage steps correspond to the following
      * temperature values in °C.
      */
     static constexpr std::array<const float, 32> lut_temp {
@@ -62,9 +63,9 @@ namespace AdcTemp {
     static constexpr uint32_t default_vref{1100};
     static constexpr uint16_t oversampling_ratio{32};
     static constexpr adc_bits_width_t bit_width = ADC_WIDTH_BIT_12;
-    /** Suggested ADC input voltage Range for ESP32 using ADC_ATTEN_DB_6 acc.
-     * to the API reference for adc1_config_channel_atten() function is
-     * 150 ~ 1750 millivolts. Max. FSR with reduced accuracy is approx. 2.2V
+    /** @brief Suggested ADC input voltage Range for ESP32 using ADC_ATTEN_DB_6
+     * is 150 ~ 1750 millivolts according to the SDK documentation for function
+     * adc1_config_channel_atten(). With reduced accuracy, FSR is approx. 2.2V.
      */
     static constexpr adc_atten_t temp_sense_attenuation = ADC_ATTEN_DB_6;
     static constexpr adc_unit_t unit = ADC_UNIT_1;
@@ -102,8 +103,8 @@ namespace AdcTemp {
      * to equidistant X-axis points.
      */
     float equidistant_piecewise_linear(
-        const uint16_t in_value, const uint16_t in_fsr_lower,
-        const uint16_t in_fsr_upper, const std::array<const float, 32> &lut_y);
+        const int32_t in_value, const int32_t in_fsr_lower,
+        const int32_t in_fsr_upper, const std::array<const float, 32> &lut_y);
 
     /** Fairly precise temperature conversion if the temperature sensor voltage
      * has good linearisation. Does not work well at temperature extremes.
