@@ -25,8 +25,8 @@ static void check_efuse(void);
 static void print_characterisation_val_type(esp_adc_cal_value_t val_type);
 static void adc_test_register_direct(void);
 
-/***************************** API ************************************//**
- **************************************************************************/
+/***************************** API **************************************
+ ************************************************************************/
 
 /** Initialisation of ADC
  * Must be called once before reading sensor values.
@@ -61,8 +61,8 @@ float AdcTemp::get_heatsink_temp() {
     return get_kty_temp_pwl(adc_raw_filtered);
 }
 
-/***************** Helper and debug functions *************************//**
- **************************************************************************/
+/***************** Helper and debug functions ***************************
+ ************************************************************************/
 
 /** Get raw ADC channel conversion value, for debugging and calibration
  */
