@@ -136,4 +136,4 @@ requests.get(url, cmd2)
 ```
 
 ## License
-[GPL v3.0](license_gplv3.txt)
+[GPL v3.0](./LICENSE)
