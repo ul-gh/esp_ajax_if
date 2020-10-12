@@ -1,12 +1,28 @@
 /** @file adc_temp.hpp
- * @brief KTY81-121 type silicon temperature sensor readout and conversion
+ * @brief KTY81-1xx type silicon temperature sensor readout and conversion
  * functions using the ESP32 ADC in its high-linearity region
  * 
  * Sensor connected between GND and ADC input and biased using a 2.2 kOhms
  * series-resistor connected to 3.3V supply.
  * 
+ *       +-----------------------+
+ *       |                       |
+ *      +++                      |VREF
+ *      | |r_pullup              |(3V3)
+ *      | |(2k2)             +----------+
+ *      +++                  |          |
+ *       |                   |          |
+ *       +-------------+-----+ AIN      |
+ *       |             |     |          |
+ *      +++            |     +---+------+
+ *      | |KTY81-    +---+       | AGND
+ *      | | 1xx      +---+       |
+ *      +++            |100nF    |
+ *       |             |         |
+ *       +-------------+---------+
+ *
  * Currently not implemented but useful addition would be ratiometric
- * measurement by additionally sampling the 3.3V supply.
+ * measurement by additionally sampling the 3.3V reference/supply.
  * 
  * Sensor readout with piecewise linear interpolation of LUT calibration values
  * or linear calculation as an option for lower precision applications
@@ -50,15 +66,29 @@ namespace AdcTemp {
      * Table only valid for linearised circuit using 2.2 kOhms series resistor
      * where ADC input voltage steps correspond to the following
      * temperature values in °C.
+     * 
+     * For LUT values, see ../util/kty81_1xx_sensor_generate_lut/kty81_lut.py
      */
+    // For KTY81-121:
     static constexpr std::array<const float, 32> lut_temp {
-        -55.0, -48.21633884, -41.4355129, -34.82058319, -28.41377729,
-        -22.14982999, -15.87831084, -9.61498446, -3.44681992, 2.69080486,
-        8.8525326, 15.03360508, 21.15724271, 27.19458337, 33.28858446,
-        39.46431559, 45.63181044, 51.77828562, 57.93204667, 64.14532885,
-        70.45432559, 76.84910407, 83.21804075, 89.62168478, 96.23635248,
-        102.8945437, 109.53437885, 116.34641919, 123.53946052, 131.23185819,
-        139.76216906, 150.0};
+        -55.0       , -48.22273805, -41.51141124, -34.84623091,
+        -28.34434926, -22.05459193, -15.78849403,  -9.53746745,
+         -3.3772341 ,   2.7675195 ,   8.9372679 ,  15.0916243 ,
+         21.14820431,  27.2082161 ,  33.34543424,  39.41134763,
+         45.57173941,  51.73398583,  57.85244115,  64.10680179,
+         70.45422093,  76.763773  ,  83.14712256,  89.64071316,
+         96.17984636, 102.82297981, 109.58309561, 116.4296579 ,
+        123.60532846, 131.27866698, 139.78106609, 150.0};
+    // For KTY81-110 and KTY81-120:
+    //static constexpr std::array<const float, 32> lut_temp {
+    //    -55.0       , -48.16279303, -41.39749472, -34.8911357 ,
+    //    -28.54294667, -22.192432  , -15.83544756,  -9.56004681,
+    //     -3.43833483,   2.66313257,   8.80135444,  14.90432723,
+    //     20.97767882,  27.03976174,  33.13792626,  39.28966437,
+    //     45.38382931,  51.48407173,  57.67841773,  63.97159787,
+    //     70.30279723,  76.61562129,  83.00362829,  89.50586837,
+    //     96.07234208, 102.68301035, 109.39886725, 116.34253305,
+    //    123.5137051 , 131.2558412 , 139.76912438, 150.0};
     ////////// ADC hardware initialisation constants
     static constexpr uint32_t default_vref{1100};
     static constexpr uint16_t oversampling_ratio{32};
