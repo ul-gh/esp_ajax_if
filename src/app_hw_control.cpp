@@ -81,7 +81,7 @@ PsPwmAppHwControl::PsPwmAppHwControl(APIServer* api_server)
         static_cast<void*>(this),
         on_periodic_update_timer
     );
-    xTimerStart(periodic_update_timer, pdMS_TO_TICKS(1000));
+    xTimerStart(periodic_update_timer, pdMS_TO_TICKS(2000));
 }
 
 PsPwmAppHwControl::~PsPwmAppHwControl() {
