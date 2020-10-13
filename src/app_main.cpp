@@ -88,7 +88,11 @@ void setup() {
 void loop() {
     // Application runs asynchronously, you can do anything here.
     delay(5000);
+    if (!heap_caps_check_integrity_all(true)) {
+        Serial.println("!!!!!!!!!! Heap integrity check failed !!!!!!!!!");
+    }
     String debug_msg = "Free Heap: " + String(ESP.getFreeHeap());
+    debug_msg += "Minimum ever free heap: " + String(ESP.getMinFreeHeap());
     debug_msg += "  SSE queue length: ";
     debug_msg += api_server->event_source->avgPacketsWaiting();
     debug_msg += "\n Wifi stations connected: ";
