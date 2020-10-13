@@ -38,6 +38,7 @@
 #include "app_hw_control.hpp"
 
 #include "adc_temp.hpp"
+#include "esp_err.h"
 
 constexpr unsigned long serial_baudrate = 115200;
 // TCP socket port number
@@ -89,10 +90,11 @@ void loop() {
     // Application runs asynchronously, you can do anything here.
     delay(5000);
     if (!heap_caps_check_integrity_all(true)) {
-        Serial.println("!!!!!!!!!! Heap integrity check failed !!!!!!!!!");
+        Serial.println("!!!!!!!!!! Heap integrity check failed");
+        abort();
     }
     String debug_msg = "Free Heap: " + String(ESP.getFreeHeap());
-    debug_msg += "Minimum ever free heap: " + String(ESP.getMinFreeHeap());
+    debug_msg += "  Minimum ever free heap: " + String(ESP.getMinFreeHeap());
     debug_msg += "  SSE queue length: ";
     debug_msg += api_server->event_source->avgPacketsWaiting();
     debug_msg += "\n Wifi stations connected: ";
