@@ -1,9 +1,12 @@
 [submodule "lib/toggle-switchy"]
 	path = lib/toggle-switchy
 	url = https://github.com/adamculpepper/toggle-switchy.git
+	branch = master
 [submodule "lib/AsyncTCP"]
 	path = lib/AsyncTCP
 	url = https://github.com/me-no-dev/AsyncTCP.git
+	branch = master
 [submodule "lib/ESPAsyncWebServer"]
 	path = lib/ESPAsyncWebServer
-	url = https://github.com/me-no-dev/ESPAsyncWebServer.git
+	url = https://github.com/ul-gh/ESPAsyncWebServer.git
+	branch = master
