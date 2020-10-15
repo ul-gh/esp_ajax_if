@@ -40,6 +40,13 @@
 #include "adc_temp.hpp"
 #include "esp_err.h"
 
+// Debug
+#include "ESPAsyncWebServer.h"
+AsyncWebServerRequest *dbg_requests[20];
+int dbg_requests_pos = 0;
+AsyncWebServerResponse *dbg_last_response;
+int dbg_last_response_addr = 0;
+
 constexpr unsigned long serial_baudrate = 115200;
 // TCP socket port number
 constexpr uint16_t tcp_port = 80;
