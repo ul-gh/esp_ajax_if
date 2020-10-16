@@ -104,17 +104,21 @@ void APIServer::begin() {
 void APIServer::activate_default_callbacks() {
     // Serve static HTML and related files content
     if (mount_spiffs_requested) {
-        auto handler = backend->serveStatic("/", SPIFFS, "/www/")
-                              .setDefaultFile(index_html_filename);
+        auto handler = &backend->serveStatic("/", SPIFFS, "/www/");
+        handler->setDefaultFile(index_html_filename);
         if (template_processing_activated) {
-            handler = handler.setTemplateProcessor(
+            handler->setTemplateProcessor(
                 [this](const String &placeholder) {
                     return templateProcessor(placeholder);
                 }
             );
+        } else {
+            // When no template processing is used, this is assumed to be all
+            // static files which do not change and can be cached indefinitely
+            handler->setCacheControl("public, max-age=31536000");
         }
         if (http_auth_requested) {
-            handler.setAuthentication(http_user, http_pass);
+            handler->setAuthentication(http_user, http_pass);
         }
     } else {
         // Route for main application home page
