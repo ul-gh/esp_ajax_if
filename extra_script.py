@@ -83,6 +83,16 @@ def before_upload(source, target, env):
 env.AddPreAction("upload", before_upload)
 env.AddPreAction("uploadfs", before_upload)
 
+if "buildfs" in COMMAND_LINE_TARGETS or "buildfs" in BUILD_TARGETS:
+    action_str = " ".join([
+        '"$MKSPIFFSTOOL"',
+        "-c", "$SOURCES",
+        "-p", "$SPIFFS_PAGE",
+        "-b", "$SPIFFS_BLOCK",
+        "-s", "$SPIFFS_SIZE",
+        "$TARGET"])
+    print("MKSPIFFS COMMAND: ", env.subst(action_str))
+
 # Info hook shows when individual files are built (successfully or not)
 def after_build(source, target, env):
     print("BUILD_TARGETS: ", " ".join(map(str, BUILD_TARGETS)))

@@ -1,0 +1,32 @@
+#0  0x4009367c in xQueueGenericReceive (xQueue=0x3ffd5504, pvBuffer=0x0, xTicksToWait=<optimized out>, xJustPeeking=0)
+    at /home/ulrich/.platformio/packages/framework-espidf/components/freertos/include/freertos/portable.h:214
+#1  0x401026a0 in sys_arch_sem_wait (sem=0x3ffd22d4, timeout=0)
+    at /home/ulrich/.platformio/packages/framework-espidf/components/lwip/port/esp32/freertos/sys_arch.c:183
+#2  0x400f18f4 in tcpip_api_call (fn=0x40159614 <_tcp_write_api(tcpip_api_call_data*)>, call=0x3ffd1c40)
+    at /home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/api/tcpip.c:509
+#3  0x401594ec in _tcp_write (pcb=0x3ffd5638, closed_slot=14 '\016', 
+    data=0x3ffd4b64 "HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\nConnection: close\r\nAccept-Ranges: none\r\n\r\n", size=85, apiflags=1 '\001')
+    at lib/AsyncTCP/src/AsyncTCP.cpp:413
+#4  0x401599cc in AsyncClient::add (this=0x3ffd41d0, 
+    data=0x3ffd4b64 "HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\nConnection: close\r\nAccept-Ranges: none\r\n\r\n", size=<optimized out>, 
+    apiflags=1 '\001') at lib/AsyncTCP/src/AsyncTCP.cpp:758
+#5  0x40159c03 in AsyncClient::write (this=0x3ffd41d0, 
+    data=0x3ffd4b64 "HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\nConnection: close\r\nAccept-Ranges: none\r\n\r\n", size=85, apiflags=1 '\001')
+    at lib/AsyncTCP/src/AsyncTCP.cpp:1019
+#6  0x400dc8d6 in AsyncBasicResponse::_respond (this=0x3ffd4428, request=<optimized out>)
+    at /home/ulrich/.platformio/packages/framework-arduinoespressif32/cores/esp32/WString.h:308
+#7  0x400dbb65 in AsyncWebServerRequest::send (this=0x3ffd53b4, response=<optimized out>) at lib/ESPAsyncWebServer/src/WebRequest.cpp:800
+#8  0x400dbb80 in AsyncWebServerRequest::send (this=0x3ffd53b4, code=404, contentType=..., content=...) at lib/ESPAsyncWebServer/src/WebRequest.cpp:847
+#9  0x400d3237 in APIServer::onRequest (request=0x3ffd53b4) at src/api_server.cpp:314
+#10 0x4015c76e in std::_Function_handler<void (AsyncWebServerRequest*), void (*)(AsyncWebServerRequest*)>::_M_invoke(std::_Any_data const&, AsyncWebServerRequest*&&) (__functor=..., __args#0=@0x3ffd1e00: 0x3ffd53b4)
+    at /home/ulrich/.platformio/packages/toolchain-xtensa32/xtensa-esp32-elf/include/c++/8.2.0/bits/std_function.h:88
+#11 0x400de6c6 in std::function<void (AsyncWebServerRequest*)>::operator()(AsyncWebServerRequest*) const (this=0x3ffbcc5c, __args#0=<optimized out>)
+    at /home/ulrich/.platformio/packages/toolchain-xtensa32/xtensa-esp32-elf/include/c++/8.2.0/bits/std_function.h:260
+#12 0x400de6d8 in AsyncCallbackWebHandler::handleRequest (this=0x3ffbcc20, request=0x3ffd53b4) at lib/ESPAsyncWebServer/src/WebHandlerImpl.h:123
+#13 0x400dc1bc in AsyncWebServerRequest::_parseLine (this=0x3ffd53b4) at lib/ESPAsyncWebServer/src/WebRequest.cpp:656
+#14 0x400dc284 in AsyncWebServerRequest::_onData (this=0x3ffd53b4, buf=0x3ffd58fa, len=2) at lib/ESPAsyncWebServer/src/WebRequest.cpp:146
+#15 0x400dc470 in AsyncWebServerRequest::<lambda(void*, AsyncClient*, void*, size_t)>::operator() (len=<optimized out>, buf=<optimized out>, 
+    c=<optimized out>, r=<optimized out>, __closure=0x3ffd4228) at lib/ESPAsyncWebServer/src/WebRequest.cpp:99
+#16 std::_Function_handler<void(void*, AsyncClient*, void*, unsigned int), AsyncWebServerRequest::AsyncWebServerRequest(AsyncWebServer*, AsyncClient*)::<lambda(void*, AsyncClient*, void*, size_t)> >::_M_invoke(const std::_Any_data &, void *&&, AsyncClient *&&, void *&&, unsigned int &&) (__functor=..., 
+    __args#0=@0x3ffd1f30: 0x3ffd53b4, __args#1=@0x3ffd1f34: 0x3ffd41d0, __args#2=@0x3ffd1f38: 0x3ffd57e6, __args#3=@0x3ffd1f3c: 278)
+    at /home/ulrich/.platformio/packages/toolchain-xtensa32/xtensa-esp32-elf/include/c++/8.2.0/bits/std_function.h:297
