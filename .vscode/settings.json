@@ -8,7 +8,9 @@
         "esp_log.h": "c",
         "functional": "cpp",
         "*.ipp": "cpp",
-        "array": "cpp"
+        "array": "cpp",
+        "string": "cpp",
+        "string_view": "cpp"
     },
     "cmake.configureOnOpen": false,
     "workbench.editor.enablePreview": false,

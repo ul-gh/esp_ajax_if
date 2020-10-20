@@ -70,3 +70,219 @@ Target halted. PRO_CPU: PC=0x40081F2D             APP_CPU: PC=0x40089FA2 (active
 Thread 5 received signal SIGTRAP, Trace/breakpoint trap.
 verify_fill_pattern (data=<optimized out>, size=584, print_errors=true, expect_free=<optimized out>, swap_pattern=true) at /home/ulrich/.platformio/packages/framework-espidf/components/heap/multi_heap_poisoning.c:158
 158	                *p = REPLACE_WORD;
+Continuing.
+Info : Target halted. PRO_CPU: PC=0x4015A40E (active)    APP_CPU: PC=0x400800C9 
+Target halted. PRO_CPU: PC=0x4015A40E (active)    APP_CPU: PC=0x400800C9 
+[Switching to Thread 1073553552]
+
+Thread 9 hit Temporary breakpoint 2, AsyncClient::_sent (this=0x3ffd43a8, pcb=0x3ffd41ac, len=122) at lib/AsyncTCP/src/AsyncTCP.cpp:913
+913	    _rx_last_packet = millis();
+
+Info : Target halted. PRO_CPU: PC=0x4013FDE9             APP_CPU: PC=0x4015A89C (active)
+Target halted. PRO_CPU: PC=0x4013FDE9             APP_CPU: PC=0x4015A89C (active)
+
+Thread 9 hit Catchpoint 3 (signal SIGTRAP), AsyncClient::onAck(std::function<void (void*, AsyncClient*, unsigned int, unsigned int)>, void*) (this=0x3ffd43a8, cb=..., arg=0x3ffd5164) at lib/AsyncTCP/src/AsyncTCP.cpp:645
+645	    _sent_cb_arg = arg;
+Info : Target halted. PRO_CPU: PC=0x400DA2BF (active)    APP_CPU: PC=0x4015F07A 
+Target halted. PRO_CPU: PC=0x400DA2BF (active)    APP_CPU: PC=0x4015F07A 
+
+Thread 9 hit Catchpoint 3 (signal SIGTRAP), 0x400da2bf in AsyncWebServerRequest::_onAck (this=0x3ffd44e4, len=122, time=199) at lib/ESPAsyncWebServer/src/WebRequest.cpp:279
+279	    if(_response->_finished()){
+Info : Target halted. PRO_CPU: PC=0x400DA2BF (active)    APP_CPU: PC=0x40092B85 
+Target halted. PRO_CPU: PC=0x400DA2BF (active)    APP_CPU: PC=0x40092B85 
+[New Thread 2]
+
+Thread 9 hit Catchpoint 3 (signal SIGTRAP), 0x400da2bf in AsyncWebServerRequest::_onAck (this=0x3ffd44e4, len=122, time=199) at lib/ESPAsyncWebServer/src/WebRequest.cpp:279
+279	    if(_response->_finished()){
+Info : Target halted. PRO_CPU: PC=0x40094092 (active)    APP_CPU: PC=0x40092B85 
+Target halted. PRO_CPU: PC=0x40094092 (active)    APP_CPU: PC=0x40092B85 
+[New Thread 1]
+
+Thread 9 received signal SIGINT, Interrupt.
+0x40094092 in uxPortCompareSet (set=<synthetic pointer>, compare=3007315967, addr=0x3ffb0490 <spinlock>) at /home/ulrich/.platformio/packages/framework-espidf/components/freertos/include/freertos/portmacro.h:352
+352	    __asm__ __volatile__ (
+Continuing.
+Info : Detected debug stubs @ 3ffb5e64 on core0 of target 'esp32'
+Detected debug stubs @ 3ffb5e64 on core0 of target 'esp32'
+Info : Target halted. PRO_CPU: PC=0x400DA28F (active)    APP_CPU: PC=0x4009672F 
+Target halted. PRO_CPU: PC=0x400DA28F (active)    APP_CPU: PC=0x4009672F 
+
+Thread 9 hit Breakpoint 16, AsyncWebServerRequest::_onAck (this=0x3ffd44e4, len=122, time=1) at lib/ESPAsyncWebServer/src/WebRequest.cpp:271
+271	  if ((int)_response == 0xfefefefe) {
+$12 = (AsyncClient *) 0x3ffd4358
+$13 = (AsyncWebServerResponse *) 0x3ffd46c0
+Info : Target halted. PRO_CPU: PC=0x40092C26             APP_CPU: PC=0x400DA2BF (active)
+Target halted. PRO_CPU: PC=0x40092C26             APP_CPU: PC=0x400DA2BF (active)
+
+Thread 9 received signal SIGTRAP, Trace/breakpoint trap.
+0x400da2bf in AsyncWebServerRequest::_onAck (this=0x3ffd44e4, len=122, time=1) at lib/ESPAsyncWebServer/src/WebRequest.cpp:279
+279	    if(_response->_finished()){
+Continuing.
+Info : Target halted. PRO_CPU: PC=0x4009253A             APP_CPU: PC=0x400DA2BF (active)
+Target halted. PRO_CPU: PC=0x4009253A             APP_CPU: PC=0x400DA2BF (active)
+
+Thread 9 received signal SIGTRAP, Trace/breakpoint trap.
+0x400da2bf in AsyncWebServerRequest::_onAck (this=0x3ffd44e4, len=122, time=1) at lib/ESPAsyncWebServer/src/WebRequest.cpp:279
+279	    if(_response->_finished()){
+Continuing.
+Info : Target halted. PRO_CPU: PC=0x40080006             APP_CPU: PC=0x400DA2BF (active)
+Target halted. PRO_CPU: PC=0x40080006             APP_CPU: PC=0x400DA2BF (active)
+[New Thread 1]
+
+Thread 9 received signal SIGTRAP, Trace/breakpoint trap.
+0x400da2bf in AsyncWebServerRequest::_onAck (this=0x3ffd44e4, len=122, time=1) at lib/ESPAsyncWebServer/src/WebRequest.cpp:279
+279	    if(_response->_finished()){
+Continuing.
+Info : Target halted. PRO_CPU: PC=0x40082916             APP_CPU: PC=0x400DA2BF (active)
+Target halted. PRO_CPU: PC=0x40082916             APP_CPU: PC=0x400DA2BF (active)
+
+Thread 9 received signal SIGTRAP, Trace/breakpoint trap.
+0x400da2bf in AsyncWebServerRequest::_onAck (this=0x3ffd44e4, len=122, time=1) at lib/ESPAsyncWebServer/src/WebRequest.cpp:279
+279	    if(_response->_finished()){
+Continuing.
+Info : Target halted. PRO_CPU: PC=0x40094A32             APP_CPU: PC=0x400DA2BF (active)
+Target halted. PRO_CPU: PC=0x40094A32             APP_CPU: PC=0x400DA2BF (active)
+
+Thread 9 received signal SIGTRAP, Trace/breakpoint trap.
+0x400da2bf in AsyncWebServerRequest::_onAck (this=0x3ffd44e4, len=122, time=1) at lib/ESPAsyncWebServer/src/WebRequest.cpp:279
+279	    if(_response->_finished()){
+Continuing.
+Info : Target halted. PRO_CPU: PC=0x4009260C             APP_CPU: PC=0x400DA2BF (active)
+Target halted. PRO_CPU: PC=0x4009260C             APP_CPU: PC=0x400DA2BF (active)
+
+Thread 9 received signal SIGTRAP, Trace/breakpoint trap.
+0x400da2bf in AsyncWebServerRequest::_onAck (this=0x3ffd44e4, len=122, time=1) at lib/ESPAsyncWebServer/src/WebRequest.cpp:279
+279	    if(_response->_finished()){
+Num     Type           Disp Enb Address    What
+16      breakpoint     keep y   0x400da28f in AsyncWebServerRequest::_onAck(unsigned int, unsigned int) at lib/ESPAsyncWebServer/src/WebRequest.cpp:271
+	breakpoint already hit 1 time
+        p _client
+        p _response
+        bt
+        continue
+Info : JTAG tap: esp32.cpu0 tap/device found: 0x120034e5 (mfg: 0x272 (Tensilica), part: 0x2003, ver: 0x1)
+Info : JTAG tap: esp32.cpu1 tap/device found: 0x120034e5 (mfg: 0x272 (Tensilica), part: 0x2003, ver: 0x1)
+JTAG tap: esp32.cpu0 tap/device found: 0x120034e5 (mfg: 0x272 (Tensilica), part: 0x2003, ver: 0x1)
+JTAG tap: esp32.cpu1 tap/device found: 0x120034e5 (mfg: 0x272 (Tensilica), part: 0x2003, ver: 0x1)
+Info : esp32: Debug controller 0 was reset (pwrstat=0x5F, after clear 0x0F).
+Info : esp32: Core 0 was reset (pwrstat=0x5F, after clear 0x0F).
+esp32: Debug controller 0 was reset (pwrstat=0x5F, after clear 0x0F).
+esp32: Core 0 was reset (pwrstat=0x5F, after clear 0x0F).
+Info : Target halted. PRO_CPU: PC=0x5000004B (active)    APP_CPU: PC=0x00000000 
+Target halted. PRO_CPU: PC=0x5000004B (active)    APP_CPU: PC=0x00000000 
+Info : esp32: Core 0 was reset (pwrstat=0x1F, after clear 0x0F).
+Info : esp32: Debug controller 1 was reset (pwrstat=0x5F, after clear 0x0F).
+Info : esp32: Core 1 was reset (pwrstat=0x5F, after clear 0x0F).
+esp32: Core 0 was reset (pwrstat=0x1F, after clear 0x0F).
+esp32: Debug controller 1 was reset (pwrstat=0x5F, after clear 0x0F).
+esp32: Core 1 was reset (pwrstat=0x5F, after clear 0x0F).
+Info : Target halted. PRO_CPU: PC=0x40000400 (active)    APP_CPU: PC=0x40000400 
+Target halted. PRO_CPU: PC=0x40000400 (active)    APP_CPU: PC=0x40000400 
+Register cache flushed.
+Signal        Stop	Print	Pass to program	Description
+SIGTRAP       No	Yes	No		Trace/breakpoint trap
+Num     Type           Disp Enb Address    What
+16      breakpoint     keep y   0x400da28f in AsyncWebServerRequest::_onAck(unsigned int, unsigned int) at lib/ESPAsyncWebServer/src/WebRequest.cpp:271
+	breakpoint already hit 1 time
+        p _client
+        p _response
+        bt
+        continue
+Continuing.
+Info : Detected debug stubs @ 3ffb5e64 on core0 of target 'esp32'
+Detected debug stubs @ 3ffb5e64 on core0 of target 'esp32'
+Info : Target halted. PRO_CPU: PC=0x4009192A             APP_CPU: PC=0x400DA28F (active)
+Target halted. PRO_CPU: PC=0x4009192A             APP_CPU: PC=0x400DA28F (active)
+
+Thread 9 hit Breakpoint 16, AsyncWebServerRequest::_onAck (this=0x3ffd4314, len=122, time=89) at lib/ESPAsyncWebServer/src/WebRequest.cpp:271
+271	  if ((int)_response == 0xfefefefe) {
+$14 = (AsyncClient *) 0x3ffd41d8
+$15 = (AsyncWebServerResponse *) 0x3ffd44b4
+Info : Target halted. PRO_CPU: PC=0x400DA2BF (active)    APP_CPU: PC=0x4015F07A 
+Target halted. PRO_CPU: PC=0x400DA2BF (active)    APP_CPU: PC=0x4015F07A 
+
+Thread 9 received signal SIGTRAP, Trace/breakpoint trap.
+Info : Target halted. PRO_CPU: PC=0x400DA2BF (active)    APP_CPU: PC=0x4009709F 
+Target halted. PRO_CPU: PC=0x400DA2BF (active)    APP_CPU: PC=0x4009709F 
+
+Thread 9 received signal SIGTRAP, Trace/breakpoint trap.
+Info : Target halted. PRO_CPU: PC=0x400966DF (active)    APP_CPU: PC=0x4009709F 
+Target halted. PRO_CPU: PC=0x400966DF (active)    APP_CPU: PC=0x4009709F 
+[New Thread 1]
+[New Thread 2]
+
+Thread 9 received signal SIGINT, Interrupt.
+0x400966df in esp_apptrace_tmo_check (tmo=<optimized out>) at /home/ulrich/.platformio/packages/framework-espidf/components/app_trace/app_trace_util.c:37
+37	        if (tmo->elapsed >= tmo->tmo) {
+#0  0x400966df in esp_apptrace_tmo_check (tmo=<optimized out>) at /home/ulrich/.platformio/packages/framework-espidf/components/app_trace/app_trace_util.c:37
+#1  0x4009670f in esp_apptrace_lock_take (lock=0x3ffb027c <s_sys_view_lock>, tmo=0x3ffb0aa0) at /home/ulrich/.platformio/packages/framework-espidf/components/app_trace/app_trace_util.c:69
+#2  0x40095e6c in SEGGER_SYSVIEW_X_SysView_Lock () at /home/ulrich/.platformio/packages/framework-espidf/components/app_trace/sys_view/Sample/Config/SEGGER_SYSVIEW_Config_FreeRTOS.c:344
+#3  0x40097096 in SEGGER_SYSVIEW_RecordEnterISR (IrqId=63) at /home/ulrich/.platformio/packages/framework-espidf/components/app_trace/sys_view/SEGGER/SEGGER_SYSVIEW.c:1830
+#4  0x40082979 in non_shared_intr_isr (arg=0x3ffafd24) at /home/ulrich/.platformio/packages/framework-espidf/components/esp32/intr_alloc.c:525
+#5  0x40083620 in _xt_lowint1 () at /home/ulrich/.platformio/packages/framework-espidf/components/freertos/xtensa_vectors.S:1153
+#6  0x400da2bf in AsyncWebServerRequest::_onAck (this=0x0, len=0, time=1074635455) at lib/ESPAsyncWebServer/src/WebRequest.cpp:279
+#7  0x400da328 in AsyncWebServerRequest::<lambda(void*, AsyncClient*, size_t, uint32_t)>::operator() (time=<optimized out>, len=<optimized out>, c=<optimized out>, r=0x3ffd4314, __closure=<optimized out>) at lib/ESPAsyncWebServer/src/WebRequest.cpp:102
+#8  std::_Function_handler<void(void*, AsyncClient*, unsigned int, unsigned int), AsyncWebServerRequest::AsyncWebServerRequest(AsyncWebServer*, AsyncClient*)::<lambda(void*, AsyncClient*, size_t, uint32_t)> >::_M_invoke(const std::_Any_data &, void *&&, AsyncClient *&&, unsigned int &&, unsigned int &&) (__functor=..., __args#0=@0x3ffd1f30: 0x3ffd4314, __args#1=@0x3ffd1f34: 0x3ffd41d8, __args#2=@0x3ffd1f38: 122, __args#3=@0x3ffd1f3c: 89) at /home/ulrich/.platformio/packages/toolchain-xtensa32/xtensa-esp32-elf/include/c++/8.2.0/bits/std_function.h:297
+#9  0x4015a404 in std::function<void (void*, AsyncClient*, unsigned int, unsigned int)>::operator()(void*, AsyncClient*, unsigned int, unsigned int) const (this=0x3ffd4208, __args#0=<optimized out>, __args#1=<optimized out>, __args#2=<optimized out>, __args#3=<optimized out>) at /home/ulrich/.platformio/packages/toolchain-xtensa32/xtensa-esp32-elf/include/c++/8.2.0/bits/std_function.h:260
+#10 0x4015a43e in AsyncClient::_sent (this=0x3ffd41d8, pcb=<optimized out>, len=122) at lib/AsyncTCP/src/AsyncTCP.cpp:917
+#11 0x4015a453 in AsyncClient::_s_sent (arg=0x3ffd41d8, pcb=0x3ffd4f28, len=122) at lib/AsyncTCP/src/AsyncTCP.cpp:1222
+#12 0x4015a6ca in _handle_async_event (e=0x3ffd5888) at lib/AsyncTCP/src/AsyncTCP.cpp:168
+#13 0x4015a778 in _async_service_task (pvParameters=0x0) at lib/AsyncTCP/src/AsyncTCP.cpp:197
+#14 0x40092968 in vPortTaskWrapper (pxCode=0x4015a720 <_async_service_task(void*)>, pvParameters=0x0) at /home/ulrich/.platformio/packages/framework-espidf/components/freertos/port.c:143
+[Switching to thread 9 (Thread 1073553552)]
+#0  0x400966df in esp_apptrace_tmo_check (tmo=<optimized out>) at /home/ulrich/.platformio/packages/framework-espidf/components/app_trace/app_trace_util.c:37
+37	        if (tmo->elapsed >= tmo->tmo) {
+#0  0x400966df in esp_apptrace_tmo_check (tmo=<optimized out>) at /home/ulrich/.platformio/packages/framework-espidf/components/app_trace/app_trace_util.c:37
+#1  0x4009670f in esp_apptrace_lock_take (lock=0x3ffb027c <s_sys_view_lock>, tmo=0x3ffb0aa0) at /home/ulrich/.platformio/packages/framework-espidf/components/app_trace/app_trace_util.c:69
+#2  0x40095e6c in SEGGER_SYSVIEW_X_SysView_Lock () at /home/ulrich/.platformio/packages/framework-espidf/components/app_trace/sys_view/Sample/Config/SEGGER_SYSVIEW_Config_FreeRTOS.c:344
+#3  0x40097096 in SEGGER_SYSVIEW_RecordEnterISR (IrqId=63) at /home/ulrich/.platformio/packages/framework-espidf/components/app_trace/sys_view/SEGGER/SEGGER_SYSVIEW.c:1830
+#4  0x40082979 in non_shared_intr_isr (arg=0x3ffafd24) at /home/ulrich/.platformio/packages/framework-espidf/components/esp32/intr_alloc.c:525
+#5  0x40083620 in _xt_lowint1 () at /home/ulrich/.platformio/packages/framework-espidf/components/freertos/xtensa_vectors.S:1153
+#6  0x400da2bf in AsyncWebServerRequest::_onAck (this=0x0, len=0, time=1074635455) at lib/ESPAsyncWebServer/src/WebRequest.cpp:279
+#7  0x400da328 in AsyncWebServerRequest::<lambda(void*, AsyncClient*, size_t, uint32_t)>::operator() (time=<optimized out>, len=<optimized out>, c=<optimized out>, r=0x3ffd4314, __closure=<optimized out>) at lib/ESPAsyncWebServer/src/WebRequest.cpp:102
+#8  std::_Function_handler<void(void*, AsyncClient*, unsigned int, unsigned int), AsyncWebServerRequest::AsyncWebServerRequest(AsyncWebServer*, AsyncClient*)::<lambda(void*, AsyncClient*, size_t, uint32_t)> >::_M_invoke(const std::_Any_data &, void *&&, AsyncClient *&&, unsigned int &&, unsigned int &&) (__functor=..., __args#0=@0x3ffd1f30: 0x3ffd4314, __args#1=@0x3ffd1f34: 0x3ffd41d8, __args#2=@0x3ffd1f38: 122, __args#3=@0x3ffd1f3c: 89) at /home/ulrich/.platformio/packages/toolchain-xtensa32/xtensa-esp32-elf/include/c++/8.2.0/bits/std_function.h:297
+#9  0x4015a404 in std::function<void (void*, AsyncClient*, unsigned int, unsigned int)>::operator()(void*, AsyncClient*, unsigned int, unsigned int) const (this=0x3ffd4208, __args#0=<optimized out>, __args#1=<optimized out>, __args#2=<optimized out>, __args#3=<optimized out>) at /home/ulrich/.platformio/packages/toolchain-xtensa32/xtensa-esp32-elf/include/c++/8.2.0/bits/std_function.h:260
+#10 0x4015a43e in AsyncClient::_sent (this=0x3ffd41d8, pcb=<optimized out>, len=122) at lib/AsyncTCP/src/AsyncTCP.cpp:917
+#11 0x4015a453 in AsyncClient::_s_sent (arg=0x3ffd41d8, pcb=0x3ffd4f28, len=122) at lib/AsyncTCP/src/AsyncTCP.cpp:1222
+#12 0x4015a6ca in _handle_async_event (e=0x3ffd5888) at lib/AsyncTCP/src/AsyncTCP.cpp:168
+#13 0x4015a778 in _async_service_task (pvParameters=0x0) at lib/AsyncTCP/src/AsyncTCP.cpp:197
+#14 0x40092968 in vPortTaskWrapper (pxCode=0x4015a720 <_async_service_task(void*)>, pvParameters=0x0) at /home/ulrich/.platformio/packages/framework-espidf/components/freertos/port.c:143
+$16 = (AsyncClient *) 0x0
+$17 = (AsyncWebServerResponse *) 0x0
+Info : JTAG tap: esp32.cpu0 tap/device found: 0x120034e5 (mfg: 0x272 (Tensilica), part: 0x2003, ver: 0x1)
+Info : JTAG tap: esp32.cpu1 tap/device found: 0x120034e5 (mfg: 0x272 (Tensilica), part: 0x2003, ver: 0x1)
+JTAG tap: esp32.cpu0 tap/device found: 0x120034e5 (mfg: 0x272 (Tensilica), part: 0x2003, ver: 0x1)
+JTAG tap: esp32.cpu1 tap/device found: 0x120034e5 (mfg: 0x272 (Tensilica), part: 0x2003, ver: 0x1)
+Info : esp32: Debug controller 0 was reset (pwrstat=0x5F, after clear 0x0F).
+Info : esp32: Core 0 was reset (pwrstat=0x5F, after clear 0x0F).
+esp32: Debug controller 0 was reset (pwrstat=0x5F, after clear 0x0F).
+esp32: Core 0 was reset (pwrstat=0x5F, after clear 0x0F).
+Info : Target halted. PRO_CPU: PC=0x5000004B (active)    APP_CPU: PC=0x00000000 
+Target halted. PRO_CPU: PC=0x5000004B (active)    APP_CPU: PC=0x00000000 
+Info : esp32: Core 0 was reset (pwrstat=0x1F, after clear 0x0F).
+Info : esp32: Debug controller 1 was reset (pwrstat=0x5F, after clear 0x0F).
+Info : esp32: Core 1 was reset (pwrstat=0x5F, after clear 0x0F).
+esp32: Core 0 was reset (pwrstat=0x1F, after clear 0x0F).
+esp32: Debug controller 1 was reset (pwrstat=0x5F, after clear 0x0F).
+esp32: Core 1 was reset (pwrstat=0x5F, after clear 0x0F).
+Info : Target halted. PRO_CPU: PC=0x40000400 (active)    APP_CPU: PC=0x40000400 
+Target halted. PRO_CPU: PC=0x40000400 (active)    APP_CPU: PC=0x40000400 
+Register cache flushed.
+Continuing.
+Info : Detected debug stubs @ 3ffb5e64 on core0 of target 'esp32'
+Detected debug stubs @ 3ffb5e64 on core0 of target 'esp32'
+Info : Target halted. PRO_CPU: PC=0x40096CC9             APP_CPU: PC=0x400DA28F (active)
+Target halted. PRO_CPU: PC=0x40096CC9             APP_CPU: PC=0x400DA28F (active)
+
+Thread 9 hit Breakpoint 16, AsyncWebServerRequest::_onAck (this=0x3ffd44e4, len=141, time=3) at lib/ESPAsyncWebServer/src/WebRequest.cpp:271
+271	  if ((int)_response == 0xfefefefe) {
+$18 = (AsyncClient *) 0x3ffd43a8
+$19 = (AsyncWebServerResponse *) 0x3ffd53cc
+Info : Target halted. PRO_CPU: PC=0x4015F07A             APP_CPU: PC=0x4015F07A (active)
+Target halted. PRO_CPU: PC=0x4015F07A             APP_CPU: PC=0x4015F07A (active)
+
+Thread 2 received signal SIGINT, Interrupt.
+[Switching to Thread 1073477296]
+0x4015f07a in esp_pm_impl_waiti () at /home/ulrich/.platformio/packages/framework-espidf/components/esp32/pm_esp32.c:484
+484	    asm("waiti 0");
+Detaching from program: /home/ulrich/mysrc/esp32/esp_ajax_if/.pio/build/debug/firmware.elf, Remote target

@@ -50,6 +50,7 @@ void APIServer::set_template(const char* placeholder, const char* replacement) {
 }
 
 void APIServer::activate_events_on(const char* endpoint) {
+    return;
     event_source = new AsyncEventSource(endpoint);
     if (event_source) {
         register_sse_default_callback();

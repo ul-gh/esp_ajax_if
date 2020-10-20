@@ -195,6 +195,7 @@ void PsPwmAppHwControl::register_remote_control(APIServer* api_server) {
  * Another option is to use the DynamicJsonDocument, see commented lines below.
  */
 void PsPwmAppHwControl::on_periodic_update_timer(TimerHandle_t xTimer) {
+    return;
     PsPwmAppHwControl* self = static_cast<PsPwmAppHwControl*>(pvTimerGetTimerID(xTimer));
     // In case the timer fires again when telegram has not been sent yet
     static bool reentry_guard_active = false;

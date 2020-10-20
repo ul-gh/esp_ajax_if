@@ -47,6 +47,8 @@ int dbg_requests_pos = 0;
 AsyncWebServerResponse *dbg_last_response;
 int dbg_last_response_addr = 0;
 
+//SemaphoreHandle_t g_request_lock = xSemaphoreCreateBinary();
+
 constexpr unsigned long serial_baudrate = 115200;
 // TCP socket port number
 constexpr uint16_t tcp_port = 80;
@@ -65,6 +67,7 @@ APIServer* api_server;
 PsPwmAppHwControl* ps_pwm_controller;
 
 void setup() {
+    //xSemaphoreGive(g_request_lock);
     //esp_log_level_set("*", ESP_LOG_DEBUG);
     Serial.begin(serial_baudrate);
     //setup_wifi_station(); // Optional, when not using AsyncWifiManager
@@ -103,7 +106,7 @@ void loop() {
     String debug_msg = "Free Heap: " + String(ESP.getFreeHeap());
     debug_msg += "  Minimum ever free heap: " + String(ESP.getMinFreeHeap());
     debug_msg += "  SSE queue length: ";
-    debug_msg += api_server->event_source->avgPacketsWaiting();
+    //debug_msg += api_server->event_source->avgPacketsWaiting();
     debug_msg += "\n Wifi stations connected: ";
     debug_msg += WiFi.softAPgetStationNum();
     Serial.println(debug_msg);

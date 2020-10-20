@@ -7,5 +7,22 @@ target extended-remote | /home/ulrich/.platformio/packages/tool-openocd-esp32/bi
 monitor reset halt
 flushregs
 set remote hardware-watchpoint-limit 2
-tbreak loop
-continue
+
+set width 0
+set height 0
+set verbose off
+set confirm off
+thb WebRequest.cpp:271
+commands
+  p _client
+  p _response
+  bt 8
+  watch -l _client
+  handle SIGTRAP nostop
+  catch signal SIGTRAP
+  commands
+    bt 8
+    continue
+  end
+  continue
+end
