@@ -66,9 +66,10 @@ PsPwmAppHwControl::PsPwmAppHwControl(APIServer* api_server)
     aux_hw_drv.set_drv_supply_active("true");
     
     register_remote_control(api_server);
-    // periodic_update_timer.attach_ms(api_state_periodic_update_interval_ms,
-    //                                 on_periodic_update_timer,
-    //                                 this);
+    // This signature is used if the Ticker library timer is used.
+    //periodic_update_timer.attach_ms(api_state_periodic_update_interval_ms,
+    //                                on_periodic_update_timer,
+    //                                this);
     /* Configure FreeRTOS timer for submitting periodic application state
      * update telegram via Server-Sent Events
      */
@@ -195,8 +196,7 @@ void PsPwmAppHwControl::register_remote_control(APIServer* api_server) {
  * Another option is to use the DynamicJsonDocument, see commented lines below.
  */
 void PsPwmAppHwControl::on_periodic_update_timer(TimerHandle_t xTimer) {
-    return;
-    PsPwmAppHwControl* self = static_cast<PsPwmAppHwControl*>(pvTimerGetTimerID(xTimer));
+    auto self = static_cast<PsPwmAppHwControl*>(pvTimerGetTimerID(xTimer));
     // In case the timer fires again when telegram has not been sent yet
     static bool reentry_guard_active = false;
     if (reentry_guard_active) {

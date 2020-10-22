@@ -38,22 +38,59 @@ bool AsyncEventSource::canHandle(AsyncWebServerRequest *request){
   return true;
 }
 
-// A browser request for registering the SSE source in the browser
-// is handled here
+// A browser request for registering the SSE source is handled here.
+// This is called from the request instance in AsyncWebServerRequest::_onData()
 void AsyncEventSource::handleRequest(AsyncWebServerRequest *request){
   if((_username != "" && _password != "") && !request->authenticate(_username.c_str(), _password.c_str()))
     return request->requestAuthentication();
+  // The AsyncEventSourceResponse is a specialised AsyncWebServerResponse.
   request->send(new AsyncEventSourceResponse(this));
 }
 
+void AsyncWebServerRequest::send(AsyncWebServerResponse *response){
+    _client->setRxTimeout(0);
+    _response->_respond(this);
+}
+
+// This sends the authentication/registration response and waits for
+// an ACK back from the browser.
 void AsyncEventSourceResponse::_respond(AsyncWebServerRequest *request){
   String out = _assembleHead(request->version());
   request->client()->write(out.c_str(), _headLength);
   _state = RESPONSE_WAIT_ACK;
 }
 
-// When the browser sends back the ACK package, the client object
-// is instantiated.
+
+// When the browser sends back an ACK package, this goes through a
+// chain of handlers after which finally the client object is instantiated.
+AsyncWebServerRequest::AsyncWebServerRequest(AsyncWebServer* s, AsyncClient* c)
+{
+  // [...]
+  c->onAck(
+    [debug](void *r, AsyncClient* c, size_t len, uint32_t time){
+        (void)c;
+        // [...]
+        AsyncWebServerRequest *req = (AsyncWebServerRequest*)r;
+        req->_onAck(len, time);
+    }
+  // [...]
+}
+
+void AsyncWebServerRequest::_onAck(size_t len, uint32_t time){
+  if(_response != NULL){
+    if(!_response->_finished()){
+      _response->_ack(this, len, time);
+    }
+    if(_response->_finished()){
+      AsyncWebServerResponse* r = _response;
+      _response = NULL;
+      delete r;
+      _client->close();
+    }
+  }
+}
+
+// AsyncEventSourceClient allocated here
 size_t AsyncEventSourceResponse::_ack(AsyncWebServerRequest *request, size_t len, uint32_t time __attribute__((unused))){
   if(len){
     new AsyncEventSourceClient(request, _server);
@@ -75,8 +112,8 @@ class AsyncEventSourceClient {
     AsyncEventSourceClient(AsyncWebServerRequest *request, AsyncEventSource *server);
     ~AsyncEventSourceClient();
 
-// The AsyncClient _client is taken from the original request object which
-// the request handler received before.
+// The backend AsyncClient _client is taken from the original request object
+// which the request handler received before.
 // Importantly, the AsyncClient instance runs on the async_tcp task
 // and has the essential TCP callbacks registered for async operation:
 AsyncEventSourceClient::AsyncEventSourceClient(AsyncWebServerRequest *request, AsyncEventSource *server)
@@ -105,10 +142,11 @@ AsyncEventSourceClient::AsyncEventSourceClient(AsyncWebServerRequest *request, A
   _client->onDisconnect([this](void *r, AsyncClient* c){ ((AsyncEventSourceClient*)(r))->_onDisconnect(); delete c; }, this);
 
   _server->_addClient(this); // This seems to do nothing
-  delete request; // ??? !!! ??? Is this a good idea? Are there no callbacks registered?
+  delete request; // ?! Is this a good idea? Are there no callbacks registered?
 }
 
-// Events are sent when the ACK from the remote web browser client is received
+// Event emission is activated once an ACK from the remote web browser client is
+// received.
 void AsyncEventSourceClient::_onAck(size_t len, uint32_t time){
   _lockmq.lock(); // protect _messageQueue
   while(len && !_messageQueue.isEmpty()){
@@ -135,18 +173,7 @@ void AsyncEventSourceClient::_runQueue(){
 }
 
 size_t AsyncEventSourceMessage::send(AsyncClient *client) {
-  ets_printf("AsyncEventSourceMessage::send ");
-  ets_printf("0x%08x\n",client); // most likely it will crash here now after screen/app closure
-
-  if ((int)client == 0xfefefefe || (int)this == 0xfefefefe) {
-    ets_printf("Dang!");
-    abort();
-   }
-
-  const size_t len = _len - _sent;
-  if(client->space() < len){
-    return 0;
-  }
+  // [...]
   // client->add() is where data is already begun to be sent via TCP WRITE.
   size_t sent = client->add((const char *)_data, len);
   if(client->canSend())
@@ -156,15 +183,7 @@ size_t AsyncEventSourceMessage::send(AsyncClient *client) {
 }
 
 size_t AsyncClient::add(const char* data, size_t size, uint8_t apiflags) {
-    if(!_pcb || size == 0 || data == NULL) {
-        return 0;
-    }
-    size_t room = space();
-    if(!room) {
-        return 0;
-    }
-    size_t will_send = (room < size) ? room : size;
-    int8_t err = ERR_OK;
+    // [...]
     err = _tcp_write(_pcb, _closed_slot, data, will_send, apiflags);
     if(err != ERR_OK) {
         return 0;

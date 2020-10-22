@@ -122,7 +122,6 @@ private:
      */
     // static void on_periodic_update_timer(PsPwmAppHwControl* self);
     static void on_periodic_update_timer(TimerHandle_t xTimer);
-
 };
 
 #endif

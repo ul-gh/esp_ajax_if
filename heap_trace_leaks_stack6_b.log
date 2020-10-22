@@ -1,0 +1,494 @@
+Parse trace from '/tmp/heap2.svdat'...
+Stop parsing trace. (Timeout 0.000000 sec while reading 1 bytes!)
+Process events from '['/tmp/heap2.svdat']'...
+Failed to process trace (Duplicate alloc @ 0x3ffd4fac!
+                                              New alloc is 16 bytes,
+                                              previous is 16 bytes.)!
+Processed 12704 events
+=============== HEAP TRACE REPORT ===============
+Processed 662 heap events.
+[0.786593600] HEAP: Allocated 144 bytes @ 0x3ffd417c from task "async_tcp" on core 0 by: 
+/builds/idf/crosstool-NG/.build/xtensa-esp32-elf/src/gcc/libstdc++-v3/libsupc++/new_op.cc:50
+/home/ulrich/mysrc/esp32/esp_ajax_if/lib/ESPAsyncWebServer/src/WebHandlers.cpp:208
+/home/ulrich/mysrc/esp32/esp_ajax_if/lib/ESPAsyncWebServer/src/WebRequest.cpp:677 (discriminator 1)
+/home/ulrich/mysrc/esp32/esp_ajax_if/lib/ESPAsyncWebServer/src/WebRequest.cpp:162
+/home/ulrich/.platformio/packages/toolchain-xtensa32/xtensa-esp32-elf/include/c++/8.2.0/bits/std_function.h:299
+/home/ulrich/.platformio/packages/toolchain-xtensa32/xtensa-esp32-elf/include/c++/8.2.0/bits/std_function.h:688
+
+Possible wrong free operation found
+[0.785881675] HEAP: Freed bytes @ 0x3ffd420c from task "async_tcp" on core 0 by: 
+/home/ulrich/.platformio/packages/framework-arduinoespressif32/cores/esp32/WString.h:303
+/home/ulrich/.platformio/packages/framework-arduinoespressif32/cores/esp32/WString.cpp:125
+/home/ulrich/mysrc/esp32/esp_ajax_if/lib/ESPAsyncWebServer/src/ESPAsyncWebServer.h:119
+/home/ulrich/.platformio/packages/toolchain-xtensa32/xtensa-esp32-elf/include/c++/8.2.0/bits/std_function.h:688
+/home/ulrich/mysrc/esp32/esp_ajax_if/lib/ESPAsyncWebServer/src/StringArray.h:131
+/home/ulrich/mysrc/esp32/esp_ajax_if/lib/ESPAsyncWebServer/src/WebRequest.cpp:668
+
+Possible wrong free operation found
+[0.785899475] HEAP: Freed bytes @ 0x3ffd41e0 from task "async_tcp" on core 0 by: 
+/builds/idf/crosstool-NG/.build/xtensa-esp32-elf/src/gcc/libstdc++-v3/libsupc++/del_op.cc:50
+/home/ulrich/.platformio/packages/toolchain-xtensa32/xtensa-esp32-elf/include/c++/8.2.0/bits/std_function.h:299
+/home/ulrich/.platformio/packages/toolchain-xtensa32/xtensa-esp32-elf/include/c++/8.2.0/bits/std_function.h:688
+/home/ulrich/mysrc/esp32/esp_ajax_if/lib/ESPAsyncWebServer/src/StringArray.h:131
+/home/ulrich/mysrc/esp32/esp_ajax_if/lib/ESPAsyncWebServer/src/WebRequest.cpp:668
+/home/ulrich/mysrc/esp32/esp_ajax_if/lib/ESPAsyncWebServer/src/WebRequest.cpp:162
+
+[0.786707175] HEAP: Allocated 32 bytes @ 0x3ffd5940 from task "async_tcp" on core 0 by: 
+/home/ulrich/.platformio/packages/framework-arduinoespressif32/cores/esp32/WString.cpp:183 (discriminator 4)
+/home/ulrich/.platformio/packages/framework-arduinoespressif32/cores/esp32/WString.cpp:147 (discriminator 4)
+/home/ulrich/.platformio/packages/framework-arduinoespressif32/cores/esp32/WString.cpp:208
+/home/ulrich/.platformio/packages/framework-arduinoespressif32/cores/esp32/WString.cpp:263
+/home/ulrich/mysrc/esp32/esp_ajax_if/lib/ESPAsyncWebServer/src/WebResponses.cpp:545
+/home/ulrich/.platformio/packages/toolchain-xtensa32/xtensa-esp32-elf/include/c++/8.2.0/bits/std_function.h:256
+
+Possible wrong free operation found
+[0.786253775] HEAP: Freed bytes @ 0x3ffd595c from task "async_tcp" on core 0 by: 
+/home/ulrich/.platformio/packages/framework-arduinoespressif32/cores/esp32/WString.h:303
+/home/ulrich/.platformio/packages/framework-arduinoespressif32/cores/esp32/WString.cpp:125
+/home/ulrich/mysrc/esp32/esp_ajax_if/lib/ESPAsyncWebServer/src/WebRequest.cpp:63
+/home/ulrich/.platformio/packages/toolchain-xtensa32/xtensa-esp32-elf/include/c++/8.2.0/bits/std_function.h:688
+/home/ulrich/mysrc/esp32/esp_ajax_if/lib/ESPAsyncWebServer/src/StringArray.h:131
+/home/ulrich/mysrc/esp32/esp_ajax_if/lib/ESPAsyncWebServer/src/WebRequest.cpp:668
+
+[0.788279475] HEAP: Allocated 224 bytes @ 0x3ffd65f4 from task "async_tcp" on core 0 by: 
+/home/ulrich/.platformio/packages/framework-arduinoespressif32/cores/esp32/WString.cpp:183 (discriminator 4)
+/home/ulrich/.platformio/packages/framework-arduinoespressif32/cores/esp32/WString.cpp:147 (discriminator 4)
+/home/ulrich/.platformio/packages/framework-arduinoespressif32/cores/esp32/WString.cpp:331
+/home/ulrich/.platformio/packages/framework-arduinoespressif32/cores/esp32/WString.cpp:346
+/home/ulrich/mysrc/esp32/esp_ajax_if/lib/ESPAsyncWebServer/src/StringArray.h:53
+/home/ulrich/mysrc/esp32/esp_ajax_if/lib/ESPAsyncWebServer/src/WebResponses.cpp:259
+
+[0.789139550] HEAP: Allocated 128 bytes @ 0x3ffd6070 from task "async_tcp" on core 0 by: 
+/home/ulrich/.platformio/packages/framework-espidf/components/newlib/heap.c:53
+??:0
+??:0
+??:0
+/builds/idf/crosstool-NG/.build/xtensa-esp32-elf/src/newlib/newlib/libc/stdio/fread.c:226
+/builds/idf/crosstool-NG/.build/xtensa-esp32-elf/src/newlib/newlib/libc/stdio/fread.c:267
+
+Possible wrong free operation found
+[0.786314525] HEAP: Freed bytes @ 0x3ffd60d0 from task "async_tcp" on core 0 by: 
+/home/ulrich/.platformio/packages/framework-arduinoespressif32/cores/esp32/WString.h:303
+/home/ulrich/.platformio/packages/framework-arduinoespressif32/cores/esp32/WString.cpp:125
+/home/ulrich/mysrc/esp32/esp_ajax_if/lib/ESPAsyncWebServer/src/ESPAsyncWebServer.h:119
+/home/ulrich/.platformio/packages/toolchain-xtensa32/xtensa-esp32-elf/include/c++/8.2.0/bits/std_function.h:688
+/home/ulrich/mysrc/esp32/esp_ajax_if/lib/ESPAsyncWebServer/src/StringArray.h:131
+/home/ulrich/mysrc/esp32/esp_ajax_if/lib/ESPAsyncWebServer/src/WebRequest.cpp:668
+
+Possible wrong free operation found
+[0.786332775] HEAP: Freed bytes @ 0x3ffd60a4 from task "async_tcp" on core 0 by: 
+/builds/idf/crosstool-NG/.build/xtensa-esp32-elf/src/gcc/libstdc++-v3/libsupc++/del_op.cc:50
+/home/ulrich/.platformio/packages/toolchain-xtensa32/xtensa-esp32-elf/include/c++/8.2.0/bits/std_function.h:299
+/home/ulrich/.platformio/packages/toolchain-xtensa32/xtensa-esp32-elf/include/c++/8.2.0/bits/std_function.h:688
+/home/ulrich/mysrc/esp32/esp_ajax_if/lib/ESPAsyncWebServer/src/StringArray.h:131
+/home/ulrich/mysrc/esp32/esp_ajax_if/lib/ESPAsyncWebServer/src/WebRequest.cpp:668
+/home/ulrich/mysrc/esp32/esp_ajax_if/lib/ESPAsyncWebServer/src/WebRequest.cpp:162
+
+[1.023789975] HEAP: Allocated 1626 bytes @ 0x3ffda370 from task "tiT" on core 0 by: 
+/home/ulrich/.platformio/packages/framework-espidf/components/esp32/esp_adapter.c:412
+??:?
+??:?
+??:?
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/port/esp32/netif/wlanif.c:134
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/netif/ethernet.c:312
+
+[1.024298875] HEAP: Allocated 1626 bytes @ 0x3ffda9e0 from task "tiT" on core 0 by: 
+/home/ulrich/.platformio/packages/framework-espidf/components/esp32/esp_adapter.c:412
+??:?
+??:?
+??:?
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/port/esp32/netif/wlanif.c:134
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/netif/ethernet.c:312
+
+[1.024609175] HEAP: Allocated 1626 bytes @ 0x3ffdb050 from task "tiT" on core 0 by: 
+/home/ulrich/.platformio/packages/framework-espidf/components/esp32/esp_adapter.c:412
+??:?
+??:?
+??:?
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/port/esp32/netif/wlanif.c:134
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/netif/ethernet.c:312
+
+[1.025528125] HEAP: Allocated 12 bytes @ 0x3ffd4a00 from task "async_tcp" on core 0 by: 
+/home/ulrich/.platformio/packages/framework-espidf/components/esp32/task_wdt.c:270
+/home/ulrich/mysrc/esp32/esp_ajax_if/lib/AsyncTCP/src/AsyncTCP.cpp:194
+/home/ulrich/.platformio/packages/framework-espidf/components/freertos/port.c:145
+??:0
+??:0
+??:0
+
+[1.025865050] HEAP: Allocated 16 bytes @ 0x3ffd6128 from task "async_tcp" on core 0 by: 
+/home/ulrich/.platformio/packages/framework-arduinoespressif32/cores/esp32/WString.cpp:183 (discriminator 4)
+/home/ulrich/.platformio/packages/framework-arduinoespressif32/cores/esp32/WString.cpp:147 (discriminator 4)
+/home/ulrich/mysrc/esp32/esp_ajax_if/lib/ESPAsyncWebServer/src/WebRequest.cpp:1060
+/home/ulrich/mysrc/esp32/esp_ajax_if/lib/ESPAsyncWebServer/src/WebRequest.cpp:380
+/home/ulrich/mysrc/esp32/esp_ajax_if/lib/ESPAsyncWebServer/src/WebRequest.cpp:657
+/home/ulrich/mysrc/esp32/esp_ajax_if/lib/ESPAsyncWebServer/src/WebRequest.cpp:162
+
+[1.026186200] HEAP: Allocated 16 bytes @ 0x3ffd614c from task "async_tcp" on core 0 by: 
+/home/ulrich/.platformio/packages/framework-arduinoespressif32/cores/esp32/WString.cpp:183 (discriminator 4)
+/home/ulrich/.platformio/packages/framework-arduinoespressif32/cores/esp32/WString.cpp:147 (discriminator 4)
+/home/ulrich/.platformio/packages/framework-arduinoespressif32/cores/esp32/WString.cpp:208
+/home/ulrich/.platformio/packages/framework-arduinoespressif32/cores/esp32/WString.cpp:263
+/home/ulrich/mysrc/esp32/esp_ajax_if/lib/ESPAsyncWebServer/src/WebRequest.cpp:414
+/home/ulrich/mysrc/esp32/esp_ajax_if/lib/ESPAsyncWebServer/src/WebRequest.cpp:682
+
+[1.026234675] HEAP: Allocated 24 bytes @ 0x3ffd4450 from task "async_tcp" on core 0 by: 
+/builds/idf/crosstool-NG/.build/xtensa-esp32-elf/src/gcc/libstdc++-v3/libsupc++/new_op.cc:50
+/home/ulrich/mysrc/esp32/esp_ajax_if/lib/ESPAsyncWebServer/src/WebRequest.cpp:444 (discriminator 1)
+/home/ulrich/mysrc/esp32/esp_ajax_if/lib/ESPAsyncWebServer/src/WebRequest.cpp:682
+/home/ulrich/mysrc/esp32/esp_ajax_if/lib/ESPAsyncWebServer/src/WebRequest.cpp:162
+/home/ulrich/.platformio/packages/toolchain-xtensa32/xtensa-esp32-elf/include/c++/8.2.0/bits/std_function.h:299
+/home/ulrich/.platformio/packages/toolchain-xtensa32/xtensa-esp32-elf/include/c++/8.2.0/bits/std_function.h:688
+
+[1.026285050] HEAP: Allocated 16 bytes @ 0x3ffd4038 from task "async_tcp" on core 0 by: 
+/home/ulrich/.platformio/packages/framework-arduinoespressif32/cores/esp32/WString.cpp:183 (discriminator 4)
+/home/ulrich/.platformio/packages/framework-arduinoespressif32/cores/esp32/WString.cpp:147 (discriminator 4)
+/home/ulrich/.platformio/packages/framework-arduinoespressif32/cores/esp32/WString.cpp:208
+/home/ulrich/.platformio/packages/framework-arduinoespressif32/cores/esp32/WString.cpp:263
+/home/ulrich/.platformio/packages/framework-arduinoespressif32/cores/esp32/WString.cpp:41
+/home/ulrich/mysrc/esp32/esp_ajax_if/lib/ESPAsyncWebServer/src/StringArray.h:67 (discriminator 1)
+
+[1.026308775] HEAP: Allocated 8 bytes @ 0x3ffd4418 from task "async_tcp" on core 0 by: 
+/builds/idf/crosstool-NG/.build/xtensa-esp32-elf/src/gcc/libstdc++-v3/libsupc++/new_op.cc:50
+/home/ulrich/mysrc/esp32/esp_ajax_if/lib/ESPAsyncWebServer/src/StringArray.h:32 (discriminator 1)
+/home/ulrich/mysrc/esp32/esp_ajax_if/lib/ESPAsyncWebServer/src/WebRequest.cpp:682
+/home/ulrich/mysrc/esp32/esp_ajax_if/lib/ESPAsyncWebServer/src/WebRequest.cpp:162
+/home/ulrich/.platformio/packages/toolchain-xtensa32/xtensa-esp32-elf/include/c++/8.2.0/bits/std_function.h:299
+/home/ulrich/.platformio/packages/toolchain-xtensa32/xtensa-esp32-elf/include/c++/8.2.0/bits/std_function.h:688
+
+[1.026392800] HEAP: Allocated 96 bytes @ 0x3ffd539c from task "async_tcp" on core 0 by: 
+/home/ulrich/.platformio/packages/framework-arduinoespressif32/cores/esp32/WString.cpp:183 (discriminator 4)
+/home/ulrich/.platformio/packages/framework-arduinoespressif32/cores/esp32/WString.cpp:147 (discriminator 4)
+/home/ulrich/.platformio/packages/framework-arduinoespressif32/cores/esp32/WString.cpp:331
+/home/ulrich/.platformio/packages/framework-arduinoespressif32/cores/esp32/WString.cpp:346
+/home/ulrich/mysrc/esp32/esp_ajax_if/lib/ESPAsyncWebServer/src/WebRequest.cpp:160
+/home/ulrich/.platformio/packages/toolchain-xtensa32/xtensa-esp32-elf/include/c++/8.2.0/bits/std_function.h:299
+
+Possible wrong free operation found
+[0.785986800] HEAP: Freed bytes @ 0x3ffd53c0 from task "async_tcp" on core 0 by: 
+/home/ulrich/.platformio/packages/framework-arduinoespressif32/cores/esp32/WString.h:303
+/home/ulrich/.platformio/packages/framework-arduinoespressif32/cores/esp32/WString.cpp:125
+/home/ulrich/mysrc/esp32/esp_ajax_if/lib/ESPAsyncWebServer/src/ESPAsyncWebServer.h:119
+/home/ulrich/.platformio/packages/toolchain-xtensa32/xtensa-esp32-elf/include/c++/8.2.0/bits/std_function.h:688
+/home/ulrich/mysrc/esp32/esp_ajax_if/lib/ESPAsyncWebServer/src/StringArray.h:131
+/home/ulrich/mysrc/esp32/esp_ajax_if/lib/ESPAsyncWebServer/src/WebRequest.cpp:668
+
+Possible wrong free operation found
+[0.786041575] HEAP: Freed bytes @ 0x3ffd53e4 from task "async_tcp" on core 0 by: 
+/builds/idf/crosstool-NG/.build/xtensa-esp32-elf/src/gcc/libstdc++-v3/libsupc++/del_op.cc:50
+/home/ulrich/mysrc/esp32/esp_ajax_if/lib/ESPAsyncWebServer/src/WebRequest.cpp:249
+/home/ulrich/mysrc/esp32/esp_ajax_if/lib/ESPAsyncWebServer/src/WebRequest.cpp:668
+/home/ulrich/mysrc/esp32/esp_ajax_if/lib/ESPAsyncWebServer/src/WebRequest.cpp:162
+/home/ulrich/.platformio/packages/toolchain-xtensa32/xtensa-esp32-elf/include/c++/8.2.0/bits/std_function.h:299
+/home/ulrich/.platformio/packages/toolchain-xtensa32/xtensa-esp32-elf/include/c++/8.2.0/bits/std_function.h:688
+
+[1.027079100] HEAP: Allocated 36 bytes @ 0x3ffd4f74 from task "tiT" on core 0 by: 
+/home/ulrich/mysrc/esp32/esp_ajax_if/lib/AsyncTCP/src/AsyncTCP.cpp:294
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/tcp_in.c:469 (discriminator 1)
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/ipv4/ip4.c:785
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/netif/ethernet.c:188
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/api/tcpip.c:180
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/api/tcpip.c:148
+
+Possible wrong free operation found
+[0.786275200] HEAP: Freed bytes @ 0x3ffd4f98 from task "async_tcp" on core 0 by: 
+/builds/idf/crosstool-NG/.build/xtensa-esp32-elf/src/gcc/libstdc++-v3/libsupc++/del_op.cc:50
+/home/ulrich/.platformio/packages/toolchain-xtensa32/xtensa-esp32-elf/include/c++/8.2.0/bits/std_function.h:299
+/home/ulrich/.platformio/packages/toolchain-xtensa32/xtensa-esp32-elf/include/c++/8.2.0/bits/std_function.h:688
+/home/ulrich/mysrc/esp32/esp_ajax_if/lib/ESPAsyncWebServer/src/StringArray.h:131
+/home/ulrich/mysrc/esp32/esp_ajax_if/lib/ESPAsyncWebServer/src/WebRequest.cpp:668
+/home/ulrich/mysrc/esp32/esp_ajax_if/lib/ESPAsyncWebServer/src/WebRequest.cpp:162
+
+[1.027545300] HEAP: Allocated 1610 bytes @ 0x3ffd7b40 from task "tiT" on core 0 by: 
+/home/ulrich/.platformio/packages/framework-espidf/components/esp32/esp_adapter.c:412
+??:?
+??:?
+??:?
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/port/esp32/netif/wlanif.c:134
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/netif/ethernet.c:312
+
+[1.028141525] HEAP: Allocated 36 bytes @ 0x3ffd4088 from task "tiT" on core 0 by: 
+/home/ulrich/mysrc/esp32/esp_ajax_if/lib/AsyncTCP/src/AsyncTCP.cpp:294
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/tcp_in.c:469 (discriminator 1)
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/ipv4/ip4.c:785
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/netif/ethernet.c:188
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/api/tcpip.c:180
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/api/tcpip.c:148
+
+[1.028540750] HEAP: Allocated 24 bytes @ 0x3ffd405c from task "async_tcp" on core 0 by: 
+/builds/idf/crosstool-NG/.build/xtensa-esp32-elf/src/gcc/libstdc++-v3/libsupc++/new_op.cc:50
+/home/ulrich/mysrc/esp32/esp_ajax_if/lib/ESPAsyncWebServer/src/WebRequest.cpp:444 (discriminator 1)
+/home/ulrich/mysrc/esp32/esp_ajax_if/lib/ESPAsyncWebServer/src/WebRequest.cpp:682
+/home/ulrich/mysrc/esp32/esp_ajax_if/lib/ESPAsyncWebServer/src/WebRequest.cpp:162
+/home/ulrich/.platformio/packages/toolchain-xtensa32/xtensa-esp32-elf/include/c++/8.2.0/bits/std_function.h:299
+/home/ulrich/.platformio/packages/toolchain-xtensa32/xtensa-esp32-elf/include/c++/8.2.0/bits/std_function.h:688
+
+Possible wrong free operation found
+[0.785700200] HEAP: Freed bytes @ 0x3ffd4064 from task "async_tcp" on core 0 by: 
+/home/ulrich/.platformio/packages/framework-arduinoespressif32/cores/esp32/WString.h:303
+/home/ulrich/.platformio/packages/framework-arduinoespressif32/cores/esp32/WString.cpp:125
+/home/ulrich/mysrc/esp32/esp_ajax_if/lib/ESPAsyncWebServer/src/ESPAsyncWebServer.h:119
+/home/ulrich/.platformio/packages/toolchain-xtensa32/xtensa-esp32-elf/include/c++/8.2.0/bits/std_function.h:688
+/home/ulrich/mysrc/esp32/esp_ajax_if/lib/ESPAsyncWebServer/src/StringArray.h:131
+/home/ulrich/mysrc/esp32/esp_ajax_if/lib/ESPAsyncWebServer/src/WebRequest.cpp:668
+
+[1.028582925] HEAP: Allocated 16 bytes @ 0x3ffd4fac from task "async_tcp" on core 0 by: 
+/home/ulrich/.platformio/packages/framework-arduinoespressif32/cores/esp32/WString.cpp:183 (discriminator 4)
+/home/ulrich/.platformio/packages/framework-arduinoespressif32/cores/esp32/WString.cpp:147 (discriminator 4)
+/home/ulrich/.platformio/packages/framework-arduinoespressif32/cores/esp32/WString.cpp:208
+/home/ulrich/.platformio/packages/framework-arduinoespressif32/cores/esp32/WString.cpp:263
+/home/ulrich/.platformio/packages/framework-arduinoespressif32/cores/esp32/WString.cpp:41
+/home/ulrich/mysrc/esp32/esp_ajax_if/lib/ESPAsyncWebServer/src/ESPAsyncWebServer.h:111 (discriminator 1)
+
+[1.028623875] HEAP: Allocated 80 bytes @ 0x3ffd6378 from task "async_tcp" on core 0 by: 
+/home/ulrich/.platformio/packages/framework-arduinoespressif32/cores/esp32/WString.cpp:183 (discriminator 4)
+/home/ulrich/.platformio/packages/framework-arduinoespressif32/cores/esp32/WString.cpp:147 (discriminator 4)
+/home/ulrich/.platformio/packages/framework-arduinoespressif32/cores/esp32/WString.cpp:208
+/home/ulrich/.platformio/packages/framework-arduinoespressif32/cores/esp32/WString.cpp:263
+/home/ulrich/.platformio/packages/framework-arduinoespressif32/cores/esp32/WString.cpp:41
+/home/ulrich/mysrc/esp32/esp_ajax_if/lib/ESPAsyncWebServer/src/StringArray.h:67 (discriminator 1)
+
+[1.028655325] HEAP: Allocated 8 bytes @ 0x3ffd6104 from task "async_tcp" on core 0 by: 
+/builds/idf/crosstool-NG/.build/xtensa-esp32-elf/src/gcc/libstdc++-v3/libsupc++/new_op.cc:50
+/home/ulrich/mysrc/esp32/esp_ajax_if/lib/ESPAsyncWebServer/src/StringArray.h:32 (discriminator 1)
+/home/ulrich/mysrc/esp32/esp_ajax_if/lib/ESPAsyncWebServer/src/WebRequest.cpp:682
+/home/ulrich/mysrc/esp32/esp_ajax_if/lib/ESPAsyncWebServer/src/WebRequest.cpp:162
+/home/ulrich/.platformio/packages/toolchain-xtensa32/xtensa-esp32-elf/include/c++/8.2.0/bits/std_function.h:299
+/home/ulrich/.platformio/packages/toolchain-xtensa32/xtensa-esp32-elf/include/c++/8.2.0/bits/std_function.h:688
+
+[1.028772375] HEAP: Allocated 32 bytes @ 0x3ffd66e8 from task "async_tcp" on core 0 by: 
+/home/ulrich/.platformio/packages/framework-arduinoespressif32/cores/esp32/WString.cpp:183 (discriminator 4)
+/home/ulrich/.platformio/packages/framework-arduinoespressif32/cores/esp32/WString.cpp:147 (discriminator 4)
+/home/ulrich/.platformio/packages/framework-arduinoespressif32/cores/esp32/WString.cpp:208
+/home/ulrich/.platformio/packages/framework-arduinoespressif32/cores/esp32/WString.cpp:286
+/home/ulrich/.platformio/packages/framework-arduinoespressif32/cores/esp32/WString.h:300
+/home/ulrich/mysrc/esp32/esp_ajax_if/lib/ESPAsyncWebServer/src/WebRequest.cpp:413
+
+[1.029363275] HEAP: Allocated 36 bytes @ 0x3ffd5468 from task "tiT" on core 0 by: 
+/home/ulrich/mysrc/esp32/esp_ajax_if/lib/AsyncTCP/src/AsyncTCP.cpp:294
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/tcp_in.c:469 (discriminator 1)
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/ipv4/ip4.c:785
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/netif/ethernet.c:188
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/api/tcpip.c:180
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/api/tcpip.c:148
+
+Possible wrong free operation found
+[0.786167925] HEAP: Freed bytes @ 0x3ffd5474 from task "async_tcp" on core 0 by: 
+/builds/idf/crosstool-NG/.build/xtensa-esp32-elf/src/gcc/libstdc++-v3/libsupc++/del_op.cc:50
+/home/ulrich/mysrc/esp32/esp_ajax_if/lib/ESPAsyncWebServer/src/WebRequest.cpp:249
+/home/ulrich/mysrc/esp32/esp_ajax_if/lib/ESPAsyncWebServer/src/WebRequest.cpp:668
+/home/ulrich/mysrc/esp32/esp_ajax_if/lib/ESPAsyncWebServer/src/WebRequest.cpp:162
+/home/ulrich/.platformio/packages/toolchain-xtensa32/xtensa-esp32-elf/include/c++/8.2.0/bits/std_function.h:299
+/home/ulrich/.platformio/packages/toolchain-xtensa32/xtensa-esp32-elf/include/c++/8.2.0/bits/std_function.h:688
+
+[1.752372175] HEAP: Allocated 36 bytes @ 0x3ffd5a50 from task "tiT" on core 0 by: 
+/home/ulrich/mysrc/esp32/esp_ajax_if/lib/AsyncTCP/src/AsyncTCP.cpp:259
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/tcp.c:1425 (discriminator 1)
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/tcp.c:244
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/timeouts.c:161
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/timeouts.c:400
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/api/tcpip.c:117
+
+[1.752430500] HEAP: Allocated 36 bytes @ 0x3ffd5a88 from task "tiT" on core 0 by: 
+/home/ulrich/mysrc/esp32/esp_ajax_if/lib/AsyncTCP/src/AsyncTCP.cpp:259
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/tcp.c:1425 (discriminator 1)
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/tcp.c:244
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/timeouts.c:161
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/timeouts.c:400
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/api/tcpip.c:117
+
+[1.752470075] HEAP: Allocated 36 bytes @ 0x3ffd5ac0 from task "tiT" on core 0 by: 
+/home/ulrich/mysrc/esp32/esp_ajax_if/lib/AsyncTCP/src/AsyncTCP.cpp:259
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/tcp.c:1425 (discriminator 1)
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/tcp.c:244
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/timeouts.c:161
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/timeouts.c:400
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/api/tcpip.c:117
+
+[2.252352375] HEAP: Allocated 36 bytes @ 0x3ffd5af8 from task "tiT" on core 0 by: 
+/home/ulrich/mysrc/esp32/esp_ajax_if/lib/AsyncTCP/src/AsyncTCP.cpp:259
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/tcp.c:1425 (discriminator 1)
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/tcp.c:244
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/timeouts.c:161
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/timeouts.c:400
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/api/tcpip.c:117
+
+[2.252403725] HEAP: Allocated 36 bytes @ 0x3ffd5b30 from task "tiT" on core 0 by: 
+/home/ulrich/mysrc/esp32/esp_ajax_if/lib/AsyncTCP/src/AsyncTCP.cpp:259
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/tcp.c:1425 (discriminator 1)
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/tcp.c:244
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/timeouts.c:161
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/timeouts.c:400
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/api/tcpip.c:117
+
+[2.252442025] HEAP: Allocated 36 bytes @ 0x3ffd5b68 from task "tiT" on core 0 by: 
+/home/ulrich/mysrc/esp32/esp_ajax_if/lib/AsyncTCP/src/AsyncTCP.cpp:259
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/tcp.c:1425 (discriminator 1)
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/tcp.c:244
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/timeouts.c:161
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/timeouts.c:400
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/api/tcpip.c:117
+
+[2.752366275] HEAP: Allocated 36 bytes @ 0x3ffd5ba0 from task "tiT" on core 0 by: 
+/home/ulrich/mysrc/esp32/esp_ajax_if/lib/AsyncTCP/src/AsyncTCP.cpp:259
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/tcp.c:1425 (discriminator 1)
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/tcp.c:244
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/timeouts.c:161
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/timeouts.c:400
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/api/tcpip.c:117
+
+[2.752414125] HEAP: Allocated 36 bytes @ 0x3ffd5bd8 from task "tiT" on core 0 by: 
+/home/ulrich/mysrc/esp32/esp_ajax_if/lib/AsyncTCP/src/AsyncTCP.cpp:259
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/tcp.c:1425 (discriminator 1)
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/tcp.c:244
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/timeouts.c:161
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/timeouts.c:400
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/api/tcpip.c:117
+
+[2.752451775] HEAP: Allocated 36 bytes @ 0x3ffd5c10 from task "tiT" on core 0 by: 
+/home/ulrich/mysrc/esp32/esp_ajax_if/lib/AsyncTCP/src/AsyncTCP.cpp:259
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/tcp.c:1425 (discriminator 1)
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/tcp.c:244
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/timeouts.c:161
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/timeouts.c:400
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/api/tcpip.c:117
+
+[3.252422300] HEAP: Allocated 36 bytes @ 0x3ffd5c48 from task "tiT" on core 0 by: 
+/home/ulrich/mysrc/esp32/esp_ajax_if/lib/AsyncTCP/src/AsyncTCP.cpp:259
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/tcp.c:1425 (discriminator 1)
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/tcp.c:244
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/timeouts.c:161
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/timeouts.c:400
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/api/tcpip.c:117
+
+[3.252484625] HEAP: Allocated 36 bytes @ 0x3ffd5c80 from task "tiT" on core 0 by: 
+/home/ulrich/mysrc/esp32/esp_ajax_if/lib/AsyncTCP/src/AsyncTCP.cpp:259
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/tcp.c:1425 (discriminator 1)
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/tcp.c:244
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/timeouts.c:161
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/timeouts.c:400
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/api/tcpip.c:117
+
+[3.252519800] HEAP: Allocated 36 bytes @ 0x3ffd5cb8 from task "tiT" on core 0 by: 
+/home/ulrich/mysrc/esp32/esp_ajax_if/lib/AsyncTCP/src/AsyncTCP.cpp:259
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/tcp.c:1425 (discriminator 1)
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/tcp.c:244
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/timeouts.c:161
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/timeouts.c:400
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/api/tcpip.c:117
+
+[3.752398750] HEAP: Allocated 36 bytes @ 0x3ffd5cf0 from task "tiT" on core 0 by: 
+/home/ulrich/mysrc/esp32/esp_ajax_if/lib/AsyncTCP/src/AsyncTCP.cpp:259
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/tcp.c:1425 (discriminator 1)
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/tcp.c:244
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/timeouts.c:161
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/timeouts.c:400
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/api/tcpip.c:117
+
+[3.752446500] HEAP: Allocated 36 bytes @ 0x3ffd5d28 from task "tiT" on core 0 by: 
+/home/ulrich/mysrc/esp32/esp_ajax_if/lib/AsyncTCP/src/AsyncTCP.cpp:259
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/tcp.c:1425 (discriminator 1)
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/tcp.c:244
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/timeouts.c:161
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/timeouts.c:400
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/api/tcpip.c:117
+
+[3.752481175] HEAP: Allocated 36 bytes @ 0x3ffd5d60 from task "tiT" on core 0 by: 
+/home/ulrich/mysrc/esp32/esp_ajax_if/lib/AsyncTCP/src/AsyncTCP.cpp:259
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/tcp.c:1425 (discriminator 1)
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/tcp.c:244
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/timeouts.c:161
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/timeouts.c:400
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/api/tcpip.c:117
+
+[4.252359400] HEAP: Allocated 36 bytes @ 0x3ffd5d98 from task "tiT" on core 0 by: 
+/home/ulrich/mysrc/esp32/esp_ajax_if/lib/AsyncTCP/src/AsyncTCP.cpp:259
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/tcp.c:1425 (discriminator 1)
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/tcp.c:244
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/timeouts.c:161
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/timeouts.c:400
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/api/tcpip.c:117
+
+[4.252409200] HEAP: Allocated 36 bytes @ 0x3ffd5dd0 from task "tiT" on core 0 by: 
+/home/ulrich/mysrc/esp32/esp_ajax_if/lib/AsyncTCP/src/AsyncTCP.cpp:259
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/tcp.c:1425 (discriminator 1)
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/tcp.c:244
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/timeouts.c:161
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/timeouts.c:400
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/api/tcpip.c:117
+
+[4.252442850] HEAP: Allocated 36 bytes @ 0x3ffd5e08 from task "tiT" on core 0 by: 
+/home/ulrich/mysrc/esp32/esp_ajax_if/lib/AsyncTCP/src/AsyncTCP.cpp:259
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/tcp.c:1425 (discriminator 1)
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/tcp.c:244
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/timeouts.c:161
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/timeouts.c:400
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/api/tcpip.c:117
+
+[4.352353625] HEAP: Allocated 16 bytes @ 0x3ffbe37c from task "tiT" on core 0 by: 
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/mem.c:237
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/memp.c:254
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/memp.c:350 (discriminator 2)
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/timeouts.c:199
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/timeouts.c:271
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/timeouts.c:400
+
+[4.352452350] HEAP: Allocated 16 bytes @ 0x3ffbe2ec from task "tiT" on core 0 by: 
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/mem.c:237
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/memp.c:254
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/memp.c:350 (discriminator 2)
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/timeouts.c:199
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/timeouts.c:271
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/timeouts.c:400
+
+[4.352548125] HEAP: Allocated 16 bytes @ 0x3ffbe334 from task "tiT" on core 0 by: 
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/mem.c:237
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/memp.c:254
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/memp.c:350 (discriminator 2)
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/timeouts.c:199
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/timeouts.c:271
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/timeouts.c:400
+
+[4.352637800] HEAP: Allocated 16 bytes @ 0x3ffbe358 from task "tiT" on core 0 by: 
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/mem.c:237
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/memp.c:254
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/memp.c:350 (discriminator 2)
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/timeouts.c:199
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/timeouts.c:271
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/timeouts.c:400
+
+[4.352861600] HEAP: Allocated 16 bytes @ 0x3ffd45d4 from task "tiT" on core 0 by: 
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/mem.c:237
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/memp.c:254
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/memp.c:350 (discriminator 2)
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/timeouts.c:199
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/timeouts.c:271
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/timeouts.c:400
+
+[4.752351750] HEAP: Allocated 36 bytes @ 0x3ffd5e40 from task "tiT" on core 0 by: 
+/home/ulrich/mysrc/esp32/esp_ajax_if/lib/AsyncTCP/src/AsyncTCP.cpp:259
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/tcp.c:1425 (discriminator 1)
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/tcp.c:244
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/timeouts.c:161
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/timeouts.c:400
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/api/tcpip.c:117
+
+[4.752402325] HEAP: Allocated 36 bytes @ 0x3ffd5e78 from task "tiT" on core 0 by: 
+/home/ulrich/mysrc/esp32/esp_ajax_if/lib/AsyncTCP/src/AsyncTCP.cpp:259
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/tcp.c:1425 (discriminator 1)
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/tcp.c:244
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/timeouts.c:161
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/timeouts.c:400
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/api/tcpip.c:117
+
+[4.852352000] HEAP: Allocated 16 bytes @ 0x3ffbe310 from task "tiT" on core 0 by: 
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/mem.c:237
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/memp.c:254
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/memp.c:350 (discriminator 2)
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/timeouts.c:199
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/timeouts.c:271
+/home/ulrich/.platformio/packages/framework-espidf/components/lwip/lwip/src/core/timeouts.c:400
+
+Found 8288 leaked bytes in 49 blocks.
+=============== LOG TRACE REPORT ===============
+Processed 0 log messages.

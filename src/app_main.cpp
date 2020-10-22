@@ -42,10 +42,10 @@
 
 // Debug
 #include "ESPAsyncWebServer.h"
-AsyncWebServerRequest *dbg_requests[20];
-int dbg_requests_pos = 0;
-AsyncWebServerResponse *dbg_last_response;
-int dbg_last_response_addr = 0;
+#include "esp_heap_trace.h"
+
+volatile void *dbg_a;
+volatile void *dbg_b;
 
 //SemaphoreHandle_t g_request_lock = xSemaphoreCreateBinary();
 
@@ -67,6 +67,8 @@ APIServer* api_server;
 PsPwmAppHwControl* ps_pwm_controller;
 
 void setup() {
+    // FIXME: DEBUG
+    //heap_trace_init_tohost();
     //xSemaphoreGive(g_request_lock);
     //esp_log_level_set("*", ESP_LOG_DEBUG);
     Serial.begin(serial_baudrate);
@@ -81,11 +83,11 @@ void setup() {
     //wifi_manager->startConfigPortal("Isocal_Access_Point"); // Debug or special
     //wifi_manager->autoConnect("Isocal_Access_Point");
     //wifi_manager->setConfigPortalTimeout(180);
-    api_server = new APIServer{&http_backend};
     esp_log_level_set("*", ESP_LOG_DEBUG);
     delay(100);
-    ps_pwm_controller = new PsPwmAppHwControl{api_server};
+    api_server = new APIServer{&http_backend};
     api_server->activate_events_on("/events");
+    ps_pwm_controller = new PsPwmAppHwControl{api_server};
     api_server->activate_default_callbacks();
     size_t tot_bytes, used_bytes;
     esp_spiffs_info(NULL, &tot_bytes, &used_bytes);
@@ -97,8 +99,16 @@ void setup() {
 }
 
 void loop() {
+    static int loopctr;
     // Application runs asynchronously, you can do anything here.
     delay(5000);
+    loopctr++;
+    if (loopctr > 4) {
+        //heap_trace_start(HEAP_TRACE_LEAKS);
+    }
+    if (loopctr > 8) {
+        //heap_trace_stop();
+    }
     if (!heap_caps_check_integrity_all(true)) {
         Serial.println("!!!!!!!!!! Heap integrity check failed");
         abort();
@@ -106,7 +116,7 @@ void loop() {
     String debug_msg = "Free Heap: " + String(ESP.getFreeHeap());
     debug_msg += "  Minimum ever free heap: " + String(ESP.getMinFreeHeap());
     debug_msg += "  SSE queue length: ";
-    //debug_msg += api_server->event_source->avgPacketsWaiting();
+    debug_msg += api_server->event_source->avgPacketsWaiting();
     debug_msg += "\n Wifi stations connected: ";
     debug_msg += WiFi.softAPgetStationNum();
     Serial.println(debug_msg);

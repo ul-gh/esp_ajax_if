@@ -1,0 +1,10 @@
+Parse trace from '/tmp/app_cpu.svdat'...
+Stop parsing trace. (Timeout 0.000000 sec while reading 1 bytes!)
+Process events from '['/tmp/app_cpu.svdat']'...
+Processing completed.
+Processed 56564 events
+=============== HEAP TRACE REPORT ===============
+Processed 0 heap events.
+OK - Heap errors was not found.
+=============== LOG TRACE REPORT ===============
+Processed 0 log messages.
