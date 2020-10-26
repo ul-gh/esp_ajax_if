@@ -7,7 +7,5 @@ target extended-remote | /home/ulrich/.platformio/packages/tool-openocd-esp32/bi
 monitor reset halt
 flushregs
 set remote hardware-watchpoint-limit 2
-
-tb tcpip.c:509
-c
+set remote hardware-breakpoint-limit 2
 

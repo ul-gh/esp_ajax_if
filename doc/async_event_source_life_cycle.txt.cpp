@@ -114,8 +114,8 @@ class AsyncEventSourceClient {
 
 // The backend AsyncClient _client is taken from the original request object
 // which the request handler received before.
-// Importantly, the AsyncClient instance runs on the async_tcp task
-// and has the essential TCP callbacks registered for async operation:
+// Importantly, the AsyncClient instance has the essential TCP callbacks
+// registered for async operation; these are called from the async_tcp task:
 AsyncEventSourceClient::AsyncEventSourceClient(AsyncWebServerRequest *request, AsyncEventSource *server)
 : _messageQueue(LinkedList<AsyncEventSourceMessage *>([](AsyncEventSourceMessage *m){ delete  m; }))
 {
@@ -191,6 +191,7 @@ size_t AsyncClient::add(const char* data, size_t size, uint8_t apiflags) {
     return will_send;
 }
 
+// Remarks on tcp_write vs. tcp_output methods of LWIP backend:
 // A quick look through messages on this subject indicates that tcp_output()
 // lets lwip know that you're done making tcp_write() calls for now, and that
 // it can transmit the accumulated packet immediately, rather than waiting for
@@ -208,3 +209,45 @@ bool AsyncClient::send(){
     }
     return false;
 }
+
+
+///// AsyncEventSource application-side API:
+
+// This is supposed to be called from the application thread/context.
+// This is where the problem starts, because ESPAsyncWebServer currently is not
+// thread-safe...
+// [BOOM!]
+void AsyncEventSource::send(const char *message, const char *event, uint32_t id, uint32_t reconnect){
+  String ev = generateEventMessage(message, event, id, reconnect);
+  for(const auto &c: _clients){
+    if(c->connected()) {
+      c->write(ev.c_str(), ev.length());
+    }
+  }
+}
+
+// [BOOM!]
+size_t AsyncEventSource::count() const {
+  return _clients.count_if([](AsyncEventSourceClient *c){
+    return c->connected();
+  });
+}
+
+// [BOOM!]
+size_t AsyncEventSource::avgPacketsWaiting() const {
+  if(_clients.isEmpty())
+    return 0;
+  
+  size_t    aql=0;
+  uint32_t  nConnectedClients=0;
+  
+  for(const auto &c: _clients){
+    if(c->connected()) {
+      aql+=c->packetsWaiting();
+      ++nConnectedClients;
+    }
+  }
+//  return aql / nConnectedClients;
+  return ((aql) + (nConnectedClients/2))/(nConnectedClients); // round up
+}
+

@@ -39,6 +39,7 @@ PsPwmAppHwControl::PsPwmAppHwControl(APIServer* api_server)
     api_server{api_server},
     periodic_update_timer{}
 {
+    assert(api_server && api_server->event_source);
     debug_print("Configuring Phase-Shift-PWM...");
     esp_err_t errors = API_CHOICE_INIT(mcpwm_num,
                                        gpio_pwm0a_out, gpio_pwm0b_out,
@@ -285,6 +286,7 @@ void PsPwmAppHwControl::on_periodic_update_timer(TimerHandle_t xTimer) {
     //}
     //serializeJson(json_doc, json_str_buffer, total_content_size);
     ////
+    assert(self->api_server && self->api_server->event_source);
     self->api_server->event_source->send(json_str_buffer, "hw_app_state");
     reentry_guard_active = false;
 }

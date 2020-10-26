@@ -10,3 +10,6 @@
 	path = lib/ESPAsyncWebServer
 	url = https://github.com/ul-gh/ESPAsyncWebServer.git
 	branch = master
+[submodule "util/esp32"]
+	path = util/esp32_svd
+	url = https://github.com/esp-rs/esp32.git

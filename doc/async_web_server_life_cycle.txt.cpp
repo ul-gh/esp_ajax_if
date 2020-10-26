@@ -1,6 +1,5 @@
 /* ESPAsyncWebServer API key features,
- * AsyncWebServer set-up and operation life cycle in more-or-less
- * chronological order.
+ * AsyncWebServer set-up and operation life cycle in call order.
  */
 
 
@@ -55,7 +54,7 @@ class AsyncWebServerRequest {
 // The constructor most importantly registers the backend AsyncServer::onClient
 // callback which instanciates a new AsyncWebServerRequest object for
 // each incoming client connection. The request objects live on the heap
-// and run in the async_tcp task.
+// and responses are later created and also run from the async_tcp task.
 AsyncWebServer::AsyncWebServer(uint16_t port)
   : _server(port)
   , _rewrites(LinkedList<AsyncWebRewrite*>([](AsyncWebRewrite* r){ delete r; }))
@@ -81,7 +80,8 @@ AsyncWebServer::AsyncWebServer(uint16_t port)
 
 //// From the application/server implementation side, the individual
 //// request handlers are registered into the server.
-//// Only one of these is then attached to any request by the server, e.g.:
+//// Only one of these is then later attached to any request by the request
+//// itself calling AsyncWebServer::_attachHandler().
 AsyncCallbackWebHandler& AsyncWebServer::on(const char* uri, WebRequestMethodComposite method, ArRequestHandlerFunction onRequest, ArUploadHandlerFunction onUpload, ArBodyHandlerFunction onBody){
   AsyncCallbackWebHandler* handler = new AsyncCallbackWebHandler();
   handler->setUri(uri);
@@ -118,10 +118,11 @@ AsyncWebServerRequest::AsyncWebServerRequest(AsyncWebServer* s, AsyncClient* c)
   , _response(NULL)
   //, [...]
 {
-    // Request constructor sets up essential callbacks on the client object.
-    // The clients are wrapped in a response object each which individually
-    // goes through the rewrites if present and attaches to the relevant
-    // handlers of the server.
+    // Request constructor sets up essential callbacks on the client object
+    // for connection state change handling.
+    // The clients are wrapped in the request object which then goes through
+    // the rewrites if present and later attach themselves a matching request
+    // handler function by calling the AsyncWebServer::_attachHandler() method.
     c->onError([](void *r, AsyncClient* c, int8_t error){ ... });
     c->onAck(
         [](void *r, AsyncClient* c, size_t len, uint32_t time){
@@ -143,32 +144,12 @@ AsyncWebServerRequest::AsyncWebServerRequest(AsyncWebServer* s, AsyncClient* c)
 }
 
 void AsyncWebServerRequest::_onData(void *buf, size_t len){
+  while (true) {
     if(_parseState < PARSE_REQ_BODY){
       _parseLine();
       (...)
     }
-  } else if(_parseState == PARSE_REQ_BODY){
-    // A handler should be already attached at this point in _parseLine function.
-    // If handler does nothing (_onRequest is NULL), we don't need to really parse the body.
-    const bool needParse = _handler && !_handler->isRequestHandlerTrivial();
-    if(_isMultipart){
-        _parseMultipartPostByte(((uint8_t*)buf)[i], i == len - 1);
-    } else {
-      if(_parsedLength == 0){
-        if(_contentType.startsWith("application/x-www-form-urlencoded")){
-            _isPlainPost = true;
-        } else if(_contentType == "text/plain" && __is_param_char(((char*)buf)[0])){
-            while (i<len && __is_param_char(((char*)buf)[i++]));
-        }
-      }
-      if(!_isPlainPost) {
-        //check if authenticated before calling the body
-        if(_handler) _handler->handleBody(this, (uint8_t*)buf, len, _parsedLength, _contentLength);
-        _parsedLength += len;
-      } else if(needParse) {
-          _parsePlainPostChar(((uint8_t*)buf)[i]);
-      }
-    }
+    // [...]
     if(_parsedLength == _contentLength){
       _parseState = PARSE_REQ_END;
       //check if authenticated before calling handleRequest and request auth instead
