@@ -115,8 +115,8 @@ void loop() {
     }
     String debug_msg = "Free Heap: " + String(ESP.getFreeHeap());
     debug_msg += "  Minimum ever free heap: " + String(ESP.getMinFreeHeap());
-    debug_msg += "  SSE queue length: ";
-    debug_msg += api_server->event_source->avgPacketsWaiting();
+    //debug_msg += "  SSE queue length: ";
+    //debug_msg += api_server->event_source->avgPacketsWaiting();
     debug_msg += "\n Wifi stations connected: ";
     debug_msg += WiFi.softAPgetStationNum();
     Serial.println(debug_msg);
