@@ -109,10 +109,10 @@ void loop() {
     if (loopctr > 8) {
         //heap_trace_stop();
     }
-    if (!heap_caps_check_integrity_all(true)) {
-        Serial.println("!!!!!!!!!! Heap integrity check failed");
-        abort();
-    }
+    //if (!heap_caps_check_integrity_all(true)) {
+    //    Serial.println("!!!!!!!!!! Heap integrity check failed");
+    //    abort();
+    //}
     String debug_msg = "Free Heap: " + String(ESP.getFreeHeap());
     debug_msg += "  Minimum ever free heap: " + String(ESP.getMinFreeHeap());
     //debug_msg += "  SSE queue length: ";
