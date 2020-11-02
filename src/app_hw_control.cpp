@@ -39,7 +39,8 @@ PsPwmAppHwControl::PsPwmAppHwControl(APIServer* api_server)
     api_server{api_server},
     periodic_update_timer{}
 {
-    assert(api_server && api_server->event_source);
+    //assert(api_server && api_server->event_source);
+    assert(api_server);
     debug_print("Configuring Phase-Shift-PWM...");
     esp_err_t errors = API_CHOICE_INIT(mcpwm_num,
                                        gpio_pwm0a_out, gpio_pwm0b_out,

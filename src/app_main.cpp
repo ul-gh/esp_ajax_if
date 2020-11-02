@@ -86,7 +86,7 @@ void setup() {
     esp_log_level_set("*", ESP_LOG_DEBUG);
     delay(100);
     api_server = new APIServer{&http_backend};
-    api_server->activate_events_on("/events");
+//    api_server->activate_events_on("/events");
     ps_pwm_controller = new PsPwmAppHwControl{api_server};
     api_server->activate_default_callbacks();
     size_t tot_bytes, used_bytes;
