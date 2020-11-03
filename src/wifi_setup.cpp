@@ -28,8 +28,10 @@ void setup_wifi_hostap() {
  */
 void setup_wifi_station() {
     WiFi.mode(WIFI_STA);
+    WiFi.persistent(false);
     // Connect to Wi-Fi network with SSID and password
     info_print_sv("(Re-)Connecting to SSID:", sta_ssid);
+    WiFi.setHostname(hostName);
     WiFi.begin(sta_ssid, sta_psk);
 }
 
