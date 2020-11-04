@@ -17,7 +17,7 @@
 #include "driver/mcpwm.h"
 
 // Set log level to ESP_LOG_INFO for production!
-#define PS_PWM_LOG_LEVEL ESP_LOG_DEBUG
+#define PS_PWM_LOG_LEVEL ESP_LOG_INFO
 
 //#define GPIO_SYNC0_IN   2   //Set GPIO 02 as SYNC0
 

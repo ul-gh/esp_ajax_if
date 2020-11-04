@@ -72,8 +72,8 @@ void setup() {
     //xSemaphoreGive(g_request_lock);
     //esp_log_level_set("*", ESP_LOG_DEBUG);
     Serial.begin(serial_baudrate);
-    setup_wifi_station(); // Optional, when not using AsyncWifiManager
-    //setup_wifi_hostap(); // Optional, when not using AsyncWifiManager
+    //setup_wifi_station(); // Optional, when not using AsyncWifiManager
+    setup_wifi_hostap(); // Optional, when not using AsyncWifiManager
     http_backend.begin(); // Needed when not using AsyncWifiManager!
     //delay(300);
     //dns_server = new DNSServer{};
@@ -117,8 +117,8 @@ void loop() {
     debug_msg += "  Minimum ever free heap: " + String(ESP.getMinFreeHeap());
     //debug_msg += "  SSE queue length: ";
     //debug_msg += api_server->event_source->avgPacketsWaiting();
-    //debug_msg += "\n Wifi stations connected: ";
-    //debug_msg += WiFi.softAPgetStationNum();
-    debug_msg += "\n station IP: " + WiFi.localIP().toString();
+    debug_msg += "\n Wifi stations connected: ";
+    debug_msg += WiFi.softAPgetStationNum();
+    //debug_msg += "\n station IP: " + WiFi.localIP().toString();
     Serial.println(debug_msg);
 }
