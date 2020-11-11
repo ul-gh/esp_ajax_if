@@ -49,18 +49,16 @@ void AdcTemp::adc_init_test_capabilities(void) {
  * This uses the LUT for value conversion.
  */
 float AdcTemp::get_aux_temp() {
-//    uint16_t adc_raw_filtered = adc_sample(temp_ch_aux);
-//    return get_kty_temp_pwl(adc_raw_filtered);
-return 88.8;
+    uint16_t adc_raw_filtered = adc_sample(temp_ch_aux);
+    return get_kty_temp_pwl(adc_raw_filtered);
 }
 
 /** Perform complete readout of temp_ch_heatsink
  * This uses the LUT for value conversion.
  */
 float AdcTemp::get_heatsink_temp() {
-//    uint16_t adc_raw_filtered = adc_sample(temp_ch_heatsink);
-//    return get_kty_temp_pwl(adc_raw_filtered);
-return 99.9;
+    uint16_t adc_raw_filtered = adc_sample(temp_ch_heatsink);
+    return get_kty_temp_pwl(adc_raw_filtered);
 }
 
 /***************** Helper and debug functions ***************************

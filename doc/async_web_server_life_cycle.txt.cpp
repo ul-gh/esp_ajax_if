@@ -52,9 +52,12 @@ class AsyncWebServerRequest {
 ///// this must be a single instance.
 
 // The constructor most importantly registers the backend AsyncServer::onClient
-// callback which instanciates a new AsyncWebServerRequest object for
+// callback which is called from the event loop (_async_queue) running in the
+// async_tcp task and which instanciates a new AsyncWebServerRequest object for
 // each incoming client connection. The request objects live on the heap
-// and responses are later created and also run from the async_tcp task.
+// and responses are later created from these by the handlers.
+// The handlers are derivatives of AsyncWebHandler and these are kept in a
+// linked list. Also a _catchAllHandler is initialised.
 AsyncWebServer::AsyncWebServer(uint16_t port)
   : _server(port)
   , _rewrites(LinkedList<AsyncWebRewrite*>([](AsyncWebRewrite* r){ delete r; }))
@@ -108,7 +111,8 @@ void AsyncWebServer::begin(){
 
 ///// By this time, the AsyncTCP backend is running and has the following
 ///// callbacks registered.
-///// These are called from and run in the async_tcp task:
+/////
+///// These callbacks are called from the event loop running in the async_tcp task:
 
 ///// AsyncWebServerRequest life cycle, 
 AsyncWebServerRequest::AsyncWebServerRequest(AsyncWebServer* s, AsyncClient* c)
@@ -139,7 +143,13 @@ AsyncWebServerRequest::AsyncWebServerRequest(AsyncWebServer* s, AsyncClient* c)
             },
         this);
     c->onTimeout(...
-    c->onData(...
+    c->onData(
+        [](void *r, AsyncClient* c, void *buf, size_t len){
+            (void)c;
+            AsyncWebServerRequest *req = (AsyncWebServerRequest*)r;
+            req->_onData(buf, len);
+        },
+        this);
     c->onPoll(...
 }
 
@@ -188,7 +198,7 @@ void AsyncWebServerRequest::_parseLine(){
 }
 
 // This is called from void AsyncWebServerRequest::_parseLine() in WebRequest.cpp
-// when a request is received
+// when a request is received (when _parseState == PARSE_REQ_HEADERS):
 void AsyncWebServer::_attachHandler(AsyncWebServerRequest *request){
   for(const auto& h: _handlers){
     if (h->filter(request) && h->canHandle(request)){
@@ -205,6 +215,7 @@ void AsyncWebServer::_attachHandler(AsyncWebServerRequest *request){
 // The response is sent here.
 // This method is overridden in the specific derivatives of AsyncWebHandler, e.g.:
 void AsyncStaticWebHandler::handleRequest(AsyncWebServerRequest *request) {
+    //[...]
     request->send(response);
     request->send(404);
 }
