@@ -201,26 +201,20 @@ void PsPwmAppHwControl::register_remote_control(APIServer* api_server) {
  */
 void PsPwmAppHwControl::on_periodic_update_timer(TimerHandle_t xTimer) {
     auto self = static_cast<PsPwmAppHwControl*>(pvTimerGetTimerID(xTimer));
-    // In case the timer fires again when telegram has not been sent yet
-    static bool reentry_guard_active = false;
-    if (reentry_guard_active) {
-        debug_print("Reentry detected into PsPwmAppHwControl::on_periodic_update_timer!");
-        return;
-    }
-    reentry_guard_active = true;
     //// Debug print output
-    static int cycle_no = 0;
-    cycle_no++;
-    if (cycle_no == 16) {
-        cycle_no = 0;
-        Serial.print("AppHwControl SSE periodic task free stack size: ");
-        Serial.println(uxTaskGetStackHighWaterMark(NULL));
-    }
+    //static int cycle_no = 0;
+    //cycle_no++;
+    //if (cycle_no == 16) {
+    //    cycle_no = 0;
+    //    Serial.print("AppHwControl SSE periodic task free stack size: ");
+    //    Serial.println(uxTaskGetStackHighWaterMark(NULL));
+    //}
     ////
     // Update temperature sensor values on this occasion
     self->aux_hw_drv.update_temperature_sensors();
-    /* These sizes need to be adapted accordingly if below structure
-     * size is changed (!)
+    /** ATTENTION!
+     * The following size constants need to be adapted accordingly if
+     * below structure size is changed!
      */
     constexpr size_t json_object_size = JSON_OBJECT_SIZE(20);
     constexpr size_t strings_size = sizeof(
@@ -237,13 +231,12 @@ void PsPwmAppHwControl::on_periodic_update_timer(TimerHandle_t xTimer) {
     constexpr size_t total_content_size = json_object_size
                                           + strings_size
                                           + I_AM_SCARED_MARGIN;
-    
     // ArduinoJson JsonDocument object, see https://arduinojson.org
     //// Stack-allocated version has better performance and is likely safer
     StaticJsonDocument<json_object_size> json_doc;
     //// Heap-allocated version is useful when stack size can not be changed
     //DynamicJsonDocument json_doc{json_object_size};
-
+    ////
     // Setpoint limits. Scaled to kHz, ns and % respectively...
     json_doc["frequency_min"] = self->pspwm_setpoint_limits->frequency_min/1e3;
     json_doc["frequency_max"] = self->pspwm_setpoint_limits->frequency_max/1e3;
@@ -291,5 +284,4 @@ void PsPwmAppHwControl::on_periodic_update_timer(TimerHandle_t xTimer) {
     ////
     assert(self->api_server && self->api_server->event_source);
     self->api_server->event_source->send(json_str_buffer, "hw_app_state");
-    reentry_guard_active = false;
 }

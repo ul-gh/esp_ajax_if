@@ -31,7 +31,6 @@
 #include "sdkconfig.h"
 //#include <ESPAsyncWiFiManager.h>
 
-
 #include "info_debug_error.h"
 #include "wifi_setup.hpp"
 #include "api_server.hpp"
@@ -39,15 +38,6 @@
 
 #include "adc_temp.hpp"
 #include "esp_err.h"
-
-// Debug
-#include "ESPAsyncWebServer.h"
-#include "esp_heap_trace.h"
-
-volatile void *dbg_a;
-volatile void *dbg_b;
-
-//SemaphoreHandle_t g_request_lock = xSemaphoreCreateBinary();
 
 constexpr unsigned long serial_baudrate = 115200;
 // TCP socket port number
@@ -66,10 +56,12 @@ APIServer* api_server;
 // PS-PWM hardware controller instance runs the HTTP AJAX API server
 PsPwmAppHwControl* ps_pwm_controller;
 
+void update_debug_messages();
+void print_debug_messages(unsigned int async_tcp_hwm);
+
 void setup() {
     // FIXME: DEBUG
     //heap_trace_init_tohost();
-    //xSemaphoreGive(g_request_lock);
     //esp_log_level_set("*", ESP_LOG_DEBUG);
     Serial.begin(serial_baudrate);
     setup_wifi_station(); // Optional, when not using AsyncWifiManager
@@ -99,24 +91,41 @@ void setup() {
 }
 
 void loop() {
-    static int loopctr;
-    // Application runs asynchronously, you can do anything here.
-    delay(5000);
+    delay(100);
+    update_debug_messages();
+}
+
+
+void update_debug_messages(){
+    // For introspection into the async_tcp task event queue
+    extern QueueHandle_t dbg_async_tcp_event_queue_handle;
+    static unsigned int loopctr;
+    static unsigned int async_tcp_hwm;
     loopctr++;
-    if (loopctr > 4) {
+    async_tcp_hwm = std::max(
+        uxQueueMessagesWaiting(dbg_async_tcp_event_queue_handle),
+        async_tcp_hwm
+        );
+    if (loopctr > 40) {
+        loopctr = 0;
         //heap_trace_start(HEAP_TRACE_LEAKS);
+        print_debug_messages(async_tcp_hwm);
+        async_tcp_hwm = 0;
     }
-    if (loopctr > 8) {
-        //heap_trace_stop();
-    }
-    //if (!heap_caps_check_integrity_all(true)) {
-    //    Serial.println("!!!!!!!!!! Heap integrity check failed");
-    //    abort();
-    //}
-    String debug_msg = "Free Heap: " + String(ESP.getFreeHeap());
+}
+
+void print_debug_messages(unsigned int async_tcp_hwm){
+    String debug_msg;
+    debug_msg += "Free Heap: " + String(ESP.getFreeHeap());
     debug_msg += "  Minimum ever free heap: " + String(ESP.getMinFreeHeap());
     //debug_msg += "  SSE queue length: ";
     //debug_msg += api_server->event_source->avgPacketsWaiting();
     //debug_msg += "\n Wifi stations connected: " + WiFi.softAPgetStationNum();
+    debug_msg += "\nasync_tcp task: Event message queue high-water mark: ";
+    debug_msg += async_tcp_hwm;
     Serial.println(debug_msg);
+    //if (!heap_caps_check_integrity_all(true)) {
+    //    Serial.println("Heap integrity check failed!");
+    //    abort();
+    //}
 }
