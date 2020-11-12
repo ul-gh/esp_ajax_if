@@ -234,12 +234,14 @@ void APIServer::onRootRequest(AsyncWebServerRequest *request) {
 
 // on("/cmd")
 void APIServer::onCmdRequest(AsyncWebServerRequest *request) {
+    unsigned long tmst0 = millis();
+    debug_print_sv("onCmdRequest: Enter timestamp: ", tmst0);
     int n_params = request->params();
     debug_print_sv("Number of parameters received:", n_params);
     for (int i = 0; i < n_params; ++i) {
         AsyncWebParameter *p = request->getParam(i);
-        const String name = p->name();
-        const String value_str = p->value();
+        const String &name = p->name();
+        const String &value_str = p->value();
         debug_print_sv("-----\nParam name:", name);
         debug_print_sv("Param value:", value_str);
         auto cb_iterator = cmd_map.find(name);
@@ -255,6 +257,7 @@ void APIServer::onCmdRequest(AsyncWebServerRequest *request) {
         // Finally call callback
         cmd_callback(value_str);
     }
+    debug_print_sv("onCmdRequest: Left callback, start response: ", millis()-tmst0);
     if (api_is_ajax) {
         // For AJAX interface: Return a plain string, default is empty string.
         request->send(200, "text/plain", ajax_return_text);
@@ -270,6 +273,7 @@ void APIServer::onCmdRequest(AsyncWebServerRequest *request) {
             request->send_P(200, "text/html", api_return_html);
         }
     }
+    debug_print_sv("onCmdRequest: Exit took ms: ", millis()-tmst0);
 }
 
 // on("/update")

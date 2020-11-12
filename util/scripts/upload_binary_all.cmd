@@ -12,20 +12,20 @@ set "esptool_command=esptool"
 where "%esptool_command%" >nul 2>nul || (
     echo No "esptool" executable found. Trying "esptool.py"..
     set "esptool_command=esptool.py"
-    where "%esptool_command%" >nul 2>nul || (
-	    if %second_run% == true (
-	        echo ERROR: Again, "esptool" is not installed. Giving up!
-	        goto end
-        )
-        echo No "esptool.py" executable found. Trying install..	
-	    where python >nul 2>nul || (
-            echo ERROR: No Python interpreter found. Install Python first!
-	        goto end
-        )
-	    set "second_run=true"
-	    python -m pip install esptool
-	    goto check_for_esptool
+)
+where "%esptool_command%" >nul 2>nul || (
+    if %second_run% == true (
+        echo ERROR: Again, "esptool" is not installed. Giving up!
+        goto end
     )
+    echo No "esptool.py" executable found. Trying install..	
+    where python >nul 2>nul || (
+        echo ERROR: No Python interpreter found. Install Python first!
+        goto end
+    )
+    set "second_run=true"
+    python -m pip install esptool
+    goto check_for_esptool
 )
 
 :: Found the esptool. Continuing.

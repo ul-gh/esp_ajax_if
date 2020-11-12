@@ -235,8 +235,8 @@ Requires at least ES7 JavaScript
     </p>
     <script>
         const request_generator = new AsyncRequestGenerator();
-        const view_updater = new ViewUpdater();
-        const app_watchdog = new AppWatchdog(1500, view_updater);
+        const view_updater = new ViewUpdater(500);
+        const app_watchdog = new AppWatchdog(3000, view_updater);
         const sse_handler = new ServerSentEventHandler("/events", view_updater, app_watchdog);
     </script>
 </body>

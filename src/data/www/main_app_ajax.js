@@ -175,7 +175,7 @@ class AsyncRequestGenerator {
  * view updates from the remote side when view elements are being edited.
  */
 class ViewUpdater {
-    constructor() {
+    constructor(sse_state_update_interval_ms=500) {
         // First register all application elements representing the
         // remote state view handled and updated by this class.
         this.connection_vw = document.getElementById("connection_vw");
@@ -211,6 +211,7 @@ class ViewUpdater {
             }
         }
         ///////////////////////////////////////////////////////////////////////
+        this.sse_state_update_interval_ms = sse_state_update_interval_ms;
         // Prevent updating the input fields content with remote data
         // when user starts entering a new value.
         this.view_updates_inhibited = false;
@@ -352,8 +353,10 @@ class ViewUpdater {
      */
     allow_view_updates(input_el) {
         // When range slider is released, re-allow updates for this only
+        // This is delayed to prevent jumping of the slider due to outdated updates
         if (input_el.type == "range") {
-            this.range_input_updates_inhibited = false;
+            window.setTimeout(() => this.range_input_updates_inhibited = false,
+                              this.sse_state_update_interval_ms * 1.5);
             return;
         }
         // Otherwise, re-allow all
