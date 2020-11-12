@@ -52,8 +52,12 @@ def zip_bin(target, source, env):
         zip_f.write(os.path.join(build_folder, "partitions.bin"), "partitions.bin")
         zip_f.write(os.path.join(build_folder, "firmware.bin"), "firmware.bin")
         zip_f.write(os.path.join(build_folder, "spiffs.bin"), "spiffs.bin")
-        zip_f.write(os.path.join(project_dir, "upload_binary_all.cmd"), "upload_binary_all.cmd")
-        zip_f.write(os.path.join(project_dir, "upload_binary_all.sh"), "upload_binary_all.sh")
+        zip_f.write(
+            os.path.join(project_dir, "/util/scripts/", "upload_binary_all.cmd"),
+            "upload_binary_all.cmd")
+        zip_f.write(
+            os.path.join(project_dir,  "/util/scripts/", "upload_binary_all.sh"),
+            "upload_binary_all.sh")
 
 env.AddCustomTarget(
     name="bin_zip",
