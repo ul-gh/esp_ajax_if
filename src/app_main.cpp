@@ -62,10 +62,10 @@ void print_debug_messages(unsigned int async_tcp_hwm);
 void setup() {
     // FIXME: DEBUG
     //heap_trace_init_tohost();
-    //esp_log_level_set("*", ESP_LOG_DEBUG);
+    esp_log_level_set("*", ESP_LOG_DEBUG);
     Serial.begin(serial_baudrate);
-    setup_wifi_station(); // Optional, when not using AsyncWifiManager
-    //setup_wifi_hostap(); // Optional, when not using AsyncWifiManager
+    //setup_wifi_station(); // Optional, when not using AsyncWifiManager
+    setup_wifi_hostap(); // Optional, when not using AsyncWifiManager
     http_backend.begin(); // Needed when not using AsyncWifiManager!
     //delay(300);
     //dns_server = new DNSServer{};
@@ -75,7 +75,6 @@ void setup() {
     //wifi_manager->startConfigPortal("Isocal_Access_Point"); // Debug or special
     //wifi_manager->autoConnect("Isocal_Access_Point");
     //wifi_manager->setConfigPortalTimeout(180);
-    esp_log_level_set("*", ESP_LOG_DEBUG);
     delay(100);
     api_server = new APIServer{&http_backend};
     api_server->activate_events_on("/events");
