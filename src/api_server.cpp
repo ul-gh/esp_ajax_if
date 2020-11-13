@@ -102,34 +102,7 @@ void APIServer::begin() {
 
 // Normal HTTP request handlers
 void APIServer::activate_default_callbacks() {
-    // Serve static HTML and related files content
-    if (mount_spiffs_requested) {
-        auto handler = &backend->serveStatic("/", SPIFFS, "/www/");
-        handler->setDefaultFile(index_html_filename);
-        if (template_processing_activated) {
-            handler->setTemplateProcessor(
-                [this](const String &placeholder) {
-                    return templateProcessor(placeholder);
-                }
-            );
-        } else {
-            // When no template processing is used, this is assumed to be all
-            // static files which do not change and can be cached indefinitely
-            handler->setCacheControl("public, max-age=31536000");
-        }
-        if (http_auth_requested) {
-            handler->setAuthentication(http_user, http_pass);
-        }
-    } else {
-        // Route for main application home page
-        backend->on("/", HTTP_GET, [this](AsyncWebServerRequest *request) {
-                onRootRequest(request);
-            }
-        );
-    }
     // Route for REST API
-    //using namespace std::placeholders;
-    //on("/cmd", HTTP_GET, std::bind(&APIServer::onCmdRequest, this, _1));
     backend->on(api_endpoint, HTTP_GET, [this](AsyncWebServerRequest *request) {
             onCmdRequest(request);
         }
@@ -165,6 +138,33 @@ void APIServer::activate_default_callbacks() {
        },
        onUpdateUploadBody
     );
+
+    // Serve static HTML and related files content
+    if (mount_spiffs_requested) {
+        auto handler = &backend->serveStatic("/", SPIFFS, "/www/");
+        handler->setDefaultFile(index_html_filename);
+        if (template_processing_activated) {
+            handler->setTemplateProcessor(
+                [this](const String &placeholder) {
+                    return templateProcessor(placeholder);
+                }
+            );
+        } else {
+            // When no template processing is used, this is assumed to be all
+            // static files which do not change and can be cached indefinitely
+            handler->setCacheControl("public, max-age=31536000");
+        }
+        if (http_auth_requested) {
+            handler->setAuthentication(http_user, http_pass);
+        }
+    } else {
+        // Route for main application home page
+        backend->on("/", HTTP_GET, [this](AsyncWebServerRequest *request) {
+                onRootRequest(request);
+            }
+        );
+    }
+
     backend->onNotFound(onRequest);
     backend->onFileUpload(onUpload);
     backend->onRequestBody(onBody);
