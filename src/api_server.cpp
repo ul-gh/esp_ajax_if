@@ -107,31 +107,6 @@ void APIServer::activate_default_callbacks() {
             onCmdRequest(request);
         }
     );
-    // DEBUG: GET requests on /heap return system free heap size
-    backend->on("/heap", HTTP_GET, [](AsyncWebServerRequest *request) {
-            request->send(200, "text/plain", String(ESP.getFreeHeap()));
-       }
-    );
-    // DEBUG: GET requests on /stack return server task free stack size
-    backend->on("/stack", HTTP_GET, [](AsyncWebServerRequest *request) {
-            request->send(200,
-                          "text/plain",
-                          "Server callback task free stack size: "
-                          + String(uxTaskGetStackHighWaterMark(NULL))
-                          );
-       }
-    );
-    // DEBUG: GET requests on /sse_packets_waiting return average SSE event queue length
-    backend->on("/sse_packets_waiting", HTTP_GET, [this](AsyncWebServerRequest *request) {
-            String response_text;
-            if (event_source) {
-                response_text = event_source->avgPacketsWaiting();
-            } else {
-                response_text = "Event Source not registered!";
-            }
-            request->send(200, "text/plain", response_text);
-       }
-    );
     // OTA Firmware Upgrade, see form method in data/www/upload.html
     backend->on("/update", HTTP_POST, [this](AsyncWebServerRequest *request) {
             onUpdateRequest(request);
