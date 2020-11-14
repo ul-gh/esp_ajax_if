@@ -91,7 +91,7 @@ namespace AdcTemp {
     //    123.5137051 , 131.2558412 , 139.76912438, 150.0};
     ////////// ADC hardware initialisation constants
     static constexpr uint32_t default_vref{1100};
-    static constexpr uint16_t oversampling_ratio{32};
+    static constexpr uint16_t oversampling_ratio{64};
     static constexpr adc_bits_width_t bit_width = ADC_WIDTH_BIT_12;
     /** @brief Suggested ADC input voltage Range for ESP32 using ADC_ATTEN_DB_6
      * is 150 ~ 1750 millivolts according to the SDK documentation for function
