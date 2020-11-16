@@ -57,7 +57,7 @@ APIServer* api_server;
 PsPwmAppHwControl* ps_pwm_controller;
 
 void update_debug_messages();
-void print_debug_messages(unsigned int async_tcp_hwm);
+void print_debug_messages();
 
 void setup() {
     // FIXME: DEBUG
@@ -96,32 +96,22 @@ void loop() {
 
 
 void update_debug_messages(){
-    // For introspection into the async_tcp task event queue
-    extern QueueHandle_t dbg_async_tcp_event_queue_handle;
     static unsigned int loopctr;
-    static unsigned int async_tcp_hwm;
     loopctr++;
-    async_tcp_hwm = std::max(
-        uxQueueMessagesWaiting(dbg_async_tcp_event_queue_handle),
-        async_tcp_hwm
-        );
     if (loopctr > 40) {
         loopctr = 0;
         //heap_trace_start(HEAP_TRACE_LEAKS);
-        print_debug_messages(async_tcp_hwm);
-        async_tcp_hwm = 0;
+        print_debug_messages();
     }
 }
 
-void print_debug_messages(unsigned int async_tcp_hwm){
+void print_debug_messages(){
     String debug_msg;
     debug_msg += "Free Heap: " + String(ESP.getFreeHeap());
     debug_msg += "  Minimum ever free heap: " + String(ESP.getMinFreeHeap());
     //debug_msg += "  SSE queue length: ";
     //debug_msg += api_server->event_source->avgPacketsWaiting();
     //debug_msg += "\n Wifi stations connected: " + WiFi.softAPgetStationNum();
-    debug_msg += "\nasync_tcp task: Event message queue high-water mark: ";
-    debug_msg += async_tcp_hwm;
     Serial.println(debug_msg);
     //if (!heap_caps_check_integrity_all(true)) {
     //    Serial.println("Heap integrity check failed!");
