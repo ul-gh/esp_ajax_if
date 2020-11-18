@@ -84,9 +84,9 @@ PsPwmAppHwControl::PsPwmAppHwControl(APIServer* api_server)
         static_cast<void*>(this),
         on_periodic_update_timer
     );
-    if (!xTimerStart(periodic_update_timer, pdMS_TO_TICKS(5000))) {
-        error_print("Error initializing the HW control periodic timer!");
-    }
+    // if (!xTimerStart(periodic_update_timer, pdMS_TO_TICKS(5000))) {
+    //     error_print("Error initializing the HW control periodic timer!");
+    // }
 }
 
 PsPwmAppHwControl::~PsPwmAppHwControl() {

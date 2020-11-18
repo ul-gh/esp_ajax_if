@@ -39,6 +39,8 @@
 #include "adc_temp.hpp"
 #include "esp_err.h"
 
+#include "dummy_text.h"
+
 constexpr unsigned long serial_baudrate = 115200;
 // TCP socket port number
 constexpr uint16_t tcp_port = 80;
@@ -87,6 +89,26 @@ void setup() {
     Serial.print("   Used bytes: ");
     Serial.println(used_bytes);
     AdcTemp::adc_init_test_capabilities();
+    http_backend.on("/sse_2", HTTP_GET, [](AsyncWebServerRequest *request) {
+            Serial.println("Test");
+            api_server->event_source->send(text_2kb, "sse_test");
+            request->send(200, "text/plain", "2k Text sent");
+    });
+    http_backend.on("/sse_4", HTTP_GET, [](AsyncWebServerRequest *request) {
+            Serial.println("Test");
+            api_server->event_source->send(text_4kb, "sse_test");
+            request->send(200, "text/plain", "4k Text sent");
+    });
+    http_backend.on("/sse_8", HTTP_GET, [](AsyncWebServerRequest *request) {
+            Serial.println("Test");
+            api_server->event_source->send(text_8kb, "sse_test");
+            request->send(200, "text/plain", "8k Text sent");
+    });
+    http_backend.on("/sse_16", HTTP_GET, [](AsyncWebServerRequest *request) {
+            Serial.println("Test");
+            api_server->event_source->send(text_16kb, "sse_test");
+            request->send(200, "text/plain", "16k Text sent");
+    });
 }
 
 void loop() {
