@@ -3,8 +3,8 @@
 // ESP8266 whis would be:
 // #include <Arduino.h>
 // const char INDEX_HTML[] PROGMEM = ...
-constexpr char index_html[] = "";
-//constexpr char index_html[] =
+constexpr const char index_html[] = "";
+//constexpr const char index_html[] =
 //    "<!DOCTYPE html>"
 //    "<html>"
 //    "<head>"
@@ -36,4 +36,4 @@ constexpr char index_html[] = "";
 //    "\n";
 
 // Return HTML for API homepage
-constexpr char api_return_html[] = index_html;
+constexpr const char *api_return_html = index_html;
