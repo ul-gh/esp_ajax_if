@@ -2,7 +2,7 @@
 <!--
 Main application HTML for ESP-AJAX-Lab
 Requires at least ES7 JavaScript
-2020-09-24 Ulrich Lukas
+2020-11-18 Ulrich Lukas
 -->
 <html>
 <head>
@@ -235,15 +235,15 @@ Requires at least ES7 JavaScript
         <a href="update.html">Perform OTA Firmware Upload</a>
     </p>
     <p>
-        2020-09-01 Ulrich Lukas
+        2020-11-18 Ulrich Lukas
     </p>
     <script>
         const request_generator = new AsyncRequestGenerator();
         const view_updater = new ViewUpdater();
-        view_updater.enable_all();
         const app_watchdog = new AppWatchdog(1500, view_updater);
         const sse_handler = new ServerSentEventHandler("/events", view_updater, app_watchdog);
-        sse_handler.disable_reconnect();
+        sse_handler.disable_reconnect_and_watchdog();
+        sse_handler.source.addEventListener("sse_test", e => console.log(e.data));
     </script>
 </body>
 </html>

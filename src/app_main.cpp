@@ -39,7 +39,7 @@
 #include "adc_temp.hpp"
 #include "esp_err.h"
 
-#include "dummy_text.h"
+#include "../test/dummy_text.h"
 
 constexpr unsigned long serial_baudrate = 115200;
 // TCP socket port number
@@ -79,9 +79,7 @@ void setup() {
     //wifi_manager->setConfigPortalTimeout(180);
     delay(100);
     api_server = new APIServer{&http_backend};
-    api_server->activate_events_on("/events");
     ps_pwm_controller = new PsPwmAppHwControl{api_server};
-    api_server->activate_default_callbacks();
     size_t tot_bytes, used_bytes;
     esp_spiffs_info(NULL, &tot_bytes, &used_bytes);
     Serial.print("SPIFFS filesystem size in bytes: ");

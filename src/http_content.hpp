@@ -3,8 +3,8 @@
 // ESP8266 whis would be:
 // #include <Arduino.h>
 // const char INDEX_HTML[] PROGMEM = ...
-constexpr char index_html[] = "";
-//constexpr const char index_html[] =
+constexpr const char *index_html = "";
+//constexpr const char *index_html =
 //    "<!DOCTYPE html>"
 //    "<html>"
 //    "<head>"

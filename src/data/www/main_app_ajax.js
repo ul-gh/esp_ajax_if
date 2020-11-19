@@ -4,7 +4,7 @@
  * Server-Sent Events (SSE) are used to update the application view
  * with state updates sent back from the remote hardware server.
  * 
- * 2020-09-24 Ulrich Lukas
+ * 2020-11-18 Ulrich Lukas
  * License: GPL v.3
  */
 
@@ -94,7 +94,7 @@ class AsyncRequestGenerator {
     /** Send name=value pair as a rate-limited HTTP request
      */
     async send_cmd(name, value) {
-        const req_str = "cmd?" + name + "=" + value;
+        const req_str = "/cmd?" + name + "=" + value;
         await this.do_http_request(req_str);
     }
 
@@ -108,7 +108,7 @@ class AsyncRequestGenerator {
             return;
         }
         const form_data = new FormData(t);
-        const req_str = "cmd?" + new URLSearchParams(form_data).toString();
+        const req_str = "/cmd?" + new URLSearchParams(form_data).toString();
         await this.do_http_request(req_str);
     }
 
@@ -418,10 +418,12 @@ class ServerSentEventHandler {
             false);
     }
     
-    /** For debugging, reconnect clutters the console on failure
+    /** For debugging, reconnect clutters the console.
+     * Also disables the app watchdog.
      */
-    disable_reconnect() {
+    disable_reconnect_and_watchdog() {
         window.clearTimeout(this.reconnect_timer_id);
+        this.watchdog.disable();
     }
 }
 
@@ -432,24 +434,22 @@ class AppWatchdog {
     constructor(timeout, view_updater) {
         this.timeout = timeout;
         this.view_updater = view_updater;
-        this.timer_id = this.start_timer();
+        this.enable();
     }
 
-    start_timer() {
-        return window.setTimeout(() => this.set_nok(), this.timeout);
+    enable() {
+        this.timer_id = window.setTimeout(
+            () => this.view_updater.disable_all(),
+            this.timeout);
+    }
+
+    disable() {
+        window.clearTimeout(this.timer_id);
+        this.view_updater.enable_all();
     }
 
     reset() {
-        window.clearTimeout(this.timer_id);
-        this.set_ok();
-        this.timer_id = this.start_timer();
-    }
-
-    set_nok() {
-        this.view_updater.disable_all();
-    }
-
-    set_ok() {
-        this.view_updater.enable_all();
+        this.disable();
+        this.enable();
     }
 }

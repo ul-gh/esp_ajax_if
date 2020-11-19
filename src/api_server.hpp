@@ -1,7 +1,7 @@
 /** @file api_server.hpp
  * 
  * License: GPL v.3 
- * U. Lukas 2020-09-20
+ * U. Lukas 2020-11-18
  */
 #ifndef API_SERVER_HPP__
 #define API_SERVER_HPP__
@@ -53,8 +53,6 @@ public:
     CmdMapT cmd_map;
     // String replacement mapping for template processor
     TemplateMapT template_map;
-    // Polled in main loop
-    bool reboot_requested;
     
     APIServer(AsyncWebServer* http_backend);
     ~APIServer();
@@ -62,10 +60,6 @@ public:
     /** Set an entry in the template processor string <=> string mapping
      */
     void set_template(const char* placeholder, const char* replacement);
-
-    /** Activate event source for Server-Sent Events on specified endpoint
-     */
-    void activate_events_on(const char* endpoint);
 
     /** Setup HTTP request callbacks to a common API endpoint,
      *  distinguished by individual command names.
@@ -98,53 +92,58 @@ public:
      */
     void begin();
 
-    /** Start execution, assuming the backend server is started elsewhere
-     */
-    void activate_default_callbacks();
-
 
 private:
+    // Polled on timer event 
+    bool _reboot_requested;
     // Async event timer
-    Ticker event_timer;
+    Ticker _event_timer;
+    // Heartbeat cb is called periodically when conf_sending_heartbeats == true
+    HeartbeatCbT _heartbeat_cb;
 
-    // One optional function object can be registered and is called when
-    // the periodic heartbeat timer event occurs. This is initialised empty.
-    HeartbeatCbT heartbeat_cb{};
+    /////// Setup functions
+    // Add Request URL rewrites to the server instance
+    void _add_rewrites();
+    // Add URL redirects to the server instance
+    void _add_redirects();
+    // Add request handlers to the server instance
+    void _add_handlers();
+    // Activate the SSE envent source if conf_use_sse == true
+    void _add_event_source();
+    // Helper function for _add_event_source, only sends "Hello" message and info print
+    void _register_sse_on_connect_callback();
+
+    /////// Backend callback implementation
+
+    // on("/")
+    void _on_root_request(AsyncWebServerRequest *request);
+    // on("/cmd")
+    void _on_cmd_request(AsyncWebServerRequest *request);
+    // on("/update")
+    // When update is initiated via GET
+    void _on_update_request(AsyncWebServerRequest *request);
+    // When file is uploaded via POST request
+    static void _on_update_body_upload(
+        AsyncWebServerRequest *request, const String& filename,
+        size_t index, uint8_t *data, size_t len, bool final);
+    // Catch-All-Handlers
+    static void _on_request(AsyncWebServerRequest *request);
+    static void _on_body(AsyncWebServerRequest *request,
+        uint8_t *data, size_t len, size_t index, size_t total);
+    static void _on_upload(AsyncWebServerRequest *request, const String& filename,
+        size_t index, uint8_t *data, size_t len, bool final);
+
+    ////// Timer callback
 
     // Timer update for heartbeats, reboot etc
     // Static function wraps member function to obtain C API callback
-    static void on_timer_event(APIServer* self);
+    static void _on_timer_event(APIServer* self);
 
-    // Sever-Sent Event Source
-    void register_sse_default_callback();
+    ////// Special functions
 
     // Template processor
-    String templateProcessor(const String& placeholder);
-
-    // on("/")
-    void onRootRequest(AsyncWebServerRequest *request);
-
-    // on("/cmd")
-    void onCmdRequest(AsyncWebServerRequest *request);
-
-    // on("/update")
-    // When update is initiated via GET
-    void onUpdateRequest(AsyncWebServerRequest *request);
-    // When file is uploaded via POST request
-    static void onUpdateUploadBody(
-        AsyncWebServerRequest *request, const String& filename,
-        size_t index, uint8_t *data, size_t len, bool final);
-
-    // Catch-All-Handlers
-    static void onRequest(AsyncWebServerRequest *request);
-
-    static void onBody(AsyncWebServerRequest *request,
-        uint8_t *data, size_t len, size_t index, size_t total);
-
-    static void onUpload(AsyncWebServerRequest *request, const String& filename,
-        size_t index, uint8_t *data, size_t len, bool final);
-
-}; // class APIServer
+    String _template_processor(const String& placeholder);
+};
 
 #ifdef __WORK_IN_PROGRESS__
 // Handler for captive portal page, only active when in access point mode.
