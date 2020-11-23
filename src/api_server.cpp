@@ -20,7 +20,7 @@
 // Local debug level
 #define LOG_LOCAL_LEVEL ESP_LOG_DEBUG
 #include "esp_log.h"
-static const char* TAG = "api_server.cpp";
+static const char* TAG = "APIServer";
 
 //////// APIServer:: public API
 
@@ -218,8 +218,7 @@ void APIServer::_on_cmd_request(AsyncWebServerRequest *request) {
         AsyncWebParameter *p = request->getParam(i);
         const String &name = p->name();
         const String &value_str = p->value();
-        ESP_LOGD(TAG, "-----\nParam name: %s", name.c_str());
-        ESP_LOGD(TAG, "Param value: %s", value_str.c_str());
+        ESP_LOGD(TAG, "-->Param name: %s  with value: %s", name.c_str(), value_str.c_str());
         auto cb_iterator = cmd_map.find(name);
         if (cb_iterator == cmd_map.end()) {
             ESP_LOGE(TAG, "Error: Not registered in command mapping: %s", name.c_str());
