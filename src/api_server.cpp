@@ -13,10 +13,14 @@
 // Activate incomplete features..
 //#define WORK_IN_PROGRESS__
 
-#include "info_debug_error.h"
 #include "api_server.hpp"
 #include "api_server_config.hpp"
 #include "http_content.hpp"
+
+// Local debug level
+#define LOG_LOCAL_LEVEL ESP_LOG_DEBUG
+#include "esp_log.h"
+static const char* TAG = "api_server.cpp";
 
 //////// APIServer:: public API
 
@@ -29,7 +33,7 @@ APIServer::APIServer(AsyncWebServer* http_backend)
 {   
     if (conf_serve_static_from_spiffs) {
         if (!SPIFFS.begin(true)) {
-            error_print("Error mounting SPI Flash File System!");
+            ESP_LOGE(TAG, "Error mounting SPI Flash File System!");
             abort();
         }
     }
@@ -52,7 +56,7 @@ APIServer::~APIServer() {
 // Set an entry in the template processor string <=> string mapping 
 void APIServer::set_template(const char* placeholder, const char* replacement) {
     if (!conf_template_processing_activated) {
-        error_print("ERROR: template processing must be activated!");
+        ESP_LOGE(TAG, "ERROR: template processing must be activated!");
         return;
     };
     template_map[String(placeholder)] = String(replacement);
@@ -61,7 +65,7 @@ void APIServer::set_template(const char* placeholder, const char* replacement) {
 
 void APIServer::register_api_cb(const char* cmd_name, CbStringT cmd_callback) {
     cmd_map[cmd_name] = cmd_callback;
-    debug_print_sv("Registered String command: ", cmd_name);
+    ESP_LOGD(TAG, "Registered String command: %s", cmd_name);
 }
 
 void APIServer::register_api_cb(const char* cmd_name, CbFloatT cmd_callback) {
@@ -69,7 +73,7 @@ void APIServer::register_api_cb(const char* cmd_name, CbFloatT cmd_callback) {
         // Arduino String.toFloat() defaults to zero for invalid string, hmm...
         cmd_callback(value.toFloat());
         };
-    debug_print_sv("Registered float command: ", cmd_name);
+    ESP_LOGD(TAG, "Registered float command: %s", cmd_name);
 }
 
 void APIServer::register_api_cb(const char* cmd_name, CbIntT cmd_callback) {
@@ -77,14 +81,14 @@ void APIServer::register_api_cb(const char* cmd_name, CbIntT cmd_callback) {
         // Arduino String.toFloat() defaults to zero for invalid string, hmm...
         cmd_callback(value.toInt());
         };
-    debug_print_sv("Registered int command: ", cmd_name);
+    ESP_LOGD(TAG, "Registered int command: %s", cmd_name);
 }
 
 void APIServer::register_api_cb(const char* cmd_name, CbVoidT cmd_callback) {
     cmd_map[cmd_name] = [cmd_callback](const String& value) {
         cmd_callback();
         };
-    debug_print_sv("Registered void command:", cmd_name);
+    ESP_LOGD(TAG, "Registered void command: %s", cmd_name);
 }
 
 // Do not call this if the server is already running!
@@ -149,13 +153,13 @@ void APIServer::_add_handlers() {
 
     backend->onNotFound([](AsyncWebServerRequest *request){
             request->send_P(404, "text/html", conf_error_404_html);
-            debug_print(conf_error_404_html);
+            ESP_LOGD(TAG, "%s", conf_error_404_html);
         });
     backend->onFileUpload(_on_upload);
     backend->onRequestBody(_on_body);
     // Handler called when any DNS query is made via access point
     // addHandler(new CaptiveRequestHandler()).setFilter(ON_AP_FILTER);
-    debug_print("Default callbacks set up");
+    ESP_LOGD(TAG, "Default callbacks set up");
 }
 
 
@@ -170,7 +174,7 @@ void APIServer::_add_event_source() {
         //}
         backend->addHandler(event_source);
     } else {
-        error_print("Event Source could not be initialised!");
+        ESP_LOGE(TAG, "Event Source could not be initialised!");
         abort();
     }
 }
@@ -179,7 +183,7 @@ void APIServer::_add_event_source() {
 void APIServer::_register_sse_on_connect_callback() {
     event_source->onConnect([](AsyncEventSourceClient *client) {
         if(client->lastId()){
-            info_print_sv("Client connected! Last msg ID:", client->lastId());
+            ESP_LOGI(TAG, "Client connected! Last msg ID: %d", client->lastId());
         }
         // Send confirmation message via SSE source when connection has been
         // established, ID is current millis. Set reconnect delay to 1 second.
@@ -209,21 +213,21 @@ void APIServer::_on_root_request(AsyncWebServerRequest *request) {
 // on("/cmd")
 void APIServer::_on_cmd_request(AsyncWebServerRequest *request) {
     int n_params = request->params();
-    debug_print_sv("Number of parameters received:", n_params);
+    ESP_LOGD(TAG, "Number of parameters received: %d", n_params);
     for (int i = 0; i < n_params; ++i) {
         AsyncWebParameter *p = request->getParam(i);
         const String &name = p->name();
         const String &value_str = p->value();
-        debug_print_sv("-----\nParam name:", name);
-        debug_print_sv("Param value:", value_str);
+        ESP_LOGD(TAG, "-----\nParam name: %s", name.c_str());
+        ESP_LOGD(TAG, "Param value: %s", value_str.c_str());
         auto cb_iterator = cmd_map.find(name);
         if (cb_iterator == cmd_map.end()) {
-            error_print_sv("Error: Not registered in command mapping:", name);
+            ESP_LOGE(TAG, "Error: Not registered in command mapping: %s", name.c_str());
             continue;
         }
         CbStringT cmd_callback = (*cb_iterator).second; // = cmd_map[name];
         if (!cmd_callback) {
-            error_print_sv("Error: Not a callable object!", name);
+            ESP_LOGE(TAG, "Error: Not a callable object!: %s", name.c_str());
             continue;
         }
         // Finally call callback
@@ -264,7 +268,7 @@ void APIServer::_on_update_body_upload(
         AsyncWebServerRequest *request, const String& filename,
         size_t index, uint8_t *data, size_t len, bool final) {
     if(!index) {
-        info_print_sv("Update Start:", filename);
+        ESP_LOGI(TAG, "Update Start: %s", filename.c_str());
         //Update.runAsync(true);
         if(!Update.begin((ESP.getFreeSketchSpace()-0x1000) & 0xFFFFF000)) {
             Update.printError(Serial);
@@ -277,7 +281,7 @@ void APIServer::_on_update_body_upload(
     }
     if(final) {
         if(Update.end(true)) {
-            info_print_sv("Update Success:", index+len);
+            ESP_LOGI(TAG, "Update Success: %d", index+len);
         }
         else {
             Update.printError(Serial);
@@ -313,7 +317,7 @@ void APIServer::_on_timer_event(APIServer* self) {
         self->event_source->send(conf_heartbeat_message, "heartbeat");
     }
     if (self->_reboot_requested) {
-        debug_print("Rebooting...");
+        ESP_LOGD(TAG, "Rebooting...");
         delay(100);
         ESP.restart();
     }
@@ -326,8 +330,8 @@ String APIServer::_template_processor(const String& placeholder)
 {
     auto template_iterator = template_map.find(placeholder);
         if (template_iterator == template_map.end()) {
-            error_print_sv("Error: Entry not registered in template mapping:",
-                           placeholder);
+            ESP_LOGE(TAG, "Error: Entry not registered in template mapping: %s",
+                     placeholder.c_str());
             return placeholder;
         } else {
             return template_map[placeholder];
