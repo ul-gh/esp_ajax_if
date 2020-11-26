@@ -13,7 +13,7 @@ constexpr const char* conf_sta_ssid = "isocal";
 constexpr const char* conf_sta_psk = "123FOO456";
 
 constexpr const char* conf_host_name = "isocal";
-const String conf_dns_domain = "isocal.local";
+const String conf_dns_domain = "isocal.lan";
 
 constexpr bool conf_use_mdns = false;
 
