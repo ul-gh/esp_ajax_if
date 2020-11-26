@@ -23,8 +23,6 @@
 #include <Arduino.h>
 #include "esp32-hal-log.h"
 #include "esp_spiffs.h"
-#include <DNSServer.h>
-#include <ESPmDNS.h>
 #include <WiFi.h>
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
