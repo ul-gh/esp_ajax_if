@@ -23,8 +23,6 @@
 #include <Arduino.h>
 #include "esp32-hal-log.h"
 #include "esp_spiffs.h"
-#include <DNSServer.h>
-#include <ESPmDNS.h>
 #include <WiFi.h>
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
@@ -48,7 +46,7 @@ constexpr uint16_t tcp_port = 80;
 // ESPAsyncWebserver must be one single instance
 AsyncWebServer http_backend{tcp_port};
 // DNS resolution for captive portal page etc.
-DNSServer* dns_server;
+//DNSServer* dns_server;
 // Wifi connection manager
 //AsyncWiFiManager* wifi_manager;
 
@@ -70,7 +68,6 @@ void setup() {
     setup_wifi_hostap(); // Optional, when not using AsyncWifiManager
     http_backend.begin(); // Needed when not using AsyncWifiManager!
     //delay(300);
-    //dns_server = new DNSServer{};
     // Disable above setup_wifi... calls when using AsyncWifiManager
     //wifi_manager = new AsyncWiFiManager{&http_backend, dns_server};
     //wifi_manager->resetSettings(); // For Debug etc.
@@ -110,15 +107,16 @@ void setup() {
 }
 
 void loop() {
-    delay(100);
+    process_dns_requests();
     update_debug_messages();
+    delay(50);
 }
 
 
 void update_debug_messages(){
     static unsigned int loopctr;
     loopctr++;
-    if (loopctr > 40) {
+    if (loopctr > 100) {
         loopctr = 0;
         //heap_trace_start(HEAP_TRACE_LEAKS);
         print_debug_messages();
@@ -126,13 +124,17 @@ void update_debug_messages(){
 }
 
 void print_debug_messages(){
-    String debug_msg;
-    debug_msg += "Free Heap: " + String(ESP.getFreeHeap());
-    debug_msg += "  Minimum ever free heap: " + String(ESP.getMinFreeHeap());
-    //debug_msg += "  SSE queue length: ";
-    //debug_msg += api_server->event_source->avgPacketsWaiting();
-    //debug_msg += "\n Wifi stations connected: " + WiFi.softAPgetStationNum();
-    Serial.println(debug_msg);
+    String msg;
+    msg += "\nFree Heap: "
+                + String(ESP.getFreeHeap())
+                + "   Minimum ever free heap: "
+                + String(ESP.getMinFreeHeap());
+    msg += "\nSSE number of clients: "
+                + String(api_server->event_source->count())
+                + "   SSE average queue length: "
+                + String(api_server->event_source->avgPacketsWaiting());
+    //msg += "\nWifi stations connected: " + WiFi.softAPgetStationNum();
+    Serial.println(msg);
     //if (!heap_caps_check_integrity_all(true)) {
     //    Serial.println("Heap integrity check failed!");
     //    abort();

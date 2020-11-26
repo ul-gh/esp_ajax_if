@@ -11,6 +11,8 @@ enum WIFI_EVENT{NO_CHANGE, NEW_CONNECTION, DISCONNECTION};
 void setup_wifi_hostap();
 void setup_wifi_station();
 
+void process_dns_requests();
+
 enum WIFI_EVENT wifi_handle_state_change();
 
 #endif
