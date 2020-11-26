@@ -240,10 +240,11 @@ Requires at least ES7 JavaScript
     <script>
         const request_generator = new AsyncRequestGenerator();
         const view_updater = new ViewUpdater();
-        const app_watchdog = new AppWatchdog(1500, view_updater);
+        const app_watchdog = new AppWatchdog(10000, view_updater);
         const sse_handler = new ServerSentEventHandler("/events", view_updater, app_watchdog);
         sse_handler.disable_reconnect_and_watchdog();
         sse_handler.source.addEventListener("sse_test", e => console.log(e.data));
+        view_updater.enable_all();
     </script>
 </body>
 </html>
