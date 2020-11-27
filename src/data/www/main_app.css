@@ -35,9 +35,13 @@ ul.grid_container {
 }
 ul.main_grid {
     grid-auto-rows: minmax(8rem, auto);
-    grid-gap: 0.5rem;
+    gap: 0.5rem;
     justify-content: center;
-    justify-items: center;
+    justify-items: stretch;
+}
+
+.grid_item {
+    max-width: 100vw;
 }
 
 @media screen and (min-width: 75rem) {
@@ -48,15 +52,13 @@ ul.main_grid {
         grid-column: 1 / span 2;
     }
     li.grid_item.lr_center:nth-of-type(odd) {
+        max-width: 50vw;
         justify-self: right;
     }
     li.grid_item.lr_center:nth-of-type(even) {
+        max-width: 50vw;
         justify-self: left;
     }
-}
-
-.grid_item {
-    max-width: 100vw;
 }
 
 .flex-centered {
@@ -83,6 +85,7 @@ img {
 }
 
 table {
+    width: 100%;
     margin: 0;
     border-collapse: collapse;
     border: 2px solid rgb(177, 177, 177);
@@ -128,7 +131,34 @@ input[type="number"] {
 }
 input[type="range"] {
     width: 95%;
+    height: 40px;
+    background-color: transparent;
 }
+/* Style slider ("thumb") for Webkit browsers */
+input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    background-color: #3498db;
+    border: 1px solid #000000;
+    height: 36px;
+    width: 32px;
+    border-radius: 3px;
+    cursor: pointer;
+    margin-top: -14px; /* You need to specify a margin in Chrome, but in Firefox and IE it is automatic */
+  }
+  /* All the same stuff for Firefox */
+  input[type=range]::-moz-range-thumb {
+    background-color: #3498db;
+    border: 1px solid #000000;
+    height: 36px;
+    width: 32px;
+    border-radius: 3px;
+    cursor: pointer;
+  }
+  input[type=range]::-moz-range-track {
+    height: 5px;
+    background-color: #3f87a6;
+  }
+
 input[editing] {
     background-color: rgb(255, 132, 60);
 }
