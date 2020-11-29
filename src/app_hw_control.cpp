@@ -39,7 +39,6 @@ PsPwmAppHwControl::PsPwmAppHwControl(APIServer* api_server)
     api_server{api_server},
     periodic_update_timer{}
 {
-    //assert(api_server && api_server->event_source);
     assert(api_server);
     debug_print("Configuring Phase-Shift-PWM...");
     esp_err_t errors = API_CHOICE_INIT(mcpwm_num,
@@ -63,10 +62,21 @@ PsPwmAppHwControl::PsPwmAppHwControl(APIServer* api_server)
         error_print("Error initializing the PS-PWM module!");
         return;
     }
+}
 
+PsPwmAppHwControl::~PsPwmAppHwControl() {
+    //periodic_update_timer.detach();
+    xTimerDelete(periodic_update_timer, 0);
+}
+
+/** Begin operation.
+ * This also starts the timer callbacks etc.
+ * This will fail if networking etc. is not set up correctly!
+ */
+void PsPwmAppHwControl::begin() {
     debug_print("Activating Gate driver power supply...");
     aux_hw_drv.set_drv_supply_active("true");
-    
+
     register_remote_control(api_server);
     // This signature is used if the Ticker library timer is used.
     //periodic_update_timer.attach_ms(api_state_periodic_update_interval_ms,
@@ -86,12 +96,8 @@ PsPwmAppHwControl::PsPwmAppHwControl(APIServer* api_server)
     );
     if (!xTimerStart(periodic_update_timer, pdMS_TO_TICKS(5000))) {
         error_print("Error initializing the HW control periodic timer!");
+        abort();
     }
-}
-
-PsPwmAppHwControl::~PsPwmAppHwControl() {
-    //periodic_update_timer.detach();
-    xTimerDelete(periodic_update_timer, 0);
 }
 
 /* Registers hardware control function callbacks
@@ -201,6 +207,7 @@ void PsPwmAppHwControl::register_remote_control(APIServer* api_server) {
  */
 void PsPwmAppHwControl::on_periodic_update_timer(TimerHandle_t xTimer) {
     auto self = static_cast<PsPwmAppHwControl*>(pvTimerGetTimerID(xTimer));
+    assert(self->api_server->event_source);
     //// Debug print output
     //static int cycle_no = 0;
     //cycle_no++;

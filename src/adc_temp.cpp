@@ -18,7 +18,7 @@
 
 using namespace AdcTemp;
 
-static esp_adc_cal_characteristics_t *adc_cal_characteristics;
+static esp_adc_cal_characteristics_t *adc_cal_characteristics = nullptr;
 
 // Some debug helper functions, implemented at bottom
 static void check_efuse(void);
@@ -126,6 +126,7 @@ float AdcTemp::equidistant_piecewise_linear(
  * voltage has good linearisation. Does not work well at temperature extremes.
  */
 float AdcTemp::get_kty_temp_lin(uint16_t adc_raw_value) {
+    assert(adc_cal_characteristics);
     constexpr int32_t coeff_a_scale = 65536;
     constexpr int32_t coeff_a_round = coeff_a_scale/2;
     const int32_t adc_fsr_lower = (
@@ -149,6 +150,7 @@ float AdcTemp::get_kty_temp_lin(uint16_t adc_raw_value) {
  * Use this if temperatures above 100°C ore below 0°C are to be measured.
  */
 float AdcTemp::get_kty_temp_pwl(uint16_t adc_raw_value) {
+    assert(adc_cal_characteristics);
     constexpr int32_t coeff_a_scale = 65536;
     constexpr int32_t coeff_a_round = coeff_a_scale/2;
     // In theory this could be up to 2^16 values but that would make no sense

@@ -109,6 +109,12 @@ public:
     PsPwmAppHwControl(APIServer* api_server);
     virtual ~PsPwmAppHwControl();
 
+    /** Begin operation.
+     * This also starts the timer callbacks etc.
+     * This will fail if networking etc. is not set up correctly!
+     */
+    void begin();
+
     // Register hw control functions as request handlers with the HTPP server
     void register_remote_control(APIServer* api_server);
 

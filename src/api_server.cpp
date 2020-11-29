@@ -9,6 +9,7 @@
 #include <Update.h>
 #include <SPIFFS.h>
 #include <FS.h>
+#include "esp_spiffs.h"
 
 // Activate incomplete features..
 //#define WORK_IN_PROGRESS__
@@ -30,13 +31,29 @@ APIServer::APIServer(AsyncWebServer* http_backend)
     , _reboot_requested{false}
     , _event_timer{}
     , _heartbeat_cb{}
-{   
+{}
+
+APIServer::~APIServer() {
+    _event_timer.detach();
+    delete event_source;
+}
+
+/** Begin operation.
+ * This must be called when SPIFFS and Arduino environment is available.
+ */
+void APIServer::begin() {
     if (conf_serve_static_from_spiffs) {
-        if (!SPIFFS.begin(true)) {
+        ESP_LOGD(TAG, "Mounting SPI Flash File System...");
+        if (!SPIFFS.begin(false)) {
             ESP_LOGE(TAG, "Error mounting SPI Flash File System!");
             abort();
         }
+        size_t tot_bytes, used_bytes;
+        esp_spiffs_info(NULL, &tot_bytes, &used_bytes);
+        ESP_LOGI(TAG, "SPIFFS filesystem size in bytes: %d   Used bytes: %d",
+                 tot_bytes, used_bytes);
     }
+    backend->begin();
     _add_rewrites();
     _add_redirects();
     _add_handlers();
@@ -46,11 +63,6 @@ APIServer::APIServer(AsyncWebServer* http_backend)
     // FIXME: This is even called when no heartbeats are sent, we use the timer
     // for reboots etc, this is a temporary solution..
     _event_timer.attach_ms(conf_heartbeat_interval, _on_timer_event, this);
-}
-
-APIServer::~APIServer() {
-    _event_timer.detach();
-    delete event_source;
 }
 
 // Set an entry in the template processor string <=> string mapping 
@@ -89,11 +101,6 @@ void APIServer::register_api_cb(const char* cmd_name, CbVoidT cmd_callback) {
         cmd_callback();
         };
     ESP_LOGD(TAG, "Registered void command: %s", cmd_name);
-}
-
-// Do not call this if the server is already running!
-void APIServer::begin() {
-    backend->begin();
 }
 
 

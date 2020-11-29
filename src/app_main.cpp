@@ -18,96 +18,61 @@
  * License: GPL v.3 
  * U. Lukas 2020-09-30
  */
-#include <freertos/FreeRTOS.h>
-#include <freertos/task.h>
 #include <Arduino.h>
 #include "esp32-hal-log.h"
-#include "esp_spiffs.h"
-#include <WiFi.h>
-#include <AsyncTCP.h>
+#include <DNSServer.h>
 #include <ESPAsyncWebServer.h>
-#include "sdkconfig.h"
-//#include <ESPAsyncWiFiManager.h>
 
-#include "info_debug_error.h"
-#include "wifi_setup.hpp"
+#include "network_config.hpp"
+#include "network_setup.hpp"
 #include "api_server.hpp"
 #include "app_hw_control.hpp"
 
-#include "adc_temp.hpp"
-#include "esp_err.h"
+// Local debug level
+#define LOG_LOCAL_LEVEL ESP_LOG_DEBUG
+#include "esp_log.h"
+static const char* TAG = "app_main";
 
-#include "../test/dummy_text.h"
+const NetworkConfig net_conf;
 
 constexpr unsigned long serial_baudrate = 115200;
-// TCP socket port number
-constexpr uint16_t tcp_port = 80;
+
+// Without name resolution, Windows and browser clients spam the server with
+// failing DNS queries. Also this is used by the WiFi Manager and portal page.
+DNSServer dns_server;
 
 // ESPAsyncWebserver must be one single instance
-AsyncWebServer http_backend{tcp_port};
-// DNS resolution for captive portal page etc.
-//DNSServer* dns_server;
-// Wifi connection manager
-//AsyncWiFiManager* wifi_manager;
+AsyncWebServer http_backend{net_conf.http_tcp_port};
 
 // HTTP server provides REST API + HTML5 AJAX web interface on port 80
-APIServer* api_server;
+APIServer api_server{&http_backend};
 
-// PS-PWM hardware controller instance runs the HTTP AJAX API server
-PsPwmAppHwControl* ps_pwm_controller;
+// PS-PWM hardware controller instance registers into the AJAX API server
+PsPwmAppHwControl ps_pwm_controller{&api_server};
 
 void update_debug_messages();
 void print_debug_messages();
 
 void setup() {
-    // FIXME: DEBUG
-    //heap_trace_init_tohost();
     esp_log_level_set("*", ESP_LOG_DEBUG);
     Serial.begin(serial_baudrate);
     //setup_wifi_station(); // Optional, when not using AsyncWifiManager
-    setup_wifi_hostap(); // Optional, when not using AsyncWifiManager
+    setup_wifi_hostap(net_conf); // Optional, when not using AsyncWifiManager
     http_backend.begin(); // Needed when not using AsyncWifiManager!
-    //delay(300);
+    setup_dns_server(dns_server, net_conf);
     // Disable above setup_wifi... calls when using AsyncWifiManager
-    //wifi_manager = new AsyncWiFiManager{&http_backend, dns_server};
-    //wifi_manager->resetSettings(); // For Debug etc.
-    //wifi_manager->startConfigPortal("Isocal_Access_Point"); // Debug or special
-    //wifi_manager->autoConnect("Isocal_Access_Point");
-    //wifi_manager->setConfigPortalTimeout(180);
-    delay(100);
-    api_server = new APIServer{&http_backend};
-    ps_pwm_controller = new PsPwmAppHwControl{api_server};
-    size_t tot_bytes, used_bytes;
-    esp_spiffs_info(NULL, &tot_bytes, &used_bytes);
-    Serial.print("SPIFFS filesystem size in bytes: ");
-    Serial.print(tot_bytes);
-    Serial.print("   Used bytes: ");
-    Serial.println(used_bytes);
-    AdcTemp::adc_init_test_capabilities();
-    http_backend.on("/sse_2", HTTP_GET, [](AsyncWebServerRequest *request) {
-            Serial.println("Test");
-            api_server->event_source->send(text_2kb, "sse_test");
-            request->send(200, "text/plain", "2k Text sent");
-    });
-    http_backend.on("/sse_4", HTTP_GET, [](AsyncWebServerRequest *request) {
-            Serial.println("Test");
-            api_server->event_source->send(text_4kb, "sse_test");
-            request->send(200, "text/plain", "4k Text sent");
-    });
-    http_backend.on("/sse_8", HTTP_GET, [](AsyncWebServerRequest *request) {
-            Serial.println("Test");
-            api_server->event_source->send(text_8kb, "sse_test");
-            request->send(200, "text/plain", "8k Text sent");
-    });
-    http_backend.on("/sse_16", HTTP_GET, [](AsyncWebServerRequest *request) {
-            Serial.println("Test");
-            api_server->event_source->send(text_16kb, "sse_test");
-            request->send(200, "text/plain", "16k Text sent");
-    });
+    //run_wifi_manager(&dns_server, &http_backend);
+    // Run HTTP server and prepare AJAX API registration
+    api_server.begin();
+    /** Begin operation of PWM stages etc.
+     * This also starts the timer callbacks etc.
+     * This will fail if networking etc. is not set up correctly!
+     */
+    ps_pwm_controller.begin();
 }
 
 void loop() {
-    process_dns_requests();
+    dns_server.processNextRequest();
     update_debug_messages();
     delay(50);
 }
@@ -124,19 +89,15 @@ void update_debug_messages(){
 }
 
 void print_debug_messages(){
-    String msg;
-    msg += "\nFree Heap: "
-                + String(ESP.getFreeHeap())
-                + "   Minimum ever free heap: "
-                + String(ESP.getMinFreeHeap());
-    msg += "\nSSE number of clients: "
-                + String(api_server->event_source->count())
-                + "   SSE average queue length: "
-                + String(api_server->event_source->avgPacketsWaiting());
-    //msg += "\nWifi stations connected: " + WiFi.softAPgetStationNum();
-    Serial.println(msg);
+    ESP_LOGD(TAG,
+             "\nFree Heap: %d   Minimum ever free heap: %d"
+             "\nSSE number of clients: %d   SSE average queue length: %d",
+             ESP.getFreeHeap(), ESP.getMinFreeHeap(),
+             api_server.event_source->count(), api_server.event_source->avgPacketsWaiting()
+             );
+    //ESP_LOGD(TAG, "\nWifi stations connected: %d", WiFi.softAPgetStationNum());
     //if (!heap_caps_check_integrity_all(true)) {
-    //    Serial.println("Heap integrity check failed!");
+    //    ESP_LOGE(TAG, "Heap integrity check failed!");
     //    abort();
     //}
 }
