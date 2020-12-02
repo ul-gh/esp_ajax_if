@@ -34,7 +34,7 @@ ul.grid_container {
     padding: 0;
 }
 ul.main_grid {
-    grid-auto-rows: minmax(8rem, auto);
+    grid-auto-rows: minmax(auto, auto);
     gap: 0.5rem;
     justify-content: center;
     justify-items: stretch;
@@ -147,7 +147,7 @@ input[type=range]::-webkit-slider-thumb {
   }
   input[type=range]::-webkit-slider-runnable-track {
     height: 5px;
-    background-color: #3c6679;
+    background-color: #3f87a6;
   }
   /* All the same stuff for Firefox */
   input[type=range]::-moz-range-thumb {
@@ -160,7 +160,7 @@ input[type=range]::-webkit-slider-thumb {
   }
   input[type=range]::-moz-range-track {
     height: 5px;
-    background-color: #3c6679;
+    background-color: #3f87a6;
   }
 
 input[editing] {
