@@ -191,6 +191,8 @@ class ViewUpdater {
         this.lead_dt_vw = document.getElementById("lead_dt_vw");
         this.lag_dt_vw = document.getElementById("lag_dt_vw");
         this.current_limit_vw = document.getElementById("current_limit_vw");
+        this.frequency_min_vw = document.getElementById("frequency_min_vw");
+        this.frequency_max_vw = document.getElementById("frequency_max_vw");
         this.frequency_number_vw = document.getElementById("frequency_number_vw");
         this.frequency_range_vw = document.getElementById("frequency_range_vw");
         this.duty_number_vw = document.getElementById("duty_number_vw");
@@ -200,6 +202,7 @@ class ViewUpdater {
             this.power_pwm_vw, this.shutdown_vw, this.aux_temp_vw,
             this.heatsink_temp_vw, this.fan_vw, this.ref_vw, this.dut_vw,
             this.lead_dt_vw, this.lag_dt_vw, this.current_limit_vw,
+            this.frequency_min_vw, this.frequency_max_vw,
             this.frequency_number_vw, this.frequency_range_vw,
             this.duty_number_vw, this.duty_range_vw,
             this.btn_pwm_on, this.btn_pwm_off,

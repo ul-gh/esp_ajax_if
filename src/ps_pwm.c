@@ -95,19 +95,19 @@ esp_err_t pspwm_up_ctr_mode_init(mcpwm_unit_t mcpwm_num,
             return ESP_FAIL;
         }
     }
-    s_setpoint_limits[mcpwm_num]->frequency_min = s_clk_conf.timer_clk / UINT16_MAX;
-    s_setpoint_limits[mcpwm_num]->frequency_max = s_clk_conf.timer_clk / period_min;
+    s_setpoint_limits[mcpwm_num]->frequency_min_hw = s_clk_conf.timer_clk / UINT16_MAX;
+    s_setpoint_limits[mcpwm_num]->frequency_max_hw = s_clk_conf.timer_clk / period_min;
     if (UINT16_MAX/s_clk_conf.base_clk < 1.0 / frequency) {
         s_setpoint_limits[mcpwm_num]->dt_sum_max = UINT16_MAX / s_clk_conf.base_clk;
     } else {
         s_setpoint_limits[mcpwm_num]->dt_sum_max = 1.0 / frequency;
     }
-    DBG("frequency_min is now: %g", s_setpoint_limits[mcpwm_num]->frequency_min);
-    DBG("frequency_max is now: %g", s_setpoint_limits[mcpwm_num]->frequency_max);
+    DBG("frequency_min_hw is now: %g", s_setpoint_limits[mcpwm_num]->frequency_min_hw);
+    DBG("frequency_max_hw is now: %g", s_setpoint_limits[mcpwm_num]->frequency_max_hw);
     DBG("dt_sum_max is now: %g", s_setpoint_limits[mcpwm_num]->dt_sum_max);
     // This is a 16-Bit timer register, although the API struct uses uint32_t...
-    if (frequency <= s_setpoint_limits[mcpwm_num]->frequency_min
-        || frequency > s_setpoint_limits[mcpwm_num]->frequency_max) {
+    if (frequency <= s_setpoint_limits[mcpwm_num]->frequency_min_hw
+        || frequency > s_setpoint_limits[mcpwm_num]->frequency_max_hw) {
             ERROR("Frequency setpoint out of range!");
             return ESP_FAIL;
     }
@@ -164,8 +164,8 @@ esp_err_t pspwm_up_ctr_mode_set_frequency(mcpwm_unit_t mcpwm_num,
     pspwm_setpoint_t* setpoints = s_setpoints[mcpwm_num];
     assert(setpoints != NULL);
     // This is a 16-Bit timer register, although the API struct uses uint32_t...
-    if (frequency <= s_setpoint_limits[mcpwm_num]->frequency_min
-        || frequency > s_setpoint_limits[mcpwm_num]->frequency_max) {
+    if (frequency <= s_setpoint_limits[mcpwm_num]->frequency_min_hw
+        || frequency > s_setpoint_limits[mcpwm_num]->frequency_max_hw) {
             ERROR("Frequency setpoint out of range!");
             return ESP_FAIL;
     }
@@ -357,15 +357,15 @@ esp_err_t pspwm_up_down_ctr_mode_init(mcpwm_unit_t mcpwm_num,
             return ESP_FAIL;
         }
     }
-    s_setpoint_limits[mcpwm_num]->frequency_min = 0.5 * s_clk_conf.timer_clk / UINT16_MAX;
-    s_setpoint_limits[mcpwm_num]->frequency_max = 0.5 * s_clk_conf.timer_clk / period_min;
+    s_setpoint_limits[mcpwm_num]->frequency_min_hw = 0.5 * s_clk_conf.timer_clk / UINT16_MAX;
+    s_setpoint_limits[mcpwm_num]->frequency_max_hw = 0.5 * s_clk_conf.timer_clk / period_min;
     s_setpoint_limits[mcpwm_num]->dt_sum_max = 1.0 / frequency;
-    DBG("frequency_min is now: %g", s_setpoint_limits[mcpwm_num]->frequency_min);
-    DBG("frequency_max is now: %g", s_setpoint_limits[mcpwm_num]->frequency_max);
+    DBG("frequency_min_hw is now: %g", s_setpoint_limits[mcpwm_num]->frequency_min_hw);
+    DBG("frequency_max_hw is now: %g", s_setpoint_limits[mcpwm_num]->frequency_max_hw);
     DBG("dt_sum_max is now: %g", s_setpoint_limits[mcpwm_num]->dt_sum_max);
     // This is a 16-Bit timer register, although the API struct uses uint32_t...
-    if (frequency <= s_setpoint_limits[mcpwm_num]->frequency_min
-        || frequency > s_setpoint_limits[mcpwm_num]->frequency_max) {
+    if (frequency <= s_setpoint_limits[mcpwm_num]->frequency_min_hw
+        || frequency > s_setpoint_limits[mcpwm_num]->frequency_max_hw) {
             ERROR("Frequency setpoint out of range!");
             return ESP_FAIL;
     }
@@ -422,8 +422,8 @@ esp_err_t pspwm_up_down_ctr_mode_set_frequency(mcpwm_unit_t mcpwm_num,
     pspwm_setpoint_t* setpoints = s_setpoints[mcpwm_num];
     assert(setpoints != NULL);
     // This is a 16-Bit timer register, although the API struct uses uint32_t...
-    if (frequency <= s_setpoint_limits[mcpwm_num]->frequency_min
-        || frequency > s_setpoint_limits[mcpwm_num]->frequency_max) {
+    if (frequency <= s_setpoint_limits[mcpwm_num]->frequency_min_hw
+        || frequency > s_setpoint_limits[mcpwm_num]->frequency_max_hw) {
             ERROR("Frequency setpoint out of range!");
             return ESP_FAIL;
     }

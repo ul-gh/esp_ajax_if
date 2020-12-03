@@ -79,9 +79,12 @@ typedef struct {
  * contained herein and should be treated read-only
  */
 typedef struct {
-    // Minimum and maximum allowed frequency setpoints
+    // Minimum and maximum allowed frequency setpoints (soft-limit set by user)
     float frequency_min;
     float frequency_max;
+    // Minimum and maximum allowed frequency setpoints (hard limit from timing constraints)
+    float frequency_min_hw;
+    float frequency_max_hw;
     // Dead time for each bridge leg must be smaller than this value,
     // both in sum and also both individually. (Minimum is zero.)
     float dt_sum_max;
