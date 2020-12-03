@@ -189,11 +189,10 @@ esp_err_t pspwm_up_ctr_mode_set_frequency(mcpwm_unit_t mcpwm_num,
     // Phase shift value for Timer 1 needs updating when changing frequency.
     // Timer 0 is the reference phase and needs no update.
     uint32_t phase_setval = (uint32_t)(half_period * setpoints->ps_duty);
-    // Phase shift register must not be set at or above cmpr_1_a value, otherwise
-    // the compare event could be missed causing excessive ON-time for one
-    // timer period... FIXME: at/or above what is the real limit? Play it safe:
-    if (phase_setval >= cmpr_1_a) {
-        phase_setval = cmpr_1_a - 1;
+    // Phase shift register must not be set above cmpr_1_a value, otherwise
+    // the compare event will be missed.
+    if (phase_setval > cmpr_1_a) {
+        phase_setval = cmpr_1_a;
     }
     mcpwm_dev_t* const module = MCPWM[mcpwm_num];
     portENTER_CRITICAL(&mcpwm_spinlock);
@@ -254,12 +253,11 @@ esp_err_t pspwm_up_ctr_mode_set_deadtimes(mcpwm_unit_t mcpwm_num,
         half_period
         + 0.5 * (s_clk_conf.timer_clk * (setpoints->lag_red
                                          - setpoints->lag_fed)));
-    // Phase shift register must not be set at or above cmpr_1_a value, otherwise
-    // the compare event could be missed causing excessive ON-time for one
-    // timer period... FIXME: at/or above what is the real limit? Play it safe:
+    // Phase shift register must not be set above cmpr_1_a value, otherwise
+    // the compare event will be missed.
     uint32_t phase_setval = (uint32_t)(half_period * setpoints->ps_duty);
-    if (phase_setval >= cmpr_1_a) {
-        phase_setval = cmpr_1_a - 1;
+    if (phase_setval > cmpr_1_a) {
+        phase_setval = cmpr_1_a;
     }
     mcpwm_dev_t* const module = MCPWM[mcpwm_num];
     portENTER_CRITICAL(&mcpwm_spinlock);
@@ -304,12 +302,11 @@ esp_err_t pspwm_up_ctr_mode_set_ps_duty(mcpwm_unit_t mcpwm_num, const float ps_d
     // For up-counting mode, output waveform period is actually timer TOP + 1
     uint32_t curr_period = module->timer[MCPWM_TIMER_0].period.period + 1;
     uint32_t phase_setval = (uint32_t)(curr_period * ps_duty * 0.5);
-    // Phase shift register must not be set at or above cmpr_1_a value, otherwise
-    // the compare event could be missed causing excessive ON-time for one
-    // timer period... FIXME: at/or above what is the real limit? Play it safe:
+    // Phase shift register must not be set above cmpr_1_a value, otherwise
+    // the compare event will be missed.
     uint32_t cmpr_1_a = module->channel[MCPWM_TIMER_1].cmpr_value[MCPWM_OPR_A].cmpr_val;
-    if (phase_setval >= cmpr_1_a) {
-        phase_setval = cmpr_1_a - 1;
+    if (phase_setval > cmpr_1_a) {
+        phase_setval = cmpr_1_a;
     }
     // Phase shift value is based on timer 0 period setting but intentionally
     // only set for timer 1. Timer 0 is the reference phase.
@@ -317,6 +314,7 @@ esp_err_t pspwm_up_ctr_mode_set_ps_duty(mcpwm_unit_t mcpwm_num, const float ps_d
     module->timer[MCPWM_TIMER_1].sync.timer_phase = phase_setval;
     portEXIT_CRITICAL(&mcpwm_spinlock);
     DBG("Phase register set to: %d", phase_setval);
+    DBG("cmpr_1_a set to: %d", cmpr_1_a);
     return ESP_OK;
 }
 
@@ -730,6 +728,12 @@ static void pspwm_up_ctr_mode_register_base_setup(mcpwm_unit_t mcpwm_num) {
         // module->channel[timer_i].db_cfg.b_outswap = 0; //S7
         // module->channel[timer_i].db_cfg.deb_mode = 0;  //S8
     }
+    // Configure PWM generator to re-initialise outputs not only on UETZ but
+    // also on sync event. This is because the UTEZ event is missed on sync
+    // when phase register (preload value) is changed from low values
+    // Register 17.19: PWM_GEN0_CFG0_REG (0x0048)
+    module->channel[MCPWM_TIMER_1].gen_cfg0.t0_sel = 3; // At sync
+    module->channel[MCPWM_TIMER_1].generator[MCPWM_OPR_A].ut0 = 2; // Set high
     // Update/swap shadow registers at timer equals zero for timer0,
     // update at sync for timer1.
     // Datasheet 16.2: PWM_TIMER0_CFG0_REG (0x0004) etc.
@@ -764,7 +768,7 @@ static void pspwm_up_ctr_mode_register_base_setup(mcpwm_unit_t mcpwm_num) {
     module->timer[MCPWM_TIMER_0].mode.start = 2;
     module->timer[MCPWM_TIMER_1].mode.start = 2;
     ///// Force update on all registers for settings to take effect /////
-    // Datasheet 16.68: PWM_UPDATE_CFG_REG (0x010c)
+    // Datasheet 17.68: PWM_UPDATE_CFG_REG (0x010c)
     module->update_cfg.global_up_en = 1;
     // Toggle triggers a "forced register update" whatever that means..
     module->update_cfg.global_force_up = 1;
@@ -827,7 +831,7 @@ static void pspwm_up_down_ctr_mode_register_base_setup(mcpwm_unit_t mcpwm_num) {
     module->timer[MCPWM_TIMER_0].mode.start = 2;
     module->timer[MCPWM_TIMER_1].mode.start = 2;
     ///// Force update on all registers for settings to take effect /////
-    // Datasheet 16.68: PWM_UPDATE_CFG_REG (0x010c)
+    // Datasheet 17.68: PWM_UPDATE_CFG_REG (0x010c)
     module->update_cfg.global_up_en = 1;
     // Toggle triggers a "forced register update" whatever that means..
     module->update_cfg.global_force_up = 1;
@@ -837,7 +841,7 @@ static void pspwm_up_down_ctr_mode_register_base_setup(mcpwm_unit_t mcpwm_num) {
 
 /* Fault Handler ("Trip-Zone") input configuration.
  * Set up one-shot (stay-off) mode for fault handler module FH0.
- * This is used for software-forced output disabling.
+ * This is used for hardware and software-forced output disabling.
  */
 static esp_err_t pspwm_setup_fault_handler_module(
             mcpwm_unit_t mcpwm_num,
@@ -845,7 +849,7 @@ static esp_err_t pspwm_setup_fault_handler_module(
             mcpwm_action_on_pwmxa_t disable_action_lead_leg) {
     mcpwm_dev_t* const module = MCPWM[mcpwm_num];
     portENTER_CRITICAL(&mcpwm_spinlock);
-    // Datasheet 16.27: PWM_FH0_CFG0_REG (0x0068)
+    // Datasheet 17.27: PWM_FH0_CFG0_REG (0x0068)
     // Enable sw-forced one-shot tripzone action
     module->channel[MCPWM_TIMER_0].tz_cfg0.sw_ost = 1;
     module->channel[MCPWM_TIMER_1].tz_cfg0.sw_ost = 1;
