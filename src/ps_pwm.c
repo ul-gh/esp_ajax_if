@@ -188,8 +188,13 @@ esp_err_t pspwm_up_ctr_mode_set_frequency(mcpwm_unit_t mcpwm_num,
                                          - setpoints->lag_fed)));
     // Phase shift value for Timer 1 needs updating when changing frequency.
     // Timer 0 is the reference phase and needs no update.
-    uint32_t phase_setval = (uint32_t)(
-        half_period * setpoints->ps_duty);
+    uint32_t phase_setval = (uint32_t)(half_period * setpoints->ps_duty);
+    // Phase shift register must not be set at or above cmpr_1_a value, otherwise
+    // the compare event could be missed causing excessive ON-time for one
+    // timer period... FIXME: at/or above what is the real limit? Play it safe:
+    if (phase_setval >= cmpr_1_a) {
+        phase_setval = cmpr_1_a - 1;
+    }
     mcpwm_dev_t* const module = MCPWM[mcpwm_num];
     portENTER_CRITICAL(&mcpwm_spinlock);
     // Register 16.17: PWM_GEN0_TSTMP_A_REG (0x0040) etc.
@@ -249,6 +254,13 @@ esp_err_t pspwm_up_ctr_mode_set_deadtimes(mcpwm_unit_t mcpwm_num,
         half_period
         + 0.5 * (s_clk_conf.timer_clk * (setpoints->lag_red
                                          - setpoints->lag_fed)));
+    // Phase shift register must not be set at or above cmpr_1_a value, otherwise
+    // the compare event could be missed causing excessive ON-time for one
+    // timer period... FIXME: at/or above what is the real limit? Play it safe:
+    uint32_t phase_setval = (uint32_t)(half_period * setpoints->ps_duty);
+    if (phase_setval >= cmpr_1_a) {
+        phase_setval = cmpr_1_a - 1;
+    }
     mcpwm_dev_t* const module = MCPWM[mcpwm_num];
     portENTER_CRITICAL(&mcpwm_spinlock);
     // Register 16.25: PWM_DT0_RED_CFG_REG (0x0060) etc.
@@ -261,6 +273,10 @@ esp_err_t pspwm_up_ctr_mode_set_deadtimes(mcpwm_unit_t mcpwm_num,
     // also for GEN1 with different register offset
     module->channel[MCPWM_TIMER_0].cmpr_value[MCPWM_OPR_A].cmpr_val = cmpr_0_a;
     module->channel[MCPWM_TIMER_1].cmpr_value[MCPWM_OPR_A].cmpr_val = cmpr_1_a;
+    // Phase shift value is based on timer 0 period setting but intentionally
+    // only set for timer 1. Timer 0 is the reference phase.
+    // Register 16.8: PWM_TIMER1_SYNC_REG (0x001c)
+    module->timer[MCPWM_TIMER_1].sync.timer_phase = phase_setval;
     portEXIT_CRITICAL(&mcpwm_spinlock);
     DBG("cmpr_0_a register value: %d", cmpr_0_a);
     DBG("cmpr_1_a register value: %d", cmpr_1_a);
@@ -288,6 +304,13 @@ esp_err_t pspwm_up_ctr_mode_set_ps_duty(mcpwm_unit_t mcpwm_num, const float ps_d
     // For up-counting mode, output waveform period is actually timer TOP + 1
     uint32_t curr_period = module->timer[MCPWM_TIMER_0].period.period + 1;
     uint32_t phase_setval = (uint32_t)(curr_period * ps_duty * 0.5);
+    // Phase shift register must not be set at or above cmpr_1_a value, otherwise
+    // the compare event could be missed causing excessive ON-time for one
+    // timer period... FIXME: at/or above what is the real limit? Play it safe:
+    uint32_t cmpr_1_a = module->channel[MCPWM_TIMER_1].cmpr_value[MCPWM_OPR_A].cmpr_val;
+    if (phase_setval >= cmpr_1_a) {
+        phase_setval = cmpr_1_a - 1;
+    }
     // Phase shift value is based on timer 0 period setting but intentionally
     // only set for timer 1. Timer 0 is the reference phase.
     // Register 16.8: PWM_TIMER1_SYNC_REG (0x001c)
@@ -300,6 +323,11 @@ esp_err_t pspwm_up_ctr_mode_set_ps_duty(mcpwm_unit_t mcpwm_num, const float ps_d
 
 /*****************************************************************
  * TIMER UP/DOWN-COUNTING MODE; DOES NOT USE HW-DEAD-TIME-MODULE *
+ * IMPORTANT NOTE: When using this API, it is not safe to change *
+ * the frequency, phase shift duty or dead-time setpoints during *
+ * operation as timer compare events could be missed causing     *
+ * invalid output waveforms for up to one timer period.          *
+ * THIS WILL CAUSE SHORT-CIRCUITS for bridge output stages!      *
  *****************************************************************
  */
 esp_err_t pspwm_up_down_ctr_mode_init(mcpwm_unit_t mcpwm_num,

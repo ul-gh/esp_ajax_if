@@ -204,8 +204,6 @@ esp_err_t pspwm_up_ctr_mode_set_ps_duty(mcpwm_unit_t mcpwm_num, const float ps_d
 
 
 /*************************************************************//**
- * TIMER UP/DOWN-COUNTING MODE; DOES NOT USE HW-DEAD-TIME-MODULE
- *****************************************************************
  * @brief Set up the PS-PWM generator module for up-down-counting mode, which
  * assures identical ON times for high side and low side outputs of each leg.
  * 
@@ -218,6 +216,11 @@ esp_err_t pspwm_up_ctr_mode_set_ps_duty(mcpwm_unit_t mcpwm_num, const float ps_d
  * 
  * Because of the up/down-counting mode, maximum output frequency is half of
  * the value which is possible when using the hardware dead-band generator.
+ * 
+ * @note When using this mode, it is NOT SAFE to change the frequency, phase
+ * shift duty or dead-time setpoints during operation as timer compare events
+ * could be missed, causing invalid output waveforms for up to one timer period.
+ * THIS WILL CAUSE SHORT-CIRCUITS for bridge output stages!
  * 
  * @param mcpwm_num: PWM unit number (enum, MCPWM_UNIT_0 = 0, MCPWM_UNIT_1 = 1),
  * @param gpio_lead_a: GPIO number leading leg low_side

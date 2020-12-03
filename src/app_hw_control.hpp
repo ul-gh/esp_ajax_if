@@ -18,8 +18,9 @@
 #include "aux_hw_drv.hpp"
 #include "api_server.hpp"
 
-//#define USE_ASYMMETRIC_FULL_SPEED_DRIVE_API
-#define USE_SYMMETRIC_DC_FREE_DRIVE_API
+// Only the up-counting mode using the hardware dead-band generator is safe
+// for changing setpoints on-the-fly
+#define USE_ASYMMETRIC_FULL_SPEED_DRIVE_API
 
 /** @brief Application interface implementation for PS-PWM generator hardware
  *

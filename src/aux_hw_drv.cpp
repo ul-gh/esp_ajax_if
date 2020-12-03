@@ -12,9 +12,9 @@
 #include "soc/syscon_reg.h"
 
 
-// Following redundant declarations of static constexpr data members are
-// deprecated since C++17 but provided to prevent linker errors with
-// outdated versions of the toolchain:
+// Following out-of-class definitions of static constexpr data members are
+// deprecated since C++17 (see: https://stackoverflow.com/a/57059723) but
+// provided to prevent linker errors with current versions of the toolchain:
 constexpr ledc_timer_config_t AuxHwDrv::pwm_timer_config;
 constexpr ledc_channel_config_t AuxHwDrv::curr_lim_pwm_ch_config;
 constexpr ledc_channel_config_t AuxHwDrv::delta_sigma_out_pwm_ch_config;
