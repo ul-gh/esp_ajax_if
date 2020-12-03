@@ -9,7 +9,7 @@ Import("env")
 # env.Append(CFLAGS=["flag1", "flag2"])
 
 # General options that are passed to the C++ compiler.
-env.Append(CXXFLAGS=["-std=g++17"]) # We use C++ 17
+env.Append(CXXFLAGS=["-std=gnu++17"]) # We use C++ 17
 
 
 ################################################################################
