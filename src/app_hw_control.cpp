@@ -44,9 +44,9 @@ void PsPwmAppState::serialize() {
     json_doc["frequency_min_hw"] = pspwm_setpoint_limits->frequency_min/1e3;
     json_doc["frequency_max_hw"] = pspwm_setpoint_limits->frequency_max/1e3;
     json_doc["dt_sum_max_hw"] = pspwm_setpoint_limits->dt_sum_max*1e9;
-    // Runtime user settpoint limits for output frequency
-    json_doc["frequency_min_hw"] = frequency_min/1e3;
-    json_doc["frequency_max_hw"] = frequency_max/1e3;
+    // Runtime user setpoint limits for output frequency
+    json_doc["frequency_min"] = frequency_min/1e3;
+    json_doc["frequency_max"] = frequency_max/1e3;
     // Operational setpoints for PSPWM module
     json_doc["frequency"] = pspwm_setpoint->frequency/1e3;
     json_doc["duty"] = pspwm_setpoint->ps_duty*100;
@@ -159,14 +159,14 @@ void PsPwmAppHwControl::register_remote_control(APIServer* api_server) {
     // set_frequency_min
     cb_float = [this](const float n) {
         ESP_LOGD(TAG, "Request for set_frequency_min received with value: %f", n);
-        state.frequency_min = n;
+        state.frequency_min = n * 1E3;
     };
     api_server->register_api_cb("set_frequency_min", cb_float);
 
     // set_frequency_max
     cb_float = [this](const float n) {
         ESP_LOGD(TAG, "Request for set_frequency_max received with value: %f", n);
-        state.frequency_max = n;
+        state.frequency_max = n * 1E3;
     };
     api_server->register_api_cb("set_frequency_max", cb_float);
 

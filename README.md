@@ -53,6 +53,12 @@ HTTP Status 200 OK and plain text content "OK"
 
 ### List of HTTP GET requests for application control:
 
+* User settable minimum output frequency in kHz:<br>
+/cmd?set_frequency_min=50
+
+* User settable maximum output frequency in kHz:<br>
+/cmd?set_frequency_max=300
+
 * Set frequency in kHz:<br>
 /cmd?set_frequency=500
 
@@ -88,10 +94,14 @@ HTTP Status 200 OK and plain text content "OK"
 * Event source telegram content is JSON with content:
 ```
 {
-    // Setpoint limits. Scaled to kHz, ns and % respectively...
+    // Setpoint limits from PWM hardware constraints.
+    // Scaled to kHz, ns and % respectively...
+    "frequency_min_hw": Frequency in kHz
+    "frequency_max_hw": Frequency in kHz
+    "dt_sum_max_hw": Dead-Time in nanoseconds
+    // Setpoint limit custom user settings. See GET API above.
     "frequency_min": Frequency in kHz
     "frequency_max": Frequency in kHz
-    "dt_sum_max": Dead-Time in nanoseconds
     // Operational setpoints for PSPWM module
     "frequency": Frequency in kHz
     "duty": Duty Cycle in percent
