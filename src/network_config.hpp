@@ -1,7 +1,6 @@
 #ifndef NETWORK_CONFIG_HPP__
 #define NETWORK_CONFIG_HPP__
 #include "IPAddress.h"
-#include "network_config.hpp"
 
 struct NetworkConfig {
     const IPAddress ap_ip{192,168,4,1};

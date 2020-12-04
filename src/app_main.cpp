@@ -23,12 +23,10 @@
 #include <DNSServer.h>
 #include <ESPAsyncWebServer.h>
 
-#include "network_config.hpp"
 #include "network_setup.hpp"
 #include "api_server.hpp"
 #include "app_hw_control.hpp"
 
-// Local debug level
 #define LOG_LOCAL_LEVEL ESP_LOG_DEBUG
 #include "esp_log.h"
 static const char* TAG = "app_main";

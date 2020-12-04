@@ -22,38 +22,10 @@
 // for changing setpoints on-the-fly
 #define USE_ASYMMETRIC_FULL_SPEED_DRIVE_API
 
-/** @brief Application interface implementation for PS-PWM generator hardware
- *
- * This features the main control functions for PWM frequency, duty cycle etc.
- * 
- * Also, periodic state feedback for all hardware functions is sent to the
- * HTTP remote interface using Server-Sent Events from a FreeRTOS timer task.
- * 
- * Some auxiliary functions like GPIO and temperature readouts is outsourced
- * to the AuxHwDrv class, see aux_hw_drv.hpp.
- * 
- * In more detail:
- * This configures all parameters of a four-channel Phase-Shift PWM waveform
- * plus auxiliary hardware setpoints, relay outputs etc.
- * 
- * With respect to PSPWM module, by default, the symmetric-drive API is used.
- * This allows the setting of two individual dead-time values
- * for the leading and lagging driver output half-bridge-leg
- * and enforces a DC-free symmetric output waveform.
- * 
- * In order to allow four individual dead-time values, i.e. different settings
- * for both outputs of each half-bridge-leg, adjust the defines enabling
- * "USE_ASYMMETRIC_FULL_SPEED_DRIVE_API"
- * 
- * Asymmetric drive allows twice the maximum output frequency by using
- * the hardware dead-time generator module but output is not guaranteed
- * DC-free.
+/** @brief Application configuration and default values
  */
-class PsPwmAppHwControl
+struct PsPwmAppConfig
 {
-public:
-    /************************ DEFAULT VALUES START ************************//**
-     */
     ///////////////////////////// For ps_pwm C module: ////////////////////////
     // MCPWM unit can be [0,1]
     static constexpr mcpwm_unit_t mcpwm_num{MCPWM_UNIT_0};
@@ -73,6 +45,9 @@ public:
     // Lead leg might have a different configuration, e.g. stay at last output level
     static constexpr mcpwm_action_on_pwmxa_t disable_action_lead_leg{MCPWM_FORCE_MCPWMXA_LOW};
 
+    // Default runtime frequency setpoint limits
+    static constexpr float frequency_min{50e3};
+    static constexpr float frequency_max{300e3};
     // Initial frequency setpoint
     static constexpr float init_frequency{100e3};
     // Initial phase-shift setpoint
@@ -93,13 +68,90 @@ public:
      * state updates to the HTTP client using this time interval (ms)
      */
     static constexpr uint32_t api_state_periodic_update_interval_ms{200};
-    /************************* END DEFAULT VALUES *****************************
-     */
+};
 
+/** @brief Application state
+ * 
+ * This is sent asynchronously on state changes to the connected browser clients
+ * updating the view of the application state.
+ * 
+ * This is also stored on SPI flash for persistent configration.
+ * 
+ */
+struct PsPwmAppState
+{
+    // Configuration and initial values for the application state
+    static constexpr PsPwmAppConfig app_conf{};
+    /** ATTENTION!
+     * Following constants need to be adapted if JSON object size is changed!
+     */
+    static constexpr size_t _json_objects_size = JSON_OBJECT_SIZE(22);
+    static constexpr size_t _strings_size = sizeof(
+        "frequency_min_hw""frequency_max_hw""dt_sum_max_hw"
+        "frequency_min""frequency_max"
+        "frequency""duty""lead_dt""lag_dt""power_pwm_active"
+        "current_limit""relay_ref_active""relay_dut_active"
+        "aux_temp""heatsink_temp""fan_active"
+        "base_div""timer_div"
+        "drv_supply_active""drv_disabled"
+        "hw_oc_fault_present""hw_oc_fault_occurred"
+        );
+    // Prevent buffer overflow even if above calculations are wrong...
+    static constexpr size_t I_AM_SCARED_MARGIN = 50;
+    static constexpr size_t json_size = _json_objects_size
+                                        + _strings_size
+                                        + I_AM_SCARED_MARGIN;
+
+    /////////////////////// Runtime state starts here ///////////////////////
     // Zero-Copy values using pointers read from the PSPWM C API
-    pspwm_clk_conf_t* pspwm_clk_conf;
-    pspwm_setpoint_t* pspwm_setpoint;
-    pspwm_setpoint_limits_t* pspwm_setpoint_limits;
+    pspwm_clk_conf_t* pspwm_clk_conf = nullptr;
+    pspwm_setpoint_t* pspwm_setpoint = nullptr;
+    pspwm_setpoint_limits_t* pspwm_setpoint_limits = nullptr;
+    // True when hardware OC shutdown condition is currently present
+    bool hw_oc_fault_present = true;
+    // Hardware Fault Shutdown Status is latched using this flag
+    bool hw_oc_fault_occurred = true;
+    // Runtime user settpoint limits for output frequency
+    float frequency_min = app_conf.frequency_min;
+    float frequency_max = app_conf.frequency_max;
+
+    // State from AuxHwDrv module
+    AuxHwDrv *aux_hw_drv = nullptr;
+
+    /** @brief Application state in JSON format. serialize() before.
+     */
+    char json_buf[json_size];
+
+    /** @brief Serialize application state as a string in JSON format
+     */
+    void serialize();
+
+
+};
+
+/** @brief Application interface implementation for PS-PWM generator hardware
+ *
+ * This features the main control functions for PWM frequency, duty cycle etc.
+ * 
+ * Also, periodic state feedback for all hardware functions is sent to the
+ * HTTP remote interface using Server-Sent Events from a FreeRTOS timer task.
+ * 
+ * Some auxiliary functions like GPIO and temperature readouts is outsourced
+ * to the AuxHwDrv class, see aux_hw_drv.hpp.
+ * 
+ * In more detail:
+ * This configures all parameters of a four-channel Phase-Shift PWM waveform
+ * plus auxiliary hardware setpoints, relay outputs etc.
+ * 
+ */
+class PsPwmAppHwControl
+{
+public:
+    // Configuration and initial values for the application state
+    static constexpr PsPwmAppConfig app_conf{};
+
+    // Runtime state plus JSON serialisation import/export
+    PsPwmAppState state;
 
     // Instance of auxiliary HW control module
     AuxHwDrv aux_hw_drv;
@@ -123,6 +175,9 @@ private:
     // Event timer instance
     //Ticker periodic_update_timer;
     TimerHandle_t periodic_update_timer{NULL};
+
+    // Called from this constructor
+    void _initialize_ps_pwm_drv();
 
     /** Application state is sent as a push update via the SSE event source.
      *  See file: app_hw_control.cpp

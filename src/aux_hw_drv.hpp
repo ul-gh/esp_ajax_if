@@ -110,7 +110,7 @@ public:
     /******************* Setpoints with initial values ********************//**
      * Also public for read-access by PsPwmAppHwControl module
      */
-    float current_limit{0.0};
+    float current_limit{8};
     bool relay_ref_active{false};
     bool relay_dut_active{false};
     float aux_temp{150};

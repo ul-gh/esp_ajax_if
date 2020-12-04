@@ -295,11 +295,19 @@ class ViewUpdater {
         // Operational settings
         this.lag_dt_vw.value = remote_state.lag_dt.toFixed(0);
         this.lead_dt_vw.value = remote_state.lead_dt.toFixed(0);
-        this.current_limit_vw.value = remote_state.current_limit.toFixed(1);
-        this.frequency_number_vw.value = remote_state.frequency.toFixed(1);
+        this.current_limit_vw.value = remote_state.current_limit.toFixed(0);
+        const frequency_min = remote_state.frequency_min.toFixed(0);
+        const frequency_max = remote_state.frequency_max.toFixed(0);
+        this.frequency_min_vw.value = frequency_min;
+        this.frequency_max_vw.value = frequency_max;
+        this.frequency_number_vw.min = frequency_min;
+        this.frequency_range_vw.min = frequency_min;
+        this.frequency_number_vw.max = frequency_max;
+        this.frequency_range_vw.max = frequency_max;
+        this.frequency_number_vw.value = remote_state.frequency.toFixed(0);
         this.duty_number_vw.value = remote_state.duty.toFixed(1);
         if (!this.range_input_updates_inhibited) {
-            this.frequency_range_vw.value = remote_state.frequency.toFixed(1);
+            this.frequency_range_vw.value = remote_state.frequency.toFixed(0);
             this.duty_range_vw.value = remote_state.duty.toFixed(1);
         }
     }

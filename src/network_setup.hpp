@@ -4,6 +4,8 @@
 #include <DNSServer.h>
 #include <ESPAsyncWebServer.h>
 
+#include "network_config.hpp"
+
 // At initilisation phase, wifi stack debug output suppresses serial console
 // output for a certaion time. Setting a small delay here adds to bootup time
 // but enables startup messages from application to appear
