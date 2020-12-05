@@ -37,7 +37,7 @@ static const char* TAG = "app_hw_control.cpp";
 
 
 void PsPwmAppState::serialize() {
-    assert(pspwm_clk_conf && pspwm_setpoint && pspwm_setpoint_limits && aux_hw_drv);
+    assert(pspwm_clk_conf && pspwm_setpoint && pspwm_setpoint_limits && aux_hw_drv_state);
     // ArduinoJson JsonDocument object, see https://arduinojson.org
     StaticJsonDocument<_json_objects_size> json_doc;
     // Setpoint limits from PSPWM hw constraints. Scaled to kHz, ns and % respectively...
@@ -54,19 +54,19 @@ void PsPwmAppState::serialize() {
     json_doc["lag_dt"] = pspwm_setpoint->lag_red*1e9;
     json_doc["power_pwm_active"] = pspwm_setpoint->output_enabled;
     // Settings for auxiliary HW control module
-    json_doc["current_limit"] = aux_hw_drv->current_limit;
-    json_doc["relay_ref_active"] = aux_hw_drv->relay_ref_active;
-    json_doc["relay_dut_active"] = aux_hw_drv->relay_dut_active;
+    json_doc["current_limit"] = aux_hw_drv_state->current_limit;
+    json_doc["relay_ref_active"] = aux_hw_drv_state->relay_ref_active;
+    json_doc["relay_dut_active"] = aux_hw_drv_state->relay_dut_active;
     // Temperatures and fan
-    json_doc["aux_temp"] = aux_hw_drv->aux_temp;
-    json_doc["heatsink_temp"] = aux_hw_drv->heatsink_temp;
-    json_doc["fan_active"] = aux_hw_drv->fan_active;
+    json_doc["aux_temp"] = aux_hw_drv_state->aux_temp;
+    json_doc["heatsink_temp"] = aux_hw_drv_state->heatsink_temp;
+    json_doc["fan_active"] = aux_hw_drv_state->fan_active;
     // Clock divider settings
     json_doc["base_div"] = pspwm_clk_conf->base_clk_prescale;
     json_doc["timer_div"] = pspwm_clk_conf->timer_clk_prescale;
     // Gate driver supply and disable signals
-    json_doc["drv_supply_active"] = aux_hw_drv->drv_supply_active;
-    json_doc["drv_disabled"] = aux_hw_drv->drv_disabled;
+    json_doc["drv_supply_active"] = aux_hw_drv_state->drv_supply_active;
+    json_doc["drv_disabled"] = aux_hw_drv_state->drv_disabled;
     // True when hardware OC shutdown condition is present
     json_doc["hw_oc_fault_present"] = hw_oc_fault_present;
     // Hardware Fault Shutdown Status is latched using this flag
@@ -84,12 +84,12 @@ PsPwmAppHwControl::PsPwmAppHwControl(APIServer* api_server)
     assert(api_server);
     // Reads this.app_conf and sets this.state
     _initialize_ps_pwm_drv();
-    state.aux_hw_drv = &aux_hw_drv;
+    state.aux_hw_drv_state = &aux_hw_drv.state;
 }
 
 PsPwmAppHwControl::~PsPwmAppHwControl() {
-    //periodic_update_timer.detach();
-    xTimerDelete(periodic_update_timer, 0);
+    periodic_update_timer.detach();
+    //xTimerDelete(periodic_update_timer, 0);
 }
 
 void PsPwmAppHwControl::_initialize_ps_pwm_drv() {
@@ -126,26 +126,26 @@ void PsPwmAppHwControl::begin() {
     aux_hw_drv.set_drv_supply_active("true");
 
     register_remote_control(api_server);
-    // This signature is used if the Ticker library timer is used.
-    //periodic_update_timer.attach_ms(api_state_periodic_update_interval_ms,
-    //                                on_periodic_update_timer,
-    //                                this);
-    /* Configure FreeRTOS timer for submitting periodic application state
-     * update telegram via Server-Sent Events
+    /* Configure timer for triggering periodic events
+     * This is used for sending periodic SSE push messages updating the
+     * application state as displayed by the remote clients
      */
-    ESP_LOGD(TAG, "SSE hw_app_state update interval in timer ticks: %d",
-             pdMS_TO_TICKS(app_conf.api_state_periodic_update_interval_ms));
-    periodic_update_timer = xTimerCreate(
-        "SSE state update telegram timer",
-        pdMS_TO_TICKS(app_conf.api_state_periodic_update_interval_ms),
-        pdTRUE,
-        static_cast<void*>(this),
-        on_periodic_update_timer
-    );
-    if (!xTimerStart(periodic_update_timer, pdMS_TO_TICKS(5000))) {
-        ESP_LOGE(TAG, "Error initializing the HW control periodic timer!");
-        abort();
-    }
+    periodic_update_timer.attach_ms(app_conf.api_state_periodic_update_interval_ms,
+                                    _on_periodic_update_timer,
+                                    this);
+    //ESP_LOGD(TAG, "SSE hw_app_state update interval in timer ticks: %d",
+    //         pdMS_TO_TICKS(app_conf.api_state_periodic_update_interval_ms));
+    //periodic_update_timer = xTimerCreate(
+    //    "SSE state update telegram timer",
+    //    pdMS_TO_TICKS(app_conf.api_state_periodic_update_interval_ms),
+    //    pdTRUE,
+    //    static_cast<void*>(this),
+    //    _on_periodic_update_timer
+    //);
+    //if (!xTimerStart(periodic_update_timer, pdMS_TO_TICKS(5000))) {
+    //    ESP_LOGE(TAG, "Error initializing the HW control periodic timer!");
+    //    abort();
+    //}
 }
 
 /* Registers hardware control function callbacks
@@ -278,8 +278,10 @@ void PsPwmAppHwControl::register_remote_control(APIServer* api_server) {
  * is not sufficient and must be increased using ESP-IDF configuration
  * (menuconfig option) for this to work using stack allocation.
  */
-void PsPwmAppHwControl::on_periodic_update_timer(TimerHandle_t xTimer) {
-    auto self = static_cast<PsPwmAppHwControl*>(pvTimerGetTimerID(xTimer));
+void PsPwmAppHwControl::_on_periodic_update_timer(PsPwmAppHwControl *self) {
+    // Variant using FreeRTOS timer
+    //void PsPwmAppHwControl::_on_periodic_update_timer(TimerHandle_t xTimer) {
+    //    auto self = static_cast<PsPwmAppHwControl*>(pvTimerGetTimerID(xTimer));
     assert(self->api_server && self->api_server->event_source);
     // True when hardware OC shutdown condition is present
     self->state.hw_oc_fault_present = pspwm_get_hw_fault_shutdown_present(app_conf.mcpwm_num);

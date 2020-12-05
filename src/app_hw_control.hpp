@@ -6,11 +6,9 @@
 #ifndef APP_HW_CONTROL_HPP__
 #define APP_HW_CONTROL_HPP__
 
-//#include <Ticker.h>
-#include "freertos/FreeRTOS.h"
-#include "freertos/timers.h"
-#include "driver/mcpwm.h"
-#include "driver/gpio.h"
+#include <Ticker.h>
+//#include "freertos/FreeRTOS.h"
+//#include "freertos/timers.h"
 
 #include <ArduinoJson.h>
 
@@ -18,57 +16,12 @@
 #include "aux_hw_drv.hpp"
 #include "api_server.hpp"
 
+#include "app_config.hpp"
+
 // Only the up-counting mode using the hardware dead-band generator is safe
 // for changing setpoints on-the-fly
 #define USE_ASYMMETRIC_FULL_SPEED_DRIVE_API
 
-/** @brief Application configuration and default values
- */
-struct PsPwmAppConfig
-{
-    ///////////////////////////// For ps_pwm C module: ////////////////////////
-    // MCPWM unit can be [0,1]
-    static constexpr mcpwm_unit_t mcpwm_num{MCPWM_UNIT_0};
-    // GPIO config for PWM output
-    static constexpr int gpio_pwm0a_out{27}; // PWM0A := LEAD leg, Low Side
-    static constexpr int gpio_pwm0b_out{26}; // PWM0B := LEAD leg, High Side
-    static constexpr int gpio_pwm1a_out{25}; // PWM1A := LAG leg, Low Side
-    static constexpr int gpio_pwm1b_out{33}; // PWM1B := LAG leg, High Side
-    // Shutdown/fault input for PWM outputs
-    static constexpr int gpio_fault_shutdown{4};
-    // Active low / active high selection for fault input pin
-    static constexpr mcpwm_fault_input_level_t fault_pin_active_level{MCPWM_LOW_LEVEL_TGR};
-    // Define here if the output pins shall be forced low or high
-    // or high-impedance when a fault condition is triggered.
-    // PWMxA and PWMxB have the same type of action, see declaration in mcpwm.h
-    static constexpr mcpwm_action_on_pwmxa_t disable_action_lag_leg{MCPWM_FORCE_MCPWMXA_LOW};
-    // Lead leg might have a different configuration, e.g. stay at last output level
-    static constexpr mcpwm_action_on_pwmxa_t disable_action_lead_leg{MCPWM_FORCE_MCPWMXA_LOW};
-
-    // Default runtime frequency setpoint limits
-    static constexpr float frequency_min{50e3};
-    static constexpr float frequency_max{300e3};
-    // Initial frequency setpoint
-    static constexpr float init_frequency{100e3};
-    // Initial phase-shift setpoint
-    static constexpr float init_ps_duty{0.45};
-    // Initial leading leg dead-time value
-    static constexpr float init_lead_dt{125e-9};
-    // Initial lagging leg dead-time value
-    static constexpr float init_lag_dt{125e-9};
-    // Initial output state should be "false" representing "off"
-    static constexpr bool init_power_pwm_active{false};
-
-    /////////////////////////////  For AUX HW control module: /////////////////
-    // Initial setpoints
-    // ==> See aux_hw_drv.hpp <==
-    
-    /////////////////////////////  For API server /////////////////////////////
-    /** Update non-critical application state and send cyclic
-     * state updates to the HTTP client using this time interval (ms)
-     */
-    static constexpr uint32_t api_state_periodic_update_interval_ms{200};
-};
 
 /** @brief Application state
  * 
@@ -116,7 +69,7 @@ struct PsPwmAppState
     float frequency_max = app_conf.frequency_max;
 
     // State from AuxHwDrv module
-    AuxHwDrv *aux_hw_drv = nullptr;
+    AuxHwDrvState *aux_hw_drv_state = nullptr;
 
     /** @brief Application state in JSON format. serialize() before.
      */
@@ -125,9 +78,8 @@ struct PsPwmAppState
     /** @brief Serialize application state as a string in JSON format
      */
     void serialize();
-
-
 };
+
 
 /** @brief Application interface implementation for PS-PWM generator hardware
  *
@@ -172,9 +124,9 @@ public:
     void register_remote_control(APIServer* api_server);
 
 private:
-    // Event timer instance
-    //Ticker periodic_update_timer;
-    TimerHandle_t periodic_update_timer{NULL};
+    // Timer for periodic events
+    Ticker periodic_update_timer;
+    //TimerHandle_t periodic_update_timer{NULL};
 
     // Called from this constructor
     void _initialize_ps_pwm_drv();
@@ -182,8 +134,9 @@ private:
     /** Application state is sent as a push update via the SSE event source.
      *  See file: app_hw_control.cpp
      */
-    // static void on_periodic_update_timer(PsPwmAppHwControl* self);
-    static void on_periodic_update_timer(TimerHandle_t xTimer);
+    static void _on_periodic_update_timer(PsPwmAppHwControl *self);
+    // Variant for FreeRTOS timer
+    //static void _on_periodic_update_timer(TimerHandle_t xTimer);
 };
 
 #endif

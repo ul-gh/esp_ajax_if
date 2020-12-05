@@ -14,6 +14,8 @@
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
 
+#include "api_server_config.hpp"
+
 // Callback function with string argument
 using CbStringT = std::function<void(const String&)>;
 // Callback function with float argument
@@ -33,6 +35,7 @@ using CmdMapT = std::map<String, CbStringT>;
 // String replacement mapping for template processor
 using TemplateMapT = std::map<String, String>;
 
+
 /** @brief AJAX HTTP API server for ESP-AJAX-Lab
  *
  * Based on ESPAsyncWebServer, see:
@@ -45,6 +48,8 @@ using TemplateMapT = std::map<String, String>;
 class APIServer
 {
 public:
+    // API server configuration
+    static constexpr APIServerConfig srv_conf{};
     // Base ESPAsyncWebServer
     AsyncWebServer* backend;
     // Server-Sent Events (SSE) for "PUSH" updates of application data
@@ -53,6 +58,9 @@ public:
     CmdMapT cmd_map;
     // String replacement mapping for template processor
     TemplateMapT template_map;
+    // Can be polled externally as an alternative to conf_enable_reboot=true
+    bool reboot_requested;
+
     
     APIServer(AsyncWebServer* http_backend);
     ~APIServer();
@@ -94,13 +102,6 @@ public:
 
 
 private:
-    // Polled on timer event 
-    bool _reboot_requested;
-    // Async event timer
-    Ticker _event_timer;
-    // Heartbeat cb is called periodically when conf_sending_heartbeats == true
-    HeartbeatCbT _heartbeat_cb;
-
     /////// Setup functions
     // Add Request URL rewrites to the server instance
     void _add_rewrites();
@@ -133,30 +134,9 @@ private:
     static void _on_upload(AsyncWebServerRequest *request, const String& filename,
         size_t index, uint8_t *data, size_t len, bool final);
 
-    ////// Timer callback
-
-    // Timer update for heartbeats, reboot etc
-    // Static function wraps member function to obtain C API callback
-    static void _on_timer_event(APIServer* self);
-
-    ////// Special functions
-
+    //////
     // Template processor
     String _template_processor(const String& placeholder);
 };
-
-#ifdef __WORK_IN_PROGRESS__
-// Handler for captive portal page, only active when in access point mode.
-// FIXME: WIP
-class CaptiveRequestHandler : public AsyncWebHandler
-{
-public:
-    CaptiveRequestHandler();
-    // virtual ~CaptiveRequestHandler();
-
-    bool canHandle(AsyncWebServerRequest *request);
-    void handleRequest(AsyncWebServerRequest *request);
-}; // class CaptiveRequestHandler
-#endif
 
 #endif /* API_SERVER_HPP__ */

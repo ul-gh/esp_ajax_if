@@ -11,11 +11,7 @@
 #include <FS.h>
 #include "esp_spiffs.h"
 
-// Activate incomplete features..
-//#define WORK_IN_PROGRESS__
-
 #include "api_server.hpp"
-#include "api_server_config.hpp"
 #include "http_content.hpp"
 
 // Local debug level
@@ -28,13 +24,9 @@ static const char* TAG = "APIServer";
 APIServer::APIServer(AsyncWebServer* http_backend)
     : backend{http_backend}
     , event_source{nullptr}
-    , _reboot_requested{false}
-    , _event_timer{}
-    , _heartbeat_cb{}
 {}
 
 APIServer::~APIServer() {
-    _event_timer.detach();
     delete event_source;
 }
 
@@ -42,7 +34,7 @@ APIServer::~APIServer() {
  * This must be called when SPIFFS and Arduino environment is available.
  */
 void APIServer::begin() {
-    if (conf_serve_static_from_spiffs) {
+    if (srv_conf.serve_static_from_spiffs) {
         ESP_LOGD(TAG, "Mounting SPI Flash File System...");
         if (!SPIFFS.begin(false)) {
             ESP_LOGE(TAG, "Error mounting SPI Flash File System!");
@@ -57,17 +49,14 @@ void APIServer::begin() {
     _add_rewrites();
     _add_redirects();
     _add_handlers();
-    if (conf_use_sse) {
+    if (srv_conf.use_sse) {
         _add_event_source();
     }
-    // FIXME: This is even called when no heartbeats are sent, we use the timer
-    // for reboots etc, this is a temporary solution..
-    _event_timer.attach_ms(conf_heartbeat_interval, _on_timer_event, this);
 }
 
 // Set an entry in the template processor string <=> string mapping 
 void APIServer::set_template(const char* placeholder, const char* replacement) {
-    if (!conf_template_processing_activated) {
+    if (!srv_conf.template_processing_activated) {
         ESP_LOGE(TAG, "ERROR: template processing must be activated!");
         return;
     };
@@ -115,14 +104,14 @@ void APIServer::_add_rewrites() {
 // Add Request URL rewrites to the server instance
 void APIServer::_add_redirects() {
     backend->on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
-        request->redirect(conf_index_html_file);
+        request->redirect(srv_conf.index_html_file);
         });
 }
 
 // Add request handlers to the server instance
 void APIServer::_add_handlers() {
     // Route for REST API
-    backend->on(conf_api_endpoint, HTTP_GET, [this](AsyncWebServerRequest *request) {
+    backend->on(srv_conf.api_endpoint, HTTP_GET, [this](AsyncWebServerRequest *request) {
             _on_cmd_request(request);
         });
     // OTA Firmware Upgrade, see form method in data/www/upload.html
@@ -133,11 +122,11 @@ void APIServer::_add_handlers() {
         );
 
     // Serve static HTML and related files content
-    if (conf_serve_static_from_spiffs) {
+    if (srv_conf.serve_static_from_spiffs) {
         auto handler = &backend->serveStatic(
-            conf_static_route, SPIFFS, conf_spiffs_static_files_folder);
-        //handler->setDefaultFile(conf_index_html_file);
-        if (conf_template_processing_activated) {
+            srv_conf.static_route, SPIFFS, srv_conf.spiffs_static_files_folder);
+        //handler->setDefaultFile(srv_conf.index_html_file);
+        if (srv_conf.template_processing_activated) {
             handler->setTemplateProcessor(
                 [this](const String &placeholder) {
                     return _template_processor(placeholder);
@@ -146,10 +135,10 @@ void APIServer::_add_handlers() {
         } else {
             // When no template processing is used, this is assumed to be all
             // static files which do not change and can be cached indefinitely
-            handler->setCacheControl(conf_cache_control);
+            handler->setCacheControl(srv_conf.cache_control);
         }
-        if (conf_http_auth_activated) {
-            handler->setAuthentication(conf_http_user, conf_http_pass);
+        if (srv_conf.http_auth_activated) {
+            handler->setAuthentication(srv_conf.http_user, srv_conf.http_pass);
         }
     } else {
         // Route for main application home page
@@ -159,8 +148,8 @@ void APIServer::_add_handlers() {
     }
 
     backend->onNotFound([](AsyncWebServerRequest *request){
-            request->send_P(404, "text/html", conf_error_404_html);
-            ESP_LOGD(TAG, "%s", conf_error_404_html);
+            request->send_P(404, "text/html", srv_conf.error_404_html);
+            ESP_LOGD(TAG, "%s", srv_conf.error_404_html);
         });
     backend->onFileUpload(_on_upload);
     backend->onRequestBody(_on_body);
@@ -170,9 +159,9 @@ void APIServer::_add_handlers() {
 }
 
 
-// Activate the SSE envent source if conf_use_sse == true
+// Activate the SSE envent source if srv_conf.use_sse == true
 void APIServer::_add_event_source() {
-    event_source = new AsyncEventSource(conf_sse_endpoint);
+    event_source = new AsyncEventSource(srv_conf.sse_endpoint);
     if (event_source) {
         _register_sse_on_connect_callback();
         // HTTP Basic Authentication
@@ -203,9 +192,9 @@ void APIServer::_register_sse_on_connect_callback() {
 
 // on("/")
 void APIServer::_on_root_request(AsyncWebServerRequest *request) {
-    if (!conf_serve_static_from_spiffs) {
+    if (!srv_conf.serve_static_from_spiffs) {
         // Static content is handled by default handler for static content
-        if (conf_template_processing_activated) {
+        if (srv_conf.template_processing_activated) {
             request->send_P(200, "text/html", index_html,
                             [this](const String& placeholder) {
                                 return _template_processor(placeholder);
@@ -239,12 +228,12 @@ void APIServer::_on_cmd_request(AsyncWebServerRequest *request) {
         // Finally call callback
         cmd_callback(value_str);
     }
-    if (conf_api_is_ajax) {
+    if (srv_conf.api_is_ajax) {
         // For AJAX interface: Return a plain string, default is empty string.
-        request->send(200, "text/plain", conf_ajax_return_text);
-    } else if (!conf_serve_static_from_spiffs) {
+        request->send(200, "text/plain", srv_conf.ajax_return_text);
+    } else if (!srv_conf.serve_static_from_spiffs) {
         // Static content is handled by default handler for static content
-        if (conf_template_processing_activated) {
+        if (srv_conf.template_processing_activated) {
             request->send_P(200, "text/html", api_return_html,
                             [this](const String& placeholder) {
                                 return _template_processor(placeholder);
@@ -266,7 +255,10 @@ void APIServer::_on_update_request(AsyncWebServerRequest *request) {
     request->send(response);
     if (update_ok) {
         // If update is OK, we can reboot. If not, this is not a good idea..
-        _reboot_requested = true;
+        reboot_requested = true;
+        if (srv_conf.reboot_enabled) {
+            ESP.restart();
+        }
     }
 }
 // When file is uploaded via POST request
@@ -312,25 +304,8 @@ void APIServer::_on_upload(AsyncWebServerRequest *request, const String& filenam
     //Handle upload
 }
 
-////// Timer callback
 
-// Timer update for heartbeats, reboot etc
-// Static function wraps member function to obtain C API callback
-void APIServer::_on_timer_event(APIServer* self) {
-    // If a callback function object is registered for the heartebat timer
-    // event, this is called first.
-    if (conf_sending_heartbeats && self->event_source != nullptr) {
-        self->event_source->send(conf_heartbeat_message, "heartbeat");
-    }
-    if (self->_reboot_requested) {
-        ESP_LOGD(TAG, "Rebooting...");
-        delay(100);
-        ESP.restart();
-    }
-}
-
-////// Special functions
-
+////////
 // Template processor
 String APIServer::_template_processor(const String& placeholder)
 {
@@ -343,31 +318,3 @@ String APIServer::_template_processor(const String& placeholder)
             return template_map[placeholder];
         }
 }
-
-
-
-#ifdef WORK_IN_PROGRESS__
-/* Handler for captive portal page, only active when in access point mode
-*/
-CaptiveRequestHandler::CaptiveRequestHandler() {}
-// virtual CaptiveRequestHandler::~CaptiveRequestHandler() {}
-
-bool CaptiveRequestHandler::canHandle(AsyncWebServerRequest *request) {
-    //request->addInterestingHeader("ANY");
-    return true;
-}
-
-void CaptiveRequestHandler::handleRequest(AsyncWebServerRequest *request) {
-    AsyncResponseStream *response = request->beginResponseStream("text/html");
-    response->printf(
-            "<!DOCTYPE html><html><head><title>Captive Portal</title></head>"
-            "<body><p>Captive portal front page.</p>"
-            "<p>You were trying to reach: http://%s%s</p>"
-            "<p>Opening <a href='http://%s'>this link</a> instead</p>"
-            "</body></html>",
-            request->host(), request->url(),
-            WiFi.softAPIP().toString()
-    );
-    request->send(response);
-}
-#endif
