@@ -12,7 +12,9 @@
  * U. Lukas 2020-09-27
  */
 #include "FreeRTOS.h"
+#include "freertos/task.h"
 #include "freertos/timers.h"
+#include "freertos/event_groups.h"
 #include "driver/mcpwm.h"
 #include <Arduino.h>
 
@@ -76,6 +78,34 @@ void PsPwmAppState::serialize() {
 }
 
 
+struct Event
+{
+    enum {TIMER_FAST, TIMER_SLOW, STATE_CHANGED, CONFIG_CHANGED};
+    static constexpr EventBits_t timer_fast{1<<TIMER_FAST};
+    static constexpr EventBits_t timer_slow{1<<TIMER_SLOW};
+    static constexpr EventBits_t state_changed{1<<STATE_CHANGED};
+    static constexpr EventBits_t config_changed{1<<CONFIG_CHANGED};
+
+    const EventBits_t value;
+
+    Event(EventBits_t event_bitset)
+        : value{event_bitset}
+    {}
+
+    /** Returns true if event value has all bits set at input bitmask position.
+     * Bitmask values are defined herein.
+     */
+    bool has(EventBits_t bitmask) const {
+        return (value & bitmask) == bitmask;
+    }
+};
+
+
+// FreeRTOS task handle for application event task
+TaskHandle_t PsPwmAppHwControl::_app_event_task_handle;
+// FreeRTOS event group handle for triggering event task actions
+EventGroupHandle_t PsPwmAppHwControl::_app_event_group;
+
 PsPwmAppHwControl::PsPwmAppHwControl(APIServer* api_server)
     :
     // HTTP AJAX API server instance was created before
@@ -85,11 +115,12 @@ PsPwmAppHwControl::PsPwmAppHwControl(APIServer* api_server)
     // Reads this.app_conf and sets this.state
     _initialize_ps_pwm_drv();
     state.aux_hw_drv_state = &aux_hw_drv.state;
+    _create_app_event_task();
 }
 
 PsPwmAppHwControl::~PsPwmAppHwControl() {
-    periodic_update_timer.detach();
-    //xTimerDelete(periodic_update_timer, 0);
+    event_timer.detach();
+    //xTimerDelete(event_timer, 0);
 }
 
 void PsPwmAppHwControl::_initialize_ps_pwm_drv() {
@@ -117,6 +148,21 @@ void PsPwmAppHwControl::_initialize_ps_pwm_drv() {
     }
 }
 
+void PsPwmAppHwControl::_create_app_event_task() {
+    xTaskCreatePinnedToCore(_app_event_task,
+                            "app_event_task", 
+                            app_conf.app_event_task_stack_size,
+                            static_cast<void*>(this),
+                            app_conf.app_event_task_priority,
+                            &_app_event_task_handle,
+                            app_conf.app_event_task_core_id);
+    _app_event_group = xEventGroupCreate();
+    if (!_app_event_task_handle || !_app_event_group) {
+        ESP_LOGE(TAG, "Failed to create application event task or event group!");
+        abort();
+    }
+}
+
 /** Begin operation.
  * This also starts the timer callbacks etc.
  * This will fail if networking etc. is not set up correctly!
@@ -124,34 +170,84 @@ void PsPwmAppHwControl::_initialize_ps_pwm_drv() {
 void PsPwmAppHwControl::begin() {
     ESP_LOGD(TAG, "Activating Gate driver power supply...");
     aux_hw_drv.set_drv_supply_active("true");
-
-    register_remote_control(api_server);
-    /* Configure timer for triggering periodic events
-     * This is used for sending periodic SSE push messages updating the
-     * application state as displayed by the remote clients
-     */
-    periodic_update_timer.attach_ms(app_conf.api_state_periodic_update_interval_ms,
-                                    _on_periodic_update_timer,
-                                    this);
-    //ESP_LOGD(TAG, "SSE hw_app_state update interval in timer ticks: %d",
-    //         pdMS_TO_TICKS(app_conf.api_state_periodic_update_interval_ms));
-    //periodic_update_timer = xTimerCreate(
-    //    "SSE state update telegram timer",
-    //    pdMS_TO_TICKS(app_conf.api_state_periodic_update_interval_ms),
+    _register_remote_control(api_server);
+    // Configure timers triggering periodic events.
+    // Fast events are used for triggering ADC conversion etc.
+    event_timer.attach_ms(
+        app_conf.timer_fast_interval_ms,
+        [](){xEventGroupSetBits(_app_event_group, Event::timer_fast);}
+    );
+    // Slow events are used for sending periodic SSE push messages updating the
+    // application state as displayed by the remote clients
+    event_timer.attach_ms(
+        app_conf.timer_slow_interval_ms,
+        [](){xEventGroupSetBits(_app_event_group, Event::timer_slow);}
+    );
+    // Alternatively use FreeRTOS timer instead of ESP HW timer
+    //event_timer = xTimerCreate(
+    //    "Event timer",
+    //    pdMS_TO_TICKS(app_conf.timer_fast_interval_ms),
     //    pdTRUE,
-    //    static_cast<void*>(this),
-    //    _on_periodic_update_timer
+    //    NULL,
+    //    [](){xEventGroupSetBits(_app_event_group, Event::timer_fast);}
     //);
-    //if (!xTimerStart(periodic_update_timer, pdMS_TO_TICKS(5000))) {
-    //    ESP_LOGE(TAG, "Error initializing the HW control periodic timer!");
+    //if (!xTimerStart(event_timer, pdMS_TO_TICKS(5000))) {
+    //    ESP_LOGE(TAG, "Error initializing the event timer!");
     //    abort();
     //}
 }
 
-/* Registers hardware control function callbacks
- * as request handlers of the HTTP server
+/** AppHwControl application event task
  */
-void PsPwmAppHwControl::register_remote_control(APIServer* api_server) {
+void PsPwmAppHwControl::_app_event_task(void *pVParameters) {
+    auto self = static_cast<PsPwmAppHwControl*>(pVParameters);
+    ESP_LOGD(TAG, "Starting PsPwmAppHwControl event task");
+    // Main application event loop
+    while (true) {
+        const Event event = xEventGroupWaitBits(
+            _app_event_group, 0xFF, pdTRUE, pdFALSE, portMAX_DELAY);
+        if (event.has(Event::timer_slow)) {
+            self->_push_state_update();
+        }
+        if (event.has(Event::state_changed)) {
+            self->_push_state_update();
+        }
+    }
+}
+
+/** Application state is sent as a push update via the SSE event source.
+ *  See file: app_hw_control.cpp
+ */
+void PsPwmAppHwControl::_send_state_changed_event() {
+    xEventGroupSetBits(_app_event_group, Event::state_changed);
+}
+
+/* Send SSE push update to all connected clients.
+ * 
+ * Called periodicly (default once per second) but also asynchronously
+ * on demand when state_change event is received.
+ */
+void PsPwmAppHwControl::_push_state_update() {
+    // Variant using FreeRTOS timer
+    //void PsPwmAppHwControl::_on_periodic_state_update(TimerHandle_t xTimer) {
+    //    auto self = static_cast<PsPwmAppHwControl*>(pvTimerGetTimerID(xTimer));
+    assert(api_server && api_server->event_source);
+    // True when hardware OC shutdown condition is present
+    state.hw_oc_fault_present = pspwm_get_hw_fault_shutdown_present(app_conf.mcpwm_num);
+    // Hardware Fault Shutdown Status is latched using this flag
+    state.hw_oc_fault_occurred = pspwm_get_hw_fault_shutdown_occurred(app_conf.mcpwm_num);
+    // Update temperature sensor values on this occasion
+    aux_hw_drv.update_temperature_sensors();
+
+    // Prepare JSON message for sending
+    state.serialize();
+    api_server->event_source->send(state.json_buf, "hw_app_state");
+}
+
+
+/* Register all application HTTP GET API callbacks into the HTPP server
+ */
+void PsPwmAppHwControl::_register_remote_control(APIServer* api_server) {
     CbVoidT cb_void;
     CbFloatT cb_float;
     CbStringT cb_text;
@@ -160,6 +256,7 @@ void PsPwmAppHwControl::register_remote_control(APIServer* api_server) {
     cb_float = [this](const float n) {
         ESP_LOGD(TAG, "Request for set_frequency_min received with value: %f", n);
         state.frequency_min = n * 1E3;
+        _send_state_changed_event();
     };
     api_server->register_api_cb("set_frequency_min", cb_float);
 
@@ -167,6 +264,7 @@ void PsPwmAppHwControl::register_remote_control(APIServer* api_server) {
     cb_float = [this](const float n) {
         ESP_LOGD(TAG, "Request for set_frequency_max received with value: %f", n);
         state.frequency_max = n * 1E3;
+        _send_state_changed_event();
     };
     api_server->register_api_cb("set_frequency_max", cb_float);
 
@@ -174,6 +272,7 @@ void PsPwmAppHwControl::register_remote_control(APIServer* api_server) {
     cb_float = [this](const float n) {
         state.pspwm_setpoint->frequency = n * 1E3;
         API_CHOICE_SET_FREQUENCY(app_conf.mcpwm_num, state.pspwm_setpoint->frequency);
+        _send_state_changed_event();
     };
     api_server->register_api_cb("set_frequency", cb_float);
 
@@ -181,6 +280,7 @@ void PsPwmAppHwControl::register_remote_control(APIServer* api_server) {
     cb_float = [this](const float n) {
         state.pspwm_setpoint->ps_duty = n / 100;
         API_CHOICE_SET_PS_DUTY(app_conf.mcpwm_num, state.pspwm_setpoint->ps_duty);
+        _send_state_changed_event();
     };
     api_server->register_api_cb("set_duty", cb_float);
 
@@ -190,6 +290,7 @@ void PsPwmAppHwControl::register_remote_control(APIServer* api_server) {
         API_CHOICE_SET_DEADTIMES(app_conf.mcpwm_num,
                                  state.pspwm_setpoint->lead_red,
                                  state.pspwm_setpoint->lag_red);
+    _send_state_changed_event();
     };
     api_server->register_api_cb("set_lag_dt", cb_float);
 
@@ -199,6 +300,7 @@ void PsPwmAppHwControl::register_remote_control(APIServer* api_server) {
         API_CHOICE_SET_DEADTIMES(app_conf.mcpwm_num,
                                  state.pspwm_setpoint->lead_red,
                                  state.pspwm_setpoint->lag_red);
+    _send_state_changed_event();
     };
     api_server->register_api_cb("set_lead_dt", cb_float);
 
@@ -214,6 +316,7 @@ void PsPwmAppHwControl::register_remote_control(APIServer* api_server) {
             // aux_hw_drv.set_drv_disabled(true);
             pspwm_disable_output(app_conf.mcpwm_num);
         }
+    _send_state_changed_event();
     };
     api_server->register_api_cb("set_power_pwm_active", cb_text);
 
@@ -230,10 +333,18 @@ void PsPwmAppHwControl::register_remote_control(APIServer* api_server) {
         //        So this currently does not recognize if error is present or only latched.
         // if (!pspwm_get_hw_fault_shutdown_present(mcpwm_num)) {
         if (true) {
-            aux_hw_drv.reset_oc_detect_shutdown([](){
-                pspwm_clear_hw_fault_shutdown_occurred(app_conf.mcpwm_num);
-                ESP_LOGD(TAG, "External HW latch reset done. Resetting PSPWM SOC latch...");
-                });
+            aux_hw_drv.reset_oc_shutdown_start();
+            event_timer.once_ms(
+                1 * aux_hw_drv.aux_hw_conf.oc_reset_pulse_length_ms,
+                aux_hw_drv.reset_oc_shutdown_finish);
+            event_timer.once_ms(
+                2 * aux_hw_drv.aux_hw_conf.oc_reset_pulse_length_ms,
+                [](){
+                    ESP_LOGD(TAG, "External HW latch reset done. Resetting PSPWM SOC latch...");
+                    pspwm_clear_hw_fault_shutdown_occurred(app_conf.mcpwm_num);
+                    _send_state_changed_event();
+                    }
+                );
         } else {
             ESP_LOGE(TAG, "Will Not Clear: Fault Shutdown Pin Still Active!");
         }
@@ -245,6 +356,7 @@ void PsPwmAppHwControl::register_remote_control(APIServer* api_server) {
     cb_float = [this](const float n) {
         ESP_LOGD(TAG, "Request for set_current_limit received with value: %f", n);
         aux_hw_drv.set_current_limit(n);
+        _send_state_changed_event();
     };
     api_server->register_api_cb("set_current_limit", cb_float);
 
@@ -252,45 +364,21 @@ void PsPwmAppHwControl::register_remote_control(APIServer* api_server) {
     cb_text = [this](const String &text) {
         ESP_LOGD(TAG, "Request for set_relay_ref_active received!");
         aux_hw_drv.set_relay_ref_active(text == "true");
+        _send_state_changed_event();
     };
     api_server->register_api_cb("set_relay_ref_active", cb_text);
 
     // set_relay_dut_active
     cb_text = [this](const String &text) {
         aux_hw_drv.set_relay_dut_active(text == "true");
+        _send_state_changed_event();
     };
     api_server->register_api_cb("set_relay_dut_active", cb_text);
 
     // set_fan_active
     cb_text = [this](const String &text) {
         aux_hw_drv.set_fan_active(text == "true");
+        _send_state_changed_event();
     };
     api_server->register_api_cb("set_fan_active", cb_text);
-}
-
-/* Called periodicly submitting application state to the HTTP client.
- *
- * This static method runs in FreeRTOS timer task.
- * It uses a lot of memory due to string processing.
- * See: https://arduinojson.org/v6/faq/why-does-my-device-crash-or-reboot/
- * 
- * The default stack size when setting up ESP32 platform using Arduino framwork
- * is not sufficient and must be increased using ESP-IDF configuration
- * (menuconfig option) for this to work using stack allocation.
- */
-void PsPwmAppHwControl::_on_periodic_update_timer(PsPwmAppHwControl *self) {
-    // Variant using FreeRTOS timer
-    //void PsPwmAppHwControl::_on_periodic_update_timer(TimerHandle_t xTimer) {
-    //    auto self = static_cast<PsPwmAppHwControl*>(pvTimerGetTimerID(xTimer));
-    assert(self->api_server && self->api_server->event_source);
-    // True when hardware OC shutdown condition is present
-    self->state.hw_oc_fault_present = pspwm_get_hw_fault_shutdown_present(app_conf.mcpwm_num);
-    // Hardware Fault Shutdown Status is latched using this flag
-    self->state.hw_oc_fault_occurred = pspwm_get_hw_fault_shutdown_occurred(app_conf.mcpwm_num);
-    // Update temperature sensor values on this occasion
-    self->aux_hw_drv.update_temperature_sensors();
-
-    // Prepare JSON message for sending
-    self->state.serialize();
-    self->api_server->event_source->send(self->state.json_buf, "hw_app_state");
 }

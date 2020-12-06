@@ -120,23 +120,40 @@ public:
      */
     void begin();
 
-    // Register hw control functions as request handlers with the HTPP server
-    void register_remote_control(APIServer* api_server);
-
 private:
+    // FreeRTOS task handle for application event task
+    static TaskHandle_t _app_event_task_handle;
+    // FreeRTOS event group handle for triggering event task actions
+    static EventGroupHandle_t _app_event_group;
+
     // Timer for periodic events
-    Ticker periodic_update_timer;
-    //TimerHandle_t periodic_update_timer{NULL};
+    Ticker event_timer;
+    //TimerHandle_t event_timer{NULL};
 
     // Called from this constructor
     void _initialize_ps_pwm_drv();
 
+    /** Creates main application event task.
+     * This has 4096k stack size for String processing requirements etc.
+     */
+    void _create_app_event_task();
+
+    /** @brief Application event loop task.
+     */
+    static void _app_event_task(void *pVParameters);
+
+    // Called when app state is changed and triggers the respective event.
+    // Used for sending push updates to the clients.
+    static void _send_state_changed_event();
+
     /** Application state is sent as a push update via the SSE event source.
      *  See file: app_hw_control.cpp
      */
-    static void _on_periodic_update_timer(PsPwmAppHwControl *self);
-    // Variant for FreeRTOS timer
-    //static void _on_periodic_update_timer(TimerHandle_t xTimer);
+    void _push_state_update();
+
+    /** Register all application HTTP GET API callbacks into the HTPP server
+     */
+    void _register_remote_control(APIServer* api_server);
 };
 
 #endif

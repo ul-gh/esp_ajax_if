@@ -9,6 +9,21 @@
  */
 struct PsPwmAppConfig
 {
+    //////////////////////// For AppHwControl application /////////////////////
+    // App state serialization using the ArduionJSON module takes a lot of it
+    uint32_t app_event_task_stack_size{4096};
+    // Arduino loop task has 1; async_tcp task has 3.
+    // Assuming 2 is a good choice in-between..
+    UBaseType_t app_event_task_priority{2};
+    // PRO_CPU_NUM == 1; APP_CPU_NUM == 0 on ESP32
+    BaseType_t app_event_task_core_id{APP_CPU_NUM};
+    // Fast timer for ADC conversion triggering etc
+    uint32_t timer_fast_interval_ms{50};
+    /** Update non-critical application state and send cyclic
+     * state updates to the HTTP client using this time interval (ms)
+     */
+    uint32_t timer_slow_interval_ms{1000};
+
     ///////////////////////////// For ps_pwm C module: ////////////////////////
     // MCPWM unit can be [0,1]
     mcpwm_unit_t mcpwm_num{MCPWM_UNIT_0};
@@ -41,16 +56,6 @@ struct PsPwmAppConfig
     float init_lag_dt{125e-9};
     // Initial output state should be "false" representing "off"
     bool init_power_pwm_active{false};
-
-    /////////////////////////////  For AUX HW control module: /////////////////
-    // Initial setpoints
-    // ==> See aux_hw_drv.hpp <==
-    
-    /////////////////////////////  For API server /////////////////////////////
-    /** Update non-critical application state and send cyclic
-     * state updates to the HTTP client using this time interval (ms)
-     */
-    uint32_t api_state_periodic_update_interval_ms{200};
 };
 
 

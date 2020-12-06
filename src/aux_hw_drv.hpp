@@ -43,14 +43,13 @@ public:
     void set_fan_active(bool state);
     void set_drv_supply_active(bool state);
     void set_drv_disabled(bool state);
-    void reset_oc_detect_shutdown(void (*callback)(void));
+    static void reset_oc_shutdown_start();
+    static void reset_oc_shutdown_finish();
     void update_temperature_sensors();
 
 
 private:
-    TimerHandle_t oc_reset_oneshot_timer{NULL};
-    void (*oc_reset_callback)(void);
-    static void oc_reset_terminate_pulse(TimerHandle_t xTimer);
+
 };
 
 #endif
