@@ -240,7 +240,7 @@ void AppController::_register_http_api(APIServer* api_server) {
             aux_hw_drv.reset_oc_shutdown_start();
             oc_reset_timer.attach_multiple_ms(
                 aux_hw_drv.aux_hw_conf.oc_reset_pulse_length_ms,
-                (uint32_t) 2,
+                2,
                 [](AppController* self, uint32_t repeat_count){
                     if (repeat_count == 1) {
                         self->aux_hw_drv.reset_oc_shutdown_finish();
