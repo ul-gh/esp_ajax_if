@@ -9,7 +9,7 @@
  * to the AuxHwDrv class, see aux_hw_drv.cpp.
  * 
  * License: GPL v.3 
- * U. Lukas 2020-09-27
+ * U. Lukas 2020-12-07
  */
 #include "FreeRTOS.h"
 #include "freertos/task.h"
@@ -238,7 +238,7 @@ void AppController::_register_http_api(APIServer* api_server) {
         // if (!pspwm_get_hw_fault_shutdown_present(mcpwm_num)) {
         if (true) {
             aux_hw_drv.reset_oc_shutdown_start();
-            oc_reset_timer.attach_multiple_ms(
+            oc_reset_timer.attach_multitimer_ms(
                 aux_hw_drv.aux_hw_conf.oc_reset_pulse_length_ms,
                 2,
                 [](AppController* self, uint32_t repeat_count){
