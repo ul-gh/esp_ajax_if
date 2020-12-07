@@ -79,8 +79,10 @@ AppController::AppController(APIServer* api_server)
 }
 
 AppController::~AppController() {
-    event_timer.detach();
-    //xTimerDelete(event_timer, 0);
+    event_timer_fast.detach();
+    event_timer_slow.detach();
+    oc_reset_timer.detach();
+    power_output_timer.detach();
 }
 
 /** Begin operation.
@@ -93,28 +95,16 @@ void AppController::begin() {
     _register_http_api(api_server);
     // Configure timers triggering periodic events.
     // Fast events are used for triggering ADC conversion etc.
-    event_timer.attach_ms(
+    event_timer_fast.attach_ms(
         app_conf.timer_fast_interval_ms,
         [](){xEventGroupSetBits(_app_event_group, EventFlags::timer_fast);}
     );
     // Slow events are used for sending periodic SSE push messages updating the
     // application state as displayed by the remote clients
-    event_timer.attach_ms(
+    event_timer_slow.attach_ms(
         app_conf.timer_slow_interval_ms,
         [](){xEventGroupSetBits(_app_event_group, EventFlags::timer_slow);}
     );
-    // Alternatively use FreeRTOS timer instead of ESP HW timer
-    //event_timer = xTimerCreate(
-    //    "Event timer",
-    //    pdMS_TO_TICKS(app_conf.timer_fast_interval_ms),
-    //    pdTRUE,
-    //    NULL,
-    //    [](){xEventGroupSetBits(_app_event_group, EventFlags::timer_fast);}
-    //);
-    //if (!xTimerStart(event_timer, pdMS_TO_TICKS(5000))) {
-    //    ESP_LOGE(TAG, "Error initializing the event timer!");
-    //    abort();
-    //}
 }
 
 /////////// Setup functions called from this constructor //////
@@ -248,17 +238,19 @@ void AppController::_register_http_api(APIServer* api_server) {
         // if (!pspwm_get_hw_fault_shutdown_present(mcpwm_num)) {
         if (true) {
             aux_hw_drv.reset_oc_shutdown_start();
-            event_timer.once_ms(
-                1 * aux_hw_drv.aux_hw_conf.oc_reset_pulse_length_ms,
-                aux_hw_drv.reset_oc_shutdown_finish);
-            event_timer.once_ms(
-                2 * aux_hw_drv.aux_hw_conf.oc_reset_pulse_length_ms,
-                [](){
-                    ESP_LOGD(TAG, "External HW latch reset done. Resetting PSPWM SOC latch...");
-                    pspwm_clear_hw_fault_shutdown_occurred(app_conf.mcpwm_num);
-                    _send_state_changed_event();
+            oc_reset_timer.attach_multiple_ms(
+                aux_hw_drv.aux_hw_conf.oc_reset_pulse_length_ms,
+                (uint32_t) 2,
+                [](AppController* self, uint32_t repeat_count){
+                    if (repeat_count == 1) {
+                        self->aux_hw_drv.reset_oc_shutdown_finish();
+                    } else if (repeat_count == 2) {
+                        ESP_LOGD(TAG, "External HW latch reset done. Resetting PSPWM SOC latch...");
+                        pspwm_clear_hw_fault_shutdown_occurred(self->app_conf.mcpwm_num);
+                        self->_send_state_changed_event();
                     }
-                );
+                },
+                this);
         } else {
             ESP_LOGE(TAG, "Will Not Clear: Fault Shutdown Pin Still Active!");
         }
@@ -344,9 +336,6 @@ void AppController::_send_state_changed_event() {
  * on demand when state_change event is received.
  */
 void AppController::_push_state_update() {
-    // Variant using FreeRTOS timer
-    //void AppController::_on_periodic_state_update(TimerHandle_t xTimer) {
-    //    auto self = static_cast<AppController*>(pvTimerGetTimerID(xTimer));
     assert(api_server && api_server->event_source);
     // Prepare JSON message for sending
     state.serialize_data();

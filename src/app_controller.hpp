@@ -15,6 +15,7 @@
 #include "ps_pwm.h"
 #include "aux_hw_drv.hpp"
 #include "api_server.hpp"
+#include "multi_timer.hpp"
 
 #include "app_config.hpp"
 
@@ -155,8 +156,12 @@ private:
     // FreeRTOS event group handle for triggering event task actions
     static EventGroupHandle_t _app_event_group;
     // Timer for periodic events
-    Ticker event_timer;
-    //TimerHandle_t event_timer{NULL};
+    Ticker event_timer_fast;
+    Ticker event_timer_slow;
+    // Timer for generating overcurrent reset pulse
+    MultiTimer oc_reset_timer;
+    // Timer for power output timing
+    MultiTimer power_output_timer;
 
     /////////// Setup functions called from this constructor //////
     

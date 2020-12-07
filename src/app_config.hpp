@@ -131,7 +131,7 @@ struct AuxHwDrvConfig
 
     // Overcurrent reset output pulse length. Must be at least equal to
     // FreeRTOS scheduler tick period.
-    static constexpr int oc_reset_pulse_length_ms{10};
+    static constexpr uint32_t oc_reset_pulse_length_ms{20};
 
     // Calibration values for current limit PWM
     static constexpr float curr_limit_pwm_scale = 1.0/100 * (
