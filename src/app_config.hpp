@@ -5,9 +5,9 @@
 #include "driver/gpio.h"
 #include "driver/ledc.h"
 
-/** @brief Application configuration and default values for PsPwmAppHwControl
+/** @brief Application configuration and default values for class AppController
  */
-struct PsPwmAppConfig
+struct AppConfig
 {
     //////////////////////// For AppHwControl application /////////////////////
     // App state serialization using the ArduionJSON module takes a lot of it

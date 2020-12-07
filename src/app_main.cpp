@@ -25,15 +25,17 @@
 
 #include "network_setup.hpp"
 #include "api_server.hpp"
-#include "app_hw_control.hpp"
+#include "app_controller.hpp"
 
 #define LOG_LOCAL_LEVEL ESP_LOG_DEBUG
 #include "esp_log.h"
 static const char* TAG = "app_main";
 
-const NetworkConfig net_conf;
-
+static NetworkConfig net_conf;
 constexpr unsigned long serial_baudrate = 115200;
+
+void update_debug_messages();
+void print_debug_messages();
 
 // Without name resolution, Windows and browser clients spam the server with
 // failing DNS queries. Also this is used by the WiFi Manager and portal page.
@@ -45,11 +47,12 @@ AsyncWebServer http_backend{net_conf.http_tcp_port};
 // HTTP server provides REST API + HTML5 AJAX web interface on port 80
 APIServer api_server{&http_backend};
 
-// PS-PWM hardware controller instance registers into the AJAX API server
-PsPwmAppHwControl ps_pwm_controller{&api_server};
+// Application main controller.
+//
+// This registers the HTTP API callbacks, timer and interrupt handlers
+// and runs the application event loop in a separate FreeRTOS task.
+AppController app_controller{&api_server};
 
-void update_debug_messages();
-void print_debug_messages();
 
 void setup() {
     esp_log_level_set("*", ESP_LOG_DEBUG);
@@ -66,7 +69,7 @@ void setup() {
      * This also starts the timer callbacks etc.
      * This will fail if networking etc. is not set up correctly!
      */
-    ps_pwm_controller.begin();
+    app_controller.begin();
 }
 
 void loop() {

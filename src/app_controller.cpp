@@ -19,11 +19,11 @@
 #include <Arduino.h>
 
 #include "ps_pwm.h"
-#include "app_hw_control.hpp"
+#include "app_controller.hpp"
 
 #define LOG_LOCAL_LEVEL ESP_LOG_DEBUG
 #include "esp_log.h"
-static const char* TAG = "app_hw_control.cpp";
+static const char* TAG = "app_controller.cpp";
 
 #ifdef USE_ASYMMETRIC_FULL_SPEED_DRIVE_API
 #define API_CHOICE_INIT pspwm_up_ctr_mode_init_compat
@@ -36,46 +36,6 @@ static const char* TAG = "app_hw_control.cpp";
 #define API_CHOICE_SET_PS_DUTY pspwm_up_down_ctr_mode_set_ps_duty
 #define API_CHOICE_SET_DEADTIMES pspwm_up_down_ctr_mode_set_deadtimes
 #endif
-
-
-void PsPwmAppState::serialize() {
-    assert(pspwm_clk_conf && pspwm_setpoint && pspwm_setpoint_limits && aux_hw_drv_state);
-    // ArduinoJson JsonDocument object, see https://arduinojson.org
-    StaticJsonDocument<_json_objects_size> json_doc;
-    // Setpoint limits from PSPWM hw constraints. Scaled to kHz, ns and % respectively...
-    json_doc["frequency_min_hw"] = pspwm_setpoint_limits->frequency_min/1e3;
-    json_doc["frequency_max_hw"] = pspwm_setpoint_limits->frequency_max/1e3;
-    json_doc["dt_sum_max_hw"] = pspwm_setpoint_limits->dt_sum_max*1e9;
-    // Runtime user setpoint limits for output frequency
-    json_doc["frequency_min"] = frequency_min/1e3;
-    json_doc["frequency_max"] = frequency_max/1e3;
-    // Operational setpoints for PSPWM module
-    json_doc["frequency"] = pspwm_setpoint->frequency/1e3;
-    json_doc["duty"] = pspwm_setpoint->ps_duty*100;
-    json_doc["lead_dt"] = pspwm_setpoint->lead_red*1e9;
-    json_doc["lag_dt"] = pspwm_setpoint->lag_red*1e9;
-    json_doc["power_pwm_active"] = pspwm_setpoint->output_enabled;
-    // Settings for auxiliary HW control module
-    json_doc["current_limit"] = aux_hw_drv_state->current_limit;
-    json_doc["relay_ref_active"] = aux_hw_drv_state->relay_ref_active;
-    json_doc["relay_dut_active"] = aux_hw_drv_state->relay_dut_active;
-    // Temperatures and fan
-    json_doc["aux_temp"] = aux_hw_drv_state->aux_temp;
-    json_doc["heatsink_temp"] = aux_hw_drv_state->heatsink_temp;
-    json_doc["fan_active"] = aux_hw_drv_state->fan_active;
-    // Clock divider settings
-    json_doc["base_div"] = pspwm_clk_conf->base_clk_prescale;
-    json_doc["timer_div"] = pspwm_clk_conf->timer_clk_prescale;
-    // Gate driver supply and disable signals
-    json_doc["drv_supply_active"] = aux_hw_drv_state->drv_supply_active;
-    json_doc["drv_disabled"] = aux_hw_drv_state->drv_disabled;
-    // True when hardware OC shutdown condition is present
-    json_doc["hw_oc_fault_present"] = hw_oc_fault_present;
-    // Hardware Fault Shutdown Status is latched using this flag
-    json_doc["hw_oc_fault_occurred"] = hw_oc_fault_occurred;
-    // Do the serialization
-    serializeJson(json_doc, json_buf);
-}
 
 
 struct EventFlags
@@ -102,11 +62,11 @@ struct EventFlags
 
 
 // FreeRTOS task handle for application event task
-TaskHandle_t PsPwmAppHwControl::_app_event_task_handle;
+TaskHandle_t AppController::_app_event_task_handle;
 // FreeRTOS event group handle for triggering event task actions
-EventGroupHandle_t PsPwmAppHwControl::_app_event_group;
+EventGroupHandle_t AppController::_app_event_group;
 
-PsPwmAppHwControl::PsPwmAppHwControl(APIServer* api_server)
+AppController::AppController(APIServer* api_server)
     :
     // HTTP AJAX API server instance was created before
     api_server{api_server}
@@ -118,7 +78,7 @@ PsPwmAppHwControl::PsPwmAppHwControl(APIServer* api_server)
     _create_app_event_task();
 }
 
-PsPwmAppHwControl::~PsPwmAppHwControl() {
+AppController::~AppController() {
     event_timer.detach();
     //xTimerDelete(event_timer, 0);
 }
@@ -127,10 +87,10 @@ PsPwmAppHwControl::~PsPwmAppHwControl() {
  * This also starts the timer callbacks etc.
  * This will fail if networking etc. is not set up correctly!
  */
-void PsPwmAppHwControl::begin() {
+void AppController::begin() {
     ESP_LOGD(TAG, "Activating Gate driver power supply...");
     aux_hw_drv.set_drv_supply_active("true");
-    _register_remote_control(api_server);
+    _register_http_api(api_server);
     // Configure timers triggering periodic events.
     // Fast events are used for triggering ADC conversion etc.
     event_timer.attach_ms(
@@ -159,7 +119,7 @@ void PsPwmAppHwControl::begin() {
 
 /////////// Setup functions called from this constructor //////
 
-void PsPwmAppHwControl::_initialize_ps_pwm_drv() {
+void AppController::_initialize_ps_pwm_drv() {
     ESP_LOGI(TAG, "Configuring Phase-Shift-PWM...");
     esp_err_t errors = API_CHOICE_INIT(
         app_conf.mcpwm_num,
@@ -184,7 +144,7 @@ void PsPwmAppHwControl::_initialize_ps_pwm_drv() {
     }
 }
 
-void PsPwmAppHwControl::_create_app_event_task() {
+void AppController::_create_app_event_task() {
     xTaskCreatePinnedToCore(_app_event_task,
                             "app_event_task", 
                             app_conf.app_event_task_stack_size,
@@ -201,7 +161,7 @@ void PsPwmAppHwControl::_create_app_event_task() {
 
 /* Register all application HTTP GET API callbacks into the HTPP server
  */
-void PsPwmAppHwControl::_register_remote_control(APIServer* api_server) {
+void AppController::_register_http_api(APIServer* api_server) {
     CbVoidT cb_void;
     CbFloatT cb_float;
     CbStringT cb_text;
@@ -341,9 +301,9 @@ void PsPwmAppHwControl::_register_remote_control(APIServer* api_server) {
 
 /** AppHwControl application event task
  */
-void PsPwmAppHwControl::_app_event_task(void *pVParameters) {
-    auto self = static_cast<PsPwmAppHwControl*>(pVParameters);
-    ESP_LOGD(TAG, "Starting PsPwmAppHwControl event task");
+void AppController::_app_event_task(void *pVParameters) {
+    auto self = static_cast<AppController*>(pVParameters);
+    ESP_LOGD(TAG, "Starting AppController event task");
     // Main application event loop
     while (true) {
         const EventFlags flags = xEventGroupWaitBits(
@@ -363,7 +323,7 @@ void PsPwmAppHwControl::_app_event_task(void *pVParameters) {
 /** Update all application state settings which need fast polling.
  * This is e.g. ADC conversion and HW overcurrent detection handling
  */
-void PsPwmAppHwControl::_on_fast_timer_event_update_state() {
+void AppController::_on_fast_timer_event_update_state() {
     // True when hardware OC shutdown condition is present
     state.hw_oc_fault_present = pspwm_get_hw_fault_shutdown_present(app_conf.mcpwm_num);
     // Hardware Fault Shutdown Status is latched using this flag
@@ -373,9 +333,8 @@ void PsPwmAppHwControl::_on_fast_timer_event_update_state() {
 }
 
 /** Application state is sent as a push update via the SSE event source.
- *  See file: app_hw_control.cpp
  */
-void PsPwmAppHwControl::_send_state_changed_event() {
+void AppController::_send_state_changed_event() {
     xEventGroupSetBits(_app_event_group, EventFlags::state_changed);
 }
 
@@ -384,12 +343,12 @@ void PsPwmAppHwControl::_send_state_changed_event() {
  * Called periodicly (default once per second) but also asynchronously
  * on demand when state_change event is received.
  */
-void PsPwmAppHwControl::_push_state_update() {
+void AppController::_push_state_update() {
     // Variant using FreeRTOS timer
-    //void PsPwmAppHwControl::_on_periodic_state_update(TimerHandle_t xTimer) {
-    //    auto self = static_cast<PsPwmAppHwControl*>(pvTimerGetTimerID(xTimer));
+    //void AppController::_on_periodic_state_update(TimerHandle_t xTimer) {
+    //    auto self = static_cast<AppController*>(pvTimerGetTimerID(xTimer));
     assert(api_server && api_server->event_source);
     // Prepare JSON message for sending
-    state.serialize();
-    api_server->event_source->send(state.json_buf, "hw_app_state");
+    state.serialize_data();
+    api_server->event_source->send(state.json_buf_data, "hw_app_state");
 }

@@ -8,13 +8,11 @@
  */
 #include <Update.h>
 #include <SPIFFS.h>
-#include <FS.h>
 #include "esp_spiffs.h"
 
 #include "api_server.hpp"
 #include "http_content.hpp"
 
-// Local debug level
 #define LOG_LOCAL_LEVEL ESP_LOG_DEBUG
 #include "esp_log.h"
 static const char* TAG = "APIServer";

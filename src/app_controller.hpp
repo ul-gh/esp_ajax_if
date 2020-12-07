@@ -23,18 +23,18 @@
 #define USE_ASYMMETRIC_FULL_SPEED_DRIVE_API
 
 
-/** @brief Application state
+/** @brief Application state containing data and settings model
  * 
- * This is sent asynchronously on state changes to the connected browser clients
- * updating the view of the application state.
+ * Live data is kept here and and can be serialised to be sent to the
+ * connected remote clients.
  * 
- * This is also stored on SPI flash for persistent configration.
- * 
+ * Runtime user configurable settings can be serialised and stored to file
+ * or read back from file and restored into this instance.
  */
 struct PsPwmAppState
 {
     // Configuration and initial values for the application state
-    static constexpr PsPwmAppConfig app_conf{};
+    static constexpr AppConfig app_conf{};
     /** ATTENTION!
      * Following constants need to be adapted if JSON object size is changed!
      */
@@ -71,17 +71,44 @@ struct PsPwmAppState
     // State from AuxHwDrv module
     AuxHwDrvState *aux_hw_drv_state = nullptr;
 
-    /** @brief Application state in JSON format. serialize() before.
+    /** @brief Application live data state in JSON format.
+     * 
+     * You must call serialize_data() before using the content.
      */
-    char json_buf[json_size];
+    char json_buf_data[json_size];
 
-    /** @brief Serialize application state as a string in JSON format
+    /** @brief Application runtime configurable settings in JSON format.
+     * 
+     * You must call serialize_settings() before using the content.
      */
-    void serialize();
+    char json_buf_settings[json_size];
+
+    /** @brief Serialize application live data into json_buf_data
+     */
+    void serialize_data();
+
+    /** @brief Serialize application runtime configurable settings into json_buf
+     */
+    void serialize_settings();
+
+    /** @brief Restore application runtime configurable settings
+     * from json_buf_settings back into this instance.
+     */
+    void deserialize_settings();
+
+    /** @brief Write application runtime configurable settings as JSON to SPIFFs file.
+     */
+    bool save_to_file(const char *filename);
+
+    /** @brief Restore application runtime configurable settings
+     * from SPIFFs file back into this instance.
+     */
+    bool restore_from_file(const char *filename);
+
 };
 
 
-/** @brief Application interface implementation for PS-PWM generator hardware
+/** @brief Application main controller for PS-PWM generator hardware
  *
  * This features the main control functions for PWM frequency, duty cycle etc.
  * 
@@ -96,12 +123,13 @@ struct PsPwmAppState
  * plus auxiliary hardware setpoints, relay outputs etc.
  * 
  */
-class PsPwmAppHwControl
+
+class AppController
 {
 public:
     /** @brief Configuration and initial values for the application state
      */
-    static constexpr PsPwmAppConfig app_conf{};
+    static constexpr AppConfig app_conf{};
 
     // Runtime state plus JSON serialisation import/export
     PsPwmAppState state;
@@ -112,8 +140,8 @@ public:
     // Instance of HTTP API server. There must only be one.
     APIServer* api_server;
 
-    PsPwmAppHwControl(APIServer* api_server);
-    virtual ~PsPwmAppHwControl();
+    AppController(APIServer* api_server);
+    virtual ~AppController();
 
     /** @brief Begin operation.
      * This also starts the timer callbacks etc.
@@ -140,7 +168,7 @@ private:
 
     /** @brief Register all application HTTP GET API callbacks into the HTPP server
      */
-    void _register_remote_control(APIServer* api_server);
+    void _register_http_api(APIServer* api_server);
 
     //////////// Application task related functions ///////////
     
