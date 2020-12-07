@@ -570,21 +570,21 @@ bool pspwm_get_hw_fault_shutdown_present(mcpwm_unit_t mcpwm_num) {
 
 bool pspwm_get_hw_fault_shutdown_occurred(mcpwm_unit_t mcpwm_num) {
     bool status;
-    portENTER_CRITICAL(&mcpwm_spinlock);
+    //portENTER_CRITICAL(&mcpwm_spinlock);
     // Register 16.58: PWM_FAULT_DETECT_REG (0x00e4)
     //status = (bool)MCPWM[mcpwm_num]->fault_detect.event_f0;
     // Register 16.29: PWM_FH0_STATUS_REG (0x0070)
     //status = (bool)MCPWM[mcpwm_num]->channel[MCPWM_TIMER_0].tz_status.ost_on;
     // Use flag set by ISR
     status = ost_fault_event_occurred[mcpwm_num];
-    portEXIT_CRITICAL(&mcpwm_spinlock);
+    //portEXIT_CRITICAL(&mcpwm_spinlock);
     return status;
 }
 
 void pspwm_clear_hw_fault_shutdown_occurred(mcpwm_unit_t mcpwm_num) {
-    portENTER_CRITICAL(&mcpwm_spinlock);
+    //portENTER_CRITICAL(&mcpwm_spinlock);
     ost_fault_event_occurred[mcpwm_num] = false;
-    portEXIT_CRITICAL(&mcpwm_spinlock);
+    //portEXIT_CRITICAL(&mcpwm_spinlock);
 }
 
 esp_err_t pspwm_disable_output(mcpwm_unit_t mcpwm_num)

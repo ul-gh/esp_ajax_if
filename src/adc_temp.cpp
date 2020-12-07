@@ -45,26 +45,29 @@ void AdcTemp::adc_init_test_capabilities(void) {
     print_characterisation_val_type(val_type);
 }
 
-/** Perform complete readout of temp_ch_aux
- * This uses the LUT for value conversion.
+/* Perform complete readout of temp_ch_aux
+ * This does a recursive moving average over N=moving_average_filter_len values
+ * and uses the LUT for conversion of voltage readings to degrees celsius.
  */
 float AdcTemp::get_aux_temp() {
-    uint16_t adc_raw_filtered = adc_sample(temp_ch_aux);
-    return get_kty_temp_pwl(adc_raw_filtered);
+    uint16_t adc_raw = adc_sample(temp_ch_aux);
+    return get_kty_temp_pwl(moving_average<moving_average_filter_len>(adc_raw));
 }
 
-/** Perform complete readout of temp_ch_heatsink
- * This uses the LUT for value conversion.
+/* Perform complete readout of temp_ch_heatsink
+ * This does a recursive moving average over N=moving_average_filter_len values
+ * and uses the LUT for conversion of voltage readings to degrees celsius.
  */
 float AdcTemp::get_heatsink_temp() {
-    uint16_t adc_raw_filtered = adc_sample(temp_ch_heatsink);
-    return get_kty_temp_pwl(adc_raw_filtered);
+    uint16_t adc_raw = adc_sample(temp_ch_heatsink);
+    return get_kty_temp_pwl(moving_average<moving_average_filter_len>(adc_raw));
 }
 
 /***************** Helper and debug functions ***************************
  ************************************************************************/
 
-/** Get raw ADC channel conversion value, for debugging and calibration
+/* Get raw ADC channel conversion value, repeats sampling
+ * a number of times: "oversampling_ratio".
  */
 uint16_t AdcTemp::adc_sample(adc1_channel_t channel) {
     uint32_t adc_reading = 0;
@@ -73,14 +76,14 @@ uint16_t AdcTemp::adc_sample(adc1_channel_t channel) {
         adc_reading += adc1_get_raw(channel);
     }
     adc_reading /= oversampling_ratio;
-
     //debug_print_sv("Raw ADC value:", adc_reading);
     //debug_print_sv("Fuse calibrated ADC conversion yields input voltage /mv:",
     //               esp_adc_cal_raw_to_voltage(adc_reading, adc_cal_characteristics));
     return static_cast<uint16_t>(adc_reading);
 }
 
-/** Piecewise linear interpolation of look-up-table (LUT) values
+
+/* Piecewise linear interpolation of look-up-table (LUT) values
  * representing function values starting with Y(X=in_fsr_lower)
  * and ending with Y(X=in_fsr_upper). Y-values of the LUT must
  * correspond to equidistant X-axis points.

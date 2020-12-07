@@ -92,6 +92,7 @@ namespace AdcTemp {
     ////////// ADC hardware initialisation constants
     static constexpr uint32_t default_vref{1100};
     static constexpr uint16_t oversampling_ratio{64};
+    static constexpr uint16_t moving_average_filter_len{16};
     static constexpr adc_bits_width_t bit_width = ADC_WIDTH_BIT_12;
     /** @brief Suggested ADC input voltage Range for ESP32 using ADC_ATTEN_DB_6
      * is 150 ~ 1750 millivolts according to the SDK documentation for function
@@ -110,12 +111,14 @@ namespace AdcTemp {
     void adc_init_test_capabilities(void);
 
     /** @brief Perform complete readout of temp_ch_aux
-     * This uses the LUT for value conversion.
+     * This does a recursive moving average over N values
+     * and uses the LUT for conversion of voltage readings to degrees celsius.
      */
     float get_aux_temp();
 
-    /** @brief Perform complete readout of temp_ch_heatsink
-     * This uses the LUT for value conversion.
+    /** @brief Perform complete readout of temp_ch_aux
+     * This does a recursive moving average over N values
+     * and uses the LUT for conversion of voltage readings to degrees celsius.
      */
     float get_heatsink_temp();
 
@@ -123,11 +126,35 @@ namespace AdcTemp {
      * Helper and debug functions
      */
 
-    /** Get raw ADC channel conversion value, for debugging and calibration
+    /** @brief Get raw ADC channel conversion value, repeats sampling
+     * a number of times: "oversampling_ratio".
      */
     uint16_t adc_sample(adc1_channel_t channel);
 
-    /** Piecewise linear interpolation of look-up-table (LUT) values
+    /** @brief Does a recursive moving average over N adc_samples.
+     * 
+     * Attention: The output is initialized with the very first input value,
+     * so the first N-1 values are not really filtered!
+     * 
+     * Filter length must be power of two and a default limit is set at 1024.
+     */
+    template <size_t N>
+    uint16_t moving_average(uint16_t value_in) {
+        // 1024 is somehow arbitrary, but we have memory and time constraints.
+        // Also checks if N is power of two.
+        static_assert(N <= 1024 && (N & (N-1)) == 0);
+        static size_t current_index{0};
+        // Static initialization of all array elements using very first value
+        static uint16_t filter_acc[N] = {value_in};
+        static uint32_t result_sum{N * value_in};
+        uint16_t value_out = filter_acc[current_index];
+        filter_acc[current_index] = value_in;
+        current_index = (current_index + 1) % N;
+        result_sum = result_sum + value_in - value_out;
+        return result_sum / N;
+    }
+
+    /** @brief Piecewise linear interpolation of look-up-table (LUT) values
      * representing function values starting with Y(X=in_fsr_lower)
      * and ending with Y(X=in_fsr_upper). Y-values of the LUT must correspond
      * to equidistant X-axis points.
@@ -136,12 +163,12 @@ namespace AdcTemp {
         const int32_t in_value, const int32_t in_fsr_lower,
         const int32_t in_fsr_upper, const std::array<const float, 32> &lut_y);
 
-    /** Fairly precise temperature conversion if the temperature sensor voltage
+    /** @brief Fairly precise temperature conversion if the temperature sensor voltage
      * has good linearisation. Does not work well at temperature extremes.
      */
     float get_kty_temp_lin(uint16_t adc_raw_value);
 
-    /** Excellent precision temperature sensing using piecewise linear
+    /** @brief Excellent precision temperature sensing using piecewise linear
      * interpolation of Look-Up-Table values for a KTY81-121 type sensor.
      * Use this if temperatures above 100°C ore below 0°C are to be measured.
      */

@@ -99,7 +99,8 @@ struct PsPwmAppState
 class PsPwmAppHwControl
 {
 public:
-    // Configuration and initial values for the application state
+    /** @brief Configuration and initial values for the application state
+     */
     static constexpr PsPwmAppConfig app_conf{};
 
     // Runtime state plus JSON serialisation import/export
@@ -114,7 +115,7 @@ public:
     PsPwmAppHwControl(APIServer* api_server);
     virtual ~PsPwmAppHwControl();
 
-    /** Begin operation.
+    /** @brief Begin operation.
      * This also starts the timer callbacks etc.
      * This will fail if networking etc. is not set up correctly!
      */
@@ -125,35 +126,42 @@ private:
     static TaskHandle_t _app_event_task_handle;
     // FreeRTOS event group handle for triggering event task actions
     static EventGroupHandle_t _app_event_group;
-
     // Timer for periodic events
     Ticker event_timer;
     //TimerHandle_t event_timer{NULL};
 
-    // Called from this constructor
+    /////////// Setup functions called from this constructor //////
+    
     void _initialize_ps_pwm_drv();
-
-    /** Creates main application event task.
+    /** @brief Creates main application event task.
      * This has 4096k stack size for String processing requirements etc.
      */
     void _create_app_event_task();
 
+    /** @brief Register all application HTTP GET API callbacks into the HTPP server
+     */
+    void _register_remote_control(APIServer* api_server);
+
+    //////////// Application task related functions ///////////
+    
     /** @brief Application event loop task.
      */
     static void _app_event_task(void *pVParameters);
 
-    // Called when app state is changed and triggers the respective event.
-    // Used for sending push updates to the clients.
+    /** @brief Update all application state settings which need fast polling.
+     * This is e.g. ADC conversion and HW overcurrent detection handling
+     */
+    void _on_fast_timer_event_update_state();
+
+    /** @brief Called when app state is changed and triggers the respective event.
+     * Used for sending push updates to the clients.
+     */
     static void _send_state_changed_event();
 
-    /** Application state is sent as a push update via the SSE event source.
+    /** @brief Application state is sent as a push update via the SSE event source.
      *  See file: app_hw_control.cpp
      */
     void _push_state_update();
-
-    /** Register all application HTTP GET API callbacks into the HTPP server
-     */
-    void _register_remote_control(APIServer* api_server);
 };
 
 #endif
