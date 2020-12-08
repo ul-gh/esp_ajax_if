@@ -234,26 +234,33 @@ void AppController::_register_http_api(APIServer* api_server) {
      */
     cb_void = [this](){
         // FIXME: Hardware has redundant latch but no separate oc detect line.
-        //        So this currently does not recognize if error is present or only latched.
-        // if (!pspwm_get_hw_fault_shutdown_present(mcpwm_num)) {
-        if (true) {
-            aux_hw_drv.reset_oc_shutdown_start();
-            oc_reset_timer.attach_multitimer_ms(
-                aux_hw_drv.aux_hw_conf.oc_reset_pulse_length_ms,
-                2,
-                [](AppController* self, uint32_t repeat_count){
-                    if (repeat_count == 1) {
-                        self->aux_hw_drv.reset_oc_shutdown_finish();
-                    } else if (repeat_count == 2) {
-                        ESP_LOGD(TAG, "External HW latch reset done. Resetting PSPWM SOC latch...");
-                        pspwm_clear_hw_fault_shutdown_occurred(self->app_conf.mcpwm_num);
-                        self->_send_state_changed_event();
-                    }
-                },
-                this);
-        } else {
-            ESP_LOGE(TAG, "Will Not Clear: Fault Shutdown Pin Still Active!");
-        }
+        //        So this currently does not recognize if error is still
+        //        present or only latched.
+        //if (pspwm_get_hw_fault_shutdown_present(mcpwm_num)) {
+        //    ESP_LOGE(TAG, "Will Not Clear: Fault Shutdown Pin Still Active!");
+        //    return;
+        //}
+        //
+        // Set the GPIO pin to reset external fault latch
+        aux_hw_drv.reset_oc_shutdown_start();
+        // This multitimer instance calls the lambda two times in a row.
+        // First call sets the external reset pin inactive, second call clears
+        // the SoC internal fault latch in the MCPWM hardware stage.
+        oc_reset_timer.attach_multitimer_ms(
+            aux_hw_drv.aux_hw_conf.oc_reset_pulse_length_ms,
+            2,
+            [](AppController* self, uint32_t repeat_count){
+                ESP_LOGD(TAG, "Reset called... Counter is: %d  millis is: %lu",
+                         repeat_count, millis());
+                if (repeat_count == 1) {
+                    self->aux_hw_drv.reset_oc_shutdown_finish();
+                } else if (repeat_count == 2) {
+                    ESP_LOGD(TAG, "External HW reset done. Resetting SOC fault latch...");
+                    pspwm_clear_hw_fault_shutdown_occurred(self->app_conf.mcpwm_num);
+                    self->_send_state_changed_event();
+                }
+            },
+            this);
         };
     api_server->register_api_cb("clear_shutdown", cb_void);
 

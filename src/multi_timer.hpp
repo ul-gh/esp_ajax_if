@@ -7,7 +7,7 @@
 #ifndef MULTI_TIMER_HPP__
 #define MULTI_TIMER_HPP__
 
-//#include <type_traits>
+//#include <type_traits> // Available in C++ 20
 #include <Ticker.h>
 
 
@@ -19,6 +19,10 @@
 class MultiTimer : public Ticker
 {
 public:
+    // OBSOLETE
+    // std::type_identity_t is part of C++ 20 but current compiler has
+    // no support. So the following lines are for backporting only and should
+    // become obsolete in the near future.
     template<typename T>
     struct type_identity
     {
@@ -26,6 +30,7 @@ public:
     };
     template<class T>
     using type_identity_t = typename type_identity<T>::type;
+    // End OBSOLETE
 
     using callback_with_arg_and_count_t = void (*)(void*, uint32_t);
 
@@ -40,6 +45,11 @@ public:
     template <typename TArg>
     void attach_multitimer_ms(const uint32_t milliseconds,
                               const uint32_t repeat_count,
+                              // type_identity_t prevents the compiler from
+                              // attempting template type deduction on the first
+                              // argument. This would fail in case an implicit
+                              // type conversion takes place, i.e. especially
+                              // when using a non-capturing lambda as a callback.
                               void (*callback)(type_identity_t<TArg>, uint32_t),
                               TArg arg) {
         static_assert(sizeof(TArg) <= sizeof(uint32_t),

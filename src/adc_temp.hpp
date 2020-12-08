@@ -151,6 +151,10 @@ namespace AdcTemp {
         filter_acc[current_index] = value_in;
         current_index = (current_index + 1) % N;
         result_sum = result_sum + value_in - value_out;
+        static unsigned int loopctr;
+        if (!(loopctr++ % 32)) {
+            ets_printf("Called 32 times. Value in: %d  Value out: %d   current_index: %d\n", value_in, value_out, current_index);
+        }
         return result_sum / N;
     }
 
