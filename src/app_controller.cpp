@@ -95,6 +95,7 @@ void AppController::begin() {
     _register_http_api(api_server);
     // Configure timers triggering periodic events.
     // Fast events are used for triggering ADC conversion etc.
+    power_output_timer.attach_multitimer_ms(10, 1, TICKER_MEMBER_CALL(begin));
     event_timer_fast.attach_ms(
         app_conf.timer_fast_interval_ms,
         [](){xEventGroupSetBits(_app_event_group, EventFlags::timer_fast);}
