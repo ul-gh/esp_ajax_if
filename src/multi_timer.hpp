@@ -27,7 +27,7 @@ class MultiTimer : private Ticker
 {
 public:
     using callback_with_arg_and_count_t = void (*)(void*, uint32_t);
-    using mem_func_t = std::function<void(TCls::*)>;
+    using mem_func_t = std::function<void(TCls&)>;
 
     /** @brief This timer is repeated "repeats" times after being started.
      * ==> It does not start automatically, you must call start() first.
@@ -117,16 +117,18 @@ public:
     //template <typename TCls>
     void attach_multitimer_ms(const uint32_t milliseconds,
                               const uint32_t repeats,
-                              void(TCls::*memFuncPtr)(void)) {
+                              void(TCls::*memFuncPtr)(void),
+                              TCls *inst) {
         _interval_ms = milliseconds;
         _repeat_count_requested = repeats;
         _mem_func = std::mem_fn(memFuncPtr);
+        _orig_arg = (uint32_t)inst;
         auto cb_lambda = [](void *_this){
             auto self = static_cast<decltype(this)>(_this);
             if (++self->_repeat_count == self->_repeat_count_requested) {
                 self->stop();
             }
-            self->_mem_func();
+            self->_mem_func(*((TCls*)(self->_orig_arg)));
             };
         _attach_ms(milliseconds, cb_lambda, (uint32_t)this);
     }

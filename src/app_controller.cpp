@@ -94,7 +94,7 @@ void AppController::begin() {
     ESP_LOGD(TAG, "Activating Gate driver power supply...");
     aux_hw_drv.set_drv_supply_active("true");
     _register_http_api(api_server);
-    power_output_timer.attach_multitimer_ms(10, 1, &AppController::begin);
+    power_output_timer.attach_multitimer_ms(10, 1, &AppController::begin, this);
     //power_output_timer.attach_multitimer_ms(10, 1, TICKER_MEMBER_CALL(begin));
     // Configure timers triggering periodic events.
     // Fast events are used for triggering ADC conversion etc.
