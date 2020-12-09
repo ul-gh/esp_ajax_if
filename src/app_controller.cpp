@@ -85,6 +85,7 @@ AppController::~AppController() {
     power_output_timer.detach();
 }
 
+
 /** Begin operation.
  * This also starts the timer callbacks etc.
  * This will fail if networking etc. is not set up correctly!
@@ -93,9 +94,10 @@ void AppController::begin() {
     ESP_LOGD(TAG, "Activating Gate driver power supply...");
     aux_hw_drv.set_drv_supply_active("true");
     _register_http_api(api_server);
+    power_output_timer.attach_multitimer_ms(10, 1, &AppController::begin);
+    //power_output_timer.attach_multitimer_ms(10, 1, TICKER_MEMBER_CALL(begin));
     // Configure timers triggering periodic events.
     // Fast events are used for triggering ADC conversion etc.
-    power_output_timer.attach_multitimer_ms(10, 1, TICKER_MEMBER_CALL(begin));
     event_timer_fast.attach_ms(
         app_conf.timer_fast_interval_ms,
         [](){xEventGroupSetBits(_app_event_group, EventFlags::timer_fast);}

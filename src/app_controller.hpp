@@ -159,9 +159,9 @@ private:
     Ticker event_timer_fast;
     Ticker event_timer_slow;
     // Timer for generating overcurrent reset pulse
-    MultiTimer oc_reset_timer;
+    MultiTimer<AppController> oc_reset_timer;
     // Timer for power output timing
-    MultiTimer power_output_timer;
+    MultiTimer<AppController> power_output_timer;
 
     /////////// Setup functions called from this constructor //////
     

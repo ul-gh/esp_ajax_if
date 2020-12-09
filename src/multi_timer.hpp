@@ -22,10 +22,12 @@
  * We have one setup option specifying an arbitrary number of repeats,
  * replacing the Ticker::once and Ticker::attach functionality.
  */
+template<typename TCls>
 class MultiTimer : private Ticker
 {
 public:
     using callback_with_arg_and_count_t = void (*)(void*, uint32_t);
+    using mem_func_t = std::function<void(TCls::*)>;
 
     /** @brief This timer is repeated "repeats" times after being started.
      * ==> It does not start automatically, you must call start() first.
@@ -99,6 +101,36 @@ public:
         _attach_ms(milliseconds, cb_lambda, (uint32_t)this);
     }
 
+    /** @brief This timer is repeated "repeats" times after being started.
+     * ==> It does not start automatically, you must call start() first.
+     * It can be stopped without detaching the callback by calling stop().
+     * Calling reset() resets the number of repeats to its original value.
+     * 
+     * The callback must receive one or two arguments:
+     * - For one argument, this is the current number of repeats (uint32_t).
+     * - In case of two arguments, the first one is a static fixed value
+     *   (which can be a typed pointer to a class instance, a void* or a number)
+     *   and the second argument again is the current number of repeated calls.
+     * 
+     * The counter wraps around after UINT32_MAX.
+     */
+    //template <typename TCls>
+    void attach_multitimer_ms(const uint32_t milliseconds,
+                              const uint32_t repeats,
+                              void(TCls::*memFuncPtr)(void)) {
+        _interval_ms = milliseconds;
+        _repeat_count_requested = repeats;
+        _mem_func = std::mem_fn(memFuncPtr);
+        auto cb_lambda = [](void *_this){
+            auto self = static_cast<decltype(this)>(_this);
+            if (++self->_repeat_count == self->_repeat_count_requested) {
+                self->stop();
+            }
+            self->_mem_func();
+            };
+        _attach_ms(milliseconds, cb_lambda, (uint32_t)this);
+    }
+
     void start() {
         esp_timer_start_periodic(_timer, _interval_ms * 1000ULL);
     }
@@ -122,6 +154,7 @@ private:
     uint32_t _repeat_count{0};
     uint32_t _orig_arg;
     callback_t _callback;
+    mem_func_t _mem_func;
 
     void _attach_ms(uint32_t milliseconds, callback_with_arg_t callback, uint32_t arg) {
         esp_timer_create_args_t _timerConfig;
