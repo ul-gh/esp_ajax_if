@@ -17,20 +17,20 @@
  * This also allows unlimited on-demand restarting of the already attached
  * callback without deleting the existing timer first.
  * 
- * The Ticker base class is inherited privately because we only have one
- * restart() method implementation calling esp_timer_start_periodic in any case,
- * i.e. this does not know if this was a one-shot or periodic timer without
- * the "repeats" parameter specification and always starts a periodic timer.
- * On the other hand, if we set "repeats" to 1, we still have the one-shot timer.
+ * The Ticker base class is inherited privately because the
+ * setup/start/stop/reset logic is different from the logic used in Ticker.h:
+ * We have one setup option specifying an arbitrary number of repeats,
+ * replacing the Ticker::once and Ticker::attach functionality.
  */
 class MultiTimer : private Ticker
 {
 public:
     using callback_with_arg_and_count_t = void (*)(void*, uint32_t);
 
-    /** @brief This timer is repeated "repeats" times after creation.
+    /** @brief This timer is repeated "repeats" times after being started.
+     * ==> It does not start automatically, you must call start() first.
      * It can be stopped without detaching the callback by calling stop().
-     * It can also be restarted (resetting the timeout) by calling restart().
+     * Calling reset() resets the number of repeats to its original value.
      * 
      * The callback must receive one or two arguments:
      * - For one argument, this is the current number of repeats (uint32_t).
@@ -63,9 +63,10 @@ public:
         _attach_ms(milliseconds, cb_lambda, (uint32_t)this);
     }
 
-    /** @brief This timer is repeated "repeats" times after creation.
+    /** @brief This timer is repeated "repeats" times after being started.
+     * ==> It does not start automatically, you must call start() first.
      * It can be stopped without detaching the callback by calling stop().
-     * It can also be restarted (resetting the timeout) by calling restart().
+     * Calling reset() resets the number of repeats to its original value.
      * 
      * The callback must receive one or two arguments:
      * - For one argument, this is the current number of repeats (uint32_t).
