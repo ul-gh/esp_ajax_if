@@ -15,6 +15,7 @@
 // .. which because of creating a bound function should even perform better
 // than indirecting a member function pointer call?
 #define TICKER_MEMBER_CALL(NON_STATIC_MEMBER_FN) [](decltype(this) self){self->NON_STATIC_MEMBER_FN();}, this
+#define TICKER_MEMBER_CALL_WITH_COUNT(NON_STATIC_MEMBER_FN) [](decltype(this) self, uint32_t i){self->NON_STATIC_MEMBER_FN(i);}, this
 
 /** @brief Ticker timer derivative allowing for a fixed number of repeated calls.
  * 
@@ -61,7 +62,8 @@ public:
      *     }
      * 
      *     PrintFoo(uint32_t reps) {
-     *         timer.attach_static_ms(500, reps, TICKER_MEMBER_CALL(print_foo));
+     *         timer.attach_static_ms(
+     *             500, reps, TICKER_MEMBER_CALL_WITH_COUNT(print_foo));
      *     }
      * };
      * 
