@@ -3,8 +3,8 @@
  * License: GPL v.3 
  * U. Lukas 2020-09-27
  */
-#ifndef APP_HW_CONTROL_HPP__
-#define APP_HW_CONTROL_HPP__
+#ifndef APP_CONTROLLER_HPP__
+#define APP_CONTROLLER_HPP__
 
 #include <Ticker.h>
 //#include "freertos/FreeRTOS.h"
@@ -32,7 +32,7 @@
  * Runtime user configurable settings can be serialised and stored to file
  * or read back from file and restored into this instance.
  */
-struct PsPwmAppState
+struct AppState
 {
     // Configuration and initial values for the application state
     static constexpr AppConfig app_conf{};
@@ -68,6 +68,8 @@ struct PsPwmAppState
     // Runtime user settpoint limits for output frequency
     float frequency_min = app_conf.frequency_min;
     float frequency_max = app_conf.frequency_max;
+    // Pulse length for one-shot mode power output pulse
+    uint32_t oneshot_power_pulse_length_ms{0};
 
     // State from AuxHwDrv module
     AuxHwDrvState *aux_hw_drv_state = nullptr;
@@ -133,7 +135,7 @@ public:
     static constexpr AppConfig app_conf{};
 
     // Runtime state plus JSON serialisation import/export
-    PsPwmAppState state;
+    AppState state;
 
     // Instance of auxiliary HW control module
     AuxHwDrv aux_hw_drv;
@@ -150,6 +152,15 @@ public:
      */
     void begin();
 
+    //////////// Application logic ///////////
+    /** @brief Activate PWM power output if arg is true
+     */
+    void set_pwm_output(bool state);
+
+    void trigger_oneshot();
+
+    void clear_shutdown();
+
 private:
     // FreeRTOS task handle for application event task
     static TaskHandle_t _app_event_task_handle;
@@ -159,9 +170,10 @@ private:
     Ticker event_timer_fast;
     Ticker event_timer_slow;
     // Timer for generating overcurrent reset pulse
-    MultiTimerNonStatic<AppController> oc_reset_timer;
+    MultiTimer oc_reset_timer;
     // Timer for power output timing
-    MultiTimerNonStatic<AppController> power_output_timer;
+    MultiTimer power_output_timer;
+
 
     /////////// Setup functions called from this constructor //////
     
@@ -199,15 +211,6 @@ private:
      *  See file: app_hw_control.cpp
      */
     void _push_state_update();
-
-    //////////// Application logic ///////////
-    /** @brief Activate PWM power output
-     */
-    void _enable_pwm_output();
-
-    /** @brief Disable PWM power output
-     */
-    void _disable_pwm_output();
 };
 
 #endif

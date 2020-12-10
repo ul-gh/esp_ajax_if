@@ -133,6 +133,8 @@ public:
         _attach_ms(milliseconds, cb_lambda, (uint32_t)this);
     }
 
+    /** Simple version without return code for use as a callback
+     */
     void start() {
         esp_timer_start_periodic(_timer, _interval_ms * 1000ULL);
     }
@@ -140,9 +142,21 @@ public:
         _interval_ms = interval_ms;
         esp_timer_start_periodic(_timer, _interval_ms * 1000ULL);
     }
+    /** Version returning errors from API call
+     */
+    esp_err_t start_return_errors() {
+        return esp_timer_start_periodic(_timer, _interval_ms * 1000ULL);
+    }
+    esp_err_t start_return_errors(uint32_t interval_ms) {
+        _interval_ms = interval_ms;
+        return esp_timer_start_periodic(_timer, _interval_ms * 1000ULL);
+    }
 
     void stop() {
         esp_timer_stop(_timer);
+    }
+    esp_err_t stop_return_errors() {
+        return esp_timer_stop(_timer);
     }
 
     void reset() {
@@ -153,6 +167,17 @@ public:
         esp_timer_stop(_timer);
         _interval_ms = interval_ms;
         _repeat_count = 0;
+    }
+    esp_err_t reset_return_errors() {
+        esp_err_t errors = esp_timer_stop(_timer);
+        _repeat_count = 0;
+        return errors;
+    }
+    esp_err_t reset_return_errors(uint32_t interval_ms) {
+        esp_err_t errors = esp_timer_stop(_timer);
+        _interval_ms = interval_ms;
+        _repeat_count = 0;
+        return errors;
     }
 
     // The only other functions we make available again in this class

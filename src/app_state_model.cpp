@@ -9,7 +9,7 @@ static const char* TAG = "app_state_model.cpp";
 
 /* Serialize application live data into json_buf_data
  */
-void PsPwmAppState::serialize_data() {
+void AppState::serialize_data() {
     assert(pspwm_clk_conf && pspwm_setpoint && pspwm_setpoint_limits && aux_hw_drv_state);
     // ArduinoJson JsonDocument object, see https://arduinojson.org
     StaticJsonDocument<_json_objects_size> json_doc;
@@ -50,7 +50,7 @@ void PsPwmAppState::serialize_data() {
 
 /* Serialize application runtime configurable settings into json_buf
  */
-void PsPwmAppState::serialize_settings() {
+void AppState::serialize_settings() {
     assert(pspwm_clk_conf && pspwm_setpoint && pspwm_setpoint_limits && aux_hw_drv_state);
     // ArduinoJson JsonDocument object, see https://arduinojson.org
     StaticJsonDocument<_json_objects_size> json_doc;
@@ -83,13 +83,13 @@ void PsPwmAppState::serialize_settings() {
 /* Restore application runtime configurable settings
  * from json_buf_settings back into this instance.
  */
-void PsPwmAppState::deserialize_settings() {
+void AppState::deserialize_settings() {
     assert(pspwm_clk_conf && pspwm_setpoint && pspwm_setpoint_limits && aux_hw_drv_state);
 }
 
 /* Write application runtime configurable settings as JSON to SPIFFs file.
  */
-bool PsPwmAppState::save_to_file(const char *filename) {
+bool AppState::save_to_file(const char *filename) {
     if (!SPIFFS.begin(false)) {
         ESP_LOGE(TAG, "Could not open SPIFFS!");
         return false;
@@ -105,7 +105,7 @@ bool PsPwmAppState::save_to_file(const char *filename) {
 /* Restore application runtime configurable settings
  * from SPIFFs file back into this instance.
  */
-bool PsPwmAppState::restore_from_file(const char *filename) {
+bool AppState::restore_from_file(const char *filename) {
     if (!SPIFFS.begin(false)) {
         ESP_LOGE(TAG, "Could not open SPIFFS!");
         return false;

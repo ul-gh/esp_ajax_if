@@ -97,6 +97,32 @@ void AppController::begin() {
     _connect_timer_callbacks();
 }
 
+//////////// Application logic ///////////
+/* Activate PWM power output if arg is true
+ */
+void AppController::set_pwm_output(bool state){
+    if (state == true) {
+        // aux_hw_drv.set_drv_disabled(false);
+        pspwm_resync_enable_output(app_conf.mcpwm_num);
+    } else {
+        // aux_hw_drv.set_drv_disabled(true);
+        pspwm_disable_output(app_conf.mcpwm_num);
+    }
+    _send_state_changed_event();
+}
+
+void AppController::trigger_oneshot(){
+    // The timer callback also sends a state_changed event
+    power_output_timer.start();
+}
+
+void AppController::clear_shutdown(){
+    // The output is /not/ enabled again, it must be re-enabled explicitly.
+    // The timer callback also sends a state_changed event
+    oc_reset_timer.start();
+}
+
+
 /////////// Setup functions called from this constructor //////
 
 void AppController::_initialize_ps_pwm_drv() {
@@ -148,7 +174,6 @@ void AppController::_register_http_api(APIServer* api_server) {
 
     // set_frequency_min
     cb_float = [this](const float n) {
-        ESP_LOGD(TAG, "Request for set_frequency_min received with value: %f", n);
         state.frequency_min = n * 1E3;
         _send_state_changed_event();
         };
@@ -156,7 +181,6 @@ void AppController::_register_http_api(APIServer* api_server) {
 
     // set_frequency_max
     cb_float = [this](const float n) {
-        ESP_LOGD(TAG, "Request for set_frequency_max received with value: %f", n);
         state.frequency_max = n * 1E3;
         _send_state_changed_event();
         };
@@ -199,14 +223,12 @@ void AppController::_register_http_api(APIServer* api_server) {
     api_server->register_api_cb("set_lead_dt", cb_float);
 
     // set_power_pwm_active
-    cb_text = [this](const String &text) {
-        if (text == "true") {
-            _enable_pwm_output();
-        } else {
-            _disable_pwm_output();
-        }
-        };
+    cb_text = [this](const String &text) {set_pwm_output(text == "true");};
     api_server->register_api_cb("set_power_pwm_active", cb_text);
+
+    // trigger_oneshot
+    cb_void = [this](){trigger_oneshot();};
+    api_server->register_api_cb("trigger_oneshot", cb_void);
 
     // clear_shutdown
     /* Callback hell.. If HW overcurrent fault pin is cleared, we first reset
@@ -216,36 +238,7 @@ void AppController::_register_http_api(APIServer* api_server) {
      * hardware latch reset (1 ms delay via RTOS timer) then resets the PSPWM
      * fault shutdown latch inside the SOC..
      */
-    cb_void = [this](){
-        // FIXME: Hardware has redundant latch but no separate oc detect line.
-        //        So this currently does not recognize if error is still
-        //        present or only latched.
-        //if (pspwm_get_hw_fault_shutdown_present(mcpwm_num)) {
-        //    ESP_LOGE(TAG, "Will Not Clear: Fault Shutdown Pin Still Active!");
-        //    return;
-        //}
-        //
-        // Set the GPIO pin to reset external fault latch
-        aux_hw_drv.reset_oc_shutdown_start();
-        // This multitimer instance calls the lambda two times in a row.
-        // First call sets the external reset pin inactive, second call clears
-        // the SoC internal fault latch in the MCPWM hardware stage.
-        oc_reset_timer.attach_static_ms(
-            aux_hw_drv.aux_hw_conf.oc_reset_pulse_length_ms,
-            2,
-            [](AppController* self, uint32_t repeat_count){
-                ESP_LOGD(TAG, "Reset called... Counter is: %d  millis is: %lu",
-                         repeat_count, millis());
-                if (repeat_count == 1) {
-                    self->aux_hw_drv.reset_oc_shutdown_finish();
-                } else if (repeat_count == 2) {
-                    ESP_LOGD(TAG, "External HW reset done. Resetting SOC fault latch...");
-                    pspwm_clear_hw_fault_shutdown_occurred(self->app_conf.mcpwm_num);
-                    self->_send_state_changed_event();
-                }
-            },
-            this);
-        };
+    cb_void = [this](){clear_shutdown();};
     api_server->register_api_cb("clear_shutdown", cb_void);
 
     //////////////// Callbacks for aux HW driver module
@@ -283,21 +276,64 @@ void AppController::_register_http_api(APIServer* api_server) {
 /* Connect timer callbacks
  */
 void AppController::_connect_timer_callbacks(){
-    power_output_timer.attach_mem_func_ptr_ms(
-        0, 1, &AppController::_disable_pwm_output, this);
-    //power_output_timer.attach_multitimer_ms(10, 1, TICKER_MEMBER_CALL(begin));
     // Configure timers triggering periodic events.
     // Fast events are used for triggering ADC conversion etc.
     event_timer_fast.attach_ms(
         app_conf.timer_fast_interval_ms,
         [](){xEventGroupSetBits(_app_event_group, EventFlags::timer_fast);}
     );
+
     // Slow events are used for sending periodic SSE push messages updating the
     // application state as displayed by the remote clients
     event_timer_slow.attach_ms(
         app_conf.timer_slow_interval_ms,
         [](){xEventGroupSetBits(_app_event_group, EventFlags::timer_slow);}
     );
+
+    // Timer for generating output pulses
+    power_output_timer.attach_static_ms(
+        state.oneshot_power_pulse_length_ms,
+        2,
+        [](AppController *self, uint32_t repeat_count){
+            // Set output active (true) on first call, disable on any other call
+            self->set_pwm_output(repeat_count == 1);
+            self->_send_state_changed_event();
+        }, 
+        this);
+
+    // Hardware overcurrent reset needs a pulse which is generated by this timer
+    //
+    // FIXME: Hardware has redundant latch but no separate oc detect line.
+    //        So this currently does not recognize if error is still
+    //        present or only latched.
+    //if (pspwm_get_hw_fault_shutdown_present(mcpwm_num)) {
+    //    ESP_LOGE(TAG, "Will Not Clear: Fault Shutdown Pin Still Active!");
+    //    return;
+    //}
+    //
+    // This multitimer instance calls the lambda three times in a row.
+    // First call sets the external reset pin active, second call clears
+    // the reset line, third call resets the PSPWM module internal error flag
+    // and sends a notification event.
+    // The output is /not/ enabled again, it must be re-enabled explicitly
+    oc_reset_timer.attach_static_ms(
+        aux_hw_drv.aux_hw_conf.oc_reset_pulse_length_ms,
+        3,
+        [](AppController* self, uint32_t repeat_count){
+            ESP_LOGD(TAG, "Reset called... Counter is: %d  millis is: %lu",
+                        repeat_count, millis());
+            if (repeat_count == 1) {
+                // Set the GPIO pin to reset external fault latch
+                self->aux_hw_drv.reset_oc_shutdown_start();
+            } else if (repeat_count == 2) {
+                self->aux_hw_drv.reset_oc_shutdown_finish();
+            } else if (repeat_count == 3) {
+                ESP_LOGD(TAG, "External HW reset done. Resetting SOC fault latch...");
+                pspwm_clear_hw_fault_shutdown_occurred(self->app_conf.mcpwm_num);
+                self->_send_state_changed_event();
+            }
+        },
+        this);
 }
 
 //////////// Application task related functions ///////////
@@ -351,20 +387,4 @@ void AppController::_push_state_update() {
     // Prepare JSON message for sending
     state.serialize_data();
     api_server->event_source->send(state.json_buf_data, "hw_app_state");
-}
-
-/* Activate PWM power output
- */
-void AppController::_enable_pwm_output(){
-    // aux_hw_drv.set_drv_disabled(false);
-    pspwm_resync_enable_output(app_conf.mcpwm_num);
-    _send_state_changed_event();
-}
-
-/* Disable PWM power output
- */
-void AppController::_disable_pwm_output(){
-    // aux_hw_drv.set_drv_disabled(true);
-    pspwm_disable_output(app_conf.mcpwm_num);
-    _send_state_changed_event();
 }

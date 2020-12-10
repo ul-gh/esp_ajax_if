@@ -9,7 +9,7 @@
  */
 struct AppConfig
 {
-    //////////////////////// For AppHwControl application /////////////////////
+    ///////////////////////////// For AppController ///////////////////////////
     // App state serialization using the ArduionJSON module takes a lot of it
     uint32_t app_event_task_stack_size{4096};
     // Arduino loop task has 1; async_tcp task has 3.
