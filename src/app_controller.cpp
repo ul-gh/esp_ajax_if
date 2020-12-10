@@ -94,20 +94,7 @@ void AppController::begin() {
     ESP_LOGD(TAG, "Activating Gate driver power supply...");
     aux_hw_drv.set_drv_supply_active("true");
     _register_http_api(api_server);
-    power_output_timer.attach_multitimer_ms(10, 1, &AppController::begin, this);
-    //power_output_timer.attach_multitimer_ms(10, 1, TICKER_MEMBER_CALL(begin));
-    // Configure timers triggering periodic events.
-    // Fast events are used for triggering ADC conversion etc.
-    event_timer_fast.attach_ms(
-        app_conf.timer_fast_interval_ms,
-        [](){xEventGroupSetBits(_app_event_group, EventFlags::timer_fast);}
-    );
-    // Slow events are used for sending periodic SSE push messages updating the
-    // application state as displayed by the remote clients
-    event_timer_slow.attach_ms(
-        app_conf.timer_slow_interval_ms,
-        [](){xEventGroupSetBits(_app_event_group, EventFlags::timer_slow);}
-    );
+    _connect_timer_callbacks();
 }
 
 /////////// Setup functions called from this constructor //////
@@ -214,16 +201,10 @@ void AppController::_register_http_api(APIServer* api_server) {
     // set_power_pwm_active
     cb_text = [this](const String &text) {
         if (text == "true") {
-            // FIXME: Hardware has redundant latch but no separate oc detect line.
-            //        So this currently does not recognize if error is present or only latched.
-            // aux_hw_drv.set_drv_disabled(false);
-            pspwm_resync_enable_output(app_conf.mcpwm_num);
+            _enable_pwm_output();
         } else {
-            // FIXME: Same as above
-            // aux_hw_drv.set_drv_disabled(true);
-            pspwm_disable_output(app_conf.mcpwm_num);
+            _disable_pwm_output();
         }
-        _send_state_changed_event();
         };
     api_server->register_api_cb("set_power_pwm_active", cb_text);
 
@@ -249,7 +230,7 @@ void AppController::_register_http_api(APIServer* api_server) {
         // This multitimer instance calls the lambda two times in a row.
         // First call sets the external reset pin inactive, second call clears
         // the SoC internal fault latch in the MCPWM hardware stage.
-        oc_reset_timer.attach_multitimer_ms(
+        oc_reset_timer.attach_static_ms(
             aux_hw_drv.aux_hw_conf.oc_reset_pulse_length_ms,
             2,
             [](AppController* self, uint32_t repeat_count){
@@ -297,6 +278,26 @@ void AppController::_register_http_api(APIServer* api_server) {
         _send_state_changed_event();
         };
     api_server->register_api_cb("set_fan_active", cb_text);
+}
+
+/* Connect timer callbacks
+ */
+void AppController::_connect_timer_callbacks(){
+    power_output_timer.attach_mem_func_ptr_ms(
+        0, 1, &AppController::_disable_pwm_output, this);
+    //power_output_timer.attach_multitimer_ms(10, 1, TICKER_MEMBER_CALL(begin));
+    // Configure timers triggering periodic events.
+    // Fast events are used for triggering ADC conversion etc.
+    event_timer_fast.attach_ms(
+        app_conf.timer_fast_interval_ms,
+        [](){xEventGroupSetBits(_app_event_group, EventFlags::timer_fast);}
+    );
+    // Slow events are used for sending periodic SSE push messages updating the
+    // application state as displayed by the remote clients
+    event_timer_slow.attach_ms(
+        app_conf.timer_slow_interval_ms,
+        [](){xEventGroupSetBits(_app_event_group, EventFlags::timer_slow);}
+    );
 }
 
 //////////// Application task related functions ///////////
@@ -350,4 +351,20 @@ void AppController::_push_state_update() {
     // Prepare JSON message for sending
     state.serialize_data();
     api_server->event_source->send(state.json_buf_data, "hw_app_state");
+}
+
+/* Activate PWM power output
+ */
+void AppController::_enable_pwm_output(){
+    // aux_hw_drv.set_drv_disabled(false);
+    pspwm_resync_enable_output(app_conf.mcpwm_num);
+    _send_state_changed_event();
+}
+
+/* Disable PWM power output
+ */
+void AppController::_disable_pwm_output(){
+    // aux_hw_drv.set_drv_disabled(true);
+    pspwm_disable_output(app_conf.mcpwm_num);
+    _send_state_changed_event();
 }

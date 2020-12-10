@@ -159,9 +159,9 @@ private:
     Ticker event_timer_fast;
     Ticker event_timer_slow;
     // Timer for generating overcurrent reset pulse
-    MultiTimer<AppController> oc_reset_timer;
+    MultiTimerNonStatic<AppController> oc_reset_timer;
     // Timer for power output timing
-    MultiTimer<AppController> power_output_timer;
+    MultiTimerNonStatic<AppController> power_output_timer;
 
     /////////// Setup functions called from this constructor //////
     
@@ -174,6 +174,10 @@ private:
     /** @brief Register all application HTTP GET API callbacks into the HTPP server
      */
     void _register_http_api(APIServer* api_server);
+
+    /** @brief Connect timer callbacks
+     */
+    void _connect_timer_callbacks();
 
     //////////// Application task related functions ///////////
     
@@ -195,6 +199,15 @@ private:
      *  See file: app_hw_control.cpp
      */
     void _push_state_update();
+
+    //////////// Application logic ///////////
+    /** @brief Activate PWM power output
+     */
+    void _enable_pwm_output();
+
+    /** @brief Disable PWM power output
+     */
+    void _disable_pwm_output();
 };
 
 #endif

@@ -2,55 +2,82 @@
   * @brief Ticker timer derivative allowing for a fixed number of repeated calls.
   * 
   * License: GPL v.3 
-  * U. Lukas 2020-12-07
+  * U. Lukas 2020-12-10
   */
 #ifndef MULTI_TIMER_HPP__
 #define MULTI_TIMER_HPP__
 
+//#include <functional> // Has std::invoke but is only available from C++17..
 #include <Ticker.h>
 
-// Allows calling an ordinary class member just like that..
-#define TICKER_MEMBER_CALL(NON_STATIC_MEMBER) [](decltype(this) self){self->NON_STATIC_MEMBER();}, this
+// Allows calling an ordinary class member function by inserting a
+// lambda function taking the instance pointer as an argument..
+// .. which because of creating a bound function should even perform better
+// than indirecting a member function pointer call?
+#define TICKER_MEMBER_CALL(NON_STATIC_MEMBER_FN) [](decltype(this) self){self->NON_STATIC_MEMBER_FN();}, this
 
 /** @brief Ticker timer derivative allowing for a fixed number of repeated calls.
  * 
  * This also allows unlimited on-demand restarting of the already attached
  * callback without deleting the existing timer first.
  * 
- * The Ticker base class is inherited privately because the
- * setup/start/stop/reset logic is different from the logic used in Ticker.h:
- * We have one setup option specifying an arbitrary number of repeats,
- * replacing the Ticker::once and Ticker::attach functionality.
+ * Like for the original Ticker.h version, all callbacks are invoked from
+ * "esp_timer" task, which is a high-priority task. For this reason, the
+ * callbacks should only perform a minimum amount of work and refer to
+ * other tasks via message passing to do any blocking action.
  */
-template<typename TCls>
 class MultiTimer : private Ticker
 {
 public:
     using callback_with_arg_and_count_t = void (*)(void*, uint32_t);
-    using mem_func_t = std::function<void(TCls&)>;
 
-    /** @brief This timer is repeated "repeats" times after being started.
-     * ==> It does not start automatically, you must call start() first.
-     * It can be stopped without detaching the callback by calling stop().
-     * Calling reset() resets the number of repeats to its original value.
+    /** @brief Attach a free function, static member function
+     * or a non-capturing lambda function to the timer.
      * 
-     * The callback must receive one or two arguments:
-     * - For one argument, this is the current number of repeats (uint32_t).
-     * - In case of two arguments, the first one is a static fixed value
-     *   (which can be a typed pointer to a class instance, a void* or a number)
-     *   and the second argument again is the current number of repeated calls.
+     * This timer is created without activating it.
+     * - It is activated by calling start().
+     * - It is stopped without detaching the callback by calling stop().
+     *   When started again, it continues until total repeat count is reached.
+     * - Calling reset() resets the number of repeats to its original value.
      * 
-     * The counter wraps around after UINT32_MAX.
+     * The callback can receive zero, one or two arguments:
+     * - For no arguments, it is just called the preset number of times.
+     * - For one argument, this is a fixed value for all calls, typically the
+     *   pointer to the object of a user class for accessing any member of it.
+     * - In case of two arguments, the second is an additional uint32_t value
+     *   containing the current number of times the callback was called.
+     *   (This wraps around after UINT32_MAX)
+     * 
+     * Using the supplied macro TICKER_MEMBER_CALL() is (an efficient?) hack
+     * to call non-static member functions from a calling class object:
+     * 
+     * class PrintFoo {
+     * public:
+     *     MultiTimer timer;
+     *     const char* foo_str = "This is Foo no.: %d";
+     * 
+     *     void print_foo(uint32_t i) {
+     *         printf(foo_str, i);
+     *     }
+     * 
+     *     PrintFoo(uint32_t reps) {
+     *         timer.attach_static_ms(500, reps, TICKER_MEMBER_CALL(print_foo));
+     *     }
+     * };
+     * 
+     * PrintFoo print_6x_foo{6};
+     * print_6x_foo.timer.start();
+     * 
      */
     template <typename TArg>
-    void attach_multitimer_ms(const uint32_t milliseconds,
-                              const uint32_t repeats,
-                              void (*callback)(type_identity_t<TArg>, uint32_t),
-                              TArg arg) {
+    void attach_static_ms(const uint32_t milliseconds,
+                          const uint32_t total_repeat_count,
+                          void (*callback)(type_identity_t<TArg>, uint32_t),
+                          TArg arg) {
         static_assert(sizeof(TArg) <= sizeof(uint32_t),
                       "attach_ms() callback argument size must be <= 4 bytes");
         _interval_ms = milliseconds;
-        _repeat_count_requested = repeats;
+        _repeat_count_requested = total_repeat_count;
         _callback = reinterpret_cast<callback_t>(callback);
         _orig_arg = (uint32_t)arg;
         auto cb_lambda = [](void *_this){
@@ -65,28 +92,15 @@ public:
         _attach_ms(milliseconds, cb_lambda, (uint32_t)this);
     }
 
-    /** @brief This timer is repeated "repeats" times after being started.
-     * ==> It does not start automatically, you must call start() first.
-     * It can be stopped without detaching the callback by calling stop().
-     * Calling reset() resets the number of repeats to its original value.
-     * 
-     * The callback must receive one or two arguments:
-     * - For one argument, this is the current number of repeats (uint32_t).
-     * - In case of two arguments, the first one is a static fixed value
-     *   (which can be a typed pointer to a class instance, a void* or a number)
-     *   and the second argument again is the current number of repeated calls.
-     * 
-     * The counter wraps around after UINT32_MAX.
-     */
     template <typename TArg>
-    void attach_multitimer_ms(const uint32_t milliseconds,
-                              const uint32_t repeats,
-                              void (*callback)(type_identity_t<TArg>),
-                              TArg arg) {
+    void attach_static_ms(const uint32_t milliseconds,
+                          const uint32_t total_repeat_count,
+                          void (*callback)(type_identity_t<TArg>),
+                          TArg arg) {
         static_assert(sizeof(TArg) <= sizeof(uint32_t),
                       "attach_ms() callback argument size must be <= 4 bytes");
         _interval_ms = milliseconds;
-        _repeat_count_requested = repeats;
+        _repeat_count_requested = total_repeat_count;
         _callback = reinterpret_cast<callback_t>(callback);
         _orig_arg = (uint32_t)arg;
         auto cb_lambda = [](void *_this){
@@ -101,39 +115,27 @@ public:
         _attach_ms(milliseconds, cb_lambda, (uint32_t)this);
     }
 
-    /** @brief This timer is repeated "repeats" times after being started.
-     * ==> It does not start automatically, you must call start() first.
-     * It can be stopped without detaching the callback by calling stop().
-     * Calling reset() resets the number of repeats to its original value.
-     * 
-     * The callback must receive one or two arguments:
-     * - For one argument, this is the current number of repeats (uint32_t).
-     * - In case of two arguments, the first one is a static fixed value
-     *   (which can be a typed pointer to a class instance, a void* or a number)
-     *   and the second argument again is the current number of repeated calls.
-     * 
-     * The counter wraps around after UINT32_MAX.
-     */
-    //template <typename TCls>
-    void attach_multitimer_ms(const uint32_t milliseconds,
-                              const uint32_t repeats,
-                              void(TCls::*memFuncPtr)(void),
-                              TCls *inst) {
+    void attach_static_ms(const uint32_t milliseconds,
+                          const uint32_t total_repeat_count,
+                          callback_t callback) {
         _interval_ms = milliseconds;
-        _repeat_count_requested = repeats;
-        _mem_func = std::mem_fn(memFuncPtr);
-        _orig_arg = (uint32_t)inst;
+        _repeat_count_requested = total_repeat_count;
+        _callback = reinterpret_cast<callback_t>(callback);
         auto cb_lambda = [](void *_this){
             auto self = static_cast<decltype(this)>(_this);
             if (++self->_repeat_count == self->_repeat_count_requested) {
                 self->stop();
             }
-            self->_mem_func(*((TCls*)(self->_orig_arg)));
+            self->_callback();
             };
         _attach_ms(milliseconds, cb_lambda, (uint32_t)this);
     }
 
     void start() {
+        esp_timer_start_periodic(_timer, _interval_ms * 1000ULL);
+    }
+    void start(uint32_t interval_ms) {
+        _interval_ms = interval_ms;
         esp_timer_start_periodic(_timer, _interval_ms * 1000ULL);
     }
 
@@ -145,18 +147,22 @@ public:
         esp_timer_stop(_timer);
         _repeat_count = 0;
     }
+    void reset(uint32_t interval_ms) {
+        esp_timer_stop(_timer);
+        _interval_ms = interval_ms;
+        _repeat_count = 0;
+    }
 
     // The only other functions we make available again in this class
     using Ticker::detach;
     using Ticker::active;
 
-private:
+protected:
     uint32_t _interval_ms;
     uint32_t _repeat_count_requested;
     uint32_t _repeat_count{0};
-    uint32_t _orig_arg;
+    uint32_t _orig_arg{0};
     callback_t _callback;
-    mem_func_t _mem_func;
 
     void _attach_ms(uint32_t milliseconds, callback_with_arg_t callback, uint32_t arg) {
         esp_timer_create_args_t _timerConfig;
@@ -170,6 +176,79 @@ private:
         }
         esp_timer_create(&_timerConfig, &_timer);
     }
+};
+
+
+/** @brief Same as MultiTimer but allows a pointer to a non-static
+ * member function as a callback.
+ * 
+ * For this to work without the overhead of a std::function object,
+ * the MultiTimerNonStatic object must be created with an additional
+ * template argument specifying the type of the object from which to call
+ * the non-static member function:
+ * 
+ * MultiTimerNonStatic<AppClass> timer;
+ * timer.attach_mem_func_ptr_ms(10, 1, &AppClass::member_func, this);
+ * timer.start();
+ * 
+ */
+template<typename TClass>
+class MultiTimerNonStatic : public MultiTimer
+{
+public:
+    using mem_func_ptr_t = void (TClass::*)();
+    using mem_func_ptr_with_count_t = void (TClass::*)(uint32_t);
+
+    /** @brief Same as attach_static_ms() but taking a pointer to a
+     * non-static member function as a callback, see class descrition.
+     * 
+     * Like for the static version, the member function can have an additional
+     * argument containing the current number of times the callback was called.
+     */
+    void attach_mem_func_ptr_ms(const uint32_t milliseconds,
+                                const uint32_t repeats,
+                                void(TClass::*memFuncPtr)(),
+                                TClass *inst) {
+        _interval_ms = milliseconds;
+        _repeat_count_requested = repeats;
+        _mem_func_ptr = memFuncPtr;
+        _orig_arg = reinterpret_cast<uint32_t>(inst);
+        auto cb_lambda = [](void *_this){
+            auto self = static_cast<decltype(this)>(_this);
+            if (++self->_repeat_count == self->_repeat_count_requested) {
+                self->stop();
+            }
+            auto inst = reinterpret_cast<TClass*>(self->_orig_arg);
+            //std::invoke(self->_mem_func_ptr, *inst);
+            auto mfp = self->_mem_func_ptr;
+            (inst->*mfp)();
+            };
+        _attach_ms(milliseconds, cb_lambda, (uint32_t)this);
+    }
+
+    void attach_mem_func_ptr_ms(const uint32_t milliseconds,
+                                const uint32_t repeats,
+                                void(TClass::*memFuncPtr)(uint32_t),
+                                TClass *inst) {
+        _interval_ms = milliseconds;
+        _repeat_count_requested = repeats;
+        _mem_func_ptr = memFuncPtr;
+        _orig_arg = reinterpret_cast<uint32_t>(inst);
+        auto cb_lambda = [](void *_this){
+            auto self = static_cast<decltype(this)>(_this);
+            if (++self->_repeat_count == self->_repeat_count_requested) {
+                self->stop();
+            }
+            auto inst = reinterpret_cast<TClass*>(self->_orig_arg);
+            //std::invoke(self->_mem_func_ptr, *inst, self->_repeat_count);
+            auto mfp = reinterpret_cast<mem_func_ptr_with_count_t>(self->_mem_func_ptr);
+            (inst->*mfp)(self->_repeat_count);
+            };
+        _attach_ms(milliseconds, cb_lambda, (uint32_t)this);
+    }
+
+protected:
+    mem_func_ptr_t _mem_func_ptr;
 };
 
 
