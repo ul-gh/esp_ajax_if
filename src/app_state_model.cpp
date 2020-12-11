@@ -5,7 +5,7 @@
 #include "esp_log.h"
 static const char* TAG = "app_state_model.cpp";
 
-#include "app_controller.hpp"
+#include "app_state_model.hpp"
 
 /* Serialize application live data into json_buf_data
  */

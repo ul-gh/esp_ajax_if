@@ -8,14 +8,17 @@
 #define MULTI_TIMER_HPP__
 
 //#include <functional> // Has std::invoke but is only available from C++17..
+//#include <type_traits> // C++20 version has the std::type_identity_t built in
 #include <Ticker.h>
 
-// Allows calling an ordinary class member function by inserting a
+// Allows calling a ordinary (non-static) class member function by inserting a
 // lambda function taking the instance pointer as an argument..
 // .. which because of creating a bound function should even perform better
 // than indirecting a member function pointer call?
-#define TICKER_MEMBER_CALL(NON_STATIC_MEMBER_FN) [](decltype(this) self){self->NON_STATIC_MEMBER_FN();}, this
-#define TICKER_MEMBER_CALL_WITH_COUNT(NON_STATIC_MEMBER_FN) [](decltype(this) self, uint32_t i){self->NON_STATIC_MEMBER_FN(i);}, this
+#define TICKER_MEMBER_CALL(NON_STATIC_MEMBER_FN) \
+    [](decltype(this) self){self->NON_STATIC_MEMBER_FN();}, this
+#define TICKER_MEMBER_CALL_WITH_COUNT(NON_STATIC_MEMBER_FN) \
+    [](decltype(this) self, uint32_t i){self->NON_STATIC_MEMBER_FN(i);}, this
 
 /** @brief Ticker timer derivative allowing for a fixed number of repeated calls.
  * 
@@ -30,6 +33,16 @@
 class MultiTimer : private Ticker
 {
 public:
+    ////////////////////// OBSOLETE when xtensa32 toolchain has C++20 by default:
+    // std::type_identity_t is part of C++20 but current toolchain uses C++11.
+    // The following block is backporting the feature and will be obsolete soon.
+    // When this is the case, include <type_traits> and use std::type_indentity_t
+    template<typename T>
+    struct type_identity {using type = T;};
+    template<class T>
+    using type_identity_t = typename type_identity<T>::type;
+    ////////////////////// End soon to be obsolete part
+
     using callback_with_arg_and_count_t = void (*)(void*, uint32_t);
 
     /** @brief Attach a free function, static member function
@@ -49,33 +62,36 @@ public:
      *   containing the current number of times the callback was called.
      *   (This wraps around after UINT32_MAX)
      * 
-     * Using the supplied macro TICKER_MEMBER_CALL() is (an efficient?) hack
-     * to call non-static member functions from a calling class object:
+     * The macros TICKER_MEMBER_CALL() and TICKER_MEMBER_CALL_WITH_COUNT()
+     * are a short-cut for calling non-static member functions from a calling
+     * class object by inserting a lambda in place of the member function name:
      * 
      * class PrintFoo {
      * public:
      *     MultiTimer timer;
-     *     const char* foo_str = "This is Foo no.: %d";
+     *     const char* foo_str = "This is Foo Number: %d";
      * 
      *     void print_foo(uint32_t i) {
      *         printf(foo_str, i);
      *     }
      * 
-     *     PrintFoo(uint32_t reps) {
-     *         timer.attach_static_ms(
-     *             500, reps, TICKER_MEMBER_CALL_WITH_COUNT(print_foo));
+     *     PrintFoo(uint32_t millisecs, uint32_t reps) {
+     *         timer.attach_static_ms(millisecs,
+     *                                reps,
+     *                                TICKER_MEMBER_CALL_WITH_COUNT(print_foo)
+     *                                );
      *     }
      * };
      * 
-     * PrintFoo print_6x_foo{6};
+     * PrintFoo print_6x_foo{500, 6};
      * print_6x_foo.timer.start();
      * 
      */
     template <typename TArg>
-    void attach_static_ms(const uint32_t milliseconds,
-                          const uint32_t total_repeat_count,
-                          void (*callback)(type_identity_t<TArg>, uint32_t),
-                          TArg arg) {
+    esp_err_t attach_static_ms(const uint32_t milliseconds,
+                               const uint32_t total_repeat_count,
+                               void (*callback)(type_identity_t<TArg>, uint32_t),
+                               TArg arg) {
         static_assert(sizeof(TArg) <= sizeof(uint32_t),
                       "attach_ms() callback argument size must be <= 4 bytes");
         _interval_ms = milliseconds;
@@ -91,14 +107,14 @@ public:
             TArg arg = (TArg)(self->_orig_arg);
             cb(arg, self->_repeat_count);
             };
-        _attach_ms(milliseconds, cb_lambda, (uint32_t)this);
+        return _attach_ms(milliseconds, cb_lambda, (uint32_t)this);
     }
 
     template <typename TArg>
-    void attach_static_ms(const uint32_t milliseconds,
-                          const uint32_t total_repeat_count,
-                          void (*callback)(type_identity_t<TArg>),
-                          TArg arg) {
+    esp_err_t attach_static_ms(const uint32_t milliseconds,
+                               const uint32_t total_repeat_count,
+                               void (*callback)(type_identity_t<TArg>),
+                               TArg arg) {
         static_assert(sizeof(TArg) <= sizeof(uint32_t),
                       "attach_ms() callback argument size must be <= 4 bytes");
         _interval_ms = milliseconds;
@@ -114,12 +130,12 @@ public:
             TArg arg = (TArg)(self->_orig_arg);
             cb(arg);
             };
-        _attach_ms(milliseconds, cb_lambda, (uint32_t)this);
+        return _attach_ms(milliseconds, cb_lambda, (uint32_t)this);
     }
 
-    void attach_static_ms(const uint32_t milliseconds,
-                          const uint32_t total_repeat_count,
-                          callback_t callback) {
+    esp_err_t attach_static_ms(const uint32_t milliseconds,
+                               const uint32_t total_repeat_count,
+                               callback_t callback) {
         _interval_ms = milliseconds;
         _repeat_count_requested = total_repeat_count;
         _callback = reinterpret_cast<callback_t>(callback);
@@ -130,7 +146,7 @@ public:
             }
             self->_callback();
             };
-        _attach_ms(milliseconds, cb_lambda, (uint32_t)this);
+        return _attach_ms(milliseconds, cb_lambda, (uint32_t)this);
     }
 
     /** Simple version without return code for use as a callback
@@ -154,30 +170,19 @@ public:
 
     void stop() {
         esp_timer_stop(_timer);
+        _repeat_count = 0;
     }
     esp_err_t stop_return_errors() {
-        return esp_timer_stop(_timer);
+        esp_err_t errors = esp_timer_stop(_timer);
+        _repeat_count = 0;
+        return errors;
     }
 
-    void reset() {
+    void pause() {
         esp_timer_stop(_timer);
-        _repeat_count = 0;
     }
-    void reset(uint32_t interval_ms) {
-        esp_timer_stop(_timer);
-        _interval_ms = interval_ms;
-        _repeat_count = 0;
-    }
-    esp_err_t reset_return_errors() {
-        esp_err_t errors = esp_timer_stop(_timer);
-        _repeat_count = 0;
-        return errors;
-    }
-    esp_err_t reset_return_errors(uint32_t interval_ms) {
-        esp_err_t errors = esp_timer_stop(_timer);
-        _interval_ms = interval_ms;
-        _repeat_count = 0;
-        return errors;
+    esp_err_t pause_return_errors() {
+        return esp_timer_stop(_timer);
     }
 
     // The only other functions we make available again in this class
@@ -191,7 +196,7 @@ protected:
     uint32_t _orig_arg{0};
     callback_t _callback;
 
-    void _attach_ms(uint32_t milliseconds, callback_with_arg_t callback, uint32_t arg) {
+    esp_err_t _attach_ms(uint32_t milliseconds, callback_with_arg_t callback, uint32_t arg) {
         esp_timer_create_args_t _timerConfig;
         _timerConfig.arg = reinterpret_cast<void*>(arg);
         _timerConfig.callback = callback;
@@ -201,7 +206,7 @@ protected:
             esp_timer_stop(_timer);
             esp_timer_delete(_timer);
         }
-        esp_timer_create(&_timerConfig, &_timer);
+        return esp_timer_create(&_timerConfig, &_timer);
     }
 };
 
@@ -232,13 +237,13 @@ public:
      * Like for the static version, the member function can have an additional
      * argument containing the current number of times the callback was called.
      */
-    void attach_mem_func_ptr_ms(const uint32_t milliseconds,
-                                const uint32_t repeats,
-                                void(TClass::*memFuncPtr)(),
-                                TClass *inst) {
+    esp_err_t attach_mem_func_ptr_ms(const uint32_t milliseconds,
+                                     const uint32_t repeats,
+                                     mem_func_ptr_t mem_func_ptr,
+                                     TClass *inst) {
         _interval_ms = milliseconds;
         _repeat_count_requested = repeats;
-        _mem_func_ptr = memFuncPtr;
+        _mem_func_ptr = mem_func_ptr;
         _orig_arg = reinterpret_cast<uint32_t>(inst);
         auto cb_lambda = [](void *_this){
             auto self = static_cast<decltype(this)>(_this);
@@ -250,16 +255,16 @@ public:
             auto mfp = self->_mem_func_ptr;
             (inst->*mfp)();
             };
-        _attach_ms(milliseconds, cb_lambda, (uint32_t)this);
+        return _attach_ms(milliseconds, cb_lambda, (uint32_t)this);
     }
 
-    void attach_mem_func_ptr_ms(const uint32_t milliseconds,
-                                const uint32_t repeats,
-                                void(TClass::*memFuncPtr)(uint32_t),
-                                TClass *inst) {
+    esp_err_t attach_mem_func_ptr_ms(const uint32_t milliseconds,
+                                     const uint32_t repeats,
+                                     mem_func_ptr_with_count_t mem_func_ptr,
+                                     TClass *inst) {
         _interval_ms = milliseconds;
         _repeat_count_requested = repeats;
-        _mem_func_ptr = memFuncPtr;
+        _mem_func_ptr = mem_func_ptr;
         _orig_arg = reinterpret_cast<uint32_t>(inst);
         auto cb_lambda = [](void *_this){
             auto self = static_cast<decltype(this)>(_this);
@@ -271,7 +276,7 @@ public:
             auto mfp = reinterpret_cast<mem_func_ptr_with_count_t>(self->_mem_func_ptr);
             (inst->*mfp)(self->_repeat_count);
             };
-        _attach_ms(milliseconds, cb_lambda, (uint32_t)this);
+        return _attach_ms(milliseconds, cb_lambda, (uint32_t)this);
     }
 
 protected:

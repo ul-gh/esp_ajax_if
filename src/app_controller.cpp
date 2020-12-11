@@ -15,7 +15,6 @@
 #include "freertos/task.h"
 #include "freertos/timers.h"
 #include "freertos/event_groups.h"
-#include "driver/mcpwm.h"
 #include <Arduino.h>
 
 #include "ps_pwm.h"
@@ -66,7 +65,7 @@ TaskHandle_t AppController::_app_event_task_handle;
 // FreeRTOS event group handle for triggering event task actions
 EventGroupHandle_t AppController::_app_event_group;
 
-AppController::AppController(APIServer* api_server)
+AppController::AppController(APIServer *api_server)
     :
     // HTTP AJAX API server instance was created before
     api_server{api_server}
@@ -92,15 +91,50 @@ AppController::~AppController() {
  */
 void AppController::begin() {
     ESP_LOGD(TAG, "Activating Gate driver power supply...");
-    aux_hw_drv.set_drv_supply_active("true");
+    aux_hw_drv.set_drv_supply_active(true);
     _register_http_api(api_server);
     _connect_timer_callbacks();
 }
 
-//////////// Application logic ///////////
+//////////// Application API ///////////
+void AppController::set_frequency_min_khz(float n) {
+    state.frequency_min = n * 1E3;
+    _send_state_changed_event();
+}
+void AppController::set_frequency_max_khz(float n) {
+    state.frequency_max = n * 1E3;
+    _send_state_changed_event();
+}
+
+void AppController::set_frequency_khz(float n) {
+    state.pspwm_setpoint->frequency = n * 1E3;
+    API_CHOICE_SET_FREQUENCY(app_conf.mcpwm_num, state.pspwm_setpoint->frequency);
+    _send_state_changed_event();
+}
+void AppController::set_duty_percent(float n) {
+    state.pspwm_setpoint->ps_duty = n / 100;
+    API_CHOICE_SET_PS_DUTY(app_conf.mcpwm_num, state.pspwm_setpoint->ps_duty);
+    _send_state_changed_event();
+}
+
+void AppController::set_lag_dt_ns(float n) {
+    state.pspwm_setpoint->lag_red = n * 1E-9;
+    API_CHOICE_SET_DEADTIMES(app_conf.mcpwm_num,
+                             state.pspwm_setpoint->lead_red,
+                             state.pspwm_setpoint->lag_red);
+    _send_state_changed_event();
+}
+void AppController::set_lead_dt_ns(float n) {
+    state.pspwm_setpoint->lead_red = n * 1E-9;
+    API_CHOICE_SET_DEADTIMES(app_conf.mcpwm_num,
+                             state.pspwm_setpoint->lead_red,
+                             state.pspwm_setpoint->lag_red);
+    _send_state_changed_event();
+}
+
 /* Activate PWM power output if arg is true
  */
-void AppController::set_pwm_output(bool state){
+void AppController::set_power_pwm_active(bool state){
     if (state == true) {
         // aux_hw_drv.set_drv_disabled(false);
         pspwm_resync_enable_output(app_conf.mcpwm_num);
@@ -112,14 +146,47 @@ void AppController::set_pwm_output(bool state){
 }
 
 void AppController::trigger_oneshot(){
+    // Enable the output. Timer will disable it again.
+    set_power_pwm_active(true); // Sends state_changed event
     // The timer callback also sends a state_changed event
-    power_output_timer.start();
+    esp_err_t errors = power_output_timer.start_return_errors();
+    if (errors == ESP_ERR_INVALID_ARG) {
+        set_power_pwm_active(false);
+        ESP_LOGE(TAG, "Critical error starting timer. Abort.");
+        abort();
+    }
 }
 
+// The output is /not/ enabled again, it must be re-enabled explicitly.
 void AppController::clear_shutdown(){
-    // The output is /not/ enabled again, it must be re-enabled explicitly.
-    // The timer callback also sends a state_changed event
-    oc_reset_timer.start();
+    // Set the GPIO pin to reset external hardware fault latch
+    aux_hw_drv.reset_oc_shutdown_start();
+    // The timer callback continues the reset cycle and
+    // sends a state_changed event when finished.
+    esp_err_t errors = oc_reset_timer.start_return_errors();
+    if (errors == ESP_ERR_INVALID_ARG) {
+        aux_hw_drv.reset_oc_shutdown_finish();
+        ESP_LOGE(TAG, "Critical error starting timer. Abort.");
+        abort();
+    };
+}
+
+void AppController::set_current_limit(float n) {
+    aux_hw_drv.set_current_limit(n);
+    _send_state_changed_event();
+}
+
+void AppController::set_relay_ref_active(bool state) {
+    aux_hw_drv.set_relay_ref_active(state);
+    _send_state_changed_event();
+}
+void AppController::set_relay_dut_active(bool state) {
+    aux_hw_drv.set_relay_dut_active(state);
+    _send_state_changed_event();
+}
+void AppController::set_fan_active(bool state) {
+    aux_hw_drv.set_fan_active(state);
+    _send_state_changed_event();
 }
 
 
@@ -136,14 +203,14 @@ void AppController::_initialize_ps_pwm_drv() {
         app_conf.init_power_pwm_active,
         app_conf.disable_action_lead_leg, app_conf.disable_action_lag_leg);
     errors |= pspwm_get_setpoint_limits_ptr(app_conf.mcpwm_num,
-                                            &(state.pspwm_setpoint_limits));
-    errors |= pspwm_get_setpoint_ptr(app_conf.mcpwm_num, &(state.pspwm_setpoint));
-    errors |= pspwm_get_clk_conf_ptr(app_conf.mcpwm_num, &(state.pspwm_clk_conf));
+                                            &state.pspwm_setpoint_limits);
+    errors |= pspwm_get_setpoint_ptr(app_conf.mcpwm_num, &state.pspwm_setpoint);
+    errors |= pspwm_get_clk_conf_ptr(app_conf.mcpwm_num, &state.pspwm_clk_conf);
     errors |= pspwm_enable_hw_fault_shutdown(app_conf.mcpwm_num,
                                              app_conf.gpio_fault_shutdown,
                                              MCPWM_LOW_LEVEL_TGR);
     // Pull-down enabled for low-level shutdown active default state
-    errors |= gpio_pulldown_en((gpio_num_t)app_conf.gpio_fault_shutdown);
+    errors |= gpio_pulldown_en(app_conf.gpio_fault_shutdown);
     if (errors != ESP_OK) {
         ESP_LOGE(TAG, "Error initializing the PS-PWM module!");
         abort();
@@ -165,142 +232,81 @@ void AppController::_create_app_event_task() {
     }
 }
 
+
 /* Register all application HTTP GET API callbacks into the HTPP server
  */
 void AppController::_register_http_api(APIServer* api_server) {
     CbVoidT cb_void;
     CbFloatT cb_float;
     CbStringT cb_text;
-
-    // set_frequency_min
-    cb_float = [this](const float n) {
-        state.frequency_min = n * 1E3;
-        _send_state_changed_event();
-        };
+    // "set_frequency_min"
+    cb_float = [this](float n) {set_frequency_min_khz(n);};
     api_server->register_api_cb("set_frequency_min", cb_float);
-
-    // set_frequency_max
-    cb_float = [this](const float n) {
-        state.frequency_max = n * 1E3;
-        _send_state_changed_event();
-        };
+    // "set_frequency_max"
+    cb_float = [this](float n) {set_frequency_max_khz(n);};
     api_server->register_api_cb("set_frequency_max", cb_float);
-
-    // set_frequency
-    cb_float = [this](const float n) {
-        state.pspwm_setpoint->frequency = n * 1E3;
-        API_CHOICE_SET_FREQUENCY(app_conf.mcpwm_num, state.pspwm_setpoint->frequency);
-        _send_state_changed_event();
-        };
+    // "set_frequency"
+    cb_float = [this](float n) {set_frequency_khz(n);};
     api_server->register_api_cb("set_frequency", cb_float);
-
-    // set_duty
-    cb_float = [this](const float n) {
-        state.pspwm_setpoint->ps_duty = n / 100;
-        API_CHOICE_SET_PS_DUTY(app_conf.mcpwm_num, state.pspwm_setpoint->ps_duty);
-        _send_state_changed_event();
-        };
+    // "set_duty"
+    cb_float = [this](float n) {set_duty_percent(n);};
     api_server->register_api_cb("set_duty", cb_float);
-
-    // set_lag_dt
-    cb_float = [this](const float n) {
-        state.pspwm_setpoint->lag_red = n * 1E-9;
-        API_CHOICE_SET_DEADTIMES(app_conf.mcpwm_num,
-                                 state.pspwm_setpoint->lead_red,
-                                 state.pspwm_setpoint->lag_red);
-        _send_state_changed_event();
-        };
+    // "set_lag_dt"
+    cb_float = [this](float n) {set_lag_dt_ns(n);};
     api_server->register_api_cb("set_lag_dt", cb_float);
-
-    // set_lead_dt
-    cb_float = [this](const float n) {
-        state.pspwm_setpoint->lead_red = n * 1E-9;
-        API_CHOICE_SET_DEADTIMES(app_conf.mcpwm_num,
-                                 state.pspwm_setpoint->lead_red,
-                                 state.pspwm_setpoint->lag_red);
-        _send_state_changed_event();
-        };
+    // "set_lead_dt"
+    cb_float = [this](float n) {set_lead_dt_ns(n);};
     api_server->register_api_cb("set_lead_dt", cb_float);
-
-    // set_power_pwm_active
-    cb_text = [this](const String &text) {set_pwm_output(text == "true");};
+    // "set_power_pwm_active"
+    cb_text = [this](const String &text) {set_power_pwm_active(text=="true");};
     api_server->register_api_cb("set_power_pwm_active", cb_text);
-
-    // trigger_oneshot
+    // "trigger_oneshot"
     cb_void = [this](){trigger_oneshot();};
     api_server->register_api_cb("trigger_oneshot", cb_void);
-
-    // clear_shutdown
-    /* Callback hell.. If HW overcurrent fault pin is cleared, we first reset
-     * the external hardware latch via aux_hw_drv.reset_oc_detect_shutdown()
-     * which receives as additional callback a lambda containing a call to
-     * pspwm_clear_hw_fault_shutdown_occurred() which on completion of
-     * hardware latch reset (1 ms delay via RTOS timer) then resets the PSPWM
-     * fault shutdown latch inside the SOC..
-     */
+    // "clear_shutdown"
     cb_void = [this](){clear_shutdown();};
     api_server->register_api_cb("clear_shutdown", cb_void);
-
-    //////////////// Callbacks for aux HW driver module
-    // set_current_limit
-    cb_float = [this](const float n) {
-        ESP_LOGD(TAG, "Request for set_current_limit received with value: %f", n);
-        aux_hw_drv.set_current_limit(n);
-        _send_state_changed_event();
-        };
+    // "set_current_limit"
+    cb_float = [this](float n) {set_current_limit(n);};
     api_server->register_api_cb("set_current_limit", cb_float);
-
-    // set_relay_ref_active
-    cb_text = [this](const String &text) {
-        ESP_LOGD(TAG, "Request for set_relay_ref_active received!");
-        aux_hw_drv.set_relay_ref_active(text == "true");
-        _send_state_changed_event();
-        };
+    // "set_relay_ref_active"
+    cb_text = [this](const String &text) {set_relay_ref_active(text=="true");};
     api_server->register_api_cb("set_relay_ref_active", cb_text);
-
-    // set_relay_dut_active
-    cb_text = [this](const String &text) {
-        aux_hw_drv.set_relay_dut_active(text == "true");
-        _send_state_changed_event();
-        };
+    // "set_relay_dut_active"
+    cb_text = [this](const String &text) {set_relay_dut_active(text=="true");};
     api_server->register_api_cb("set_relay_dut_active", cb_text);
-
-    // set_fan_active
-    cb_text = [this](const String &text) {
-        aux_hw_drv.set_fan_active(text == "true");
-        _send_state_changed_event();
-        };
+    // "set_fan_active"
+    cb_text = [this](const String &text) {set_fan_active(text=="true");};
     api_server->register_api_cb("set_fan_active", cb_text);
 }
 
 /* Connect timer callbacks
  */
 void AppController::_connect_timer_callbacks(){
+    esp_err_t errors;
     // Configure timers triggering periodic events.
     // Fast events are used for triggering ADC conversion etc.
     event_timer_fast.attach_ms(
         app_conf.timer_fast_interval_ms,
         [](){xEventGroupSetBits(_app_event_group, EventFlags::timer_fast);}
-    );
-
+        );
     // Slow events are used for sending periodic SSE push messages updating the
     // application state as displayed by the remote clients
     event_timer_slow.attach_ms(
         app_conf.timer_slow_interval_ms,
         [](){xEventGroupSetBits(_app_event_group, EventFlags::timer_slow);}
-    );
-
+        );
     // Timer for generating output pulses
-    power_output_timer.attach_static_ms(
+    errors = power_output_timer.attach_static_ms(
         state.oneshot_power_pulse_length_ms,
-        2,
-        [](AppController *self, uint32_t repeat_count){
-            // Set output active (true) on first call, disable on any other call
-            self->set_pwm_output(repeat_count == 1);
+        1,
+        [](AppController *self){
+            // Output was activated before. Disable it again.
+            self->set_power_pwm_active(false);
             self->_send_state_changed_event();
         }, 
-        this);
-
+        this
+        );
     // Hardware overcurrent reset needs a pulse which is generated by this timer
     //
     // FIXME: Hardware has redundant latch but no separate oc detect line.
@@ -311,29 +317,31 @@ void AppController::_connect_timer_callbacks(){
     //    return;
     //}
     //
-    // This multitimer instance calls the lambda three times in a row.
-    // First call sets the external reset pin active, second call clears
-    // the reset line, third call resets the PSPWM module internal error flag
-    // and sends a notification event.
+    // This multitimer instance calls the lambda two times in a row.
+    // First call clears the reset GPIO which was set before, second call resets
+    // the PSPWM module internal error flag and sends a notification event.
     // The output is /not/ enabled again, it must be re-enabled explicitly
-    oc_reset_timer.attach_static_ms(
+    errors |= oc_reset_timer.attach_static_ms(
         aux_hw_drv.aux_hw_conf.oc_reset_pulse_length_ms,
-        3,
+        2,
         [](AppController* self, uint32_t repeat_count){
             ESP_LOGD(TAG, "Reset called... Counter is: %d  millis is: %lu",
                         repeat_count, millis());
             if (repeat_count == 1) {
-                // Set the GPIO pin to reset external fault latch
-                self->aux_hw_drv.reset_oc_shutdown_start();
-            } else if (repeat_count == 2) {
                 self->aux_hw_drv.reset_oc_shutdown_finish();
-            } else if (repeat_count == 3) {
+            } else if (repeat_count == 2) {
                 ESP_LOGD(TAG, "External HW reset done. Resetting SOC fault latch...");
                 pspwm_clear_hw_fault_shutdown_occurred(self->app_conf.mcpwm_num);
                 self->_send_state_changed_event();
             }
         },
-        this);
+        this
+        );
+    // Timers are essential
+    if (errors != ESP_OK) {
+        ESP_LOGE(TAG, "Application timer initialization failed! Abort..");
+        abort();
+    }
 }
 
 //////////// Application task related functions ///////////

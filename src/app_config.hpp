@@ -1,9 +1,11 @@
 #ifndef APP_CONFIG_HPP__
 #define APP_CONFIG_HPP__
 
+#include "FreeRTOS.h"
 #include "driver/mcpwm.h"
 #include "driver/gpio.h"
 #include "driver/ledc.h"
+#include "driver/adc.h"
 
 /** @brief Application configuration and default values for class AppController
  */
@@ -28,12 +30,12 @@ struct AppConfig
     // MCPWM unit can be [0,1]
     mcpwm_unit_t mcpwm_num{MCPWM_UNIT_0};
     // GPIO config for PWM output
-    int gpio_pwm0a_out{27}; // PWM0A := LEAD leg, Low Side
-    int gpio_pwm0b_out{26}; // PWM0B := LEAD leg, High Side
-    int gpio_pwm1a_out{25}; // PWM1A := LAG leg, Low Side
-    int gpio_pwm1b_out{33}; // PWM1B := LAG leg, High Side
+    gpio_num_t gpio_pwm0a_out{GPIO_NUM_27}; // PWM0A := LEAD leg, Low Side
+    gpio_num_t gpio_pwm0b_out{GPIO_NUM_26}; // PWM0B := LEAD leg, High Side
+    gpio_num_t gpio_pwm1a_out{GPIO_NUM_25}; // PWM1A := LAG leg, Low Side
+    gpio_num_t gpio_pwm1b_out{GPIO_NUM_33}; // PWM1B := LAG leg, High Side
     // Shutdown/fault input for PWM outputs
-    int gpio_fault_shutdown{4};
+    gpio_num_t gpio_fault_shutdown{GPIO_NUM_4};
     // Active low / active high selection for fault input pin
     mcpwm_fault_input_level_t fault_pin_active_level{MCPWM_LOW_LEVEL_TGR};
     // Define here if the output pins shall be forced low or high
@@ -59,22 +61,89 @@ struct AppConfig
 };
 
 
+/** @brief ADC configuration and calibration data
+ */
+struct AdcTempConfig
+{
+    /************************************************************************
+     * Configuration
+     */
+
+    /** @brief ADC channel for AUX temperature sensor */
+    adc1_channel_t temp_ch_aux = ADC1_CHANNEL_0; // Sensor VP
+    /** @brief ADC channel for heatsink temperature sensor */
+    adc1_channel_t temp_ch_heatsink = ADC1_CHANNEL_3; // Sensor VN
+
+    ////////// Configuration constants for get_kty_temp_lin()
+    float temp_fsr_lower_lin = 0.0;
+    float temp_fsr_upper_lin = 100.0;
+    /** Voltages defining full-scale-range in mV */
+    int32_t v_in_fsr_lower_lin = 886; // Corresponds to 0°C
+    int32_t v_in_fsr_upper_lin = 1428; // Corresponds to 100°C
+    ////////// Configuration constants for get_kty_temp_pwl()
+    /** Voltages defining full-scale-range in mV */
+    int32_t v_in_fsr_lower_lut = 596; // Corresponds to -55°C
+    int32_t v_in_fsr_upper_lut = 1646; // Corresponds to 150°C
+
+    /** @brief Look-Up-Table temperatures for 31 equidistant voltage steps.
+     * Table only valid for linearised circuit using 2.2 kOhms series resistor
+     * where ADC input voltage steps correspond to the following
+     * temperature values in °C.
+     * 
+     * For LUT values, see ../util/kty81_1xx_sensor_generate_lut/kty81_lut.py
+     */
+    std::array<const float, 32> lut_temp {
+    // For KTY81-121:
+        -55.0       , -48.22273805, -41.51141124, -34.84623091,
+        -28.34434926, -22.05459193, -15.78849403,  -9.53746745,
+         -3.3772341 ,   2.7675195 ,   8.9372679 ,  15.0916243 ,
+         21.14820431,  27.2082161 ,  33.34543424,  39.41134763,
+         45.57173941,  51.73398583,  57.85244115,  64.10680179,
+         70.45422093,  76.763773  ,  83.14712256,  89.64071316,
+         96.17984636, 102.82297981, 109.58309561, 116.4296579 ,
+        123.60532846, 131.27866698, 139.78106609, 150.0};
+    // For KTY81-110 and KTY81-120:
+    //std::array<const float, 32> lut_temp {
+    //    -55.0       , -48.16279303, -41.39749472, -34.8911357 ,
+    //    -28.54294667, -22.192432  , -15.83544756,  -9.56004681,
+    //     -3.43833483,   2.66313257,   8.80135444,  14.90432723,
+    //     20.97767882,  27.03976174,  33.13792626,  39.28966437,
+    //     45.38382931,  51.48407173,  57.67841773,  63.97159787,
+    //     70.30279723,  76.61562129,  83.00362829,  89.50586837,
+    //     96.07234208, 102.68301035, 109.39886725, 116.34253305,
+    //    123.5137051 , 131.2558412 , 139.76912438, 150.0};
+
+    ////////// ADC hardware initialisation constants
+    uint32_t default_vref{1100};
+    uint16_t oversampling_ratio{64};
+    uint16_t moving_average_filter_len{16};
+    adc_bits_width_t bit_width = ADC_WIDTH_BIT_12;
+
+    /** @brief Suggested ADC input voltage Range for ESP32 using ADC_ATTEN_DB_6
+     * is 150 ~ 1750 millivolts according to the SDK documentation for function
+     * adc1_config_channel_atten(). With reduced accuracy, FSR is approx. 2.2V.
+     */
+    adc_atten_t temp_sense_attenuation = ADC_ATTEN_DB_6;
+    adc_unit_t unit = ADC_UNIT_1;
+};
+
+
 /** @brief Hardware configuration for AuxHwDrv
  */
 struct AuxHwDrvConfig
 {
     // GPIO config, outputs //
-    static constexpr int gpio_fan{2};
-    static constexpr int gpio_overcurrent_reset{16};
-    static constexpr int gpio_relay_ref{18};
-    static constexpr int gpio_relay_dut{19};
-    static constexpr int gpio_delta_sigma_out{21};
-    static constexpr int gpio_drv_supply_en{23};
-    static constexpr int gpio_drv_disable{32};
+    static constexpr gpio_num_t gpio_fan{GPIO_NUM_2};
+    static constexpr gpio_num_t gpio_overcurrent_reset{GPIO_NUM_16};
+    static constexpr gpio_num_t gpio_relay_ref{GPIO_NUM_18};
+    static constexpr gpio_num_t gpio_relay_dut{GPIO_NUM_19};
+    static constexpr gpio_num_t gpio_delta_sigma_out{GPIO_NUM_21};
+    static constexpr gpio_num_t gpio_drv_supply_en{GPIO_NUM_23};
+    static constexpr gpio_num_t gpio_drv_disable{GPIO_NUM_32};
     // Handled by LEDC PWM API
-    static constexpr int gpio_curr_limit_reference_pwm{17};
+    static constexpr gpio_num_t gpio_curr_limit_reference_pwm{GPIO_NUM_17};
     // GPIO config, inputs //
-    static constexpr int gpio_delta_sigma_in{22};
+    static constexpr gpio_num_t gpio_delta_sigma_in{GPIO_NUM_22};
 
     // Structures for GPIO and PWM API //
     static constexpr gpio_config_t aux_periph_gpio_output_config {

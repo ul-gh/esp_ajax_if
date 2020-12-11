@@ -33,6 +33,7 @@ class AuxHwDrv
 public:
     static constexpr AuxHwDrvConfig aux_hw_conf{};
     AuxHwDrvState state;
+    AdcTemp adc_temp;
 
     AuxHwDrv();
     virtual ~AuxHwDrv();

@@ -25,29 +25,25 @@ constexpr gpio_config_t AuxHwDrvConfig::aux_periph_gpio_input_config;
 /******************************** API *************************************//**
  */
 AuxHwDrv::AuxHwDrv()
-    {
-        ESP_LOGI(TAG, "Configuring auxiliary HW control module...");
-        // Configure GPIO outputs
-        gpio_config(&aux_hw_conf.aux_periph_gpio_output_config);
-        // GPIO inputs
-        gpio_config(&aux_hw_conf.aux_periph_gpio_input_config);
+{
+    ESP_LOGI(TAG, "Configuring auxiliary HW control module...");
+    // Configure GPIO outputs
+    gpio_config(&aux_hw_conf.aux_periph_gpio_output_config);
+    // GPIO inputs
+    gpio_config(&aux_hw_conf.aux_periph_gpio_input_config);
 
-        // Initialize ADC
-        ESP_LOGI(TAG, "Initializing ADC...");
-        AdcTemp::adc_init_test_capabilities();
-
-        // Configure PWM for current limit analog reference output
-        ledc_timer_config(&aux_hw_conf.pwm_timer_config);
-        ledc_channel_config(&aux_hw_conf.curr_lim_pwm_ch_config);
-        
-        // Set initial state for the outputs
-        set_current_limit(state.current_limit);
-        set_relay_ref_active(state.relay_ref_active);
-        set_relay_dut_active(state.relay_dut_active);
-        set_fan_active(state.fan_active);
-        set_drv_supply_active(state.drv_supply_active);
-        set_drv_disabled(state.drv_disabled);
-    }
+    // Configure PWM for current limit analog reference output
+    ledc_timer_config(&aux_hw_conf.pwm_timer_config);
+    ledc_channel_config(&aux_hw_conf.curr_lim_pwm_ch_config);
+    
+    // Set initial state for the outputs
+    set_current_limit(state.current_limit);
+    set_relay_ref_active(state.relay_ref_active);
+    set_relay_dut_active(state.relay_dut_active);
+    set_fan_active(state.fan_active);
+    set_drv_supply_active(state.drv_supply_active);
+    set_drv_disabled(state.drv_disabled);
+}
 
 AuxHwDrv::~AuxHwDrv(){
 }
@@ -120,6 +116,6 @@ void AuxHwDrv::reset_oc_shutdown_finish() {
  * To be called periodically from PsPWMAppHwControl fast timer event.
  */
 void AuxHwDrv::update_temperature_sensors() {
-    state.aux_temp = AdcTemp::get_aux_temp();
-    state.heatsink_temp = AdcTemp::get_heatsink_temp();
+    state.aux_temp = adc_temp.get_aux_temp();
+    state.heatsink_temp = adc_temp.get_heatsink_temp();
 }
