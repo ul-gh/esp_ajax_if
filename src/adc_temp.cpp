@@ -14,18 +14,18 @@
  * U. Lukas 2020-09-30
  */
 #include "esp_log.h"
-static const char* TAG = "AdcTemp";
+static const char* TAG = "adc_temp.cpp";
 
 #include "adc_temp.hpp"
 
 // Following out-of-class definitions of static constexpr data members are
 // deprecated since C++17 (see: https://stackoverflow.com/a/57059723) but
 // provided to prevent linker errors with current versions of the toolchain:
-constexpr AdcTempConfig AdcTemp::conf;
+constexpr ESP32ADCConfig ESP32ADC::adc1_conf;
 
 
-AdcTemp::AdcTemp() {
-    adc_init_test_capabilities();
+ESP32ADC::ESP32ADC() {
+    _init_test_capabilities();
     filter_1.initialize(_get_sample(conf.temp_ch_heatsink));
     filter_2.initialize(_get_sample(conf.temp_ch_aux));
 }
@@ -33,7 +33,7 @@ AdcTemp::AdcTemp() {
 /** Initialisation of ADC
  * Must be called once before reading sensor values.
  */
-void AdcTemp::adc_init_test_capabilities(void) {
+void ESP32ADC::_init_test_capabilities(void) {
     check_efuse();
 
     adc1_config_width(conf.bit_width);
@@ -48,20 +48,19 @@ void AdcTemp::adc_init_test_capabilities(void) {
     print_characterisation_val_type(val_type);
 }
 
-/* Perform complete readout of temp_ch_heatsink
- * This does a recursive moving average over N=moving_average_filter_len values
- * and uses the LUT for conversion of voltage readings to degrees celsius.
+/** @brief Excellent precision temperature sensing using piecewise linear
+ * interpolation of Look-Up-Table values for a KTY81-121 type sensor.
+ * Use this if temperatures above 100°C ore below 0°C are to be measured.
  */
-float AdcTemp::get_heatsink_temp() {
+float SensorKTY81_121::get_temp_pwl() {
     uint16_t raw_value = _get_sample(conf.temp_ch_heatsink);
     return get_kty_temp_pwl(filter_1.moving_average(raw_value));
 }
 
-/* Perform complete readout of temp_ch_aux
- * This does a recursive moving average over N=moving_average_filter_len values
- * and uses the LUT for conversion of voltage readings to degrees celsius.
+/** @brief Fairly precise temperature conversion if the temperature sensor
+ * voltage has good linearisation. Worst results at temperature extremes.
  */
-float AdcTemp::get_aux_temp() {
+float SensorKTY81_121::get_temp_lin() {
     uint16_t raw_value = _get_sample(conf.temp_ch_aux);
     return get_kty_temp_pwl(filter_2.moving_average(raw_value));
 }
@@ -163,11 +162,11 @@ void AdcTemp::adc_test_register_direct(void) {
  */
 uint16_t AdcTemp::_get_sample(adc1_channel_t channel) {
     uint32_t adc_reading = 0;
-    //Multisampling
-    for (int i=0; i < conf.oversampling_ratio; i++) {
+    // Averaging seems necessary for the ESP32 ADC to obtain accurate results
+    for (int i=0; i < conf.get_sample_averaged_samples; i++) {
         adc_reading += adc1_get_raw(channel);
     }
-    adc_reading /= conf.oversampling_ratio;
+    adc_reading /= conf.get_sample_averaged_samples;
     //debug_print_sv("Raw ADC value:", adc_reading);
     //debug_print_sv("Fuse calibrated ADC conversion yields input voltage /mv:",
     //               esp_adc_cal_raw_to_voltage(adc_reading, adc_cal_characteristics));

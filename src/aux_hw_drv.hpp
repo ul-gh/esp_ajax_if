@@ -33,7 +33,9 @@ class AuxHwDrv
 public:
     static constexpr AuxHwDrvConfig aux_hw_conf{};
     AuxHwDrvState state;
-    AdcTemp adc_temp;
+    ESP32ADC adc;
+    SensorKTY81_121 aux_temp_sensor{adc, aux_hw_conf.temp_ch_aux};
+    SensorKTY81_121 heatsink_temp_sensor{adc, aux_hw_conf.temp_ch_heatsink};
 
     AuxHwDrv();
     virtual ~AuxHwDrv();
@@ -46,6 +48,9 @@ public:
     void set_drv_disabled(bool state);
     static void reset_oc_shutdown_start();
     static void reset_oc_shutdown_finish();
+    /** @brief Only updates the state structure for temperature sensors.
+     * Other state variables are only modified by setter functions above.
+     */
     void update_temperature_sensors();
 
 

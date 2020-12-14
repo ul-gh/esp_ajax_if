@@ -43,7 +43,7 @@ class AppController
 public:
     /** @brief Configuration and initial values for the application state
      */
-    static constexpr AppConfig app_conf{};
+    static constexpr auto app_conf = AppConfig{};
 
     // Runtime state plus JSON serialisation import/export
     AppState state;

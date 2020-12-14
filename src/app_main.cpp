@@ -29,29 +29,29 @@
 
 #define LOG_LOCAL_LEVEL ESP_LOG_DEBUG
 #include "esp_log.h"
-static const char* TAG = "app_main";
+static auto TAG = "app_main";
 
-static NetworkConfig net_conf;
-constexpr unsigned long serial_baudrate = 115200;
+static auto net_conf = NetworkConfig{};
+constexpr auto serial_baudrate = 115200ul;
 
 void update_debug_messages();
 void print_debug_messages();
 
 // Without name resolution, Windows and browser clients spam the server with
 // failing DNS queries. Also this is used by the WiFi Manager and portal page.
-DNSServer dns_server;
+auto dns_server = DNSServer{};
 
 // ESPAsyncWebserver must be one single instance
-AsyncWebServer http_backend{net_conf.http_tcp_port};
+auto http_backend = AsyncWebServer{net_conf.http_tcp_port};
 
 // HTTP server provides REST API + HTML5 AJAX web interface on port 80
-APIServer api_server{&http_backend};
+auto api_server = APIServer{&http_backend};
 
 // Application main controller.
 //
 // This registers the HTTP API callbacks, timer and interrupt handlers
 // and runs the application event loop in a separate FreeRTOS task.
-AppController app_controller{&api_server};
+auto app_controller = AppController{&api_server};
 
 
 void setup() {
@@ -80,7 +80,7 @@ void loop() {
 
 
 void update_debug_messages(){
-    static unsigned int loopctr;
+    static auto loopctr = 0u;
     loopctr++;
     if (loopctr > 100) {
         loopctr = 0;

@@ -11,7 +11,7 @@
 #include "aux_hw_drv.hpp"
 
 #include "esp_log.h"
-static const char* TAG = "AuxHwDrv";
+static auto TAG = "AuxHwDrv";
 
 // Following out-of-class definitions of static constexpr data members are
 // deprecated since C++17 (see: https://stackoverflow.com/a/57059723) but
@@ -52,8 +52,9 @@ void AuxHwDrv::set_current_limit(float value) {
     ESP_LOGD(TAG, "Setting new current limit: %f", value);
     state.current_limit = value;
 
-    uint32_t timer_lpoint_compare_value = aux_hw_conf.curr_limit_pwm_offset + (uint32_t)(
-        value * aux_hw_conf.curr_limit_pwm_scale);
+    auto timer_lpoint_compare_value =
+        aux_hw_conf.curr_limit_pwm_offset
+        + static_cast<uint32_t>(value * aux_hw_conf.curr_limit_pwm_scale);
     ledc_set_duty(aux_hw_conf.curr_lim_pwm_ch_config.speed_mode,
                   aux_hw_conf.curr_lim_pwm_ch_config.channel,
                   timer_lpoint_compare_value);
@@ -116,6 +117,6 @@ void AuxHwDrv::reset_oc_shutdown_finish() {
  * To be called periodically from PsPWMAppHwControl fast timer event.
  */
 void AuxHwDrv::update_temperature_sensors() {
-    state.aux_temp = adc_temp.get_aux_temp();
-    state.heatsink_temp = adc_temp.get_heatsink_temp();
+    state.aux_temp = aux_temp_sensor.get_temp_pwl();
+    state.heatsink_temp = heatsink_temp_sensor.get_temp_pwl();
 }

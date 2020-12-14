@@ -63,60 +63,18 @@ struct AppConfig
 
 /** @brief ADC configuration and calibration data
  */
-struct AdcTempConfig
+struct ESP32ADCConfig
 {
     /************************************************************************
      * Configuration
      */
-
-    /** @brief ADC channel for AUX temperature sensor */
-    adc1_channel_t temp_ch_aux = ADC1_CHANNEL_0; // Sensor VP
-    /** @brief ADC channel for heatsink temperature sensor */
-    adc1_channel_t temp_ch_heatsink = ADC1_CHANNEL_3; // Sensor VN
-
-    ////////// Configuration constants for get_kty_temp_lin()
-    float temp_fsr_lower_lin = 0.0;
-    float temp_fsr_upper_lin = 100.0;
-    /** Voltages defining full-scale-range in mV */
-    int32_t v_in_fsr_lower_lin = 886; // Corresponds to 0°C
-    int32_t v_in_fsr_upper_lin = 1428; // Corresponds to 100°C
-    ////////// Configuration constants for get_kty_temp_pwl()
-    /** Voltages defining full-scale-range in mV */
-    int32_t v_in_fsr_lower_lut = 596; // Corresponds to -55°C
-    int32_t v_in_fsr_upper_lut = 1646; // Corresponds to 150°C
-
-    /** @brief Look-Up-Table temperatures for 31 equidistant voltage steps.
-     * Table only valid for linearised circuit using 2.2 kOhms series resistor
-     * where ADC input voltage steps correspond to the following
-     * temperature values in °C.
-     * 
-     * For LUT values, see ../util/kty81_1xx_sensor_generate_lut/kty81_lut.py
-     */
-    std::array<const float, 32> lut_temp {
-    // For KTY81-121:
-        -55.0       , -48.22273805, -41.51141124, -34.84623091,
-        -28.34434926, -22.05459193, -15.78849403,  -9.53746745,
-         -3.3772341 ,   2.7675195 ,   8.9372679 ,  15.0916243 ,
-         21.14820431,  27.2082161 ,  33.34543424,  39.41134763,
-         45.57173941,  51.73398583,  57.85244115,  64.10680179,
-         70.45422093,  76.763773  ,  83.14712256,  89.64071316,
-         96.17984636, 102.82297981, 109.58309561, 116.4296579 ,
-        123.60532846, 131.27866698, 139.78106609, 150.0};
-    // For KTY81-110 and KTY81-120:
-    //std::array<const float, 32> lut_temp {
-    //    -55.0       , -48.16279303, -41.39749472, -34.8911357 ,
-    //    -28.54294667, -22.192432  , -15.83544756,  -9.56004681,
-    //     -3.43833483,   2.66313257,   8.80135444,  14.90432723,
-    //     20.97767882,  27.03976174,  33.13792626,  39.28966437,
-    //     45.38382931,  51.48407173,  57.67841773,  63.97159787,
-    //     70.30279723,  76.61562129,  83.00362829,  89.50586837,
-    //     96.07234208, 102.68301035, 109.39886725, 116.34253305,
-    //    123.5137051 , 131.2558412 , 139.76912438, 150.0};
-
     ////////// ADC hardware initialisation constants
+    // In case the calibration fuse bits are not available
     uint32_t default_vref{1100};
-    uint16_t oversampling_ratio{64};
-    uint16_t moving_average_filter_len{16};
+    // ESP32ADC::_get_sample() does an average over this many values
+    uint16_t get_sample_averaged_samples{64};
+    uint16_t moving_average_filter_1_len{16};
+    uint16_t moving_average_filter_2_len{16};
     adc_bits_width_t bit_width = ADC_WIDTH_BIT_12;
 
     /** @brief Suggested ADC input voltage Range for ESP32 using ADC_ATTEN_DB_6
@@ -131,8 +89,12 @@ struct AdcTempConfig
 /** @brief Hardware configuration for AuxHwDrv
  */
 struct AuxHwDrvConfig
-{
-    // GPIO config, outputs //
+{   // Analog inputs config //
+    /** @brief ADC channel for AUX temperature sensor */
+    adc1_channel_t temp_ch_aux = ADC1_CHANNEL_0; // Sensor VP
+    /** @brief ADC channel for heatsink temperature sensor */
+    adc1_channel_t temp_ch_heatsink = ADC1_CHANNEL_3; // Sensor VN
+    // Digital output GPIOs //
     static constexpr gpio_num_t gpio_fan{GPIO_NUM_2};
     static constexpr gpio_num_t gpio_overcurrent_reset{GPIO_NUM_16};
     static constexpr gpio_num_t gpio_relay_ref{GPIO_NUM_18};
