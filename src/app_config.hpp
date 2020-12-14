@@ -72,16 +72,8 @@ struct ESP32ADCConfig
     // In case the calibration fuse bits are not available
     uint32_t default_vref{1100};
     // ESP32ADC::_get_sample() does an average over this many values
-    uint16_t get_sample_averaged_samples{64};
-    uint16_t moving_average_filter_1_len{16};
-    uint16_t moving_average_filter_2_len{16};
+    uint16_t averaged_samples{64};
     adc_bits_width_t bit_width = ADC_WIDTH_BIT_12;
-
-    /** @brief Suggested ADC input voltage Range for ESP32 using ADC_ATTEN_DB_6
-     * is 150 ~ 1750 millivolts according to the SDK documentation for function
-     * adc1_config_channel_atten(). With reduced accuracy, FSR is approx. 2.2V.
-     */
-    adc_atten_t temp_sense_attenuation = ADC_ATTEN_DB_6;
     adc_unit_t unit = ADC_UNIT_1;
 };
 

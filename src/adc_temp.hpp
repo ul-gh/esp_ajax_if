@@ -53,6 +53,12 @@
  */
 struct KTY81_1xxCommonConfig
 {
+    
+    /** @brief Suggested ADC input voltage Range for ESP32 using ADC_ATTEN_DB_6
+     * is 150 ~ 1750 millivolts according to the SDK documentation for function
+     * adc1_config_channel_atten(). With reduced accuracy, FSR is approx. 2.2V.
+     */
+    adc_atten_t temp_sense_attenuation = ADC_ATTEN_DB_6;
     ////////// If activated: Moving average filter length. Must be power of two.
     size_t moving_average_filter_len = 16;
     ////////// Configuration constants for get_kty_temp_lin()
@@ -124,7 +130,7 @@ public:
 
 
 protected:
-    esp_adc_cal_characteristics_t *adc_cal_characteristics{nullptr};
+    esp_adc_cal_characteristics_t adc_cal_characteristics;
     U16MovingAverage<conf.moving_average_filter_1_len> filter_1;
     U16MovingAverage<conf.moving_average_filter_2_len> filter_2;
 
