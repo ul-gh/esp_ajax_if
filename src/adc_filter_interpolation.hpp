@@ -42,10 +42,14 @@ public:
     }
 
     uint16_t moving_average(uint16_t value_in) {
-        uint16_t value_out = input_buffer[current_index];
+        auto value_out = input_buffer[current_index];
         input_buffer[current_index] = value_in;
         current_index = (current_index + 1) % N;
         result_sum = result_sum + value_in - value_out;
+        return result_sum / N;
+    }
+
+    uint16_t get_result() {
         return result_sum / N;
     }
 
@@ -62,6 +66,69 @@ protected:
  * and ending with y(x=in_fsr_upper).
  *
  * y-values of the LUT must correspond to equidistant X-axis points.
+ * 
+ * This version has run-time settable input value range.
+ */
+template<uint32_t N>
+struct EquidistantPWL
+{
+    const std::array<float, N> lut;
+    int32_t in_fsr_lower;
+    int32_t in_fsr_upper;
+    float in_fsr_inv;
+
+    EquidistantPWL(const std::array<float, N> &lut,
+                   int32_t in_fsr_lower = 0,
+                   int32_t in_fsr_upper = 1)
+        : lut{lut}
+        , in_fsr_lower{in_fsr_lower}
+        , in_fsr_upper{in_fsr_upper}
+    {
+        // I guess this is obvious: assert(in_fsr_upper - in_fsr_lower != 0);
+        in_fsr_inv = 1.0f / (in_fsr_upper - in_fsr_lower);
+    }
+
+    float interpolate(int32_t x) {
+        constexpr auto n_lut_intervals = lut.size() - 1;
+        static_assert(n_lut_intervals > 0);
+        int32_t lut_index;
+        float partial_intervals;
+        if (x > in_fsr_lower) {
+            if (x < in_fsr_upper) {
+            partial_intervals = in_fsr_inv * static_cast<float>(
+                n_lut_intervals * (x - in_fsr_lower));
+            // Rounding down gives number of whole intervals as index into the LUT
+            lut_index = static_cast<int32_t>(partial_intervals);
+            // By subtracting the whole intervals, only the partial rest remains
+            partial_intervals -= lut_index;
+            } else {
+                lut_index = n_lut_intervals;
+                partial_intervals = 0.0f;
+            }
+        } else {
+            lut_index = 0;
+            partial_intervals = 0.0f;
+        }
+        // Interpolation interval start and end values
+        float interval_start = lut[lut_index];
+        float interval_end;
+        if (lut_index < n_lut_intervals) {
+            interval_end = lut[lut_index + 1];
+        } else {
+            interval_end = interval_start;
+        }
+        return interval_start + partial_intervals * (interval_end - interval_start);
+        }
+};
+
+/** @brief Piecewise linear interpolation of look-up-table (LUT) values.
+ *
+ * LUT values representing function values starting with y(x=in_fsr_lower)
+ * and ending with y(x=in_fsr_upper).
+ *
+ * y-values of the LUT must correspond to equidistant X-axis points.
+ * 
+ * This version is for compile-time-known input value range.
  */
 template<int32_t FSR_LOWER, int32_t FSR_UPPER, uint32_t N>
 struct EquidistantPWL
@@ -73,33 +140,32 @@ struct EquidistantPWL
     {}
 
     float interpolate(int32_t x) {
-        constexpr int32_t in_fsr_lower{FSR_LOWER};
-        constexpr int32_t in_fsr_upper{FSR_UPPER};
-        constexpr int32_t in_fsr = in_fsr_upper - in_fsr_lower;
-        constexpr int32_t n_lut_intervals = lut.size() - 1;
-        static_assert(in_fsr > 0);
+        constexpr auto in_fsr_lower = FSR_LOWER;
+        constexpr auto in_fsr_upper = FSR_UPPER;
+        static_assert(in_fsr_upper - in_fsr_lower > 0);
+        constexpr auto in_fsr_inv = 1.0f / (in_fsr_upper - in_fsr_lower);
+        constexpr auto n_lut_intervals = lut.size() - 1;
         static_assert(n_lut_intervals > 0);
-        int32_t lut_index;
+        uint32_t lut_index;
         float partial_intervals;
         if (x > in_fsr_lower) {
             if (x < in_fsr_upper) {
-            partial_intervals = static_cast<float>(
-                n_lut_intervals * (x - in_fsr_lower)
-                ) / in_fsr;
+            partial_intervals = in_fsr_inv * static_cast<float>(
+                n_lut_intervals * (x - in_fsr_lower))
             // Rounding down gives number of whole intervals as index into the LUT
             lut_index = static_cast<int32_t>(partial_intervals);
             // By subtracting the whole intervals, only the partial rest remains
             partial_intervals -= lut_index;
             } else {
                 lut_index = n_lut_intervals;
-                partial_intervals = 0.0;
+                partial_intervals = 0.0f;
             }
         } else {
             lut_index = 0;
-            partial_intervals = 0.0;
+            partial_intervals = 0.0f;
         }
         // Interpolation interval start and end values
-        float interval_start = lut[lut_index];
+        auto interval_start = lut[lut_index];
         float interval_end;
         if (lut_index < n_lut_intervals) {
             interval_end = lut[lut_index + 1];

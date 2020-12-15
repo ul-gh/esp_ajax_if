@@ -13,40 +13,64 @@
  * License: GPL v.3 
  * U. Lukas 2020-09-30
  */
+#include <cmath>
+
 #include "esp_log.h"
 static const char* TAG = "adc_temp.cpp";
 
 #include "adc_temp.hpp"
 
-// Following out-of-class definitions of static constexpr data members are
-// deprecated since C++17 (see: https://stackoverflow.com/a/57059723) but
-// provided to prevent linker errors with current versions of the toolchain:
-constexpr ESP32ADCConfig ESP32ADC::adc1_conf;
 
+auto ESP32ADCChannel::bit_width_common;
+auto ESP32ADCChannel::hardware_initialized = false;
 
-ESP32ADC::ESP32ADC() {
-    _init_test_capabilities();
-    filter_1.initialize(_get_sample(conf.temp_ch_heatsink));
-    filter_2.initialize(_get_sample(conf.temp_ch_aux));
+ESP32ADCChannel::ESP32ADCChannel(adc1_channel_t channel_num,
+                                 adc_atten_t attenuation,
+                                 uint32_t averaged_samples,
+                                 adc_bits_width_t bit_width,
+                                 uint32_t default_vref)
+    : channel_num{channel_num}
+    , attenuation{attenuation}
+{
+    // Checks N is power of two and size limit is due to uint32_t sum
+    assert(averaged_samples <= 1<<16 && (averaged_samples & (averaged_samples-1)) == 0);
+    shift_value = log2(averaged_samples);
+    if (hardware_initialized) {
+        if (bit_width != bit_width_common) {
+            ESP_LOGE(TAG, "Bit width setting must be same for all channels");
+            abort();
+        }
+    } else {
+        bit_width_common = bit_width;
+        adc1_config_width(bit_width);
+        hardware_initialized = true;
+    }
+    adc1_config_channel_atten(channel_num, attenuation);
+    esp_adc_cal_characterize(
+        ADC_UNIT_1, attenuation, bit_width, default_vref, &calibration_data);
+
 }
 
-/** Initialisation of ADC
- * Must be called once before reading sensor values.
+
+/* Get raw ADC channel conversion value, repeats sampling
+ * a number of times: "oversampling_ratio".
  */
-void ESP32ADC::_init_test_capabilities(void) {
-    check_efuse();
-
-    adc1_config_width(conf.bit_width);
-    adc1_config_channel_atten(conf.temp_ch_heatsink, conf.temp_sense_attenuation);
-    adc1_config_channel_atten(conf.temp_ch_aux, conf.temp_sense_attenuation);
-
-    adc_cal_characteristics = static_cast<esp_adc_cal_characteristics_t *>(
-        calloc(1, sizeof(esp_adc_cal_characteristics_t)));
-    esp_adc_cal_value_t val_type = esp_adc_cal_characterize(
-        conf.unit, conf.temp_sense_attenuation, conf.bit_width,
-        conf.default_vref, adc_cal_characteristics);
-    print_characterisation_val_type(val_type);
+uint16_t ESP32ADCChannel::get_raw_averaged() {
+    auto adc_reading = 0u;
+    // Averaging seems necessary for the ESP32 ADC to obtain accurate results
+    for (auto i=0u; i < (1u<<shift_value); i++) {
+        adc_reading += adc1_get_raw(channel_num);
+    }
+    adc_reading >>= shift_value;
+    //debug_print_sv("Raw ADC value:", adc_reading);
+    //debug_print_sv("Fuse calibrated ADC conversion yields input voltage /mv:",
+    //               esp_adc_cal_raw_to_voltage(adc_reading, adc_cal_characteristics));
+    return static_cast<uint16_t>(adc_reading);
 }
+
+
+
+
 
 /** @brief Excellent precision temperature sensing using piecewise linear
  * interpolation of Look-Up-Table values for a KTY81-121 type sensor.
@@ -73,14 +97,8 @@ float AdcTemp::get_kty_temp_lin(uint16_t adc_raw_value) {
     assert(adc_cal_characteristics);
     constexpr int32_t coeff_a_scale = 65536;
     constexpr int32_t coeff_a_round = coeff_a_scale/2;
-    const int32_t adc_fsr_lower = (
-        ((conf.v_in_fsr_lower_lin - adc_cal_characteristics->coeff_b)
-         * coeff_a_scale)
-        - coeff_a_round) / adc_cal_characteristics->coeff_a;
-    const int32_t adc_fsr_upper = (
-        ((conf.v_in_fsr_upper_lin - adc_cal_characteristics->coeff_b)
-         * coeff_a_scale)
-        - coeff_a_round) / adc_cal_characteristics->coeff_a;
+    const int32_t adc_fsr_lower = 
+    const int32_t adc_fsr_upper = 
     constexpr float temp_fsr = conf.temp_fsr_upper_lin - conf.temp_fsr_lower_lin;
     const int32_t adc_fsr = adc_fsr_upper - adc_fsr_lower;
     const float temp_gain = temp_fsr / adc_fsr;
@@ -156,22 +174,6 @@ void AdcTemp::adc_test_register_direct(void) {
     ESP_LOGD(TAG, "Register direct, sampled value: %d", adc_value);
 }
 
-
-/* Get raw ADC channel conversion value, repeats sampling
- * a number of times: "oversampling_ratio".
- */
-uint16_t AdcTemp::_get_sample(adc1_channel_t channel) {
-    uint32_t adc_reading = 0;
-    // Averaging seems necessary for the ESP32 ADC to obtain accurate results
-    for (int i=0; i < conf.get_sample_averaged_samples; i++) {
-        adc_reading += adc1_get_raw(channel);
-    }
-    adc_reading /= conf.get_sample_averaged_samples;
-    //debug_print_sv("Raw ADC value:", adc_reading);
-    //debug_print_sv("Fuse calibrated ADC conversion yields input voltage /mv:",
-    //               esp_adc_cal_raw_to_voltage(adc_reading, adc_cal_characteristics));
-    return static_cast<uint16_t>(adc_reading);
-}
 
 
 /* Piecewise linear interpolation of look-up-table (LUT) values

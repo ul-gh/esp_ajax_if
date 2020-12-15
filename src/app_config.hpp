@@ -71,10 +71,9 @@ struct ESP32ADCConfig
     ////////// ADC hardware initialisation constants
     // In case the calibration fuse bits are not available
     uint32_t default_vref{1100};
-    // ESP32ADC::_get_sample() does an average over this many values
+    // ESP32ADCChannel::get_raw_averaged() does an average over this many values
     uint16_t averaged_samples{64};
     adc_bits_width_t bit_width = ADC_WIDTH_BIT_12;
-    adc_unit_t unit = ADC_UNIT_1;
 };
 
 
