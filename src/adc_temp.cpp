@@ -21,7 +21,6 @@ static const char* TAG = "adc_temp.cpp";
 #include "adc_temp.hpp"
 
 
-auto ESP32ADCChannel::bit_width_common;
 auto ESP32ADCChannel::hardware_initialized = false;
 
 ESP32ADCChannel::ESP32ADCChannel(adc1_channel_t channel_num,
@@ -33,15 +32,17 @@ ESP32ADCChannel::ESP32ADCChannel(adc1_channel_t channel_num,
     , attenuation{attenuation}
 {
     // Checks N is power of two and size limit is due to uint32_t sum
-    assert(averaged_samples <= 1<<16 && (averaged_samples & (averaged_samples-1)) == 0);
-    shift_value = log2(averaged_samples);
+    if (averaged_samples > 1<<16 || (averaged_samples & (averaged_samples-1)) == 0) {
+        ESP_LOGE(TAG, "Number must be power of two and smaller than 2^16");
+        abort();
+    }
+    division_shift = log2(averaged_samples);
     if (hardware_initialized) {
-        if (bit_width != bit_width_common) {
+        if (bit_width != calibration_data.bit_width) {
             ESP_LOGE(TAG, "Bit width setting must be same for all channels");
             abort();
         }
     } else {
-        bit_width_common = bit_width;
         adc1_config_width(bit_width);
         hardware_initialized = true;
     }
@@ -51,25 +52,47 @@ ESP32ADCChannel::ESP32ADCChannel(adc1_channel_t channel_num,
 
 }
 
-
 /* Get raw ADC channel conversion value, repeats sampling
  * a number of times: "oversampling_ratio".
+ * 
+ * The output is always scaled such as if the ADC was set to 12 bits mode,
+ * i.e. theoretical full-scale output is 4096 - 1
  */
 uint16_t ESP32ADCChannel::get_raw_averaged() {
     auto adc_reading = 0u;
     // Averaging seems necessary for the ESP32 ADC to obtain accurate results
-    for (auto i=0u; i < (1u<<shift_value); i++) {
+    for (auto i=0u; i < (1u<<division_shift); i++) {
         adc_reading += adc1_get_raw(channel_num);
     }
-    adc_reading >>= shift_value;
+    //Scale adc reading if ADC is not set to 12 bits mode
+    adc_reading <<= ADC_WIDTH_BIT_12 - calibration_data.bit_width;
+    // This is the division yielding the averaged result
+    adc_reading >>= division_shift;
     //debug_print_sv("Raw ADC value:", adc_reading);
     //debug_print_sv("Fuse calibrated ADC conversion yields input voltage /mv:",
     //               esp_adc_cal_raw_to_voltage(adc_reading, adc_cal_characteristics));
     return static_cast<uint16_t>(adc_reading);
 }
 
+/* Get channel input voltage, this acquires a number of ADC samples
+ * as per "get_averaged_samples" parameter and takes the average.
+ * 
+ * This takes into account the calibration constants from ADC initialisation
+ */
+uint16_t ESP32ADCChannel::get_voltage_averaged() {
+    return esp_adc_cal_raw_to_voltage(get_raw_averaged(), &calibration_data);
+};
 
-
+/* Calculate backwards the ADC reading for given input voltage,
+ * based on calibration constants from ADC initialisation, and
+ * also based on a ADC resolution setting of 12 bits.
+ */
+int32_t ESP32ADCChannel::adc_reading_from_voltage(uint32_t v_in_mv) {
+    constexpr int32_t coeff_a_scale = 65536;
+    constexpr int32_t coeff_a_round = coeff_a_scale/2;
+    return (((v_in_mv - calibration_data.coeff_b) * coeff_a_scale)
+            - coeff_a_round) / calibration_data.coeff_a;
+}
 
 
 /** @brief Excellent precision temperature sensing using piecewise linear

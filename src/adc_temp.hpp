@@ -24,8 +24,6 @@ class ESP32ADCChannel
 public:
     adc1_channel_t channel_num;
     adc_atten_t attenuation;
-    uint32_t shift_value;
-    static adc_bits_width_t bit_width_common;
     static bool hardware_initialized;
     esp_adc_cal_characteristics_t calibration_data;
 
@@ -40,19 +38,25 @@ public:
                     uint32_t default_vref = 1100u);
 
     /** @brief Get raw ADC channel conversion value, repeats sampling
-     * a number of times as set via "get_averaged_samples" parameter.
+     * a number of times: "oversampling_ratio".
+     * 
+     * The output is always scaled such as if the ADC was set to 12 bits mode,
+     * i.e. theoretical full-scale output is 4096 - 1
      */
     uint16_t get_raw_averaged();
 
-    /** @brief Based on calibration constants, return ADC reading
-     * for a given analog input voltage
+    /** @brief Get channel input voltage, this acquires a number of ADC samples
+     * as per "get_averaged_samples" parameter and takes the average.
+     * 
+     * This takes into account the calibration constants from ADC initialisation
      */
-    int32_t adc_reading_from_voltage(uint32_t v_in_mv) {
-        constexpr int32_t coeff_a_scale = 65536;
-        constexpr int32_t coeff_a_round = coeff_a_scale/2;
-        return (((v_in_mv - calibration_data.coeff_b) * coeff_a_scale)
-                - coeff_a_round) / calibration_data.coeff_a;
-    }
+    uint16_t get_voltage_averaged();
+
+    /** @brief Calculate backwards the ADC reading for given input voltage,
+     * based on calibration constants from ADC initialisation, and
+     * also based on a ADC resolution setting of 12 bits.
+     */
+    int32_t adc_reading_from_voltage(uint32_t v_in_mv);
 
     /** Some debug and helper functions
      */
@@ -60,6 +64,8 @@ public:
     void print_characterisation_val_type(esp_adc_cal_value_t val_type);
     void test_register_direct(void);
 
+protected:
+    uint32_t division_shift;
 };
 
 template<size_t filter_length>
@@ -92,60 +98,6 @@ protected:
 #endif
 
  
-/** @brief KTY81-1xx type silicon temperature sensor readout and conversion
- * functions using the ESP32 ADC in its high-linearity region
- * 
- * Sensor connected between GND and ADC input and biased using a 2.2 kOhms
- * series-resistor connected to 3.3V supply.
- * 
- *       +-----------------------+
- *       |                       |
- *      +++                      |VREF
- *      | |r_pullup              |(3V3)
- *      | |(2k2)             +----------+
- *      +++                  |          |
- *       |                   |          |
- *       +-------------+-----+ AIN      |
- *       |             |     |          |
- *      +++            |     +---+------+
- *      | |KTY81-    +---+       | AGND
- *      | | 1xx      +---+       |
- *      +++            |100nF    |
- *       |             |         |
- *       +-------------+---------+
- *
- * Currently not implemented but useful addition would be ratiometric
- * measurement by additionally sampling the 3.3V reference/supply.
- * 
- * Sensor readout with piecewise linear interpolation of LUT calibration values
- * or linear calculation as an option for lower precision applications
- */
-class SensorKTY81_121
-{
-public:
-    ESP32ADCChannel adc_ch;
-
-    SensorKTY81_121()
-        : _interpolator{_common_conf.lut_temp_kty81_121}
-    {}
-
-    /** @brief Excellent precision temperature sensing using piecewise linear
-     * interpolation of Look-Up-Table values for a KTY81-121 type sensor.
-     * Use this if temperatures above 100°C ore below 0°C are to be measured.
-     */
-    float get_temp_pwl();
-
-    /** @brief Fairly precise temperature conversion if the temperature sensor
-     * voltage has good linearisation. Worst results at temperature extremes.
-     */
-    float get_temp_lin();
-
-private:
-    static constexpr KTY81_1xxCommonConfig _common_conf{};
-    EquidistantPWL<_common_conf.lut_temp_kty81_121.size()> _interpolator;
-};
-
-
 /** @brief Configuration constants and Look-Up-Table values which are
  * supposed to be the same for all sensors.
  * 
@@ -158,8 +110,10 @@ struct KTY81_1xxCommonConfig
      * is 150 ~ 1750 millivolts according to the SDK documentation for function
      * adc1_config_channel_atten(). With reduced accuracy, FSR is approx. 2.2V.
      */
-    adc_atten_t temp_sense_attenuation = ADC_ATTEN_DB_6;
-    ////////// If activated: Moving average filter length. Must be power of two.
+    adc_atten_t adc_ch_attenuation = ADC_ATTEN_DB_6;
+    ////////// Initial averaging when each ADC sample is taken
+    size_t averaged_samples = 64;
+    ////////// Moving average filter length. Must be power of two.
     size_t moving_average_filter_len = 16;
     ////////// Configuration constants for get_kty_temp_lin()
     float temp_fsr_lower_lin = 0.0;
@@ -200,3 +154,60 @@ struct KTY81_1xxCommonConfig
          96.07234208, 102.68301035, 109.39886725, 116.34253305,
         123.5137051 , 131.2558412 , 139.76912438, 150.0};
 };
+
+/** @brief KTY81-1xx type silicon temperature sensor readout and conversion
+ * functions using the ESP32 ADC in its high-linearity region
+ * 
+ * Sensor connected between GND and ADC input and biased using a 2.2 kOhms
+ * series-resistor connected to 3.3V supply.
+ * 
+ *       +-----------------------+
+ *       |                       |
+ *      +++                      |VREF
+ *      | |r_pullup              |(3V3)
+ *      | |(2k2)             +----------+
+ *      +++                  |          |
+ *       |                   |          |
+ *       +-------------+-----+ AIN      |
+ *       |             |     |          |
+ *      +++            |     +---+------+
+ *      | |KTY81-    +---+       | AGND
+ *      | | 1xx      +---+       |
+ *      +++            |100nF    |
+ *       |             |         |
+ *       +-------------+---------+
+ *
+ * Currently not implemented but useful addition would be ratiometric
+ * measurement by additionally sampling the 3.3V reference/supply.
+ * 
+ * Sensor readout with piecewise linear interpolation of LUT calibration values
+ * or linear calculation as an option for lower precision applications
+ */
+class SensorKTY81_121
+{
+public:
+    static constexpr auto _common_conf = KTY81_1xxCommonConfig{};
+    ESP32ADCChannelFiltered<_common_conf.moving_average_filter_len> adc_ch;
+
+    SensorKTY81_121(adc1_channel_t channel)
+        : _interpolator{_common_conf.lut_temp_kty81_121}
+        , adc_ch{channel, _common_conf.adc_ch_attenuation, _common_conf.averaged_samples}
+    {}
+
+    /** @brief Excellent precision temperature sensing using piecewise linear
+     * interpolation of Look-Up-Table values for a KTY81-121 type sensor.
+     * Use this if temperatures above 100°C ore below 0°C are to be measured.
+     */
+    float get_temp_pwl();
+
+    /** @brief Fairly precise temperature conversion if the temperature sensor
+     * voltage has good linearisation. Worst results at temperature extremes.
+     */
+    float get_temp_lin();
+
+private:
+    EquidistantPWL<_common_conf.lut_temp_kty81_121.size()> _interpolator;
+};
+
+
+
