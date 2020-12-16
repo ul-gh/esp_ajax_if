@@ -13,7 +13,7 @@
 #include "driver/gpio.h"
 #include "esp_err.h"
 
-#include "adc_temp.hpp"
+#include "sensor_kty81_1xx.hpp"
 
 #include "app_config.hpp"
 
@@ -31,11 +31,10 @@
 class AuxHwDrv
 {
 public:
-    static constexpr AuxHwDrvConfig aux_hw_conf{};
+    static constexpr auto aux_hw_conf = AuxHwDrvConfig{};
     AuxHwDrvState state;
-    ESP32ADC adc;
-    SensorKTY81_121 aux_temp_sensor{adc, aux_hw_conf.temp_ch_aux};
-    SensorKTY81_121 heatsink_temp_sensor{adc, aux_hw_conf.temp_ch_heatsink};
+    SensorKTY81_121 sensor_aux_temp{aux_hw_conf.temp_ch_aux};
+    SensorKTY81_121 sensor_heatsink_temp{aux_hw_conf.temp_ch_heatsink};
 
     AuxHwDrv();
     virtual ~AuxHwDrv();

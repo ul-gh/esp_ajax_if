@@ -9,8 +9,7 @@ Import("env")
 # env.Append(CFLAGS=["flag1", "flag2"])
 
 # General options that are passed to the C++ compiler.
-env.Append(CXXFLAGS=["-std=gnu++20"]) # We use C++ 20
-
+env.Append(CXXFLAGS=["-std=c++17"]) # Will be c++20 soon
 
 ################################################################################
 # # Ulrich Lukas 2020-09-19: Account for changed bootloader and partition offsets

@@ -117,6 +117,8 @@ void AuxHwDrv::reset_oc_shutdown_finish() {
  * To be called periodically from PsPWMAppHwControl fast timer event.
  */
 void AuxHwDrv::update_temperature_sensors() {
-    state.aux_temp = aux_temp_sensor.get_temp_pwl();
-    state.heatsink_temp = heatsink_temp_sensor.get_temp_pwl();
+    sensor_aux_temp.update_filter();
+    sensor_heatsink_temp.update_filter();
+    state.aux_temp = sensor_aux_temp.get_temp_pwl();
+    state.heatsink_temp = sensor_heatsink_temp.get_temp_pwl();
 }

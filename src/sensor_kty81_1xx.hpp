@@ -1,103 +1,19 @@
-/** @file adc_temp.hpp
+/** @file sensor_kty81_1xx.hpp
+ * 
+ * Temperature sensor implementation using KTY81-1xx type analog
+ * sensor and the ESP32 ADC 1
  * 
  * License: GPL v.3 
- * U. Lukas 2020-09-30
+ * U. Lukas 2020-12-16
  */
-#ifndef ADC_TEMP_HPP__
-#define ADC_TEMP_HPP__
+#ifndef SENSOR_KTY81_1XX_HPP__
+#define SENSOR_KTY81_1XX_HPP__
 
 #include <array>
 
-#include "driver/gpio.h"
-#include "driver/timer.h"
-#include "driver/adc.h"
-#include "esp_adc_cal.h"
-#include "soc/sens_reg.h"
-#include "soc/sens_struct.h"
-
-#include "adc_filter_interpolation.hpp"
+#include "esp32_adc_channel.hpp"
 #include "app_config.hpp"
 
-
-class ESP32ADCChannel
-{
-public:
-    adc1_channel_t channel_num;
-    adc_atten_t attenuation;
-    static bool hardware_initialized;
-    esp_adc_cal_characteristics_t calibration_data;
-
-    /** @brief Initialise ADC channel.
-     * 
-     * The bits_width must be identical for all channels!
-     */
-    ESP32ADCChannel(adc1_channel_t channel_num,
-                    adc_atten_t attenuation,
-                    uint32_t averaged_samples = 64,
-                    adc_bits_width_t bit_width = ADC_WIDTH_BIT_12,
-                    uint32_t default_vref = 1100u);
-
-    /** @brief Get raw ADC channel conversion value, repeats sampling
-     * a number of times: "oversampling_ratio".
-     * 
-     * The output is always scaled such as if the ADC was set to 12 bits mode,
-     * i.e. theoretical full-scale output is 4096 - 1
-     */
-    uint16_t get_raw_averaged();
-
-    /** @brief Get channel input voltage, this acquires a number of ADC samples
-     * as per "get_averaged_samples" parameter and takes the average.
-     * 
-     * This takes into account the calibration constants from ADC initialisation
-     */
-    uint16_t get_voltage_averaged();
-
-    /** @brief Calculate backwards the ADC reading for given input voltage,
-     * based on calibration constants from ADC initialisation, and
-     * also based on a ADC resolution setting of 12 bits.
-     */
-    int32_t adc_reading_from_voltage(uint32_t v_in_mv);
-
-    /** Some debug and helper functions
-     */
-    void check_efuse(void);
-    void print_characterisation_val_type(esp_adc_cal_value_t val_type);
-    void test_register_direct(void);
-
-protected:
-    uint32_t division_shift;
-};
-
-template<size_t filter_length>
-class ESP32ADCChannelFiltered : public ESP32ADCChannel
-{
-public:
-    ESP32ADCChannelFiltered(adc1_channel_t channel_num,
-                            adc_atten_t attenuation,
-                            uint32_t averaged_samples = 64,
-                            adc_bits_width_t bit_width = ADC_WIDTH_BIT_12,
-                            uint32_t default_vref = 1100u)
-        : ESP32ADCChannel{channel_num, attenuation, averaged_samples,
-                          bit_width, default_vref}
-    {
-        filter.initialize(get_raw_averaged());
-    }
-
-    void update_filter() {
-        filter.moving_average(get_raw_averaged());
-    }
-
-    uint16_t get_filtered() {
-        return filter.get_result();
-    }
-
-protected:
-    U16MovingAverage<filter_length> filter;
-};
-
-#endif
-
- 
 /** @brief Configuration constants and Look-Up-Table values which are
  * supposed to be the same for all sensors.
  * 
@@ -105,7 +21,6 @@ protected:
  */
 struct KTY81_1xxCommonConfig
 {
-    
     /** @brief Suggested ADC input voltage Range for ESP32 using ADC_ATTEN_DB_6
      * is 150 ~ 1750 millivolts according to the SDK documentation for function
      * adc1_config_channel_atten(). With reduced accuracy, FSR is approx. 2.2V.
@@ -186,13 +101,17 @@ struct KTY81_1xxCommonConfig
 class SensorKTY81_121
 {
 public:
-    static constexpr auto _common_conf = KTY81_1xxCommonConfig{};
+    // inline redundant with constexpr but current linker version has no support
+    inline static constexpr auto _common_conf = KTY81_1xxCommonConfig{};
     ESP32ADCChannelFiltered<_common_conf.moving_average_filter_len> adc_ch;
 
-    SensorKTY81_121(adc1_channel_t channel)
-        : _interpolator{_common_conf.lut_temp_kty81_121}
-        , adc_ch{channel, _common_conf.adc_ch_attenuation, _common_conf.averaged_samples}
-    {}
+    SensorKTY81_121(adc1_channel_t channel);
+
+    /** @brief Updates the moving average with a new sampled value from ADC
+     * 
+     * This must be called periodically.
+     */
+    void update_filter();
 
     /** @brief Excellent precision temperature sensing using piecewise linear
      * interpolation of Look-Up-Table values for a KTY81-121 type sensor.
@@ -209,5 +128,4 @@ private:
     EquidistantPWL<_common_conf.lut_temp_kty81_121.size()> _interpolator;
 };
 
-
-
+#endif

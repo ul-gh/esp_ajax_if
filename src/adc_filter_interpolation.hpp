@@ -89,7 +89,7 @@ struct EquidistantPWL
     }
 
     float interpolate(int32_t x) {
-        constexpr auto n_lut_intervals = lut.size() - 1;
+        constexpr auto n_lut_intervals = N - 1;
         static_assert(n_lut_intervals > 0);
         int32_t lut_index;
         float partial_intervals;
@@ -131,11 +131,11 @@ struct EquidistantPWL
  * This version is for compile-time-known input value range.
  */
 template<int32_t FSR_LOWER, int32_t FSR_UPPER, uint32_t N>
-struct EquidistantPWL
+struct EquidistantPWLTemplated
 {
     const std::array<float, N> lut;
 
-    EquidistantPWL(const std::array<float, N> &lut)
+    EquidistantPWLTemplated(const std::array<float, N> &lut)
         :lut{lut}
     {}
 
@@ -151,7 +151,7 @@ struct EquidistantPWL
         if (x > in_fsr_lower) {
             if (x < in_fsr_upper) {
             partial_intervals = in_fsr_inv * static_cast<float>(
-                n_lut_intervals * (x - in_fsr_lower))
+                n_lut_intervals * (x - in_fsr_lower));
             // Rounding down gives number of whole intervals as index into the LUT
             lut_index = static_cast<int32_t>(partial_intervals);
             // By subtracting the whole intervals, only the partial rest remains
