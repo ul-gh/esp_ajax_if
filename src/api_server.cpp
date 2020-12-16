@@ -206,19 +206,19 @@ void APIServer::_on_root_request(AsyncWebServerRequest *request) {
 
 // on("/cmd")
 void APIServer::_on_cmd_request(AsyncWebServerRequest *request) {
-    int n_params = request->params();
+    auto n_params = request->params();
     ESP_LOGD(TAG, "Number of parameters received: %d", n_params);
-    for (int i = 0; i < n_params; ++i) {
-        AsyncWebParameter *p = request->getParam(i);
-        const String &name = p->name();
-        const String &value_str = p->value();
+    for (size_t i = 0; i < n_params; ++i) {
+        auto p = request->getParam(i);
+        const auto &name = p->name();
+        const auto &value_str = p->value();
         ESP_LOGD(TAG, "-->Param name: %s  with value: %s", name.c_str(), value_str.c_str());
         auto cb_iterator = cmd_map.find(name);
         if (cb_iterator == cmd_map.end()) {
             ESP_LOGE(TAG, "Error: Not registered in command mapping: %s", name.c_str());
             continue;
         }
-        CbStringT cmd_callback = (*cb_iterator).second; // = cmd_map[name];
+        auto cmd_callback = (*cb_iterator).second; // = cmd_map[name];
         if (!cmd_callback) {
             ESP_LOGE(TAG, "Error: Not a callable object!: %s", name.c_str());
             continue;
@@ -246,8 +246,8 @@ void APIServer::_on_cmd_request(AsyncWebServerRequest *request) {
 // on("/update")
 // When update is initiated via GET
 void APIServer::_on_update_request(AsyncWebServerRequest *request) {
-    bool update_ok = !Update.hasError();
-    AsyncWebServerResponse *response = request->beginResponse(
+    auto update_ok = !Update.hasError();
+    auto response = request->beginResponse(
         200, "text/plain", update_ok ? "OK" : "Update FAIL!");
     response->addHeader("Connection", "close");
     request->send(response);
@@ -293,18 +293,18 @@ void APIServer::_on_request(AsyncWebServerRequest *request) {
 }
 
 void APIServer::_on_body(AsyncWebServerRequest *request,
-        uint8_t *data, size_t len, size_t index, size_t total) {
+                         uint8_t *data, size_t len, size_t index, size_t total) {
     //Handle body
 }
 
 void APIServer::_on_upload(AsyncWebServerRequest *request, const String& filename,
-        size_t index, uint8_t *data, size_t len, bool final) {
+                           size_t index, uint8_t *data, size_t len, bool final) {
     //Handle upload
 }
 
 
 ////////
-// Template processor
+// HTTP response string template processor
 String APIServer::_template_processor(const String& placeholder)
 {
     auto template_iterator = template_map.find(placeholder);

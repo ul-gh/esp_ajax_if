@@ -13,14 +13,6 @@
 #include "esp_log.h"
 static auto TAG = "AuxHwDrv";
 
-// Following out-of-class definitions of static constexpr data members are
-// deprecated since C++17 (see: https://stackoverflow.com/a/57059723) but
-// provided to prevent linker errors with current versions of the toolchain:
-constexpr ledc_timer_config_t AuxHwDrvConfig::pwm_timer_config;
-constexpr ledc_channel_config_t AuxHwDrvConfig::curr_lim_pwm_ch_config;
-constexpr ledc_channel_config_t AuxHwDrvConfig::delta_sigma_out_pwm_ch_config;
-constexpr gpio_config_t AuxHwDrvConfig::aux_periph_gpio_output_config;
-constexpr gpio_config_t AuxHwDrvConfig::aux_periph_gpio_input_config;
 
 /******************************** API *************************************//**
  */

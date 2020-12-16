@@ -104,7 +104,7 @@ public:
                 self->stop();
             }
             auto cb = reinterpret_cast<callback_with_arg_and_count_t>(self->_callback);
-            TArg arg = (TArg)(self->_orig_arg);
+            auto arg = (TArg)(self->_orig_arg);
             cb(arg, self->_repeat_count);
             };
         return _attach_ms(milliseconds, cb_lambda, (uint32_t)this);
@@ -127,7 +127,7 @@ public:
                 self->stop();
             }
             auto cb = reinterpret_cast<callback_with_arg_t>(self->_callback);
-            TArg arg = (TArg)(self->_orig_arg);
+            auto arg = (TArg)(self->_orig_arg);
             cb(arg);
             };
         return _attach_ms(milliseconds, cb_lambda, (uint32_t)this);
@@ -173,7 +173,7 @@ public:
         _repeat_count = 0;
     }
     esp_err_t stop_return_errors() {
-        esp_err_t errors = esp_timer_stop(_timer);
+        auto errors = esp_timer_stop(_timer);
         _repeat_count = 0;
         return errors;
     }

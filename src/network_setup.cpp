@@ -5,7 +5,7 @@
 // Local debug level
 #define LOG_LOCAL_LEVEL ESP_LOG_DEBUG
 #include "esp_log.h"
-static const char* TAG = "network_setup.cpp";
+static auto TAG = "network_setup.cpp";
 
 #include "network_setup.hpp"
 #include "network_config.hpp"
@@ -39,8 +39,8 @@ void setup_wifi_station(const struct NetworkConfig &net_conf) {
 }
 
 enum WIFI_EVENT wifi_handle_state_change(const struct NetworkConfig &net_conf) {
-    static bool was_connected = false;
-    bool is_connected = WiFi.status() == WL_CONNECTED;
+    static auto was_connected = false;
+    auto is_connected = WiFi.status() == WL_CONNECTED;
     if (is_connected && !was_connected) {
         #ifdef WIFI_INIT_DELAY
         delay(WIFI_INIT_DELAY);

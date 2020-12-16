@@ -22,7 +22,7 @@
 
 #define LOG_LOCAL_LEVEL ESP_LOG_DEBUG
 #include "esp_log.h"
-static const char* TAG = "app_controller.cpp";
+static auto TAG = "app_controller.cpp";
 
 #ifdef USE_ASYMMETRIC_FULL_SPEED_DRIVE_API
 #define API_CHOICE_INIT pspwm_up_ctr_mode_init_compat
@@ -194,7 +194,7 @@ void AppController::set_fan_active(bool state) {
 
 void AppController::_initialize_ps_pwm_drv() {
     ESP_LOGI(TAG, "Configuring Phase-Shift-PWM...");
-    esp_err_t errors = API_CHOICE_INIT(
+    auto errors = API_CHOICE_INIT(
         app_conf.mcpwm_num,
         app_conf.gpio_pwm0a_out, app_conf.gpio_pwm0b_out,
         app_conf.gpio_pwm1a_out, app_conf.gpio_pwm1b_out,

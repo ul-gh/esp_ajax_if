@@ -3,7 +3,7 @@
 
 #define LOG_LOCAL_LEVEL ESP_LOG_DEBUG
 #include "esp_log.h"
-static const char* TAG = "app_state_model.cpp";
+static auto TAG = "app_state_model.cpp";
 
 #include "app_state_model.hpp"
 
@@ -12,7 +12,7 @@ static const char* TAG = "app_state_model.cpp";
 void AppState::serialize_data() {
     assert(pspwm_clk_conf && pspwm_setpoint && pspwm_setpoint_limits && aux_hw_drv_state);
     // ArduinoJson JsonDocument object, see https://arduinojson.org
-    StaticJsonDocument<_json_objects_size> json_doc;
+    auto json_doc = StaticJsonDocument<_json_objects_size>{};
     // Setpoint limits from PSPWM hw constraints. Scaled to kHz, ns and % respectively...
     json_doc["frequency_min_hw"] = pspwm_setpoint_limits->frequency_min/1e3;
     json_doc["frequency_max_hw"] = pspwm_setpoint_limits->frequency_max/1e3;
@@ -53,7 +53,7 @@ void AppState::serialize_data() {
 void AppState::serialize_settings() {
     assert(pspwm_clk_conf && pspwm_setpoint && pspwm_setpoint_limits && aux_hw_drv_state);
     // ArduinoJson JsonDocument object, see https://arduinojson.org
-    StaticJsonDocument<_json_objects_size> json_doc;
+    auto json_doc = StaticJsonDocument<_json_objects_size>{};
     // Setpoint limits from PSPWM hw constraints. Scaled to kHz, ns and % respectively...
     json_doc["frequency_min_hw"] = pspwm_setpoint_limits->frequency_min/1e3;
     json_doc["frequency_max_hw"] = pspwm_setpoint_limits->frequency_max/1e3;
@@ -94,7 +94,7 @@ bool AppState::save_to_file(const char *filename) {
         ESP_LOGE(TAG, "Could not open SPIFFS!");
         return false;
     }
-    File file = SPIFFS.open(filename, "w");
+    auto file = SPIFFS.open(filename, "w");
     if (!file) {
         ESP_LOGE(TAG, "Could not open file for writing!: %s", filename);
         return false;
@@ -113,7 +113,7 @@ bool AppState::restore_from_file(const char *filename) {
         ESP_LOGE(TAG, "File does not exist: %s", filename);
         return false;
     }
-    File file = SPIFFS.open(filename, "r");
+    auto file = SPIFFS.open(filename, "r");
     if (!file) {
         ESP_LOGE(TAG, "Could not open file!: %s", filename);
         return false;

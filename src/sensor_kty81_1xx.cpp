@@ -7,7 +7,7 @@
  * U. Lukas 2020-12-16
  */
 #include "esp_log.h"
-static const char* TAG = "SensorKTY81_1xx";
+static auto TAG = "SensorKTY81_1xx";
 
 #include "sensor_kty81_1xx.hpp"
 

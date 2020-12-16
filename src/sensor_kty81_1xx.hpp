@@ -21,6 +21,9 @@
  */
 struct KTY81_1xxCommonConfig
 {
+    // Objects are constexpr, so members can be used as template parameters etc.
+    constexpr KTY81_1xxCommonConfig(){};
+
     /** @brief Suggested ADC input voltage Range for ESP32 using ADC_ATTEN_DB_6
      * is 150 ~ 1750 millivolts according to the SDK documentation for function
      * adc1_config_channel_atten(). With reduced accuracy, FSR is approx. 2.2V.
@@ -102,7 +105,7 @@ class SensorKTY81_121
 {
 public:
     // inline redundant with constexpr but current linker version has no support
-    inline static constexpr auto _common_conf = KTY81_1xxCommonConfig{};
+    static constexpr auto _common_conf = KTY81_1xxCommonConfig{};
     ESP32ADCChannelFiltered<_common_conf.moving_average_filter_len> adc_ch;
 
     SensorKTY81_121(adc1_channel_t channel);

@@ -11,6 +11,8 @@
  */
 struct AppConfig
 {
+    // Objects are constexpr, so members can be used as template parameters etc.
+    constexpr AppConfig(){};
     ///////////////////////////// For AppController ///////////////////////////
     // App state serialization using the ArduionJSON module takes a lot of it
     uint32_t app_event_task_stack_size{4096};
@@ -65,6 +67,8 @@ struct AppConfig
  */
 struct ESP32ADCConfig
 {
+    // Objects are constexpr, so members can be used as template parameters etc.
+    constexpr ESP32ADCConfig(){};
     /************************************************************************
      * Configuration
      */
@@ -80,26 +84,29 @@ struct ESP32ADCConfig
 /** @brief Hardware configuration for AuxHwDrv
  */
 struct AuxHwDrvConfig
-{   // Analog inputs config //
+{
+    // Objects are constexpr, so members can be used as template parameters etc.
+    constexpr AuxHwDrvConfig(){};
+
+    // Analog inputs config //
     /** @brief ADC channel for AUX temperature sensor */
     adc1_channel_t temp_ch_aux = ADC1_CHANNEL_0; // Sensor VP
     /** @brief ADC channel for heatsink temperature sensor */
     adc1_channel_t temp_ch_heatsink = ADC1_CHANNEL_3; // Sensor VN
     // Digital output GPIOs //
-    static constexpr gpio_num_t gpio_fan{GPIO_NUM_2};
-    static constexpr gpio_num_t gpio_overcurrent_reset{GPIO_NUM_16};
-    static constexpr gpio_num_t gpio_relay_ref{GPIO_NUM_18};
-    static constexpr gpio_num_t gpio_relay_dut{GPIO_NUM_19};
-    static constexpr gpio_num_t gpio_delta_sigma_out{GPIO_NUM_21};
-    static constexpr gpio_num_t gpio_drv_supply_en{GPIO_NUM_23};
-    static constexpr gpio_num_t gpio_drv_disable{GPIO_NUM_32};
+    gpio_num_t gpio_fan{GPIO_NUM_2};
+    gpio_num_t gpio_overcurrent_reset{GPIO_NUM_16};
+    gpio_num_t gpio_relay_ref{GPIO_NUM_18};
+    gpio_num_t gpio_relay_dut{GPIO_NUM_19};
+    gpio_num_t gpio_delta_sigma_out{GPIO_NUM_21};
+    gpio_num_t gpio_drv_supply_en{GPIO_NUM_23};
+    gpio_num_t gpio_drv_disable{GPIO_NUM_32};
     // Handled by LEDC PWM API
-    static constexpr gpio_num_t gpio_curr_limit_reference_pwm{GPIO_NUM_17};
+    gpio_num_t gpio_curr_limit_reference_pwm{GPIO_NUM_17};
     // GPIO config, inputs //
-    static constexpr gpio_num_t gpio_delta_sigma_in{GPIO_NUM_22};
-
+    gpio_num_t gpio_delta_sigma_in{GPIO_NUM_22};
     // Structures for GPIO and PWM API //
-    static constexpr gpio_config_t aux_periph_gpio_output_config {
+    gpio_config_t aux_periph_gpio_output_config {
         .pin_bit_mask = ((1ULL<<gpio_fan)
                          |(1ULL<<gpio_overcurrent_reset)
                          |(1ULL<<gpio_relay_ref)
@@ -113,7 +120,7 @@ struct AuxHwDrvConfig
         .pull_down_en = GPIO_PULLDOWN_DISABLE,
         .intr_type = GPIO_INTR_DISABLE
     };
-    static constexpr gpio_config_t aux_periph_gpio_input_config {
+    gpio_config_t aux_periph_gpio_input_config {
         .pin_bit_mask = ((1ULL<<gpio_delta_sigma_in)
                          ),
         .mode = GPIO_MODE_INPUT,
@@ -124,14 +131,14 @@ struct AuxHwDrvConfig
     // PWM outputs config
     // Maximum PWM frequency for given resolution in N bits is:
     // freq_hz = 80 MHz / 2^N
-    static constexpr ledc_timer_config_t pwm_timer_config {
+    ledc_timer_config_t pwm_timer_config {
         .speed_mode = LEDC_HIGH_SPEED_MODE,
         .duty_resolution = LEDC_TIMER_12_BIT,
         .timer_num = LEDC_TIMER_0,
         .freq_hz = 19500,
         .clk_cfg = LEDC_USE_APB_CLK // 80 MHz
     };
-    static constexpr ledc_channel_config_t curr_lim_pwm_ch_config {
+    ledc_channel_config_t curr_lim_pwm_ch_config {
         .gpio_num = gpio_curr_limit_reference_pwm,
         .speed_mode = LEDC_HIGH_SPEED_MODE,
         .channel = LEDC_CHANNEL_0,
@@ -141,7 +148,7 @@ struct AuxHwDrvConfig
         .hpoint = 0
     };
     // Same PWM timer is used for isolated external delta_sigma hardware pin
-    static constexpr ledc_channel_config_t delta_sigma_out_pwm_ch_config {
+    ledc_channel_config_t delta_sigma_out_pwm_ch_config {
         .gpio_num = gpio_delta_sigma_out,
         .speed_mode = LEDC_HIGH_SPEED_MODE,
         .channel = LEDC_CHANNEL_0,
@@ -150,15 +157,13 @@ struct AuxHwDrvConfig
         .duty = 0,
         .hpoint = 0
     };
-
     // Overcurrent reset output pulse length. Must be at least equal to
     // FreeRTOS scheduler tick period.
-    static constexpr uint32_t oc_reset_pulse_length_ms{20};
-
+    uint32_t oc_reset_pulse_length_ms = 20;
     // Calibration values for current limit PWM
-    static constexpr float curr_limit_pwm_scale = 1.0/100 * (
+    float curr_limit_pwm_scale = 1.0/100 * (
         1 << pwm_timer_config.duty_resolution);
-    static constexpr uint32_t curr_limit_pwm_offset = 0;
+    uint32_t curr_limit_pwm_offset = 0;
     ///////////////////////////////////////////////////////// End Configuration
 };
 
@@ -177,6 +182,5 @@ struct AuxHwDrvState
     bool drv_supply_active{true};
     bool drv_disabled{false};
 };
-
 
 #endif

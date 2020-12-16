@@ -13,7 +13,7 @@
 #include <cmath>
 
 #include "esp_log.h"
-static const char* TAG = "esp32_adc_channel.cpp";
+static auto TAG = "esp32_adc_channel.cpp";
 
 #include "esp32_adc_channel.hpp"
 

@@ -25,10 +25,6 @@ using CbIntT = std::function<void(const int)>;
 // Callback function without arguments
 using CbVoidT = std::function<void(void)>;
 
-// Callback function without arguments returning a const char*.
-// This is used for register_heartbeat_cb().
-using HeartbeatCbT = std::function<const char*(void)>;
-
 // Mapping used for resolving command strings received via HTTP request
 // on the "/cmd" endpoint to specialised request handlers
 using CmdMapT = std::map<String, CbStringT>;
