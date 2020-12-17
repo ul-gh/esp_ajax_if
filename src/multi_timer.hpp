@@ -69,7 +69,7 @@ public:
      * class PrintFoo {
      * public:
      *     MultiTimer timer;
-     *     const char* foo_str = "This is Foo Number: %d";
+     *     auto foo_str = "This is Foo Number: %d";
      * 
      *     void print_foo(uint32_t i) {
      *         printf(foo_str, i);
@@ -86,18 +86,28 @@ public:
      * PrintFoo print_6x_foo{500, 6};
      * print_6x_foo.timer.start();
      * 
+     * @param milliseconds: Timer interval in milliseconds
+     * @param total_repeat_count: Timer is stopped after this many repeats
+     * @param callback: Callback function to register into this timer
+     * @param arg: Numeric arg or pointer to object, e.g. calling class instance
+     * @param first_tick_nodelay: If set to true, call callback immediately when
+     *                            the start() function is invoked, the first
+     *                            tick counts as a normal repeat and is repeated
+     *                            until total repeat count is reached
      */
     template <typename TArg>
     esp_err_t attach_static_ms(const uint32_t milliseconds,
                                const uint32_t total_repeat_count,
                                void (*callback)(type_identity_t<TArg>, uint32_t),
-                               TArg arg) {
+                               TArg arg,
+                               bool first_tick_nodelay=false) {
         static_assert(sizeof(TArg) <= sizeof(uint32_t),
                       "attach_ms() callback argument size must be <= 4 bytes");
         _interval_ms = milliseconds;
         _repeat_count_requested = total_repeat_count;
         _callback = reinterpret_cast<callback_t>(callback);
         _orig_arg = (uint32_t)arg;
+        _first_tick_nodelay = first_tick_nodelay;
         auto cb_lambda = [](void *_this){
             auto self = static_cast<decltype(this)>(_this);
             if (++self->_repeat_count == self->_repeat_count_requested) {
@@ -107,20 +117,22 @@ public:
             auto arg = (TArg)(self->_orig_arg);
             cb(arg, self->_repeat_count);
             };
-        return _attach_ms(milliseconds, cb_lambda, (uint32_t)this);
+        return _attach_ms((uint32_t)this);
     }
 
     template <typename TArg>
     esp_err_t attach_static_ms(const uint32_t milliseconds,
                                const uint32_t total_repeat_count,
                                void (*callback)(type_identity_t<TArg>),
-                               TArg arg) {
+                               TArg arg,
+                               bool first_tick_nodelay=false) {
         static_assert(sizeof(TArg) <= sizeof(uint32_t),
                       "attach_ms() callback argument size must be <= 4 bytes");
         _interval_ms = milliseconds;
         _repeat_count_requested = total_repeat_count;
         _callback = reinterpret_cast<callback_t>(callback);
         _orig_arg = (uint32_t)arg;
+        _first_tick_nodelay = first_tick_nodelay;
         auto cb_lambda = [](void *_this){
             auto self = static_cast<decltype(this)>(_this);
             if (++self->_repeat_count == self->_repeat_count_requested) {
@@ -130,15 +142,17 @@ public:
             auto arg = (TArg)(self->_orig_arg);
             cb(arg);
             };
-        return _attach_ms(milliseconds, cb_lambda, (uint32_t)this);
+        return _attach_ms((uint32_t)this);
     }
 
     esp_err_t attach_static_ms(const uint32_t milliseconds,
                                const uint32_t total_repeat_count,
-                               callback_t callback) {
+                               callback_t callback,
+                               bool first_tick_nodelay=false) {
         _interval_ms = milliseconds;
         _repeat_count_requested = total_repeat_count;
         _callback = reinterpret_cast<callback_t>(callback);
+        _first_tick_nodelay = first_tick_nodelay;
         auto cb_lambda = [](void *_this){
             auto self = static_cast<decltype(this)>(_this);
             if (++self->_repeat_count == self->_repeat_count_requested) {
@@ -146,26 +160,40 @@ public:
             }
             self->_callback();
             };
-        return _attach_ms(milliseconds, cb_lambda, (uint32_t)this);
+        return _attach_ms((uint32_t)this);
     }
 
     /** Simple version without return code for use as a callback
      */
     void start() {
+        if (_first_tick_nodelay && _cb_lambda) {
+            _cb_lambda(this);
+        }
         esp_timer_start_periodic(_timer, _interval_ms * 1000ULL);
     }
     void start(uint32_t interval_ms) {
         _interval_ms = interval_ms;
+        if (_first_tick_nodelay && _cb_lambda) {
+            _cb_lambda(this);
+        }
         esp_timer_start_periodic(_timer, _interval_ms * 1000ULL);
     }
     /** Version returning errors from API call
      */
     esp_err_t start_return_errors() {
-        return esp_timer_start_periodic(_timer, _interval_ms * 1000ULL);
+        if (_first_tick_nodelay && _cb_lambda) {
+            _cb_lambda(this);
+        }
+        auto errors = esp_timer_start_periodic(_timer, _interval_ms * 1000ULL);
+        return errors;
     }
     esp_err_t start_return_errors(uint32_t interval_ms) {
         _interval_ms = interval_ms;
-        return esp_timer_start_periodic(_timer, _interval_ms * 1000ULL);
+        if (_first_tick_nodelay && _cb_lambda) {
+            _cb_lambda(this);
+        }
+        auto errors = esp_timer_start_periodic(_timer, _interval_ms * 1000ULL);
+        return errors;
     }
 
     void stop() {
@@ -191,15 +219,19 @@ public:
 
 protected:
     uint32_t _interval_ms;
-    uint32_t _repeat_count_requested;
+    uint32_t _repeat_count_requested{1};
     uint32_t _repeat_count{0};
-    uint32_t _orig_arg{0};
+    // Original callback cast into a callback_t
     callback_t _callback;
+    uint32_t _orig_arg{0};
+    // Callback encapsulated into lambda function with repeat counter etc.
+    callback_with_arg_t _cb_lambda{nullptr};
+    bool _first_tick_nodelay{false};
 
-    esp_err_t _attach_ms(uint32_t milliseconds, callback_with_arg_t callback, uint32_t arg) {
+    esp_err_t _attach_ms(uint32_t arg) {
         esp_timer_create_args_t _timerConfig;
+        _timerConfig.callback = _cb_lambda;
         _timerConfig.arg = reinterpret_cast<void*>(arg);
-        _timerConfig.callback = callback;
         _timerConfig.dispatch_method = ESP_TIMER_TASK;
         _timerConfig.name = "MultiTimer";
         if (_timer) {
@@ -222,7 +254,6 @@ protected:
  * MultiTimerNonStatic<AppClass> timer;
  * timer.attach_mem_func_ptr_ms(10, 1, &AppClass::member_func, this);
  * timer.start();
- * 
  */
 template<typename TClass>
 class MultiTimerNonStatic : public MultiTimer
@@ -236,13 +267,22 @@ public:
      * 
      * Like for the static version, the member function can have an additional
      * argument containing the current number of times the callback was called.
+     * 
+     * @param milliseconds: Timer interval in milliseconds
+     * @param total_repeat_count: Timer is stopped after this many repeats
+     * @param mem_func_ptr: Pointer to a bound, non-static member function
+     * @param inst: Pointer to the class instance the mem_func_ptr is bound to
+     * @param first_tick_nodelay: If set to true, call callback immediately when
+     *                            the start() function is invoked, the first
+     *                            tick counts as a normal repeat and is repeated
+     *                            until total repeat count is reached
      */
     esp_err_t attach_mem_func_ptr_ms(const uint32_t milliseconds,
-                                     const uint32_t repeats,
+                                     const uint32_t total_repeat_count,
                                      mem_func_ptr_t mem_func_ptr,
                                      TClass *inst) {
         _interval_ms = milliseconds;
-        _repeat_count_requested = repeats;
+        _repeat_count_requested = total_repeat_count;
         _mem_func_ptr = mem_func_ptr;
         _orig_arg = reinterpret_cast<uint32_t>(inst);
         auto cb_lambda = [](void *_this){
@@ -255,15 +295,15 @@ public:
             auto mfp = self->_mem_func_ptr;
             (inst->*mfp)();
             };
-        return _attach_ms(milliseconds, cb_lambda, (uint32_t)this);
+        return _attach_ms((uint32_t)this);
     }
 
     esp_err_t attach_mem_func_ptr_ms(const uint32_t milliseconds,
-                                     const uint32_t repeats,
+                                     const uint32_t total_repeat_count,
                                      mem_func_ptr_with_count_t mem_func_ptr,
                                      TClass *inst) {
         _interval_ms = milliseconds;
-        _repeat_count_requested = repeats;
+        _repeat_count_requested = total_repeat_count;
         _mem_func_ptr = mem_func_ptr;
         _orig_arg = reinterpret_cast<uint32_t>(inst);
         auto cb_lambda = [](void *_this){
@@ -276,7 +316,7 @@ public:
             auto mfp = reinterpret_cast<mem_func_ptr_with_count_t>(self->_mem_func_ptr);
             (inst->*mfp)(self->_repeat_count);
             };
-        return _attach_ms(milliseconds, cb_lambda, (uint32_t)this);
+        return _attach_ms((uint32_t)this);
     }
 
 protected:

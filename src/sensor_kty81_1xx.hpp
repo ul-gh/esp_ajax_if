@@ -104,7 +104,6 @@ struct KTY81_1xxCommonConfig
 class SensorKTY81_121
 {
 public:
-    // inline redundant with constexpr but current linker version has no support
     static constexpr auto _common_conf = KTY81_1xxCommonConfig{};
     ESP32ADCChannelFiltered<_common_conf.moving_average_filter_len> adc_ch;
 
