@@ -31,7 +31,6 @@ class ESP32ADCChannel
 public:
     adc1_channel_t channel_num;
     adc_atten_t attenuation;
-    inline static bool hardware_initialized;
     esp_adc_cal_characteristics_t calibration_data;
 
     /** @brief Initialise ADC channel.
@@ -41,7 +40,7 @@ public:
     ESP32ADCChannel(adc1_channel_t channel_num,
                     adc_atten_t attenuation,
                     uint32_t averaged_samples = 64,
-                    adc_bits_width_t bit_width = ADC_WIDTH_BIT_12,
+                    adc_bits_width_t bits_width = ADC_WIDTH_BIT_12,
                     uint32_t default_vref = 1100u);
 
     /** @brief Get raw ADC channel conversion value, repeats sampling
@@ -73,6 +72,9 @@ public:
 
 protected:
     uint32_t division_shift;
+    // Initialised with an invalid value to check if HW was initialised by a
+    // previous constructor call. (All channels must have same bits_width)
+    inline static auto _bits_width = adc_bits_width_t{ADC_WIDTH_MAX};
 };
 
 
@@ -83,10 +85,10 @@ public:
     ESP32ADCChannelFiltered(adc1_channel_t channel_num,
                             adc_atten_t attenuation,
                             uint32_t averaged_samples = 64,
-                            adc_bits_width_t bit_width = ADC_WIDTH_BIT_12,
+                            adc_bits_width_t bits_width = ADC_WIDTH_BIT_12,
                             uint32_t default_vref = 1100u)
         : ESP32ADCChannel{channel_num, attenuation, averaged_samples,
-                          bit_width, default_vref}
+                          bits_width, default_vref}
     {
         filter.initialize(get_raw_averaged());
     }

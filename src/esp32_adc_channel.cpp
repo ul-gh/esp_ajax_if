@@ -12,38 +12,40 @@
  */
 #include <cmath>
 
+#define LOG_LOCAL_LEVEL ESP_LOG_DEBUG
 #include "esp_log.h"
 static auto TAG = "esp32_adc_channel.cpp";
 
 #include "esp32_adc_channel.hpp"
 
-
 ESP32ADCChannel::ESP32ADCChannel(adc1_channel_t channel_num,
                                  adc_atten_t attenuation,
                                  uint32_t averaged_samples,
-                                 adc_bits_width_t bit_width,
+                                 adc_bits_width_t bits_width,
                                  uint32_t default_vref)
     : channel_num{channel_num}
     , attenuation{attenuation}
 {
-    // Checks N is power of two and size limit is due to uint32_t sum
-    if (averaged_samples > 1<<16 || (averaged_samples & (averaged_samples-1)) == 0) {
+    // Abort if N is not power of two and size limit is due to uint32_t sum
+    if (averaged_samples > 1<<16 || (averaged_samples & (averaged_samples-1)) != 0) {
         ESP_LOGE(TAG, "Number must be power of two and smaller than 2^16");
         abort();
     }
     division_shift = log2(averaged_samples);
-    if (hardware_initialized) {
-        if (bit_width != calibration_data.bit_width) {
+    // static member _bit_width is only then not equal to ADC_WIDTH_MAX if
+    // this constructor was called before. Then all instances must be the same.
+    if (_bits_width != ADC_WIDTH_MAX) {
+        if (bits_width != _bits_width) {
             ESP_LOGE(TAG, "Bit width setting must be same for all channels");
             abort();
         }
     } else {
-        adc1_config_width(bit_width);
-        hardware_initialized = true;
+        _bits_width = bits_width;
+        adc1_config_width(bits_width);
     }
     adc1_config_channel_atten(channel_num, attenuation);
     esp_adc_cal_value_t val_type = esp_adc_cal_characterize(
-        ADC_UNIT_1, attenuation, bit_width, default_vref, &calibration_data);
+        ADC_UNIT_1, attenuation, bits_width, default_vref, &calibration_data);
     debug_print_characterisation_val_type(val_type);
     debug_print_check_efuse();
 }

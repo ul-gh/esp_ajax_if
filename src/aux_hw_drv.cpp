@@ -10,6 +10,7 @@
 
 #include "aux_hw_drv.hpp"
 
+#define LOG_LOCAL_LEVEL ESP_LOG_DEBUG
 #include "esp_log.h"
 static auto TAG = "AuxHwDrv";
 

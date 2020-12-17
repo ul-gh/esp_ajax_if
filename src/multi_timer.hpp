@@ -108,14 +108,15 @@ public:
         _callback = reinterpret_cast<callback_t>(callback);
         _orig_arg = (uint32_t)arg;
         _first_tick_nodelay = first_tick_nodelay;
-        auto cb_lambda = [](void *_this){
+        _cb_lambda = [](void *_this){
             auto self = static_cast<decltype(this)>(_this);
-            if (++self->_repeat_count == self->_repeat_count_requested) {
+            auto repeat_count = ++self->_repeat_count;
+            if (repeat_count == self->_repeat_count_requested) {
                 self->stop();
             }
             auto cb = reinterpret_cast<callback_with_arg_and_count_t>(self->_callback);
             auto arg = (TArg)(self->_orig_arg);
-            cb(arg, self->_repeat_count);
+            cb(arg, repeat_count);
             };
         return _attach_ms((uint32_t)this);
     }
@@ -133,9 +134,10 @@ public:
         _callback = reinterpret_cast<callback_t>(callback);
         _orig_arg = (uint32_t)arg;
         _first_tick_nodelay = first_tick_nodelay;
-        auto cb_lambda = [](void *_this){
+        _cb_lambda = [](void *_this){
             auto self = static_cast<decltype(this)>(_this);
-            if (++self->_repeat_count == self->_repeat_count_requested) {
+            auto repeat_count = ++self->_repeat_count;
+            if (repeat_count == self->_repeat_count_requested) {
                 self->stop();
             }
             auto cb = reinterpret_cast<callback_with_arg_t>(self->_callback);
@@ -153,9 +155,10 @@ public:
         _repeat_count_requested = total_repeat_count;
         _callback = reinterpret_cast<callback_t>(callback);
         _first_tick_nodelay = first_tick_nodelay;
-        auto cb_lambda = [](void *_this){
+        _cb_lambda = [](void *_this){
             auto self = static_cast<decltype(this)>(_this);
-            if (++self->_repeat_count == self->_repeat_count_requested) {
+            auto repeat_count = ++self->_repeat_count;
+            if (repeat_count == self->_repeat_count_requested) {
                 self->stop();
             }
             self->_callback();
@@ -285,9 +288,10 @@ public:
         _repeat_count_requested = total_repeat_count;
         _mem_func_ptr = mem_func_ptr;
         _orig_arg = reinterpret_cast<uint32_t>(inst);
-        auto cb_lambda = [](void *_this){
+        _cb_lambda = [](void *_this){
             auto self = static_cast<decltype(this)>(_this);
-            if (++self->_repeat_count == self->_repeat_count_requested) {
+            auto repeat_count = ++self->_repeat_count;
+            if (repeat_count == self->_repeat_count_requested) {
                 self->stop();
             }
             auto inst = reinterpret_cast<TClass*>(self->_orig_arg);
@@ -306,9 +310,10 @@ public:
         _repeat_count_requested = total_repeat_count;
         _mem_func_ptr = mem_func_ptr;
         _orig_arg = reinterpret_cast<uint32_t>(inst);
-        auto cb_lambda = [](void *_this){
+        _cb_lambda = [](void *_this){
             auto self = static_cast<decltype(this)>(_this);
-            if (++self->_repeat_count == self->_repeat_count_requested) {
+            auto repeat_count = ++self->_repeat_count;
+            if (repeat_count == self->_repeat_count_requested) {
                 self->stop();
             }
             auto inst = reinterpret_cast<TClass*>(self->_orig_arg);
