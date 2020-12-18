@@ -104,8 +104,11 @@ private:
     // Timer for generating overcurrent reset pulse
     MultiTimer oc_reset_timer;
     // Timer for power output timing
-    MultiTimer power_output_timer;
+    MultiTimerNonStatic<AppController> power_output_timer;
 
+    void _debug_print_foo() {
+        ESP_LOGI("Foo", "FOOOOOOO");
+    }
 
     /////////// Setup functions called from this constructor //////
     

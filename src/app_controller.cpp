@@ -147,7 +147,7 @@ void AppController::set_power_pwm_active(bool state){
 void AppController::trigger_oneshot(){
     // The timer callback also sends a state_changed event
     esp_err_t errors = power_output_timer.start_return_errors();
-    if (errors != ESP_OK) {
+    if (errors == ESP_ERR_INVALID_ARG) {
         set_power_pwm_active(false);
         ESP_LOGE(TAG, "Critical error starting timer. Abort.");
         abort();
@@ -287,20 +287,22 @@ void AppController::_connect_timer_callbacks(){
         [](){xEventGroupSetBits(_app_event_group, EventFlags::timer_slow);}
         );
     // Timer for generating output pulses
-    errors = power_output_timer.attach_static_ms(
+    //errors = power_output_timer.attach_static_ms(
+    errors = power_output_timer.attach_mem_func_ptr_ms(
         state.oneshot_power_pulse_length_ms,
         2,
-        [](AppController *self, uint32_t repeat_count){
-            ESP_LOGD(TAG, "Power pulse callback called. Counter: %d    ms: %lu",
-                     repeat_count, millis());
-            if (repeat_count == 1) {
-                self->set_power_pwm_active(true);
-            } else {
-                // Output was activated before. Disable it again.
-                self->set_power_pwm_active(false);
-            }
-            self->_send_state_changed_event();
-        }, 
+        &AppController::_debug_print_foo,
+        //[](AppController *self, uint32_t repeat_count){
+        //    ESP_LOGD(TAG, "Power pulse callback called. Counter: %d    ms: %lu",
+        //             repeat_count, millis());
+        //    if (repeat_count == 1) {
+        //        self->set_power_pwm_active(true);
+        //    } else {
+        //        // Output was activated before. Disable it again.
+        //        self->set_power_pwm_active(false);
+        //    }
+        //    self->_send_state_changed_event();
+        //}, 
         this,
         true
         );

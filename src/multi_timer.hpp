@@ -50,9 +50,10 @@ public:
      * 
      * This timer is created without activating it.
      * - It is activated by calling start().
-     * - It is stopped without detaching the callback by calling stop().
-     *   When started again, it continues until total repeat count is reached.
-     * - Calling reset() resets the number of repeats to its original value.
+     * - It is stopped without detaching the callback by calling stop(),
+     *   which also resets the number of repeats to its original value.
+     * - It can be paused by calling pause(), which does not reset the repeats.
+     * - After calling resume(), continues until total repeat count is reached.
      * 
      * The callback can receive zero, one or two arguments:
      * - For no arguments, it is just called the preset number of times.
@@ -69,7 +70,7 @@ public:
      * class PrintFoo {
      * public:
      *     MultiTimer timer;
-     *     auto foo_str = "This is Foo Number: %d";
+     *     const char *foo_str = "This is Foo Number: %d";
      * 
      *     void print_foo(uint32_t i) {
      *         printf(foo_str, i);
@@ -86,6 +87,15 @@ public:
      * PrintFoo print_6x_foo{500, 6};
      * print_6x_foo.timer.start();
      * 
+     * ==> Please note: This software timer is only relatively accurate.
+     *     That menas, for each repeat, the timer is stopped and started again
+     *     immediately if the total number of repeats is not yet reached.
+     *     This means that for multiple repeats, each small timing error
+     *     will sum up to a larger value.
+     *     If you need accurate timing for a large (or infinite) number of
+     *     repeats, please use the Ticker class which features the periodic
+     *     attach_ms() which has better long-term accuracy.
+     * 
      * @param milliseconds: Timer interval in milliseconds
      * @param total_repeat_count: Timer is stopped after this many repeats
      * @param callback: Callback function to register into this timer
@@ -96,8 +106,8 @@ public:
      *                            until total repeat count is reached
      */
     template <typename TArg>
-    esp_err_t attach_static_ms(const uint32_t milliseconds,
-                               const uint32_t total_repeat_count,
+    esp_err_t attach_static_ms(uint32_t milliseconds,
+                               uint32_t total_repeat_count,
                                void (*callback)(type_identity_t<TArg>, uint32_t),
                                TArg arg,
                                bool first_tick_nodelay=false) {
@@ -111,8 +121,10 @@ public:
         _cb_lambda = [](void *_this){
             auto self = static_cast<decltype(this)>(_this);
             auto repeat_count = ++self->_repeat_count;
-            if (repeat_count == self->_repeat_count_requested) {
-                self->stop();
+            if (repeat_count < self->_repeat_count_requested) {
+                esp_timer_start_once(self->_timer, self->_interval_ms*1000ull);
+            } else {
+                self->_repeat_count = 0;
             }
             auto cb = reinterpret_cast<callback_with_arg_and_count_t>(self->_callback);
             auto arg = (TArg)(self->_orig_arg);
@@ -122,8 +134,8 @@ public:
     }
 
     template <typename TArg>
-    esp_err_t attach_static_ms(const uint32_t milliseconds,
-                               const uint32_t total_repeat_count,
+    esp_err_t attach_static_ms(uint32_t milliseconds,
+                               uint32_t total_repeat_count,
                                void (*callback)(type_identity_t<TArg>),
                                TArg arg,
                                bool first_tick_nodelay=false) {
@@ -137,8 +149,10 @@ public:
         _cb_lambda = [](void *_this){
             auto self = static_cast<decltype(this)>(_this);
             auto repeat_count = ++self->_repeat_count;
-            if (repeat_count == self->_repeat_count_requested) {
-                self->stop();
+            if (repeat_count < self->_repeat_count_requested) {
+                esp_timer_start_once(self->_timer, self->_interval_ms*1000ull);
+            } else {
+                self->_repeat_count = 0;
             }
             auto cb = reinterpret_cast<callback_with_arg_t>(self->_callback);
             auto arg = (TArg)(self->_orig_arg);
@@ -147,8 +161,8 @@ public:
         return _attach_ms((uint32_t)this);
     }
 
-    esp_err_t attach_static_ms(const uint32_t milliseconds,
-                               const uint32_t total_repeat_count,
+    esp_err_t attach_static_ms(uint32_t milliseconds,
+                               uint32_t total_repeat_count,
                                callback_t callback,
                                bool first_tick_nodelay=false) {
         _interval_ms = milliseconds;
@@ -158,28 +172,30 @@ public:
         _cb_lambda = [](void *_this){
             auto self = static_cast<decltype(this)>(_this);
             auto repeat_count = ++self->_repeat_count;
-            if (repeat_count == self->_repeat_count_requested) {
-                self->stop();
+            if (repeat_count < self->_repeat_count_requested) {
+                esp_timer_start_once(self->_timer, self->_interval_ms*1000ull);
+            } else {
+                self->_repeat_count = 0;
             }
             self->_callback();
             };
         return _attach_ms((uint32_t)this);
     }
 
-    /** Simple version without return code for use as a callback
+    /** Simple version without return value for use as a callback
      */
     void start() {
         if (_first_tick_nodelay && _cb_lambda) {
             _cb_lambda(this);
         }
-        esp_timer_start_periodic(_timer, _interval_ms * 1000ULL);
+        esp_timer_start_once(_timer, _interval_ms*1000ull);
     }
     void start(uint32_t interval_ms) {
         _interval_ms = interval_ms;
         if (_first_tick_nodelay && _cb_lambda) {
             _cb_lambda(this);
         }
-        esp_timer_start_periodic(_timer, _interval_ms * 1000ULL);
+        esp_timer_start_once(_timer, _interval_ms*1000ull);
     }
     /** Version returning errors from API call
      */
@@ -187,7 +203,7 @@ public:
         if (_first_tick_nodelay && _cb_lambda) {
             _cb_lambda(this);
         }
-        auto errors = esp_timer_start_periodic(_timer, _interval_ms * 1000ULL);
+        auto errors = esp_timer_start_once(_timer, _interval_ms*1000ull);
         return errors;
     }
     esp_err_t start_return_errors(uint32_t interval_ms) {
@@ -195,7 +211,7 @@ public:
         if (_first_tick_nodelay && _cb_lambda) {
             _cb_lambda(this);
         }
-        auto errors = esp_timer_start_periodic(_timer, _interval_ms * 1000ULL);
+        auto errors = esp_timer_start_once(_timer, _interval_ms*1000ull);
         return errors;
     }
 
@@ -216,11 +232,19 @@ public:
         return esp_timer_stop(_timer);
     }
 
+    void resume() {
+        esp_timer_start_once(_timer, _interval_ms*1000ull);
+    }
+    esp_err_t resume_return_errors() {
+        return esp_timer_start_once(_timer, _interval_ms*1000ull);
+    }
+
     // The only other functions we make available again in this class
     using Ticker::detach;
     using Ticker::active;
 
 protected:
+    using Ticker::_timer;
     uint32_t _interval_ms;
     uint32_t _repeat_count_requested{1};
     uint32_t _repeat_count{0};
@@ -266,7 +290,7 @@ public:
     using mem_func_ptr_with_count_t = void (TClass::*)(uint32_t);
 
     /** @brief Same as attach_static_ms() but taking a pointer to a
-     * non-static member function as a callback, see class descrition.
+     * non-static member function as a callback, see class description.
      * 
      * Like for the static version, the member function can have an additional
      * argument containing the current number of times the callback was called.
@@ -280,19 +304,23 @@ public:
      *                            tick counts as a normal repeat and is repeated
      *                            until total repeat count is reached
      */
-    esp_err_t attach_mem_func_ptr_ms(const uint32_t milliseconds,
-                                     const uint32_t total_repeat_count,
+    esp_err_t attach_mem_func_ptr_ms(uint32_t milliseconds,
+                                     uint32_t total_repeat_count,
                                      mem_func_ptr_t mem_func_ptr,
-                                     TClass *inst) {
+                                     TClass *inst,
+                                     bool first_tick_nodelay=false) {
         _interval_ms = milliseconds;
         _repeat_count_requested = total_repeat_count;
         _mem_func_ptr = mem_func_ptr;
         _orig_arg = reinterpret_cast<uint32_t>(inst);
+        _first_tick_nodelay = first_tick_nodelay;
         _cb_lambda = [](void *_this){
             auto self = static_cast<decltype(this)>(_this);
             auto repeat_count = ++self->_repeat_count;
-            if (repeat_count == self->_repeat_count_requested) {
-                self->stop();
+            if (repeat_count < self->_repeat_count_requested) {
+                esp_timer_start_once(self->_timer, self->_interval_ms*1000ull);
+            } else {
+                self->_repeat_count = 0;
             }
             auto inst = reinterpret_cast<TClass*>(self->_orig_arg);
             //std::invoke(self->_mem_func_ptr, *inst);
@@ -302,19 +330,23 @@ public:
         return _attach_ms((uint32_t)this);
     }
 
-    esp_err_t attach_mem_func_ptr_ms(const uint32_t milliseconds,
-                                     const uint32_t total_repeat_count,
+    esp_err_t attach_mem_func_ptr_ms(uint32_t milliseconds,
+                                     uint32_t total_repeat_count,
                                      mem_func_ptr_with_count_t mem_func_ptr,
-                                     TClass *inst) {
+                                     TClass *inst,
+                                     bool first_tick_nodelay=false) {
         _interval_ms = milliseconds;
         _repeat_count_requested = total_repeat_count;
         _mem_func_ptr = mem_func_ptr;
         _orig_arg = reinterpret_cast<uint32_t>(inst);
+        _first_tick_nodelay = first_tick_nodelay;
         _cb_lambda = [](void *_this){
             auto self = static_cast<decltype(this)>(_this);
             auto repeat_count = ++self->_repeat_count;
-            if (repeat_count == self->_repeat_count_requested) {
-                self->stop();
+            if (repeat_count < self->_repeat_count_requested) {
+                esp_timer_start_once(self->_timer, self->_interval_ms*1000ull);
+            } else {
+                self->_repeat_count = 0;
             }
             auto inst = reinterpret_cast<TClass*>(self->_orig_arg);
             //std::invoke(self->_mem_func_ptr, *inst, self->_repeat_count);
