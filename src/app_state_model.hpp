@@ -56,7 +56,7 @@ struct AppState
     float frequency_min = app_conf.frequency_min;
     float frequency_max = app_conf.frequency_max;
     // Pulse length for one-shot mode power output pulse
-    uint32_t oneshot_power_pulse_length_ms{0};
+    uint32_t oneshot_power_pulse_length_ms{1};
 
     // State from AuxHwDrv module
     AuxHwDrvState *aux_hw_drv_state = nullptr;

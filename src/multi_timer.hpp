@@ -182,37 +182,23 @@ public:
         return _attach_ms((uint32_t)this);
     }
 
-    /** Simple version without return value for use as a callback
+    /** Without return value, we don't get this out of the lambda without
+     * another class member.. 
      */
     void start() {
         if (_first_tick_nodelay && _cb_lambda) {
             _cb_lambda(this);
+        } else {
+            esp_timer_start_once(_timer, _interval_ms*1000ull);
         }
-        esp_timer_start_once(_timer, _interval_ms*1000ull);
     }
     void start(uint32_t interval_ms) {
         _interval_ms = interval_ms;
         if (_first_tick_nodelay && _cb_lambda) {
             _cb_lambda(this);
+        } else {
+            esp_timer_start_once(_timer, _interval_ms*1000ull);
         }
-        esp_timer_start_once(_timer, _interval_ms*1000ull);
-    }
-    /** Version returning errors from API call
-     */
-    esp_err_t start_return_errors() {
-        if (_first_tick_nodelay && _cb_lambda) {
-            _cb_lambda(this);
-        }
-        auto errors = esp_timer_start_once(_timer, _interval_ms*1000ull);
-        return errors;
-    }
-    esp_err_t start_return_errors(uint32_t interval_ms) {
-        _interval_ms = interval_ms;
-        if (_first_tick_nodelay && _cb_lambda) {
-            _cb_lambda(this);
-        }
-        auto errors = esp_timer_start_once(_timer, _interval_ms*1000ull);
-        return errors;
     }
 
     void stop() {
@@ -337,7 +323,8 @@ public:
                                      bool first_tick_nodelay=false) {
         _interval_ms = milliseconds;
         _repeat_count_requested = total_repeat_count;
-        _mem_func_ptr = mem_func_ptr;
+        _mem_func_ptr = reinterpret_cast<mem_func_ptr_t>(mem_func_ptr);
+        //_mem_func_ptr_with_count = mem_func_ptr;
         _orig_arg = reinterpret_cast<uint32_t>(inst);
         _first_tick_nodelay = first_tick_nodelay;
         _cb_lambda = [](void *_this){
@@ -351,13 +338,15 @@ public:
             auto inst = reinterpret_cast<TClass*>(self->_orig_arg);
             //std::invoke(self->_mem_func_ptr, *inst, self->_repeat_count);
             auto mfp = reinterpret_cast<mem_func_ptr_with_count_t>(self->_mem_func_ptr);
-            (inst->*mfp)(self->_repeat_count);
+            //auto mfp = self->_mem_func_ptr_with_count;
+            (inst->*mfp)(repeat_count);
             };
         return _attach_ms((uint32_t)this);
     }
 
 protected:
     mem_func_ptr_t _mem_func_ptr;
+    //mem_func_ptr_with_count_t _mem_func_ptr_with_count;
 };
 
 

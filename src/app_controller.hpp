@@ -106,10 +106,6 @@ private:
     // Timer for power output timing
     MultiTimerNonStatic<AppController> power_output_timer;
 
-    void _debug_print_foo() {
-        ESP_LOGI("Foo", "FOOOOOOO");
-    }
-
     /////////// Setup functions called from this constructor //////
     
     void _initialize_ps_pwm_drv();

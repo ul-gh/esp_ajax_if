@@ -75,14 +75,14 @@ void setup() {
 void loop() {
     dns_server.processNextRequest();
     update_debug_messages();
-    delay(50);
+    delay(20);
 }
 
 
 void update_debug_messages(){
     static auto loopctr = 0u;
     loopctr++;
-    if (loopctr > 100) {
+    if (loopctr > 500) {
         loopctr = 0;
         //heap_trace_start(HEAP_TRACE_LEAKS);
         print_debug_messages();
