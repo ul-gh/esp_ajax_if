@@ -19,7 +19,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">ESP-AJAX-Lab
-   &#160;<span id="projectnumber">0.1</span>
+   &#160;<span id="projectnumber">0.99.6</span>
    </div>
    <div id="projectbrief">HTTP server, AJAX API backend, web application and Soc hardware drivers for WiFi remote control of the MCPWM hardware modules on the Espressif ESP32 SoC</div>
   </td>
@@ -53,27 +53,27 @@ $(function() {
 <div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;<span class="preprocessor">#include &quot;IPAddress.h&quot;</span></div>
 <div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160; </div>
 <div class="line"><a name="l00005"></a><span class="lineno"><a class="line" href="struct_network_config.html">    5</a></span>&#160;<span class="keyword">struct </span><a class="code" href="struct_network_config.html">NetworkConfig</a> {</div>
-<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;    <span class="keyword">const</span> IPAddress ap_ip{192,168,4,1};</div>
-<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;    <span class="keyword">const</span> IPAddress ap_gateway{192,168,4,1};</div>
-<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;    <span class="keyword">const</span> IPAddress ap_subnet{255,255,255,0};</div>
+<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;    IPAddress ap_ip{192,168,4,1};</div>
+<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;    IPAddress ap_gateway{192,168,4,1};</div>
+<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;    IPAddress ap_subnet{255,255,255,0};</div>
 <div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160; </div>
-<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;    <span class="keyword">static</span> constexpr <span class="keyword">const</span> <span class="keywordtype">char</span>* ap_ssid = <span class="stringliteral">&quot;isocal&quot;</span>;</div>
-<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;    <span class="keyword">static</span> constexpr <span class="keyword">const</span> <span class="keywordtype">char</span>* ap_psk = <span class="stringliteral">&quot;123FOO456&quot;</span>;</div>
+<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;    <span class="keyword">const</span> <span class="keywordtype">char</span>* ap_ssid = <span class="stringliteral">&quot;isocal&quot;</span>;</div>
+<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;    <span class="keyword">const</span> <span class="keywordtype">char</span>* ap_psk = <span class="stringliteral">&quot;123FOO456&quot;</span>;</div>
 <div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160; </div>
-<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;    <span class="keyword">static</span> constexpr <span class="keyword">const</span> <span class="keywordtype">char</span>* sta_ssid = <span class="stringliteral">&quot;K8M&quot;</span>;</div>
-<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;    <span class="keyword">static</span> constexpr <span class="keyword">const</span> <span class="keywordtype">char</span>* sta_psk = <span class="stringliteral">&quot;zy807Mk9gy3_hkRt&quot;</span>;</div>
+<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;    <span class="keyword">const</span> <span class="keywordtype">char</span>* sta_ssid = <span class="stringliteral">&quot;K8M&quot;</span>;</div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;    <span class="keyword">const</span> <span class="keywordtype">char</span>* sta_psk = <span class="stringliteral">&quot;zy807Mk9gy3_hkRt&quot;</span>;</div>
 <div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160; </div>
-<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;    <span class="keyword">static</span> constexpr <span class="keyword">const</span> <span class="keywordtype">char</span>* host_name = <span class="stringliteral">&quot;isocal&quot;</span>;</div>
-<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;    <span class="keyword">static</span> constexpr <span class="keyword">const</span> <span class="keywordtype">char</span>* dns_domain = <span class="stringliteral">&quot;isocal.lan&quot;</span>;</div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;    <span class="keyword">const</span> <span class="keywordtype">char</span>* host_name = <span class="stringliteral">&quot;isocal&quot;</span>;</div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;    <span class="keyword">const</span> <span class="keywordtype">char</span>* dns_domain = <span class="stringliteral">&quot;isocal.lan&quot;</span>;</div>
 <div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160; </div>
-<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;    <span class="keyword">static</span> constexpr <span class="keywordtype">bool</span> use_mdns = <span class="keyword">false</span>;</div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;    <span class="keywordtype">bool</span> use_mdns = <span class="keyword">false</span>;</div>
 <div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160; </div>
-<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;    <span class="keyword">static</span> constexpr uint16_t http_tcp_port = 80;</div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;    uint16_t http_tcp_port = 80;</div>
 <div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160; </div>
 <div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;    <span class="comment">// WiFi Manager can launch the ESP in access point mode and serve a</span></div>
 <div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;    <span class="comment">// captive portal page for WiFi configuration.</span></div>
 <div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;    <span class="comment">// This mostly makes sense for use as a WiFi client.</span></div>
-<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;    <span class="keyword">static</span> constexpr <span class="keywordtype">bool</span> use_wifi_manager = <span class="keyword">false</span>;</div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;    <span class="keywordtype">bool</span> use_wifi_manager = <span class="keyword">false</span>;</div>
 <div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;};</div>
 <div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160; </div>
 <div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;<span class="preprocessor">#endif</span></div>

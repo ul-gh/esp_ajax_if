@@ -8,34 +8,46 @@ Default configuration set up for generating a Phase-Shift-PWM waveform
 between two pairs of hardware pins. This also features auxiliary
 measurement and control functions:
 
-* LUT-calibrated temperature sensor readout for KTY81-121 type silicon
+* Calibrated temperature sensor readout for KTY81-121 type silicon
   temperature sensors using the ESP32 ADC in its high-linearity region
 * PWM reference signal generation for hardware overcurrent detector
 * External GPIO output control for relays, fan, enable and error-reset
-* TBD: Delta-Sigma conversion control and filter for insulated measurement
-  of power stage current
+* TBD: Delta-Sigma conversion control and filter for insulated current
+  sensing
 
 The HTML web application interface features a responsive CSS grid layout and
 requires a newer web browser with at least JavaScript ES 7 support.
 
-## Low-Level-Driver (ESP-IDF compatible)
-* See file:<br>
-[src/ps_pwm.h](ps__pwm_8h.html)
+The toolchain compiler must support std=c++17.
 
-## C++ API for auxiliary hardware control and temperature sensor readout
-* [AuxHwDrv](class_aux_hw_drv.html)
-* [AdcTemp](adc__temp_8hpp.html)
+## C++ Application Data Model
+* [AppState](struct_app_state.html)
 
-## C++ API for PWM generation
-* [PsPwmAppHwControl](class_ps_pwm_app_hw_control.html)
+## C++ Application Controller Implementing C++ and HTTP GET API
+* [AppController](class_app_controller.html)
 
-## C++ HTTP and SSE event server
-* [APIServer](class_a_p_i_server.html)
-
-## HTML+CSS+JS Single-Page Web Application
+## HTML+CSS+JS Single-Page Web Application (Remote View/Control)
 * [JS in main_app_ajax.js](../../src/data/www/main_app_ajax.js)
 * [HTML in main_app.html](../../src/data/www/main_app.html)
 * [CSS in main_app.css](../../src/data/www/main_app.css)
+
+## C++ HTTP and SSE Event Server
+* [APIServer](class_a_p_i_server.html)
+
+## Auxiliary Hardware Control and Utility Classes
+* [AuxHwDrv](class_aux_hw_drv.html)
+* [SensorKTY81_121](class_sensor_k_t_y81__121.html)
+* [ESP32ADCChannel](class_e_s_p32_a_d_c_channel.html)
+* [U16MovingAverage](class_u16_moving_average.html)
+* [EquidistantPWL](struct_equidistant_p_w_l.html)
+* [MultiTimer](class_multi_timer.html)
+
+## Low-Level-Driver (ESP-IDF Compatible)
+* See file:<br>
+[src/ps_pwm.h](ps__pwm_8h.html)
+
+## Application Configuration
+* [AppConfig](struct_app_config.html)
 
 
 ## HTTP API Documentation
@@ -73,6 +85,9 @@ HTTP Status 200 OK and plain text content "OK"
 
 * Activate|deactivate the output:<br>
 /cmd?set_power_pwm_active=true|false
+
+* Trigger a one-shot output power pulse of configurable length:<br>
+/cmd?trigger_oneshot
 
 * Clear error shutdown condition:<br>
 /cmd?clear_shutdown

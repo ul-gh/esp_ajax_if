@@ -84,7 +84,7 @@ AppController::~AppController() {
 }
 
 
-/** Begin operation.
+/* Begin operation.
  * This also starts the timer callbacks etc.
  * This will fail if networking etc. is not set up correctly!
  */

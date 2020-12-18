@@ -19,7 +19,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">ESP-AJAX-Lab
-   &#160;<span id="projectnumber">0.1</span>
+   &#160;<span id="projectnumber">0.99.6</span>
    </div>
    <div id="projectbrief">HTTP server, AJAX API backend, web application and Soc hardware drivers for WiFi remote control of the MCPWM hardware modules on the Espressif ESP32 SoC</div>
   </td>
@@ -61,7 +61,7 @@ $(function() {
 <code>#include &lt;ESPAsyncWebServer.h&gt;</code><br />
 <code>#include &quot;network_setup.hpp&quot;</code><br />
 <code>#include &quot;<a class="el" href="api__server_8hpp_source.html">api_server.hpp</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="app__hw__control_8hpp_source.html">app_hw_control.hpp</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="app__controller_8hpp_source.html">app_controller.hpp</a>&quot;</code><br />
 <code>#include &quot;esp_log.h&quot;</code><br />
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
@@ -86,24 +86,21 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>loop</b> ()</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
 Variables</h2></td></tr>
-<tr class="memitem:acce3cde62fc0a4a9ee4311e6a8d71cfb"><td class="memItemLeft" align="right" valign="top"><a id="acce3cde62fc0a4a9ee4311e6a8d71cfb"></a>
-const <a class="el" href="struct_network_config.html">NetworkConfig</a>&#160;</td><td class="memItemRight" valign="bottom"><b>net_conf</b></td></tr>
-<tr class="separator:acce3cde62fc0a4a9ee4311e6a8d71cfb"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4215b280e0566c532f137c2a4a439179"><td class="memItemLeft" align="right" valign="top"><a id="a4215b280e0566c532f137c2a4a439179"></a>
-constexpr unsigned long&#160;</td><td class="memItemRight" valign="bottom"><b>serial_baudrate</b> = 115200</td></tr>
-<tr class="separator:a4215b280e0566c532f137c2a4a439179"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acc58aaf58418d4994a328f301a7d556a"><td class="memItemLeft" align="right" valign="top"><a id="acc58aaf58418d4994a328f301a7d556a"></a>
-DNSServer&#160;</td><td class="memItemRight" valign="bottom"><b>dns_server</b></td></tr>
-<tr class="separator:acc58aaf58418d4994a328f301a7d556a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac3d57c0d85d5868ed39de5f1c54a22df"><td class="memItemLeft" align="right" valign="top"><a id="ac3d57c0d85d5868ed39de5f1c54a22df"></a>
-AsyncWebServer&#160;</td><td class="memItemRight" valign="bottom"><b>http_backend</b> {net_conf.http_tcp_port}</td></tr>
-<tr class="separator:ac3d57c0d85d5868ed39de5f1c54a22df"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a92d225167cfb8a9da78e0e85fd426237"><td class="memItemLeft" align="right" valign="top"><a id="a92d225167cfb8a9da78e0e85fd426237"></a>
-<a class="el" href="class_a_p_i_server.html">APIServer</a>&#160;</td><td class="memItemRight" valign="bottom"><b>api_server</b> {&amp;http_backend}</td></tr>
-<tr class="separator:a92d225167cfb8a9da78e0e85fd426237"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9342d29bf004f233223825b5e6d276e7"><td class="memItemLeft" align="right" valign="top"><a id="a9342d29bf004f233223825b5e6d276e7"></a>
-<a class="el" href="class_ps_pwm_app_hw_control.html">PsPwmAppHwControl</a>&#160;</td><td class="memItemRight" valign="bottom"><b>ps_pwm_controller</b> {&amp;api_server}</td></tr>
-<tr class="separator:a9342d29bf004f233223825b5e6d276e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0e6ad15ca20eeea68ab8a9324637bcc4"><td class="memItemLeft" align="right" valign="top"><a id="a0e6ad15ca20eeea68ab8a9324637bcc4"></a>
+constexpr auto&#160;</td><td class="memItemRight" valign="bottom"><b>serial_baudrate</b> = 115200ul</td></tr>
+<tr class="separator:a0e6ad15ca20eeea68ab8a9324637bcc4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2c78a4a18c5b4b27888a7af1f2f3afca"><td class="memItemLeft" align="right" valign="top"><a id="a2c78a4a18c5b4b27888a7af1f2f3afca"></a>
+auto&#160;</td><td class="memItemRight" valign="bottom"><b>dns_server</b> = DNSServer{}</td></tr>
+<tr class="separator:a2c78a4a18c5b4b27888a7af1f2f3afca"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ada4cc0a6117c0c9b695353c5d3fae56c"><td class="memItemLeft" align="right" valign="top"><a id="ada4cc0a6117c0c9b695353c5d3fae56c"></a>
+auto&#160;</td><td class="memItemRight" valign="bottom"><b>http_backend</b> = AsyncWebServer{net_conf.http_tcp_port}</td></tr>
+<tr class="separator:ada4cc0a6117c0c9b695353c5d3fae56c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1211e72949e98c2a5de9d0ef190a5382"><td class="memItemLeft" align="right" valign="top"><a id="a1211e72949e98c2a5de9d0ef190a5382"></a>
+auto&#160;</td><td class="memItemRight" valign="bottom"><b>api_server</b> = <a class="el" href="class_a_p_i_server.html">APIServer</a>{&amp;http_backend}</td></tr>
+<tr class="separator:a1211e72949e98c2a5de9d0ef190a5382"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac8aeb2a439591b171f683dd89e130ed4"><td class="memItemLeft" align="right" valign="top"><a id="ac8aeb2a439591b171f683dd89e130ed4"></a>
+auto&#160;</td><td class="memItemRight" valign="bottom"><b>app_controller</b> = <a class="el" href="class_app_controller.html">AppController</a>{&amp;api_server}</td></tr>
+<tr class="separator:ac8aeb2a439591b171f683dd89e130ed4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>ESP-AJAX-Lab HTTP server, AJAX API backend, web application and Soc hardware drivers for WiFi remote control of the MCPWM hardware modules on the Espressif ESP32 SoC. </p>
