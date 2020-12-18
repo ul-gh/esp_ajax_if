@@ -1,7 +1,16 @@
 /** @file app_controller.hpp
+ * @brief Application Controller Implementing C++ and HTTP GET API
  *
+ * This features the main control functions for PWM frequency, duty cycle etc.
+ * 
+ * Also, periodic state feedback for all hardware functions is sent to the
+ * HTTP remote application using Server-Sent Events from a FreeRTOS timer task.
+ * 
+ * Some auxiliary functions like GPIO and temperature readouts is outsourced
+ * to the AuxHwDrv class, see aux_hw_drv.cpp.
+ * 
  * License: GPL v.3 
- * U. Lukas 2020-12-11
+ * U. Lukas 2020-12-07
  */
 #ifndef APP_CONTROLLER_HPP__
 #define APP_CONTROLLER_HPP__

@@ -24,6 +24,13 @@ The toolchain compiler must support std=c++17.
 * [AppState](struct_app_state.html)
 
 ## C++ Application Controller Implementing C++ and HTTP GET API
+ * This features the main control functions for PWM frequency, duty cycle etc.
+ * 
+ * Also, periodic state feedback for all hardware functions is sent to the
+ * HTTP remote application using Server-Sent Events from a FreeRTOS timer task.
+ * 
+ * Some auxiliary functions like GPIO and temperature readouts is outsourced
+ * to the AuxHwDrv class, see aux_hw_drv.cpp.
 * [AppController](class_app_controller.html)
 
 ## HTML+CSS+JS Single-Page Web Application (Remote View/Control)

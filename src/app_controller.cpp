@@ -1,9 +1,9 @@
-/* Application interface implementation for PS-PWM generator hardware
+/* Application Controller Implementing C++ and HTTP GET API
  *
  * This features the main control functions for PWM frequency, duty cycle etc.
  * 
  * Also, periodic state feedback for all hardware functions is sent to the
- * HTTP remote interface using Server-Sent Events from a FreeRTOS timer task.
+ * HTTP remote application using Server-Sent Events from a FreeRTOS timer task.
  * 
  * Some auxiliary functions like GPIO and temperature readouts is outsourced
  * to the AuxHwDrv class, see aux_hw_drv.cpp.
