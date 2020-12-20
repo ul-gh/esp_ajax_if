@@ -45,7 +45,8 @@ ESP32ADCChannel::ESP32ADCChannel(adc1_channel_t channel_num,
 }
 
 /* Get raw ADC channel conversion value, repeats sampling
- * a number of times: "oversampling_ratio".
+ * a number of times as set per construction parameter "averaged_samples"
+ * and returns the plain average.
  * 
  * The output is always scaled such as if the ADC was set to 12 bits mode,
  * i.e. theoretical full-scale output is 4096 - 1
@@ -63,8 +64,8 @@ uint16_t ESP32ADCChannel::get_raw_averaged() {
     return static_cast<uint16_t>(adc_reading);
 }
 
-/* Get channel input voltage, this acquires a number of ADC samples
- * as per "get_averaged_samples" parameter and takes the average.
+/* Get channel input voltage, this uses the averaged samples as
+ * configured for get_raw_averaged() method.
  * 
  * This takes into account the calibration constants from ADC initialisation
  */
