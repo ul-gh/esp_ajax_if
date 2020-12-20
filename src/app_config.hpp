@@ -22,7 +22,7 @@ struct AppConfig
     // PRO_CPU_NUM == 1; APP_CPU_NUM == 0 on ESP32
     BaseType_t app_event_task_core_id{APP_CPU_NUM};
     // Fast timer for ADC conversion triggering etc
-    uint32_t timer_fast_interval_ms{50};
+    uint32_t timer_fast_interval_ms{100};
     /** Update non-critical application state and send cyclic
      * state updates to the HTTP client using this time interval (ms)
      */
@@ -60,24 +60,6 @@ struct AppConfig
     float init_lag_dt{125e-9};
     // Initial output state should be "false" representing "off"
     bool init_power_pwm_active{false};
-};
-
-
-/** @brief ADC configuration and calibration data
- */
-struct ESP32ADCConfig
-{
-    // Objects are constexpr, so members can be used as template parameters etc.
-    constexpr ESP32ADCConfig(){};
-    /************************************************************************
-     * Configuration
-     */
-    ////////// ADC hardware initialisation constants
-    // In case the calibration fuse bits are not available
-    uint32_t default_vref{1100};
-    // ESP32ADCChannel::get_raw_averaged() does an average over this many values
-    uint16_t averaged_samples{64};
-    adc_bits_width_t bit_width = ADC_WIDTH_BIT_12;
 };
 
 

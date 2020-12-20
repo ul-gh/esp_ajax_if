@@ -24,24 +24,34 @@ public:
     static_assert(N <= 1<<16 && (N & (N-1)) == 0);
 
     U16MovingAverage()
-        : current_index{0}
-    {}
+    {
+        initialize(0);
+    }
     U16MovingAverage(uint16_t init_value)
-        : current_index{0},
-        input_buffer{init_value},
-        result_sum{N * init_value}
-    {}
-
-    /** @brief Initializes the whole buffer with one value
-     * 
-     * ==> First N calls of the filter yield no valid result
-     */
-    void initialize(uint16_t init_value) {
-        input_buffer = {init_value};
-        result_sum = {N * init_value};
+    {
+        initialize(init_value);
     }
 
-    uint16_t moving_average(uint16_t value_in) {
+    /** @brief Initializes the moving average filter with a start value.
+     * 
+     * Called from constructor but can also be called on demand. 
+     * 
+     * @param init_value: Initial value
+     * @note First N calls of the filter yield no completely filtered result
+     *       but a varyingly weighted average of the init value and input data.
+     * 
+     */
+    void initialize(uint16_t init_value) {
+        input_buffer.fill(init_value);
+        result_sum = N * init_value;
+    }
+
+    /** @brief Read in a new datum and update the filter.
+     * 
+     * @param value_in: Input datum, unsigned 16 bit
+     * @return: Filtered result, unsigned 16 bit
+     */
+    uint16_t process_data(uint16_t value_in) {
         auto value_out = input_buffer[current_index];
         input_buffer[current_index] = value_in;
         current_index = (current_index + 1) % N;
@@ -49,12 +59,16 @@ public:
         return result_sum / N;
     }
 
+    /** @brief Get filter output value.
+     * 
+     * @return: Filtered result, unsigned 16 bit
+     */
     uint16_t get_result() {
         return result_sum / N;
     }
 
 protected:
-    size_t current_index;
+    size_t current_index = 0;
     std::array<uint16_t, N> input_buffer;
     uint32_t result_sum;
 };
@@ -72,7 +86,7 @@ protected:
 template<uint32_t N>
 struct EquidistantPWL
 {
-    const std::array<float, N> lut;
+    std::array<float, N> _lut;
     int32_t in_fsr_lower;
     int32_t in_fsr_upper;
     float in_fsr_inv;
@@ -80,10 +94,13 @@ struct EquidistantPWL
     EquidistantPWL(const std::array<float, N> &lut,
                    int32_t in_fsr_lower = 0,
                    int32_t in_fsr_upper = 1)
-        : lut{lut}
-        , in_fsr_lower{in_fsr_lower}
+        : in_fsr_lower{in_fsr_lower}
         , in_fsr_upper{in_fsr_upper}
     {
+        //_lut = lut; // Array copy
+        for (auto i = 0u; i<_lut.size(); ++i) {
+            _lut[i] = lut[i];
+        }
         // I guess this is obvious: assert(in_fsr_upper - in_fsr_lower != 0);
         in_fsr_inv = 1.0f / (in_fsr_upper - in_fsr_lower);
     }
@@ -110,10 +127,10 @@ struct EquidistantPWL
             partial_intervals = 0.0f;
         }
         // Interpolation interval start and end values
-        float interval_start = lut[lut_index];
+        float interval_start = _lut[lut_index];
         float interval_end;
         if (lut_index < n_lut_intervals) {
-            interval_end = lut[lut_index + 1];
+            interval_end = _lut[lut_index + 1];
         } else {
             interval_end = interval_start;
         }
@@ -133,18 +150,22 @@ struct EquidistantPWL
 template<int32_t FSR_LOWER, int32_t FSR_UPPER, uint32_t N>
 struct EquidistantPWLTemplated
 {
-    const std::array<float, N> lut;
+    std::array<float, N> _lut;
 
     EquidistantPWLTemplated(const std::array<float, N> &lut)
-        :lut{lut}
-    {}
+    {
+        //_lut = lut; // Array copy
+        for (auto i = 0u; i<_lut.size(); ++i) {
+            _lut[i] = lut[i];
+        }
+    }
 
     float interpolate(int32_t x) {
         constexpr auto in_fsr_lower = FSR_LOWER;
         constexpr auto in_fsr_upper = FSR_UPPER;
         static_assert(in_fsr_upper - in_fsr_lower > 0);
         constexpr auto in_fsr_inv = 1.0f / (in_fsr_upper - in_fsr_lower);
-        constexpr auto n_lut_intervals = lut.size() - 1;
+        constexpr auto n_lut_intervals = _lut.size() - 1;
         static_assert(n_lut_intervals > 0);
         uint32_t lut_index;
         float partial_intervals;
@@ -165,10 +186,10 @@ struct EquidistantPWLTemplated
             partial_intervals = 0.0f;
         }
         // Interpolation interval start and end values
-        auto interval_start = lut[lut_index];
+        auto interval_start = _lut[lut_index];
         float interval_end;
         if (lut_index < n_lut_intervals) {
-            interval_end = lut[lut_index + 1];
+            interval_end = _lut[lut_index + 1];
         } else {
             interval_end = interval_start;
         }

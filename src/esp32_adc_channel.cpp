@@ -1,12 +1,5 @@
 /* esp32_adc_channel.cpp
  * 
- * ESP32ADCChannel:
- * ESP32 ADC 1 channel configuration and access
- * 
- * ESP32ADCChannelFiltered<size_t filter_length>:
- * Templated variant featuring a moving average filter with compile-time
- * configurable size
- * 
  * License: GPL v.3 
  * U. Lukas 2020-12-16
  */
@@ -26,6 +19,7 @@ ESP32ADCChannel::ESP32ADCChannel(adc1_channel_t channel_num,
     : channel_num{channel_num}
     , attenuation{attenuation}
 {
+    ESP_LOGD(TAG, "Setting up ADC channel number: %d", channel_num);
     // Abort if N is not power of two and size limit is due to uint32_t sum
     if (averaged_samples > 1<<16 || (averaged_samples & (averaged_samples-1)) != 0) {
         ESP_LOGE(TAG, "Number must be power of two and smaller than 2^16");
@@ -44,7 +38,7 @@ ESP32ADCChannel::ESP32ADCChannel(adc1_channel_t channel_num,
         adc1_config_width(bits_width);
     }
     adc1_config_channel_atten(channel_num, attenuation);
-    esp_adc_cal_value_t val_type = esp_adc_cal_characterize(
+    auto val_type = esp_adc_cal_characterize(
         ADC_UNIT_1, attenuation, bits_width, default_vref, &calibration_data);
     debug_print_characterisation_val_type(val_type);
     debug_print_check_efuse();
@@ -66,9 +60,6 @@ uint16_t ESP32ADCChannel::get_raw_averaged() {
     adc_reading <<= ADC_WIDTH_BIT_12 - calibration_data.bit_width;
     // This is the division yielding the averaged result
     adc_reading >>= division_shift;
-    //debug_print_sv("Raw ADC value:", adc_reading);
-    //debug_print_sv("Fuse calibrated ADC conversion yields input voltage /mv:",
-    //               esp_adc_cal_raw_to_voltage(adc_reading, adc_cal_characteristics));
     return static_cast<uint16_t>(adc_reading);
 }
 
@@ -85,7 +76,7 @@ uint16_t ESP32ADCChannel::get_voltage_averaged() {
  * based on calibration constants from ADC initialisation, and
  * also based on a ADC resolution setting of 12 bits.
  */
-int32_t ESP32ADCChannel::adc_reading_from_voltage(uint32_t v_in_mv) {
+int32_t ESP32ADCChannel::calculate_raw_from_voltage(uint32_t v_in_mv) {
     // Inversion of calculate_voltage_linear() function in esp_adc_cal.c
     // (((coeff_a * adc_reading) + LIN_COEFF_A_ROUND) / LIN_COEFF_A_SCALE) + coeff_b
     constexpr auto coeff_a_scale = 65536;
@@ -95,7 +86,7 @@ int32_t ESP32ADCChannel::adc_reading_from_voltage(uint32_t v_in_mv) {
 }
 
 
-void ESP32ADCChannel::debug_print_check_efuse(void) {
+void ESP32ADCChannel::debug_print_check_efuse() {
     //Check TP is burned into eFuse
     if (esp_adc_cal_check_efuse(ESP_ADC_CAL_VAL_EFUSE_TP) == ESP_OK) {
         ESP_LOGD(TAG, "eFuse Two Point: Supported");

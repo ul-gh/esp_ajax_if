@@ -349,8 +349,9 @@ void AppController::_app_event_task(void *pVParameters) {
     ESP_LOGD(TAG, "Starting AppController event task");
     // Main application event loop
     while (true) {
-        const EventFlags flags = xEventGroupWaitBits(
-            _app_event_group, 0xFF, pdTRUE, pdFALSE, portMAX_DELAY);
+        const auto flags = EventFlags{
+            xEventGroupWaitBits(
+                _app_event_group, 0xFF, pdTRUE, pdFALSE, portMAX_DELAY)};
         if (flags.have(EventFlags::timer_fast)) {
             self->_on_fast_timer_event_update_state();
         }
@@ -371,7 +372,9 @@ void AppController::_on_fast_timer_event_update_state() {
     state.hw_oc_fault_present = pspwm_get_hw_fault_shutdown_present(app_conf.mcpwm_num);
     // Hardware Fault Shutdown Status is latched using this flag
     state.hw_oc_fault_occurred = pspwm_get_hw_fault_shutdown_occurred(app_conf.mcpwm_num);
-    // Update temperature sensor values on this occasion
+    // Update temperature sensor values on this occasion.
+    // With averaging of 64 samples, both channels acquisition
+    // takes approx. 9 ms combined.
     aux_hw_drv.update_temperature_sensors();
 }
 

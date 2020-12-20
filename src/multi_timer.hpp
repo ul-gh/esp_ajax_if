@@ -320,7 +320,7 @@ public:
                                      uint32_t total_repeat_count,
                                      mem_func_ptr_with_count_t mem_func_ptr,
                                      TClass *inst,
-                                     bool first_tick_nodelay=false) {
+                                     bool first_tick_nodelay=false) {                   
         _interval_ms = milliseconds;
         _repeat_count_requested = total_repeat_count;
         _mem_func_ptr = reinterpret_cast<mem_func_ptr_t>(mem_func_ptr);

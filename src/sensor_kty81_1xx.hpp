@@ -51,6 +51,7 @@ struct KTY81_1xxCommonConfig
      * 
      * For LUT values, see ../util/kty81_1xx_sensor_generate_lut/kty81_lut.py
      */
+    size_t lut_size = 32;
     std::array<float, 32> lut_temp_kty81_121 {
     // For KTY81-121:
         -55.0       , -48.22273805, -41.51141124, -34.84623091,
@@ -72,6 +73,7 @@ struct KTY81_1xxCommonConfig
          96.07234208, 102.68301035, 109.39886725, 116.34253305,
         123.5137051 , 131.2558412 , 139.76912438, 150.0};
 };
+
 
 /** @brief KTY81-1xx type silicon temperature sensor readout and conversion
  * functions using the ESP32 ADC in its high-linearity region
@@ -101,13 +103,21 @@ struct KTY81_1xxCommonConfig
  * Sensor readout with piecewise linear interpolation of LUT calibration values
  * or linear calculation as an option for lower precision applications
  */
-class SensorKTY81_121
+class SensorKTY81_1xx
 {
 public:
     static constexpr auto _common_conf = KTY81_1xxCommonConfig{};
     ESP32ADCChannelFiltered<_common_conf.moving_average_filter_len> adc_ch;
 
-    SensorKTY81_121(adc1_channel_t channel);
+    /** @brief Initialize the analog ADC channel for use with the sensor.
+     * 
+     * @param channel: ADC 1 channel number
+     * @param interpolator: Ptr. to interpolator, see class EquidistantPWL.
+     * 
+     * @note See derived classes SensorKTY81_121 and SensorKTY81_110_120.
+     */
+    SensorKTY81_1xx(adc1_channel_t channel,
+                    EquidistantPWL<_common_conf.lut_size> *interpolator);
 
     /** @brief Updates the moving average with a new sampled value from ADC
      * 
@@ -118,16 +128,65 @@ public:
     /** @brief Excellent precision temperature sensing using piecewise linear
      * interpolation of Look-Up-Table values for a KTY81-121 type sensor.
      * Use this if temperatures above 100°C ore below 0°C are to be measured.
+     * 
+     * @return Temperature in °C
+     * 
+     * @note This only reports the current state of the internal filter.
+     *       You must call update_filter() periodicly to read new physical data!
      */
     float get_temp_pwl();
 
     /** @brief Fairly precise temperature conversion if the temperature sensor
      * voltage has good linearisation. Worst results at temperature extremes.
+     * 
+     * @return Temperature in °C
+     * 
+     * @note This only reports the current state of the internal filter.
+     *       You must call update_filter() periodicly to read new physical data!
      */
     float get_temp_lin();
 
-private:
-    EquidistantPWL<_common_conf.lut_temp_kty81_121.size()> _interpolator;
+protected:
+    EquidistantPWL<_common_conf.lut_size> *_interpolator;
+};
+
+
+/** @brief KTY81-121 type silicon temperature sensor readout
+ * using the ESP32 ADC in its high-linearity region
+ * 
+ * Usage and details: See base class description KTY81_1xx.
+ */
+class SensorKTY81_121 : public SensorKTY81_1xx
+{
+public:
+    SensorKTY81_121(adc1_channel_t channel)
+        : SensorKTY81_1xx{channel,
+                          new EquidistantPWL<_common_conf.lut_size>{
+                              _common_conf.lut_temp_kty81_121}
+                          }
+    {}
+    ~SensorKTY81_121() {
+        delete _interpolator;
+    }
+};
+
+/** @brief KTY81-110 or KTY81-120 type silicon temperature sensor readout
+ * using the ESP32 ADC in its high-linearity region
+ * 
+ * Usage and details: See base class description KTY81_1xx.
+ */
+class SensorKTY81_110_120 : public SensorKTY81_1xx
+{
+public:
+    SensorKTY81_110_120(adc1_channel_t channel)
+        : SensorKTY81_1xx{channel,
+                          new EquidistantPWL<_common_conf.lut_size>{
+                              _common_conf.lut_temp_kty81_110_120}
+                          }
+    {}
+    ~SensorKTY81_110_120() {
+        delete _interpolator;
+    }
 };
 
 #endif
