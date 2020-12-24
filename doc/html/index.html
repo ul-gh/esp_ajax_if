@@ -54,8 +54,8 @@ ESP-AJAX-Lab</h1>
 <li>External GPIO output control for relays, fan, enable and error-reset</li>
 <li>TBD: Delta-Sigma conversion control and filter for insulated current sensing</li>
 </ul>
-<p>The HTML web application interface features a responsive CSS grid layout and requires a newer web browser with at least JavaScript ES 7 support.</p>
-<p>The toolchain compiler must support std=c++17.</p>
+<p>The HTML web application interface features a responsive CSS grid layout and requires a web browser with at least JavaScript ES 7 support.</p>
+<p>The toolchain compiler must support at least std=c++17.</p>
 <h2><a class="anchor" id="autotoc_md1"></a>
 C++ Application Data Model</h2>
 <ul>
@@ -63,7 +63,9 @@ C++ Application Data Model</h2>
 </ul>
 <h2><a class="anchor" id="autotoc_md2"></a>
 C++ Application Controller Implementing C++ and HTTP GET API</h2>
-<ul>
+<p>This features the main control functions for PWM frequency, duty cycle etc.</p>
+<p>Also, periodic state feedback for all hardware functions is sent to the HTTP remote application using Server-Sent Events from a FreeRTOS timer task.</p>
+<p>Some auxiliary functions like GPIO and temperature readouts is outsourced to class <a class="el" href="class_aux_hw_drv.html" title="Auxiliary hardware driver for ESP-AJAX-Lab This implements GPIO control for relays,...">AuxHwDrv</a>.</p><ul>
 <li><a href="class_app_controller.html">AppController</a></li>
 </ul>
 <h2><a class="anchor" id="autotoc_md3"></a>
@@ -82,10 +84,10 @@ C++ HTTP and SSE Event Server</h2>
 Auxiliary Hardware Control and Utility Classes</h2>
 <ul>
 <li><a href="class_aux_hw_drv.html">AuxHwDrv</a></li>
-<li><a href="class_sensor_k_t_y81__121.html">SensorKTY81_121</a></li>
+<li><a href="class_sensor_k_t_y81__1xx.html">SensorKTY81_1xx</a></li>
 <li><a href="class_e_s_p32_a_d_c_channel.html">ESP32ADCChannel</a></li>
-<li><a href="class_u16_moving_average.html">U16MovingAverage</a></li>
-<li><a href="struct_equidistant_p_w_l.html">EquidistantPWL</a></li>
+<li><a href="class_moving_average_u_int16.html">U16MovingAverageUInt16</a></li>
+<li><a href="class_equidistant_p_w_l_u_int16.html">EquidistantPWLUInt16</a></li>
 <li><a href="class_multi_timer.html">MultiTimer</a></li>
 </ul>
 <h2><a class="anchor" id="autotoc_md6"></a>

@@ -61,8 +61,6 @@ def zip_bin(target, source, env):
 env.AddCustomTarget(
     name="bin_zip",
     dependencies=[
-        "buildprog",
-        "buildfs", # This does not seem to work
         "$BUILD_DIR/bootloader.bin",
         "$BUILD_DIR/partitions.bin",
         "$BUILD_DIR/firmware.bin",

@@ -67,6 +67,7 @@ public:
      * are a short-cut for calling non-static member functions from a calling
      * class object by inserting a lambda in place of the member function name:
      * 
+     * @code
      * class PrintFoo {
      * public:
      *     MultiTimer timer;
@@ -86,6 +87,7 @@ public:
      * 
      * PrintFoo print_6x_foo{500, 6};
      * print_6x_foo.timer.start();
+     * @endcode
      * 
      * ==> Please note: This software timer is only relatively accurate.
      *     That menas, for each repeat, the timer is stopped and started again
@@ -264,9 +266,11 @@ protected:
  * template argument specifying the type of the object from which to call
  * the non-static member function:
  * 
+ * @code
  * MultiTimerNonStatic<AppClass> timer;
  * timer.attach_mem_func_ptr_ms(10, 1, &AppClass::member_func, this);
  * timer.start();
+ * @endcode
  */
 template<typename TClass>
 class MultiTimerNonStatic : public MultiTimer

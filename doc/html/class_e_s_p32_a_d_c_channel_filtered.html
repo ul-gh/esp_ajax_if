@@ -49,33 +49,41 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
+<p>ESP32 ADC 1 channel access with configurable moving average filter. Moving average filtering/smoothing is additional to the averaging of multiple samples for each conversion trigger as per "averaged samples" parameter.  
+ <a href="class_e_s_p32_a_d_c_channel_filtered.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="esp32__adc__channel_8hpp_source.html">esp32_adc_channel.hpp</a>&gt;</code></p>
+
 <p>Inherits <a class="el" href="class_e_s_p32_a_d_c_channel.html">ESP32ADCChannel</a>.</p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a8c8891a03184de6000005fd84b02399c"><td class="memItemLeft" align="right" valign="top"><a id="a8c8891a03184de6000005fd84b02399c"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>ESP32ADCChannelFiltered</b> (adc1_channel_t channel_num, adc_atten_t attenuation, uint32_t averaged_samples=64, adc_bits_width_t bits_width=ADC_WIDTH_BIT_12, uint32_t default_vref=1100u)</td></tr>
+<tr class="memitem:a8c8891a03184de6000005fd84b02399c"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_e_s_p32_a_d_c_channel_filtered.html#a8c8891a03184de6000005fd84b02399c">ESP32ADCChannelFiltered</a> (adc1_channel_t channel_num, adc_atten_t attenuation, uint32_t averaged_samples=64, adc_bits_width_t bits_width=ADC_WIDTH_BIT_12, uint32_t default_vref=1100u)</td></tr>
+<tr class="memdesc:a8c8891a03184de6000005fd84b02399c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize an ESP32 ADC channel.  <a href="class_e_s_p32_a_d_c_channel_filtered.html#a8c8891a03184de6000005fd84b02399c">More...</a><br /></td></tr>
 <tr class="separator:a8c8891a03184de6000005fd84b02399c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6af3c92c136388ea74c753406992c379"><td class="memItemLeft" align="right" valign="top"><a id="a6af3c92c136388ea74c753406992c379"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>update_filter</b> ()</td></tr>
-<tr class="separator:a6af3c92c136388ea74c753406992c379"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a602bc7fa36210fe64cddcfbde280a05e"><td class="memItemLeft" align="right" valign="top"><a id="a602bc7fa36210fe64cddcfbde280a05e"></a>
-uint16_t&#160;</td><td class="memItemRight" valign="bottom"><b>get_filtered</b> ()</td></tr>
-<tr class="separator:a602bc7fa36210fe64cddcfbde280a05e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae388e9f2c2d7f24498429ed5c891f8f9"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_e_s_p32_a_d_c_channel_filtered.html#ae388e9f2c2d7f24498429ed5c891f8f9">trigger_acquisition</a> ()</td></tr>
+<tr class="memdesc:ae388e9f2c2d7f24498429ed5c891f8f9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Explicitly trigger a new ADC analog input channel acquisition.  <a href="class_e_s_p32_a_d_c_channel_filtered.html#ae388e9f2c2d7f24498429ed5c891f8f9">More...</a><br /></td></tr>
+<tr class="separator:ae388e9f2c2d7f24498429ed5c891f8f9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5bd415b08cf7b7486b750a31dd762996"><td class="memItemLeft" align="right" valign="top">uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_e_s_p32_a_d_c_channel_filtered.html#a5bd415b08cf7b7486b750a31dd762996">get_raw_filtered</a> (bool trigger_new_acquisition=true)</td></tr>
+<tr class="memdesc:a5bd415b08cf7b7486b750a31dd762996"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get raw ADC channel conversion value, through moving average filter.  <a href="class_e_s_p32_a_d_c_channel_filtered.html#a5bd415b08cf7b7486b750a31dd762996">More...</a><br /></td></tr>
+<tr class="separator:a5bd415b08cf7b7486b750a31dd762996"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5d1acef6634008bfec7aaf452790e452"><td class="memItemLeft" align="right" valign="top">uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_e_s_p32_a_d_c_channel_filtered.html#a5d1acef6634008bfec7aaf452790e452">get_voltage_filtered</a> (bool trigger_new_acquisition=true)</td></tr>
+<tr class="memdesc:a5d1acef6634008bfec7aaf452790e452"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get channel input voltage, filtered by internal moving average.  <a href="class_e_s_p32_a_d_c_channel_filtered.html#a5d1acef6634008bfec7aaf452790e452">More...</a><br /></td></tr>
+<tr class="separator:a5d1acef6634008bfec7aaf452790e452"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_methods_class_e_s_p32_a_d_c_channel"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_class_e_s_p32_a_d_c_channel')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="class_e_s_p32_a_d_c_channel.html">ESP32ADCChannel</a></td></tr>
 <tr class="memitem:ac3b5a3935494a256419c2794350d75ec inherit pub_methods_class_e_s_p32_a_d_c_channel"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_e_s_p32_a_d_c_channel.html#ac3b5a3935494a256419c2794350d75ec">ESP32ADCChannel</a> (adc1_channel_t channel_num, adc_atten_t attenuation, uint32_t averaged_samples=64, adc_bits_width_t bits_width=ADC_WIDTH_BIT_12, uint32_t default_vref=1100u)</td></tr>
-<tr class="memdesc:ac3b5a3935494a256419c2794350d75ec inherit pub_methods_class_e_s_p32_a_d_c_channel"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialise ADC channel.  <a href="class_e_s_p32_a_d_c_channel.html#ac3b5a3935494a256419c2794350d75ec">More...</a><br /></td></tr>
+<tr class="memdesc:ac3b5a3935494a256419c2794350d75ec inherit pub_methods_class_e_s_p32_a_d_c_channel"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize an ESP32 ADC channel.  <a href="class_e_s_p32_a_d_c_channel.html#ac3b5a3935494a256419c2794350d75ec">More...</a><br /></td></tr>
 <tr class="separator:ac3b5a3935494a256419c2794350d75ec inherit pub_methods_class_e_s_p32_a_d_c_channel"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4e16fb501ecdf74b95cd9c720b0e3a5f inherit pub_methods_class_e_s_p32_a_d_c_channel"><td class="memItemLeft" align="right" valign="top">uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_e_s_p32_a_d_c_channel.html#a4e16fb501ecdf74b95cd9c720b0e3a5f">get_raw_averaged</a> ()</td></tr>
-<tr class="memdesc:a4e16fb501ecdf74b95cd9c720b0e3a5f inherit pub_methods_class_e_s_p32_a_d_c_channel"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get raw ADC channel conversion value, repeats sampling a number of times: "oversampling_ratio".  <a href="class_e_s_p32_a_d_c_channel.html#a4e16fb501ecdf74b95cd9c720b0e3a5f">More...</a><br /></td></tr>
+<tr class="memdesc:a4e16fb501ecdf74b95cd9c720b0e3a5f inherit pub_methods_class_e_s_p32_a_d_c_channel"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get raw ADC channel conversion value. Repeats sampling a number of times, see "averaged_samples" constructor parameter.  <a href="class_e_s_p32_a_d_c_channel.html#a4e16fb501ecdf74b95cd9c720b0e3a5f">More...</a><br /></td></tr>
 <tr class="separator:a4e16fb501ecdf74b95cd9c720b0e3a5f inherit pub_methods_class_e_s_p32_a_d_c_channel"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a864624f29a89db375c0cf10fc63b4a7b inherit pub_methods_class_e_s_p32_a_d_c_channel"><td class="memItemLeft" align="right" valign="top">uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_e_s_p32_a_d_c_channel.html#a864624f29a89db375c0cf10fc63b4a7b">get_voltage_averaged</a> ()</td></tr>
-<tr class="memdesc:a864624f29a89db375c0cf10fc63b4a7b inherit pub_methods_class_e_s_p32_a_d_c_channel"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get channel input voltage, this acquires a number of ADC samples as per "get_averaged_samples" parameter and takes the average.  <a href="class_e_s_p32_a_d_c_channel.html#a864624f29a89db375c0cf10fc63b4a7b">More...</a><br /></td></tr>
+<tr class="memdesc:a864624f29a89db375c0cf10fc63b4a7b inherit pub_methods_class_e_s_p32_a_d_c_channel"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get channel input voltage in millivolts. Repeats sampling a number of times, see "averaged_samples" constructor parameter.  <a href="class_e_s_p32_a_d_c_channel.html#a864624f29a89db375c0cf10fc63b4a7b">More...</a><br /></td></tr>
 <tr class="separator:a864624f29a89db375c0cf10fc63b4a7b inherit pub_methods_class_e_s_p32_a_d_c_channel"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa45e398172aa54459ff1c646c04ae7ed inherit pub_methods_class_e_s_p32_a_d_c_channel"><td class="memItemLeft" align="right" valign="top"><a id="aa45e398172aa54459ff1c646c04ae7ed"></a>
-int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_e_s_p32_a_d_c_channel.html#aa45e398172aa54459ff1c646c04ae7ed">adc_reading_from_voltage</a> (uint32_t v_in_mv)</td></tr>
-<tr class="memdesc:aa45e398172aa54459ff1c646c04ae7ed inherit pub_methods_class_e_s_p32_a_d_c_channel"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calculate backwards the ADC reading for given input voltage, based on calibration constants from ADC initialisation, and also based on a ADC resolution setting of 12 bits. <br /></td></tr>
-<tr class="separator:aa45e398172aa54459ff1c646c04ae7ed inherit pub_methods_class_e_s_p32_a_d_c_channel"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a127f58070640b416c4e0ce6291697773 inherit pub_methods_class_e_s_p32_a_d_c_channel"><td class="memItemLeft" align="right" valign="top"><a id="a127f58070640b416c4e0ce6291697773"></a>
+int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_e_s_p32_a_d_c_channel.html#a127f58070640b416c4e0ce6291697773">calculate_raw_from_voltage</a> (uint32_t v_in_mv)</td></tr>
+<tr class="memdesc:a127f58070640b416c4e0ce6291697773 inherit pub_methods_class_e_s_p32_a_d_c_channel"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calculate backwards the raw ADC reading for given input voltage, based on calibration constants from ADC initialisation, and also based on a ADC resolution setting of 12 bits. <br /></td></tr>
+<tr class="separator:a127f58070640b416c4e0ce6291697773 inherit pub_methods_class_e_s_p32_a_d_c_channel"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a45e0fcc10186bd258aabd337b6d7a9d0 inherit pub_methods_class_e_s_p32_a_d_c_channel"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_e_s_p32_a_d_c_channel.html#a45e0fcc10186bd258aabd337b6d7a9d0">debug_print_check_efuse</a> ()</td></tr>
 <tr class="separator:a45e0fcc10186bd258aabd337b6d7a9d0 inherit pub_methods_class_e_s_p32_a_d_c_channel"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7fcec3410da070d852d2ca207026e251 inherit pub_methods_class_e_s_p32_a_d_c_channel"><td class="memItemLeft" align="right" valign="top"><a id="a7fcec3410da070d852d2ca207026e251"></a>
@@ -87,9 +95,9 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>test_register_direct<
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
 Protected Attributes</h2></td></tr>
-<tr class="memitem:a0f8b80e800dec72bfa87b625c76487d1"><td class="memItemLeft" align="right" valign="top"><a id="a0f8b80e800dec72bfa87b625c76487d1"></a>
-<a class="el" href="class_u16_moving_average.html">U16MovingAverage</a>&lt; filter_length &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>filter</b></td></tr>
-<tr class="separator:a0f8b80e800dec72bfa87b625c76487d1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a76f92fd60cf54a72b455cb714535af5f"><td class="memItemLeft" align="right" valign="top"><a id="a76f92fd60cf54a72b455cb714535af5f"></a>
+<a class="el" href="class_moving_average_u_int16.html">MovingAverageUInt16</a>&lt; filter_length &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>filter</b></td></tr>
+<tr class="separator:a76f92fd60cf54a72b455cb714535af5f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pro_attribs_class_e_s_p32_a_d_c_channel"><td colspan="2" onclick="javascript:toggleInherit('pro_attribs_class_e_s_p32_a_d_c_channel')"><img src="closed.png" alt="-"/>&#160;Protected Attributes inherited from <a class="el" href="class_e_s_p32_a_d_c_channel.html">ESP32ADCChannel</a></td></tr>
 <tr class="memitem:a238270cb8a2efa93ab5e2c9605b3ed22 inherit pro_attribs_class_e_s_p32_a_d_c_channel"><td class="memItemLeft" align="right" valign="top"><a id="a238270cb8a2efa93ab5e2c9605b3ed22"></a>
 uint32_t&#160;</td><td class="memItemRight" valign="bottom"><b>division_shift</b></td></tr>
@@ -112,6 +120,199 @@ esp_adc_cal_characteristics_t&#160;</td><td class="memItemRight" valign="bottom"
 static auto&#160;</td><td class="memItemRight" valign="bottom"><b>_bits_width</b> = adc_bits_width_t{ADC_WIDTH_MAX}</td></tr>
 <tr class="separator:a6bb311ae55ad2d8f31f78047732aa61d inherit pro_static_attribs_class_e_s_p32_a_d_c_channel"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;size_t filter_length&gt;<br />
+class ESP32ADCChannelFiltered&lt; filter_length &gt;</h3>
+
+<p>ESP32 ADC 1 channel access with configurable moving average filter. Moving average filtering/smoothing is additional to the averaging of multiple samples for each conversion trigger as per "averaged samples" parameter. </p>
+<p>Input voltage can be read raw or as calibrated voltage value in millivolts.</p>
+<p>Raw output is always scaled such as if the ADC was set to 12 bits mode, i.e. theoretical full-scale output is 4096 - 1 </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">filter_length</td><td>Template parameter setting the moving average length. Must be a power of two and reasonable in size.. </td></tr>
+  </table>
+  </dd>
+</dl>
+</div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a id="a8c8891a03184de6000005fd84b02399c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8c8891a03184de6000005fd84b02399c">&#9670;&nbsp;</a></span>ESP32ADCChannelFiltered()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t filter_length&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="class_e_s_p32_a_d_c_channel_filtered.html">ESP32ADCChannelFiltered</a>&lt; filter_length &gt;::<a class="el" href="class_e_s_p32_a_d_c_channel_filtered.html">ESP32ADCChannelFiltered</a> </td>
+          <td>(</td>
+          <td class="paramtype">adc1_channel_t&#160;</td>
+          <td class="paramname"><em>channel_num</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">adc_atten_t&#160;</td>
+          <td class="paramname"><em>attenuation</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint32_t&#160;</td>
+          <td class="paramname"><em>averaged_samples</em> = <code>64</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">adc_bits_width_t&#160;</td>
+          <td class="paramname"><em>bits_width</em> = <code>ADC_WIDTH_BIT_12</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint32_t&#160;</td>
+          <td class="paramname"><em>default_vref</em> = <code>1100u</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Initialize an ESP32 ADC channel. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">channel_num</td><td>Analog input channel number </td></tr>
+    <tr><td class="paramname">attenuation</td><td>Voltage input scale setting, see ESP-IDF reference </td></tr>
+    <tr><td class="paramname">averaged_samples</td><td>Read this many input samples at once for any trigger </td></tr>
+    <tr><td class="paramname">bits_width</td><td>Can be less then ADC_WIDTH_BIT_12 for faster speed. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section note"><dt>Note</dt><dd>The "bits_width" setting must be identical for all channels! </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">default_vref</td><td>Can be manually set if hardware has no e-fuse calibration </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<h2 class="groupheader">Member Function Documentation</h2>
+<a id="a5bd415b08cf7b7486b750a31dd762996"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5bd415b08cf7b7486b750a31dd762996">&#9670;&nbsp;</a></span>get_raw_filtered()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t filter_length&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint16_t <a class="el" href="class_e_s_p32_a_d_c_channel_filtered.html">ESP32ADCChannelFiltered</a>&lt; filter_length &gt;::get_raw_filtered </td>
+          <td>(</td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>trigger_new_acquisition</em> = <code>true</code></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Get raw ADC channel conversion value, through moving average filter. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">trigger_new_acquisition</td><td>If set to false, this does /not/ trigger a new ADC acquisition but only returns the current filter result.</td></tr>
+  </table>
+  </dd>
+</dl>
+<p>The output is always scaled such as if the ADC was set to 12 bits mode, i.e. theoretical full-scale output is 4096 - 1 </p>
+
+</div>
+</div>
+<a id="a5d1acef6634008bfec7aaf452790e452"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5d1acef6634008bfec7aaf452790e452">&#9670;&nbsp;</a></span>get_voltage_filtered()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t filter_length&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint16_t <a class="el" href="class_e_s_p32_a_d_c_channel_filtered.html">ESP32ADCChannelFiltered</a>&lt; filter_length &gt;::get_voltage_filtered </td>
+          <td>(</td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>trigger_new_acquisition</em> = <code>true</code></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Get channel input voltage, filtered by internal moving average. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">trigger_new_acquisition</td><td>If set to false, this does /not/ trigger a new ADC acquisition but only returns the current filter result.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Voltage in millivolts</dd></dl>
+<p>This takes into account the calibration constants from ADC initialisation </p>
+
+</div>
+</div>
+<a id="ae388e9f2c2d7f24498429ed5c891f8f9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae388e9f2c2d7f24498429ed5c891f8f9">&#9670;&nbsp;</a></span>trigger_acquisition()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;size_t filter_length&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="class_e_s_p32_a_d_c_channel_filtered.html">ESP32ADCChannelFiltered</a>&lt; filter_length &gt;::trigger_acquisition </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Explicitly trigger a new ADC analog input channel acquisition. </p>
+<p>This updates the internal moving average filter. </p>
+
+</div>
+</div>
 <hr/>The documentation for this class was generated from the following file:<ul>
 <li>src/<a class="el" href="esp32__adc__channel_8hpp_source.html">esp32_adc_channel.hpp</a></li>
 </ul>

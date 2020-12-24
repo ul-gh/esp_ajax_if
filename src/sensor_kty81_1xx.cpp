@@ -13,7 +13,7 @@ static auto TAG = "SensorKTY81_1xx";
 #include "sensor_kty81_1xx.hpp"
 
 SensorKTY81_1xx::SensorKTY81_1xx(adc1_channel_t channel,
-                                 EquidistantPWL<_common_conf.lut_size> *interpolator)
+                                 EquidistantPWLUInt16<_common_conf.lut_size> *interpolator)
     : adc_ch{channel, _common_conf.adc_ch_attenuation, _common_conf.averaged_samples}
     , _interpolator{interpolator}
 {
@@ -21,8 +21,7 @@ SensorKTY81_1xx::SensorKTY81_1xx(adc1_channel_t channel,
     assert(_interpolator);
     auto fsr_lower = adc_ch.calculate_raw_from_voltage(_common_conf.v_in_fsr_lower_lut);
     auto fsr_upper = adc_ch.calculate_raw_from_voltage(_common_conf.v_in_fsr_upper_lut);
-    _interpolator->in_fsr_lower = fsr_lower;
-    _interpolator->in_fsr_upper = fsr_upper;
+    _interpolator->set_input_full_scale_range(fsr_lower, fsr_upper);
     ESP_LOGD(TAG, "adc_fsr_lower: %d", fsr_lower);
     ESP_LOGD(TAG, "adc_fsr_upper: %d", fsr_upper);
 }
@@ -41,12 +40,7 @@ void SensorKTY81_1xx::update_filter() {
  */
 float SensorKTY81_1xx::get_temp_pwl() {
     auto adc_raw = adc_ch.get_raw_filtered();
-    auto temp = _interpolator->interpolate(adc_raw);
-    static auto loopctr = 0u;
-    if (loopctr++ % 10 == 0) {
-        ESP_LOGD(TAG, "ADC raw: %u,  Temperature: %f", adc_raw, temp);
-    }
-    return temp;
+    return _interpolator->interpolate(adc_raw);
 }
 
 /* Fairly precise temperature conversion if the temperature sensor

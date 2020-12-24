@@ -53,9 +53,6 @@ $(function() {
 <li>adc_ch_attenuation
 : <a class="el" href="struct_k_t_y81__1xx_common_config.html#ae6c40cb51bed8f184c657308f364deb5">KTY81_1xxCommonConfig</a>
 </li>
-<li>adc_reading_from_voltage()
-: <a class="el" href="class_e_s_p32_a_d_c_channel.html#aa45e398172aa54459ff1c646c04ae7ed">ESP32ADCChannel</a>
-</li>
 <li>app_conf
 : <a class="el" href="class_app_controller.html#a2c0417955b0617ff964239e3438f8e9c">AppController</a>
 </li>
@@ -76,6 +73,13 @@ $(function() {
 </ul>
 
 
+<h3><a id="index_c"></a>- c -</h3><ul>
+<li>calculate_raw_from_voltage()
+: <a class="el" href="class_e_s_p32_a_d_c_channel.html#a127f58070640b416c4e0ce6291697773">ESP32ADCChannel</a>
+</li>
+</ul>
+
+
 <h3><a id="index_d"></a>- d -</h3><ul>
 <li>debug_print_check_efuse()
 : <a class="el" href="class_e_s_p32_a_d_c_channel.html#a45e0fcc10186bd258aabd337b6d7a9d0">ESP32ADCChannel</a>
@@ -90,6 +94,9 @@ $(function() {
 <li>ESP32ADCChannel()
 : <a class="el" href="class_e_s_p32_a_d_c_channel.html#ac3b5a3935494a256419c2794350d75ec">ESP32ADCChannel</a>
 </li>
+<li>ESP32ADCChannelFiltered()
+: <a class="el" href="class_e_s_p32_a_d_c_channel_filtered.html#a8c8891a03184de6000005fd84b02399c">ESP32ADCChannelFiltered&lt; filter_length &gt;</a>
+</li>
 </ul>
 
 
@@ -97,14 +104,23 @@ $(function() {
 <li>get_raw_averaged()
 : <a class="el" href="class_e_s_p32_a_d_c_channel.html#a4e16fb501ecdf74b95cd9c720b0e3a5f">ESP32ADCChannel</a>
 </li>
+<li>get_raw_filtered()
+: <a class="el" href="class_e_s_p32_a_d_c_channel_filtered.html#a5bd415b08cf7b7486b750a31dd762996">ESP32ADCChannelFiltered&lt; filter_length &gt;</a>
+</li>
+<li>get_result()
+: <a class="el" href="class_moving_average_u_int16.html#a106746cc73162827ed42a146d84ced1d">MovingAverageUInt16&lt; N &gt;</a>
+</li>
 <li>get_temp_lin()
-: <a class="el" href="class_sensor_k_t_y81__121.html#ae8c0166d2e144336ab1c62979fb762ec">SensorKTY81_121</a>
+: <a class="el" href="class_sensor_k_t_y81__1xx.html#a99d1d041700d389eefae738b0a43ebd8">SensorKTY81_1xx</a>
 </li>
 <li>get_temp_pwl()
-: <a class="el" href="class_sensor_k_t_y81__121.html#a699d92b529e7c49f9549274ab98492ed">SensorKTY81_121</a>
+: <a class="el" href="class_sensor_k_t_y81__1xx.html#a57845a222631a08139de0f22edd47f28">SensorKTY81_1xx</a>
 </li>
 <li>get_voltage_averaged()
 : <a class="el" href="class_e_s_p32_a_d_c_channel.html#a864624f29a89db375c0cf10fc63b4a7b">ESP32ADCChannel</a>
+</li>
+<li>get_voltage_filtered()
+: <a class="el" href="class_e_s_p32_a_d_c_channel_filtered.html#a5d1acef6634008bfec7aaf452790e452">ESP32ADCChannelFiltered&lt; filter_length &gt;</a>
 </li>
 </ul>
 
@@ -118,7 +134,10 @@ $(function() {
 
 <h3><a id="index_i"></a>- i -</h3><ul>
 <li>initialize()
-: <a class="el" href="class_u16_moving_average.html#a8ea8a552c12cb3f2945b4c8dfd90ddf0">U16MovingAverage&lt; N &gt;</a>
+: <a class="el" href="class_moving_average_u_int16.html#ad8b40b6234d0e2d2a6bdfc8af7266836">MovingAverageUInt16&lt; N &gt;</a>
+</li>
+<li>input_data()
+: <a class="el" href="class_moving_average_u_int16.html#a0eb4daffcf0fa77ba8f8a14dce28cf53">MovingAverageUInt16&lt; N &gt;</a>
 </li>
 </ul>
 
@@ -134,8 +153,8 @@ $(function() {
 
 
 <h3><a id="index_l"></a>- l -</h3><ul>
-<li>lut_temp_kty81_121
-: <a class="el" href="struct_k_t_y81__1xx_common_config.html#ac1fbefb0b5daa2a0052ba81d5e37136f">KTY81_1xxCommonConfig</a>
+<li>lut_size
+: <a class="el" href="struct_k_t_y81__1xx_common_config.html#a41e70c0fb54bf26110f2281f4704da16">KTY81_1xxCommonConfig</a>
 </li>
 </ul>
 
@@ -153,6 +172,9 @@ $(function() {
 <h3><a id="index_s"></a>- s -</h3><ul>
 <li>save_to_file()
 : <a class="el" href="struct_app_state.html#af1af861ce5a7129b7e1e6e1db8cb42a0">AppState</a>
+</li>
+<li>SensorKTY81_1xx()
+: <a class="el" href="class_sensor_k_t_y81__1xx.html#a31c0946e5f960745ee607fb6cde7811a">SensorKTY81_1xx</a>
 </li>
 <li>serialize_data()
 : <a class="el" href="struct_app_state.html#a093bc43c5cd4a1240124bef9124df706">AppState</a>
@@ -179,12 +201,15 @@ $(function() {
 <li>timer_slow_interval_ms
 : <a class="el" href="struct_app_config.html#adce347d0bb675ad99a00b3c746a84c10">AppConfig</a>
 </li>
+<li>trigger_acquisition()
+: <a class="el" href="class_e_s_p32_a_d_c_channel_filtered.html#ae388e9f2c2d7f24498429ed5c891f8f9">ESP32ADCChannelFiltered&lt; filter_length &gt;</a>
+</li>
 </ul>
 
 
 <h3><a id="index_u"></a>- u -</h3><ul>
 <li>update_filter()
-: <a class="el" href="class_sensor_k_t_y81__121.html#a1f11f62a0e11c39907875f7a7d4e259a">SensorKTY81_121</a>
+: <a class="el" href="class_sensor_k_t_y81__1xx.html#a65d0e82a517c68d807e3cff9bddf9eab">SensorKTY81_1xx</a>
 </li>
 <li>update_temperature_sensors()
 : <a class="el" href="class_aux_hw_drv.html#ab1e68dc34099bf707d28a25f4fe45350">AuxHwDrv</a>

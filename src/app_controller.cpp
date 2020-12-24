@@ -20,9 +20,10 @@
 #include "ps_pwm.h"
 #include "app_controller.hpp"
 
+#undef LOG_LOCAL_LEVEL
 #define LOG_LOCAL_LEVEL ESP_LOG_DEBUG
 #include "esp_log.h"
-static auto TAG = "app_controller.cpp";
+static auto TAG = "AppController";
 
 #ifdef USE_ASYMMETRIC_FULL_SPEED_DRIVE_API
 #define API_CHOICE_INIT pspwm_up_ctr_mode_init_compat

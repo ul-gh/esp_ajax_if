@@ -8,26 +8,28 @@
 #define ADC_FILTER_HPP__
 
 #include <array>
+#include "esp_log.h"
+
 
 /** @brief Does a recursive moving average over N values.
  * 
  * Filter length must be power of two and smaller than 2^16
  * 
- * This is a template class to allow the compiler to use bit shift operation
- * for the division and similar optimisations...
+ * This is a template class to have a compile-time-known fixed divisor, allowing
+ * the compiler to use fast bit shift operation instead of int division.
  */
 template <size_t N>
-class U16MovingAverage
+class MovingAverageUInt16
 {
 public:
     // Checks N is power of two and size limit is due to uint32_t result_sum
     static_assert(N <= 1<<16 && (N & (N-1)) == 0);
 
-    U16MovingAverage()
+    MovingAverageUInt16()
     {
         initialize(0);
     }
-    U16MovingAverage(uint16_t init_value)
+    MovingAverageUInt16(uint16_t init_value)
     {
         initialize(init_value);
     }
@@ -49,14 +51,12 @@ public:
     /** @brief Read in a new datum and update the filter.
      * 
      * @param value_in: Input datum, unsigned 16 bit
-     * @return: Filtered result, unsigned 16 bit
      */
-    uint16_t process_data(uint16_t value_in) {
+    void input_data(uint16_t value_in) {
         auto value_out = input_buffer[current_index];
         input_buffer[current_index] = value_in;
         current_index = (current_index + 1) % N;
         result_sum = result_sum + value_in - value_out;
-        return result_sum / N;
     }
 
     /** @brief Get filter output value.
@@ -76,107 +76,44 @@ protected:
 
 /** @brief Piecewise linear interpolation of look-up-table (LUT) values.
  *
- * LUT values representing function values starting with y(x=in_fsr_lower)
- * and ending with y(x=in_fsr_upper).
+ * LUT values representing function values starting with y(x=in_fsr_bot)
+ * and ending with y(x=in_fsr_top).
  *
  * y-values of the LUT must correspond to equidistant X-axis points.
  * 
- * This version has run-time settable input value range.
+ * Version for int32_t input value.
  */
-template<uint32_t N>
-struct EquidistantPWL
+template<size_t N>
+class EquidistantPWLInt32
 {
-    std::array<float, N> _lut;
-    int32_t in_fsr_lower;
-    int32_t in_fsr_upper;
-    float in_fsr_inv;
-
-    EquidistantPWL(const std::array<float, N> &lut,
-                   int32_t in_fsr_lower = 0,
-                   int32_t in_fsr_upper = 1)
-        : in_fsr_lower{in_fsr_lower}
-        , in_fsr_upper{in_fsr_upper}
+public:
+    EquidistantPWLInt32(const std::array<float, N> &lut,
+                   int32_t in_fsr_bot = 0,
+                   int32_t in_fsr_top = 1)
+        : _lut{lut}
     {
-        //_lut = lut; // Array copy
-        for (auto i = 0u; i<_lut.size(); ++i) {
-            _lut[i] = lut[i];
-        }
-        // I guess this is obvious: assert(in_fsr_upper - in_fsr_lower != 0);
-        in_fsr_inv = 1.0f / (in_fsr_upper - in_fsr_lower);
+        set_input_full_scale_range(in_fsr_bot, in_fsr_top);
+    }
+
+    void set_input_full_scale_range(int32_t in_fsr_bot, int32_t in_fsr_top) {
+        assert(in_fsr_top > in_fsr_bot);
+        _in_fsr_bot = in_fsr_bot;
+        _in_fsr_top = in_fsr_top;
+        _in_fsr_inv = 1.0f / (in_fsr_top - in_fsr_bot);
     }
 
     float interpolate(int32_t x) {
-        constexpr auto n_lut_intervals = N - 1;
-        static_assert(n_lut_intervals > 0);
-        int32_t lut_index;
+        static_assert(1 < N && N < INT32_MAX, "Filter length must be in this range");
+        constexpr auto n_lut_intervals = size_t{N - 1};
+        size_t lut_index;
         float partial_intervals;
-        if (x > in_fsr_lower) {
-            if (x < in_fsr_upper) {
-            partial_intervals = in_fsr_inv * static_cast<float>(
-                n_lut_intervals * (x - in_fsr_lower));
-            // Rounding down gives number of whole intervals as index into the LUT
-            lut_index = static_cast<int32_t>(partial_intervals);
-            // By subtracting the whole intervals, only the partial rest remains
-            partial_intervals -= lut_index;
-            } else {
-                lut_index = n_lut_intervals;
-                partial_intervals = 0.0f;
-            }
-        } else {
-            lut_index = 0;
-            partial_intervals = 0.0f;
-        }
-        // Interpolation interval start and end values
-        float interval_start = _lut[lut_index];
-        float interval_end;
-        if (lut_index < n_lut_intervals) {
-            interval_end = _lut[lut_index + 1];
-        } else {
-            interval_end = interval_start;
-        }
-        return interval_start + partial_intervals * (interval_end - interval_start);
-        }
-};
-
-/** @brief Piecewise linear interpolation of look-up-table (LUT) values.
- *
- * LUT values representing function values starting with y(x=in_fsr_lower)
- * and ending with y(x=in_fsr_upper).
- *
- * y-values of the LUT must correspond to equidistant X-axis points.
- * 
- * This version is for compile-time-known input value range.
- */
-template<int32_t FSR_LOWER, int32_t FSR_UPPER, uint32_t N>
-struct EquidistantPWLTemplated
-{
-    std::array<float, N> _lut;
-
-    EquidistantPWLTemplated(const std::array<float, N> &lut)
-    {
-        //_lut = lut; // Array copy
-        for (auto i = 0u; i<_lut.size(); ++i) {
-            _lut[i] = lut[i];
-        }
-    }
-
-    float interpolate(int32_t x) {
-        constexpr auto in_fsr_lower = FSR_LOWER;
-        constexpr auto in_fsr_upper = FSR_UPPER;
-        static_assert(in_fsr_upper - in_fsr_lower > 0);
-        constexpr auto in_fsr_inv = 1.0f / (in_fsr_upper - in_fsr_lower);
-        constexpr auto n_lut_intervals = _lut.size() - 1;
-        static_assert(n_lut_intervals > 0);
-        uint32_t lut_index;
-        float partial_intervals;
-        if (x > in_fsr_lower) {
-            if (x < in_fsr_upper) {
-            partial_intervals = in_fsr_inv * static_cast<float>(
-                n_lut_intervals * (x - in_fsr_lower));
-            // Rounding down gives number of whole intervals as index into the LUT
-            lut_index = static_cast<int32_t>(partial_intervals);
-            // By subtracting the whole intervals, only the partial rest remains
-            partial_intervals -= lut_index;
+        if (x > _in_fsr_bot) {
+            if (x < _in_fsr_top) {
+                auto n = static_cast<int64_t>(n_lut_intervals) * (x - _in_fsr_bot);
+                auto d = _in_fsr_top - _in_fsr_bot;
+                auto quot_rem = lldiv(n, d);
+                partial_intervals = _in_fsr_inv * static_cast<float>(quot_rem.rem);
+                lut_index = static_cast<size_t>(quot_rem.quot);
             } else {
                 lut_index = n_lut_intervals;
                 partial_intervals = 0.0f;
@@ -195,6 +132,149 @@ struct EquidistantPWLTemplated
         }
         return interval_start + partial_intervals * (interval_end - interval_start);
         }
+
+protected:
+    const std::array<float, N> _lut;
+    int32_t _in_fsr_bot;
+    int32_t _in_fsr_top;
+    float _in_fsr_inv;
 };
+
+
+/** @brief Piecewise linear interpolation of look-up-table (LUT) values.
+ *
+ * LUT values representing function values starting with y(x=in_fsr_bot)
+ * and ending with y(x=in_fsr_top).
+ *
+ * y-values of the LUT must correspond to equidistant X-axis points.
+ * 
+ * Version for uint16_t input value.
+ */
+template<size_t N>
+class EquidistantPWLUInt16
+{
+public:
+    EquidistantPWLUInt16(const std::array<float, N> &lut,
+                   uint16_t in_fsr_bot = 0,
+                   uint16_t in_fsr_top = 1)
+        : _lut{lut}
+    {
+        set_input_full_scale_range(in_fsr_bot, in_fsr_top);
+    }
+
+    void set_input_full_scale_range(uint16_t in_fsr_bot, uint16_t in_fsr_top) {
+        assert(in_fsr_top > in_fsr_bot);
+        // 32-bit is native and fast int, also avoid unsigned int promotion
+        _in_fsr_bot = in_fsr_bot;
+        _in_fsr_top = in_fsr_top;
+        _in_fsr_inv = 1.0f / (in_fsr_top - in_fsr_bot);
+    }
+
+    float interpolate(uint16_t x) {
+        static_assert(1 < N && N < INT16_MAX, "Filter length must be in this range");
+        constexpr auto n_lut_intervals = size_t{N - 1};
+        size_t lut_index;
+        float partial_intervals;
+        if (x > _in_fsr_bot) {
+            if (x < _in_fsr_top) {
+                auto n = static_cast<int32_t>(n_lut_intervals) * (x - _in_fsr_bot);
+                auto d = _in_fsr_top - _in_fsr_bot;
+                auto quot_rem = div(n, d);
+                partial_intervals = _in_fsr_inv * static_cast<float>(quot_rem.rem);
+                lut_index = static_cast<size_t>(quot_rem.quot);
+            } else {
+                lut_index = n_lut_intervals;
+                partial_intervals = 0.0f;
+            }
+        } else {
+            lut_index = 0;
+            partial_intervals = 0.0f;
+        }
+        // Interpolation interval start and end values
+        auto interval_start = _lut[lut_index];
+        float interval_end;
+        if (lut_index < n_lut_intervals) {
+            interval_end = _lut[lut_index + 1];
+        } else {
+            interval_end = interval_start;
+        }
+        return interval_start + partial_intervals * (interval_end - interval_start);
+        }
+
+protected:
+    const std::array<float, N> _lut;
+    uint16_t _in_fsr_bot;
+    uint16_t _in_fsr_top;
+    float _in_fsr_inv;
+};
+
+
+/** @brief Piecewise linear interpolation of look-up-table (LUT) values.
+ *
+ * LUT values representing function values starting with y(x=in_fsr_bot)
+ * and ending with y(x=in_fsr_top).
+ *
+ * y-values of the LUT must correspond to equidistant X-axis points.
+ * 
+ * Version for uint32_t input value.
+ */
+template<size_t N>
+class EquidistantPWLUInt32
+{
+public:
+    EquidistantPWLUInt32(const std::array<float, N> &lut,
+                   uint32_t in_fsr_bot = 0,
+                   uint32_t in_fsr_top = 1)
+        : _lut{lut}
+    {
+        set_input_full_scale_range(in_fsr_bot, in_fsr_top);
+    }
+
+    void set_input_full_scale_range(uint32_t in_fsr_bot, uint32_t in_fsr_top) {
+        assert(in_fsr_top > in_fsr_bot);
+        // 32-bit is native and fast int, also avoid unsigned int promotion
+        _in_fsr_bot = in_fsr_bot;
+        _in_fsr_top = in_fsr_top;
+        _in_fsr_inv = 1.0f / (in_fsr_top - in_fsr_bot);
+    }
+
+    float interpolate(uint32_t x) {
+        static_assert(1 < N && N < INT32_MAX, "Filter length must be in this range");
+        constexpr auto n_lut_intervals = size_t{N - 1};
+        size_t lut_index;
+        float partial_intervals;
+        if (x > _in_fsr_bot) {
+            if (x < _in_fsr_top) {
+                auto n = static_cast<int64_t>(n_lut_intervals) * (x - _in_fsr_bot);
+                auto d = _in_fsr_top - _in_fsr_bot;
+                auto quot_rem = lldiv(n, d);
+                partial_intervals = _in_fsr_inv * static_cast<float>(quot_rem.rem);
+                lut_index = static_cast<size_t>(quot_rem.quot);
+            } else {
+                lut_index = n_lut_intervals;
+                partial_intervals = 0.0f;
+            }
+        } else {
+            lut_index = 0;
+            partial_intervals = 0.0f;
+        }
+        // Interpolation interval start and end values
+        auto interval_start = _lut[lut_index];
+        float interval_end;
+        if (lut_index < n_lut_intervals) {
+            interval_end = _lut[lut_index + 1];
+        } else {
+            interval_end = interval_start;
+        }
+        return interval_start + partial_intervals * (interval_end - interval_start);
+        }
+
+protected:
+    const std::array<float, N> _lut;
+    uint32_t _in_fsr_bot;
+    uint32_t _in_fsr_top;
+    float _in_fsr_inv;
+};
+
 
 #endif

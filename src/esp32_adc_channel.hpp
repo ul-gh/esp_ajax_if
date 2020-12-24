@@ -26,8 +26,8 @@
  * Raw output is always scaled such as if the ADC was set to 12 bits mode,
  * i.e. theoretical full-scale output is 4096 - 1
  * 
- * @note: For additional moving average filtering and smoothing, please see
- *        the additional templated version in class ESP32ADCChannelFiltered.
+ * @note For additional moving average filtering and smoothing, please see
+ *       the additional templated version in class ESP32ADCChannelFiltered.
  */
 class ESP32ADCChannel
 {
@@ -42,7 +42,7 @@ public:
      * @param attenuation: Voltage input scale setting, see ESP-IDF reference
      * @param averaged_samples: Read this many input samples at once for any trigger
      * @param bits_width: Can be less then ADC_WIDTH_BIT_12 for faster speed.
-     *        @note: The "bits_width" setting must be identical for all channels!
+     *        @note The "bits_width" setting must be identical for all channels!
      * @param default_vref: Can be manually set if hardware has no e-fuse calibration
      */
     ESP32ADCChannel(adc1_channel_t channel_num,
@@ -66,7 +66,7 @@ public:
      * If there is no e-fuse calibration on-chip, this uses the default_vref setting
      * from the constructor, default is 1100 millivolts.
      * 
-     * @return: Voltage in millivolts
+     * @return Voltage in millivolts
      */
     uint16_t get_voltage_averaged();
 
@@ -111,7 +111,7 @@ public:
      * @param attenuation: Voltage input scale setting, see ESP-IDF reference
      * @param averaged_samples: Read this many input samples at once for any trigger
      * @param bits_width: Can be less then ADC_WIDTH_BIT_12 for faster speed.
-     *        @note: The "bits_width" setting must be identical for all channels!
+     *        @note The "bits_width" setting must be identical for all channels!
      * @param default_vref: Can be manually set if hardware has no e-fuse calibration
      */
     ESP32ADCChannelFiltered(adc1_channel_t channel_num,
@@ -131,7 +131,7 @@ public:
      */
     void trigger_acquisition() {
         auto raw_sample = get_raw_averaged();
-        filter.process_data(raw_sample);
+        filter.input_data(raw_sample);
     }
 
     /** @brief Get raw ADC channel conversion value, through moving average filter.
@@ -155,7 +155,7 @@ public:
      * @param trigger_new_acquisition: If set to false, this does /not/ trigger
      * a new ADC acquisition but only returns the current filter result.
      * 
-     * @return: Voltage in millivolts
+     * @return Voltage in millivolts
      * 
      * This takes into account the calibration constants from ADC initialisation
      */
@@ -165,7 +165,7 @@ public:
     }
 
 protected:
-    U16MovingAverage<filter_length> filter;
+    MovingAverageUInt16<filter_length> filter;
 };
 
 #endif

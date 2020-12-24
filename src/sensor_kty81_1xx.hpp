@@ -32,7 +32,7 @@ struct KTY81_1xxCommonConfig
     ////////// Initial averaging when each ADC sample is taken
     size_t averaged_samples = 64;
     ////////// Moving average filter length. Must be power of two.
-    size_t moving_average_filter_len = 16;
+    size_t moving_average_filter_len = 32;
     ////////// Configuration constants for get_kty_temp_lin()
     float temp_fsr_lower_lin = 0.0;
     float temp_fsr_upper_lin = 100.0;
@@ -112,12 +112,12 @@ public:
     /** @brief Initialize the analog ADC channel for use with the sensor.
      * 
      * @param channel: ADC 1 channel number
-     * @param interpolator: Ptr. to interpolator, see class EquidistantPWL.
+     * @param interpolator: Ptr. to interpolator, see class EquidistantPWLUInt16.
      * 
      * @note See derived classes SensorKTY81_121 and SensorKTY81_110_120.
      */
     SensorKTY81_1xx(adc1_channel_t channel,
-                    EquidistantPWL<_common_conf.lut_size> *interpolator);
+                    EquidistantPWLUInt16<_common_conf.lut_size> *interpolator);
 
     /** @brief Updates the moving average with a new sampled value from ADC
      * 
@@ -147,7 +147,7 @@ public:
     float get_temp_lin();
 
 protected:
-    EquidistantPWL<_common_conf.lut_size> *_interpolator;
+    EquidistantPWLUInt16<_common_conf.lut_size> *_interpolator;
 };
 
 
@@ -161,7 +161,7 @@ class SensorKTY81_121 : public SensorKTY81_1xx
 public:
     SensorKTY81_121(adc1_channel_t channel)
         : SensorKTY81_1xx{channel,
-                          new EquidistantPWL<_common_conf.lut_size>{
+                          new EquidistantPWLUInt16<_common_conf.lut_size>{
                               _common_conf.lut_temp_kty81_121}
                           }
     {}
@@ -180,7 +180,7 @@ class SensorKTY81_110_120 : public SensorKTY81_1xx
 public:
     SensorKTY81_110_120(adc1_channel_t channel)
         : SensorKTY81_1xx{channel,
-                          new EquidistantPWL<_common_conf.lut_size>{
+                          new EquidistantPWLUInt16<_common_conf.lut_size>{
                               _common_conf.lut_temp_kty81_110_120}
                           }
     {}

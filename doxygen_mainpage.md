@@ -16,21 +16,21 @@ measurement and control functions:
   sensing
 
 The HTML web application interface features a responsive CSS grid layout and
-requires a newer web browser with at least JavaScript ES 7 support.
+requires a web browser with at least JavaScript ES 7 support.
 
-The toolchain compiler must support std=c++17.
+The toolchain compiler must support at least std=c++17.
 
 ## C++ Application Data Model
 * [AppState](struct_app_state.html)
 
 ## C++ Application Controller Implementing C++ and HTTP GET API
- * This features the main control functions for PWM frequency, duty cycle etc.
- * 
- * Also, periodic state feedback for all hardware functions is sent to the
- * HTTP remote application using Server-Sent Events from a FreeRTOS timer task.
- * 
- * Some auxiliary functions like GPIO and temperature readouts is outsourced
- * to the AuxHwDrv class, see aux_hw_drv.cpp.
+This features the main control functions for PWM frequency, duty cycle etc.
+
+Also, periodic state feedback for all hardware functions is sent to the
+HTTP remote application using Server-Sent Events from a FreeRTOS timer task.
+
+Some auxiliary functions like GPIO and temperature readouts is outsourced
+to class AuxHwDrv.
 * [AppController](class_app_controller.html)
 
 ## HTML+CSS+JS Single-Page Web Application (Remote View/Control)
@@ -43,10 +43,10 @@ The toolchain compiler must support std=c++17.
 
 ## Auxiliary Hardware Control and Utility Classes
 * [AuxHwDrv](class_aux_hw_drv.html)
-* [SensorKTY81_121](class_sensor_k_t_y81__121.html)
+* [SensorKTY81_1xx](class_sensor_k_t_y81__1xx.html)
 * [ESP32ADCChannel](class_e_s_p32_a_d_c_channel.html)
-* [U16MovingAverage](class_u16_moving_average.html)
-* [EquidistantPWL](struct_equidistant_p_w_l.html)
+* [U16MovingAverageUInt16](class_moving_average_u_int16.html)
+* [EquidistantPWLUInt16](class_equidistant_p_w_l_u_int16.html)
 * [MultiTimer](class_multi_timer.html)
 
 ## Low-Level-Driver (ESP-IDF Compatible)

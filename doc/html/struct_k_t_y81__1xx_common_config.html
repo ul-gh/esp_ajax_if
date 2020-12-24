@@ -81,8 +81,10 @@ int32_t&#160;</td><td class="memItemRight" valign="bottom"><b>v_in_fsr_upper_lin
 <tr class="memitem:a0c95fa5bd6a7a819499cf3e869ecb54d"><td class="memItemLeft" align="right" valign="top"><a id="a0c95fa5bd6a7a819499cf3e869ecb54d"></a>
 int32_t&#160;</td><td class="memItemRight" valign="bottom"><b>v_in_fsr_upper_lut</b> = 1646</td></tr>
 <tr class="separator:a0c95fa5bd6a7a819499cf3e869ecb54d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac1fbefb0b5daa2a0052ba81d5e37136f"><td class="memItemLeft" align="right" valign="top">std::array&lt; float, 32 &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_k_t_y81__1xx_common_config.html#ac1fbefb0b5daa2a0052ba81d5e37136f">lut_temp_kty81_121</a></td></tr>
-<tr class="memdesc:ac1fbefb0b5daa2a0052ba81d5e37136f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Look-Up-Table temperatures for 31 equidistant voltage steps. Table only valid for linearised circuit using 2.2 kOhms series resistor where ADC input voltage steps correspond to the following temperature values in °C.  <a href="struct_k_t_y81__1xx_common_config.html#ac1fbefb0b5daa2a0052ba81d5e37136f">More...</a><br /></td></tr>
+<tr class="memitem:a41e70c0fb54bf26110f2281f4704da16"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_k_t_y81__1xx_common_config.html#a41e70c0fb54bf26110f2281f4704da16">lut_size</a> = 32</td></tr>
+<tr class="memdesc:a41e70c0fb54bf26110f2281f4704da16"><td class="mdescLeft">&#160;</td><td class="mdescRight">Look-Up-Table temperatures for 31 equidistant voltage steps. Table only valid for linearised circuit using 2.2 kOhms series resistor where ADC input voltage steps correspond to the following temperature values in °C.  <a href="struct_k_t_y81__1xx_common_config.html#a41e70c0fb54bf26110f2281f4704da16">More...</a><br /></td></tr>
+<tr class="separator:a41e70c0fb54bf26110f2281f4704da16"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac1fbefb0b5daa2a0052ba81d5e37136f"><td class="memItemLeft" align="right" valign="top">std::array&lt; float, 32 &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>lut_temp_kty81_121</b></td></tr>
 <tr class="separator:ac1fbefb0b5daa2a0052ba81d5e37136f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4b5d4ccbb1b09c1f4a74b2981681cf4d"><td class="memItemLeft" align="right" valign="top">std::array&lt; float, 32 &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>lut_temp_kty81_110_120</b></td></tr>
 <tr class="separator:a4b5d4ccbb1b09c1f4a74b2981681cf4d"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -91,6 +93,23 @@ int32_t&#160;</td><td class="memItemRight" valign="bottom"><b>v_in_fsr_upper_lut
 <div class="textblock"><p>Configuration constants and Look-Up-Table values which are supposed to be the same for all sensors. </p>
 <p>This is instantiated as a static constexpr shared by all sensor instances. </p>
 </div><h2 class="groupheader">Member Data Documentation</h2>
+<a id="a41e70c0fb54bf26110f2281f4704da16"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a41e70c0fb54bf26110f2281f4704da16">&#9670;&nbsp;</a></span>lut_size</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">size_t KTY81_1xxCommonConfig::lut_size = 32</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Look-Up-Table temperatures for 31 equidistant voltage steps. Table only valid for linearised circuit using 2.2 kOhms series resistor where ADC input voltage steps correspond to the following temperature values in °C. </p>
+<p>For LUT values, see ../util/kty81_1xx_sensor_generate_lut/kty81_lut.py </p>
+
+</div>
+</div>
 <a id="a4b5d4ccbb1b09c1f4a74b2981681cf4d"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a4b5d4ccbb1b09c1f4a74b2981681cf4d">&#9670;&nbsp;</a></span>lut_temp_kty81_110_120</h2>
 
@@ -136,9 +155,6 @@ int32_t&#160;</td><td class="memItemRight" valign="bottom"><b>v_in_fsr_upper_lut
 <div class="line">         96.17984636, 102.82297981, 109.58309561, 116.4296579 ,</div>
 <div class="line">        123.60532846, 131.27866698, 139.78106609, 150.0}</div>
 </div><!-- fragment -->
-<p>Look-Up-Table temperatures for 31 equidistant voltage steps. Table only valid for linearised circuit using 2.2 kOhms series resistor where ADC input voltage steps correspond to the following temperature values in °C. </p>
-<p>For LUT values, see ../util/kty81_1xx_sensor_generate_lut/kty81_lut.py </p>
-
 </div>
 </div>
 <a id="ae255292e1fe6cce1955ad1b264bfcc62"></a>

@@ -51,6 +51,9 @@ $(function() {
 <div class="title">app_controller.hpp File Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
+
+<p>Application Controller Implementing C++ and HTTP GET API.  
+<a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;Ticker.h&gt;</code><br />
 <code>#include &quot;<a class="el" href="aux__hw__drv_8hpp_source.html">aux_hw_drv.hpp</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="api__server_8hpp_source.html">api_server.hpp</a>&quot;</code><br />
@@ -67,7 +70,11 @@ Classes</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>License: GPL v.3 U. Lukas 2020-12-11 </p>
+<div class="textblock"><p>Application Controller Implementing C++ and HTTP GET API. </p>
+<p>This features the main control functions for PWM frequency, duty cycle etc.</p>
+<p>Also, periodic state feedback for all hardware functions is sent to the HTTP remote application using Server-Sent Events from a FreeRTOS timer task.</p>
+<p>Some auxiliary functions like GPIO and temperature readouts is outsourced to the <a class="el" href="class_aux_hw_drv.html" title="Auxiliary hardware driver for ESP-AJAX-Lab This implements GPIO control for relays,...">AuxHwDrv</a> class, see aux_hw_drv.cpp.</p>
+<p>License: GPL v.3 U. Lukas 2020-12-07 </p>
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

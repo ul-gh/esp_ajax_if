@@ -90,12 +90,12 @@ void update_debug_messages(){
 }
 
 void print_debug_messages(){
-    ESP_LOGD(TAG,
-             "\nFree Heap: %d   Minimum ever free heap: %d"
-             "\nSSE number of clients: %d   SSE average queue length: %d",
-             ESP.getFreeHeap(), ESP.getMinFreeHeap(),
-             api_server.event_source->count(), api_server.event_source->avgPacketsWaiting()
-             );
+    //ESP_LOGD(TAG,
+    //         "\nFree Heap: %d   Minimum ever free heap: %d"
+    //         "\nSSE number of clients: %d   SSE average queue length: %d",
+    //         ESP.getFreeHeap(), ESP.getMinFreeHeap(),
+    //         api_server.event_source->count(), api_server.event_source->avgPacketsWaiting()
+    //         );
     //ESP_LOGD(TAG, "\nWifi stations connected: %d", WiFi.softAPgetStationNum());
     //if (!heap_caps_check_integrity_all(true)) {
     //    ESP_LOGE(TAG, "Heap integrity check failed!");
