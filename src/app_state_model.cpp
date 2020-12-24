@@ -44,6 +44,8 @@ void AppState::serialize_data() {
     json_doc["hw_oc_fault_present"] = hw_oc_fault_present;
     // Hardware Fault Shutdown Status is latched using this flag
     json_doc["hw_oc_fault_occurred"] = hw_oc_fault_occurred;
+    // Length of the power output one-shot timer pulse
+    json_doc["oneshot_len"] = oneshot_power_pulse_length_ms/1e3;
     // Do the serialization
     serializeJson(json_doc, json_buf_data);
 }

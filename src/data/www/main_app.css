@@ -206,7 +206,7 @@ div.number_vw[disabled] {
 #btn_pwm_on {
     display: inline-block;
     font-size: 1.3rem;
-    padding: 1rem 2rem;
+    padding: 0.8rem 1.3rem;
     color: white;
     background-color: #4CAF50; /* Green */
 }
@@ -214,7 +214,15 @@ div.number_vw[disabled] {
 #btn_pwm_off {
     display: inline-block;
     font-size: 1.3rem;
-    padding: 1rem 2rem;
+    padding: 0.8rem 1.3rem;
     color: white;
     background-color: red;
+}
+
+#btn_trigger_oneshot {
+    display: inline-block;
+    font-size: 1.3rem;
+    padding: 0.8rem 1.3rem;
+    color: white;
+    background-color: orange;
 }

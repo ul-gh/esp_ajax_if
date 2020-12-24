@@ -134,7 +134,7 @@ void AppController::set_lead_dt_ns(float n) {
 
 /* Activate PWM power output if arg is true
  */
-void AppController::set_power_pwm_active(bool state){
+void AppController::set_power_pwm_active(bool state) {
     if (state == true) {
         // aux_hw_drv.set_drv_disabled(false);
         pspwm_resync_enable_output(app_conf.mcpwm_num);
@@ -145,13 +145,22 @@ void AppController::set_power_pwm_active(bool state){
     _send_state_changed_event();
 }
 
-void AppController::trigger_oneshot(){
+/* Set power output oneshot pulse timer pulse length in seconds
+ */
+void AppController::set_oneshot_len(float n) {
+    state.oneshot_power_pulse_length_ms = static_cast<uint32_t>(n * 1000);
+    _send_state_changed_event();
+}
+
+/* Trigger the power output oneshot pulse
+ */
+void AppController::trigger_oneshot() {
     // The timer callback also sends a state_changed event
-    power_output_timer.start();
+    power_output_timer.start(state.oneshot_power_pulse_length_ms);
 }
 
 // The output is /not/ enabled again, it must be re-enabled explicitly.
-void AppController::clear_shutdown(){
+void AppController::clear_shutdown() {
     // The timer callback generates a three-cycle reset pulse and
     // sends a state_changed event when finished.
     oc_reset_timer.start();
@@ -246,6 +255,9 @@ void AppController::_register_http_api(APIServer* api_server) {
     // "set_power_pwm_active"
     cb_text = [this](const String &text) {set_power_pwm_active(text=="true");};
     api_server->register_api_cb("set_power_pwm_active", cb_text);
+    // "set_oneshot_len"
+    cb_float = [this](float n){set_oneshot_len(n);};
+    api_server->register_api_cb("set_oneshot_len", cb_float);
     // "trigger_oneshot"
     cb_void = [this](){trigger_oneshot();};
     api_server->register_api_cb("trigger_oneshot", cb_void);

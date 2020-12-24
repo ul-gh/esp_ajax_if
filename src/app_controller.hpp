@@ -85,10 +85,16 @@ public:
 
     void set_lead_dt_ns(float n);
 
-    /* Activate PWM power output if arg is true
-    */
+    /** @brief Activate PWM power output if arg is true
+     */
     void set_power_pwm_active(bool state);
 
+    /** @brief Set power output oneshot pulse timer pulse length in seconds
+     */
+    void set_oneshot_len(float n);
+
+    /** @brief Trigger the power output oneshot pulse
+     */
     void trigger_oneshot();
 
     void clear_shutdown();

@@ -186,10 +186,13 @@ class ViewUpdater {
         this.fan_vw = document.getElementById("fan_vw");
         this.btn_pwm_on = document.getElementById("btn_pwm_on");
         this.btn_pwm_off = document.getElementById("btn_pwm_off");
+        this.oneshot_len_vw = document.getElementById("oneshot_len_vw");
+        this.btn_trigger_oneshot = document.getElementById("btn_trigger_oneshot");
         this.ref_vw = document.getElementById("ref_vw");
         this.dut_vw = document.getElementById("dut_vw");
         this.lead_dt_vw = document.getElementById("lead_dt_vw");
         this.lag_dt_vw = document.getElementById("lag_dt_vw");
+        this.btn_save_settings = document.getElementById("btn_save_settings");
         this.current_limit_vw = document.getElementById("current_limit_vw");
         this.frequency_min_vw = document.getElementById("frequency_min_vw");
         this.frequency_max_vw = document.getElementById("frequency_max_vw");
@@ -201,11 +204,12 @@ class ViewUpdater {
         this.all_disable_items = [
             this.power_pwm_vw, this.shutdown_vw, this.aux_temp_vw,
             this.heatsink_temp_vw, this.fan_vw, this.ref_vw, this.dut_vw,
-            this.lead_dt_vw, this.lag_dt_vw, this.current_limit_vw,
-            this.frequency_min_vw, this.frequency_max_vw,
+            this.lead_dt_vw, this.lag_dt_vw, this.btn_save_settings,
+            this.current_limit_vw, this.frequency_min_vw, this.frequency_max_vw,
             this.frequency_number_vw, this.frequency_range_vw,
             this.duty_number_vw, this.duty_range_vw,
             this.btn_pwm_on, this.btn_pwm_off,
+            this.oneshot_len_vw, this.btn_trigger_oneshot
             ];
         // We also want to disable the submit buttons
         for (let form of document.forms) {
@@ -312,6 +316,7 @@ class ViewUpdater {
             this.frequency_range_vw.value = frequency
             this.duty_range_vw.value = duty;
         }
+        this.oneshot_len_vw.value = remote_state.oneshot_len.toFixed(3);
     }
 
     /** Called when connection to the server is established

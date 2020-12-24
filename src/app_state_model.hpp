@@ -26,7 +26,7 @@ struct AppState
     /** ATTENTION!
      * Following constants need to be adapted if JSON object size is changed!
      */
-    static constexpr size_t _json_objects_size = JSON_OBJECT_SIZE(22);
+    static constexpr size_t _json_objects_size = JSON_OBJECT_SIZE(23);
     static constexpr size_t _strings_size = sizeof(
         "frequency_min_hw""frequency_max_hw""dt_sum_max_hw"
         "frequency_min""frequency_max"
@@ -36,6 +36,7 @@ struct AppState
         "base_div""timer_div"
         "drv_supply_active""drv_disabled"
         "hw_oc_fault_present""hw_oc_fault_occurred"
+        "oneshot_len"
         );
     // Prevent buffer overflow even if above calculations are wrong...
     static constexpr size_t I_AM_SCARED_MARGIN = 50;
