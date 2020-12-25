@@ -145,8 +145,8 @@ List of HTTP GET requests for application control:</h3>
 <li>Activate|deactivate the power output load switches:<br  />
  /cmd?set_relay_ref_active=true|false<br  />
  /cmd?set_relay_dut_active=true|false</li>
-<li>Activate|deactivate the heatsink fan:<br  />
- /cmd?set_power_pwm_active=true|false</li>
+<li>Manual override of the heatsink fan, stays "on" when true:<br  />
+ /cmd?set_fan_override=true|false</li>
 <li>Save all runtime settings to SPI flash:<br  />
  /cmd?save_settings</li>
 </ul>
@@ -178,6 +178,7 @@ Server sends periodic application status update via Server-Sent Events:</h3>
 <div class="line">    &quot;aux_temp&quot;: Temperature in °C</div>
 <div class="line">    &quot;heatsink_temp&quot;: Temperature in °C</div>
 <div class="line">    &quot;fan_active&quot;: Boolean</div>
+<div class="line">    &quot;fan_override&quot;: Boolean</div>
 <div class="line"> </div>
 <div class="line">    // Clock divider settings</div>
 <div class="line">    &quot;base_div&quot;: Integer clock divider factor for MCPWM hardware timer</div>

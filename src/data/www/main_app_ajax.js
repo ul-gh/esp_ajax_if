@@ -291,7 +291,7 @@ class ViewUpdater {
         this.heatsink_temp_vw.innerText = Number(
             remote_state.heatsink_temp).toFixed(1) + " °C";
         this.fan_vw.firstElementChild.checked = Boolean(
-            remote_state.fan_active);
+            remote_state.fan_override);
         this.ref_vw.firstElementChild.checked = Boolean(
             remote_state.relay_ref_active);
         this.dut_vw.firstElementChild.checked = Boolean(

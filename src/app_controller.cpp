@@ -94,7 +94,7 @@ void AppController::begin() {
     state.restore_from_file(app_conf.settings_filename);
     set_relay_dut_active(state.aux_hw_drv_state->relay_dut_active);
     set_relay_ref_active(state.aux_hw_drv_state->relay_ref_active);
-    set_fan_active(state.aux_hw_drv_state->fan_active);
+    set_fan_override(state.aux_hw_drv_state->fan_override);
     ESP_LOGI(TAG, "Activating Gate driver power supply...");
     aux_hw_drv.set_drv_supply_active(true);
     _register_http_api(api_server);
@@ -184,8 +184,8 @@ void AppController::set_relay_dut_active(bool state) {
     aux_hw_drv.set_relay_dut_active(state);
     _send_state_changed_event();
 }
-void AppController::set_fan_active(bool state) {
-    aux_hw_drv.set_fan_active(state);
+void AppController::set_fan_override(bool state) {
+    aux_hw_drv.set_fan_override(state);
     _send_state_changed_event();
 }
 
@@ -283,9 +283,9 @@ void AppController::_register_http_api(APIServer* api_server) {
     // "set_relay_dut_active"
     cb_text = [this](const String &text) {set_relay_dut_active(text=="true");};
     api_server->register_api_cb("set_relay_dut_active", cb_text);
-    // "set_fan_active"
-    cb_text = [this](const String &text) {set_fan_active(text=="true");};
-    api_server->register_api_cb("set_fan_active", cb_text);
+    // "set_fan_override"
+    cb_text = [this](const String &text) {set_fan_override(text=="true");};
+    api_server->register_api_cb("set_fan_override", cb_text);
     // "save_settings"
     cb_void = [this](){save_settings();};
     api_server->register_api_cb("save_settings", cb_void);
@@ -368,7 +368,7 @@ void AppController::_connect_timer_callbacks(){
 
 //////////// Application task related functions ///////////
 
-/** AppHwControl application event task
+/* AppHwControl application event task
  */
 void AppController::_app_event_task(void *pVParameters) {
     auto self = static_cast<AppController*>(pVParameters);
@@ -383,6 +383,7 @@ void AppController::_app_event_task(void *pVParameters) {
         }
         if (flags.have(EventFlags::timer_slow)) {
             self->_push_state_update();
+            self->aux_hw_drv.update_fan_state();
         }
         if (flags.have(EventFlags::state_changed)) {
             self->_push_state_update();
@@ -390,7 +391,7 @@ void AppController::_app_event_task(void *pVParameters) {
     }
 }
 
-/** Update all application state settings which need fast polling.
+/* Update all application state settings which need fast polling.
  * This is e.g. ADC conversion and HW overcurrent detection handling
  */
 void AppController::_on_fast_timer_event_update_state() {
@@ -404,7 +405,7 @@ void AppController::_on_fast_timer_event_update_state() {
     aux_hw_drv.update_temperature_sensors();
 }
 
-/** Application state is sent as a push update via the SSE event source.
+/* Application state is sent as a push update via the SSE event source.
  */
 void AppController::_send_state_changed_event() {
     xEventGroupSetBits(_app_event_group, EventFlags::state_changed);

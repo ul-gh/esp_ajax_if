@@ -108,8 +108,8 @@ HTTP Status 200 OK and plain text content "OK"
 /cmd?set_relay_ref_active=true|false<br>
 /cmd?set_relay_dut_active=true|false
 
-* Activate|deactivate the heatsink fan:<br>
-/cmd?set_power_pwm_active=true|false
+* Manual override of the heatsink fan, stays "on" when true:<br>
+/cmd?set_fan_override=true|false
 
 * Save all runtime settings to SPI flash:<br>
 /cmd?save_settings
@@ -143,6 +143,7 @@ HTTP Status 200 OK and plain text content "OK"
     "aux_temp": Temperature in °C
     "heatsink_temp": Temperature in °C
     "fan_active": Boolean
+    "fan_override": Boolean
 
     // Clock divider settings
     "base_div": Integer clock divider factor for MCPWM hardware timer

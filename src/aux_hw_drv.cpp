@@ -75,6 +75,14 @@ void AuxHwDrv::set_fan_active(bool new_state) {
                    static_cast<uint32_t>(new_state));
 }
 
+void AuxHwDrv::set_fan_override(bool new_state) {
+    ESP_LOGD(TAG, "Setting fan manual override: %s", new_state ? "true" : "false");
+    state.fan_override = new_state;
+    if (new_state) {
+        set_fan_active(true);
+    }
+}
+
 void AuxHwDrv::set_drv_supply_active(bool new_state) {
     ESP_LOGD(TAG, "Setting driver supply active: %s", new_state ? "true" : "false");
     state.drv_supply_active = new_state;
@@ -114,4 +122,23 @@ void AuxHwDrv::update_temperature_sensors() {
     sensor_heatsink_temp.update_filter();
     state.aux_temp = sensor_aux_temp.get_temp_pwl();
     state.heatsink_temp = sensor_heatsink_temp.get_temp_pwl();
+}
+
+/* Switch heatsink fan on or off depending on current temperature
+ * 
+ * To be called periodically from slow timer event
+ */
+void AuxHwDrv::update_fan_state() {
+    auto new_state = state.fan_active;
+    if (       state.heatsink_temp >= aux_hw_conf.temp_threshold_heatsink_hi
+            || state.aux_temp >= aux_hw_conf.temp_threshold_aux_hi
+            || state.fan_override) {
+        new_state = true;
+    } else if (state.heatsink_temp < aux_hw_conf.temp_threshold_heatsink_lo
+               && state.aux_temp < aux_hw_conf.temp_threshold_aux_lo) {
+        new_state = false;
+    }
+    if (new_state != state.fan_active) {
+        set_fan_active(new_state);
+    }
 }

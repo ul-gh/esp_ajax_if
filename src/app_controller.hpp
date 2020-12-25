@@ -105,7 +105,9 @@ public:
 
     void set_relay_dut_active(bool state);
 
-    void set_fan_active(bool state);
+    /** @brief When set to true, override automatic and set fan permanently on
+     */
+    void set_fan_override(bool state);
 
     /** @brief Save all runtime configurable settings to SPI flash
      * These settings are restored on reboot.

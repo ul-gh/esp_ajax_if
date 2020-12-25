@@ -1,0 +1,5 @@
+<map id="MultiTimerNonStatic&lt; TClass &gt;" name="MultiTimerNonStatic&lt; TClass &gt;">
+<area shape="rect" id="node1" title="Same as MultiTimer but allows a pointer to a non&#45;static member function as a callback." alt="" coords="5,155,160,196"/>
+<area shape="rect" id="node2" href="$class_multi_timer.html" title="Ticker timer derivative allowing for a fixed number of repeated calls." alt="" coords="37,80,129,107"/>
+<area shape="rect" id="node3" title=" " alt="" coords="53,5,113,32"/>
+</map>

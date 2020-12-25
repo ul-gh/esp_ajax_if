@@ -6,7 +6,6 @@
 doc/latex/*
 doc/xml/*
 doc/hardware/*
-src/data/www/*.svg
 src/wifi_config.hpp
 README.md
 firmware.zip

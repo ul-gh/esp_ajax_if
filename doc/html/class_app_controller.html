@@ -54,6 +54,29 @@ $(function() {
  <a href="class_app_controller.html#details">More...</a></p>
 
 <p><code>#include &lt;<a class="el" href="app__controller_8hpp_source.html">app_controller.hpp</a>&gt;</code></p>
+<div class="dynheader">
+Collaboration diagram for AppController:</div>
+<div class="dyncontent">
+<div class="center"><img src="class_app_controller__coll__graph.png" border="0" usemap="#_app_controller_coll__map" alt="Collaboration graph"/></div>
+<map name="_app_controller_coll__map" id="_app_controller_coll__map">
+<area shape="rect" title="Application main controller for PS&#45;PWM generator hardware." alt="" coords="1393,260,1504,287"/>
+<area shape="rect" href="struct_app_state.html" title="Application state containing data and settings model." alt="" coords="1177,132,1258,159"/>
+<area shape="rect" href="structpspwm__setpoint__t.html" title=" " alt="" coords="805,8,946,35"/>
+<area shape="rect" href="struct_app_config.html" title="Application configuration and default values for class AppController." alt="" coords="831,59,920,85"/>
+<area shape="rect" href="structpspwm__clk__conf__t.html" title=" " alt="" coords="804,109,947,136"/>
+<area shape="rect" href="structpspwm__setpoint__limits__t.html" title=" " alt="" coords="783,160,968,187"/>
+<area shape="rect" href="struct_aux_hw_drv_state.html" title=" " alt="" coords="813,228,938,255"/>
+<area shape="rect" href="class_aux_hw_drv.html" title="Auxiliary hardware driver for ESP&#45;AJAX&#45;Lab This implements GPIO control for relays,..." alt="" coords="1172,260,1263,287"/>
+<area shape="rect" href="class_sensor_k_t_y81__121.html" title="KTY81&#45;121 type silicon temperature sensor readout using the ESP32 ADC in its high&#45;linearity region." alt="" coords="807,303,944,329"/>
+<area shape="rect" href="class_sensor_k_t_y81__1xx.html" title="KTY81&#45;1xx type silicon temperature sensor readout and conversion functions using the ESP32 ADC in its..." alt="" coords="596,303,733,329"/>
+<area shape="rect" href="class_e_s_p32_a_d_c_channel_filtered.html" title=" " alt="" coords="263,237,453,293"/>
+<area shape="rect" href="class_e_s_p32_a_d_c_channel.html" title="ESP32 ADC 1 channel access with configurable averaging." alt="" coords="17,223,160,249"/>
+<area shape="rect" href="class_moving_average_u_int16.html" title=" " alt="" coords="5,274,172,315"/>
+<area shape="rect" href="class_equidistant_p_w_l_u_int16.html" title=" " alt="" coords="256,318,460,359"/>
+<area shape="rect" href="class_a_p_i_server.html" title="AJAX HTTP API server for ESP&#45;AJAX&#45;Lab." alt="" coords="1175,337,1260,364"/>
+<area shape="rect" href="struct_a_p_i_server_config.html" title=" " alt="" coords="812,353,939,380"/>
+</map>
+<center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
@@ -106,9 +129,10 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>set_relay_ref_active<
 <tr class="memitem:ac893da038736198462a839c078eb21c2"><td class="memItemLeft" align="right" valign="top"><a id="ac893da038736198462a839c078eb21c2"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>set_relay_dut_active</b> (bool state)</td></tr>
 <tr class="separator:ac893da038736198462a839c078eb21c2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0b450d6d93c7f7f028a6fd5a15c87980"><td class="memItemLeft" align="right" valign="top"><a id="a0b450d6d93c7f7f028a6fd5a15c87980"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>set_fan_active</b> (bool state)</td></tr>
-<tr class="separator:a0b450d6d93c7f7f028a6fd5a15c87980"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5d163b19926cb62217da6396a26aa3d1"><td class="memItemLeft" align="right" valign="top"><a id="a5d163b19926cb62217da6396a26aa3d1"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_app_controller.html#a5d163b19926cb62217da6396a26aa3d1">set_fan_override</a> (bool state)</td></tr>
+<tr class="memdesc:a5d163b19926cb62217da6396a26aa3d1"><td class="mdescLeft">&#160;</td><td class="mdescRight">When set to true, override automatic and set fan permanently on. <br /></td></tr>
+<tr class="separator:a5d163b19926cb62217da6396a26aa3d1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa1c0e1ef35e4fc9e75897040e480d04a"><td class="memItemLeft" align="right" valign="top"><a id="aa1c0e1ef35e4fc9e75897040e480d04a"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_app_controller.html#aa1c0e1ef35e4fc9e75897040e480d04a">save_settings</a> ()</td></tr>
 <tr class="memdesc:aa1c0e1ef35e4fc9e75897040e480d04a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Save all runtime configurable settings to SPI flash These settings are restored on reboot. <br /></td></tr>

@@ -148,7 +148,8 @@ void APIServer::_add_handlers() {
 
     backend->onNotFound([](AsyncWebServerRequest *request){
             request->send_P(404, "text/html", srv_conf.error_404_html);
-            ESP_LOGE(TAG, "%s", srv_conf.error_404_html);
+            ESP_LOGE(TAG, "%s\n Request URL: %s",
+                     srv_conf.error_404_html, request->url().c_str());
         });
     backend->onFileUpload(_on_upload);
     backend->onRequestBody(_on_body);

@@ -37,6 +37,7 @@ size_t AppState::serialize_full_state(char *buf, size_t buf_len) {
     json_doc["aux_temp"] = aux_hw_drv_state->aux_temp;
     json_doc["heatsink_temp"] = aux_hw_drv_state->heatsink_temp;
     json_doc["fan_active"] = aux_hw_drv_state->fan_active;
+    json_doc["fan_override"] = aux_hw_drv_state->fan_override;
     // Clock divider settings
     json_doc["base_div"] = pspwm_clk_conf->base_clk_prescale;
     json_doc["timer_div"] = pspwm_clk_conf->timer_clk_prescale;
@@ -80,7 +81,7 @@ bool AppState::deserialize_settings(const char *buf, size_t buf_len) {
     aux_hw_drv_state->relay_ref_active = json_doc["relay_ref_active"];
     aux_hw_drv_state->relay_dut_active = json_doc["relay_dut_active"];
     // Temperatures and fan
-    aux_hw_drv_state->fan_active = json_doc["fan_active"];
+    aux_hw_drv_state->fan_override = json_doc["fan_override"];
     // Clock divider settings
     pspwm_clk_conf->base_clk_prescale = uint8_t{json_doc["base_div"]};
     pspwm_clk_conf->timer_clk_prescale = uint8_t{json_doc["timer_div"]};

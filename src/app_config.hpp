@@ -73,6 +73,11 @@ struct AuxHwDrvConfig
     // Objects are constexpr, so members can be used as template parameters etc.
     constexpr AuxHwDrvConfig(){};
 
+    // Threshold values for activating/deactivating the fan in automatic mode
+    uint32_t temp_threshold_aux_hi = 50;
+    uint32_t temp_threshold_aux_lo = 40;
+    uint32_t temp_threshold_heatsink_hi = 50;
+    uint32_t temp_threshold_heatsink_lo = 40;
     // Analog inputs config //
     /** @brief ADC channel for AUX temperature sensor */
     adc1_channel_t temp_ch_aux = ADC1_CHANNEL_0; // Sensor VP
@@ -164,6 +169,8 @@ struct AuxHwDrvState
     float aux_temp{150};
     float heatsink_temp{150};
     bool fan_active{true};
+    // Manual override, fan is permanently "on" when true
+    bool fan_override{false};
     bool drv_supply_active{true};
     bool drv_disabled{false};
 };

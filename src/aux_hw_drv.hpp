@@ -43,6 +43,7 @@ public:
     void set_relay_ref_active(bool state);
     void set_relay_dut_active(bool state);
     void set_fan_active(bool state);
+    void set_fan_override(bool new_state);
     void set_drv_supply_active(bool state);
     void set_drv_disabled(bool state);
     static void reset_oc_shutdown_start();
@@ -51,7 +52,11 @@ public:
      * Other state variables are only modified by setter functions above.
      */
     void update_temperature_sensors();
-
+    /** @brief Switch heatsink fan on or off depending on current temperature
+     * 
+     * To be called periodically from slow timer event
+     */
+    void update_fan_state();
 
 private:
 

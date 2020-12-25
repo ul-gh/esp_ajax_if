@@ -1,0 +1,5 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="node1" href="$class_sensor_k_t_y81__1xx.html" title="KTY81&#45;1xx type silicon temperature sensor readout and conversion functions using the ESP32 ADC in its..." alt="" coords="5,31,143,57"/>
+<area shape="rect" id="node2" href="$class_sensor_k_t_y81__110__120.html" title="KTY81&#45;110 or KTY81&#45;120 type silicon temperature sensor readout using the ESP32 ADC in its high&#45;linear..." alt="" coords="191,5,359,32"/>
+<area shape="rect" id="node3" href="$class_sensor_k_t_y81__121.html" title="KTY81&#45;121 type silicon temperature sensor readout using the ESP32 ADC in its high&#45;linearity region." alt="" coords="206,56,343,83"/>
+</map>
