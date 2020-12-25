@@ -12,8 +12,7 @@ measurement and control functions:
   temperature sensors using the ESP32 ADC in its high-linearity region
 * PWM reference signal generation for hardware overcurrent detector
 * External GPIO output control for relays, fan, enable and error-reset
-* TBD: Delta-Sigma conversion control and filter for insulated current
-  sensing
+* TBD: Delta-Sigma conversion control
 
 The HTML web application interface features a responsive CSS grid layout and
 requires a web browser with at least JavaScript ES 7 support.
