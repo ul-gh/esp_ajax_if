@@ -19,7 +19,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">ESP-AJAX-Lab
-   &#160;<span id="projectnumber">0.99.6</span>
+   &#160;<span id="projectnumber">1.0-rc</span>
    </div>
    <div id="projectbrief">HTTP server, AJAX API backend, web application and Soc hardware drivers for WiFi remote control of the MCPWM hardware modules on the Espressif ESP32 SoC</div>
   </td>
@@ -57,21 +57,17 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a093bc43c5cd4a1240124bef9124df706"><td class="memItemLeft" align="right" valign="top"><a id="a093bc43c5cd4a1240124bef9124df706"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_app_state.html#a093bc43c5cd4a1240124bef9124df706">serialize_data</a> ()</td></tr>
-<tr class="memdesc:a093bc43c5cd4a1240124bef9124df706"><td class="mdescLeft">&#160;</td><td class="mdescRight">Serialize application live data into json_buf_data. <br /></td></tr>
-<tr class="separator:a093bc43c5cd4a1240124bef9124df706"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acaf7161029735dbde1e6ace8fdb6a6d8"><td class="memItemLeft" align="right" valign="top"><a id="acaf7161029735dbde1e6ace8fdb6a6d8"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_app_state.html#acaf7161029735dbde1e6ace8fdb6a6d8">serialize_settings</a> ()</td></tr>
-<tr class="memdesc:acaf7161029735dbde1e6ace8fdb6a6d8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Serialize application runtime configurable settings into json_buf. <br /></td></tr>
-<tr class="separator:acaf7161029735dbde1e6ace8fdb6a6d8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af9807005780f9e91814f18e654c458ed"><td class="memItemLeft" align="right" valign="top"><a id="af9807005780f9e91814f18e654c458ed"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_app_state.html#af9807005780f9e91814f18e654c458ed">deserialize_settings</a> ()</td></tr>
-<tr class="memdesc:af9807005780f9e91814f18e654c458ed"><td class="mdescLeft">&#160;</td><td class="mdescRight">Restore application runtime configurable settings from json_buf_settings back into this instance. <br /></td></tr>
-<tr class="separator:af9807005780f9e91814f18e654c458ed"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae715e881aa094d0ce9c7ff6a86e98d58"><td class="memItemLeft" align="right" valign="top"><a id="ae715e881aa094d0ce9c7ff6a86e98d58"></a>
+size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_app_state.html#ae715e881aa094d0ce9c7ff6a86e98d58">serialize_full_state</a> (char *buf, size_t buf_len)</td></tr>
+<tr class="memdesc:ae715e881aa094d0ce9c7ff6a86e98d58"><td class="mdescLeft">&#160;</td><td class="mdescRight">Serialize application runtime state and configurable settings into buffer as a JSON string. <br /></td></tr>
+<tr class="separator:ae715e881aa094d0ce9c7ff6a86e98d58"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a70fda208d5a71ba8c939ccd6b6f0ae00"><td class="memItemLeft" align="right" valign="top"><a id="a70fda208d5a71ba8c939ccd6b6f0ae00"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_app_state.html#a70fda208d5a71ba8c939ccd6b6f0ae00">deserialize_settings</a> (const char *buf, size_t buf_len)</td></tr>
+<tr class="memdesc:a70fda208d5a71ba8c939ccd6b6f0ae00"><td class="mdescLeft">&#160;</td><td class="mdescRight">Restore application runtime configurable settings from json string in buffer back into this instance. <br /></td></tr>
+<tr class="separator:a70fda208d5a71ba8c939ccd6b6f0ae00"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af1af861ce5a7129b7e1e6e1db8cb42a0"><td class="memItemLeft" align="right" valign="top"><a id="af1af861ce5a7129b7e1e6e1db8cb42a0"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_app_state.html#af1af861ce5a7129b7e1e6e1db8cb42a0">save_to_file</a> (const char *filename)</td></tr>
-<tr class="memdesc:af1af861ce5a7129b7e1e6e1db8cb42a0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write application runtime configurable settings as JSON to SPIFFs file. <br /></td></tr>
+<tr class="memdesc:af1af861ce5a7129b7e1e6e1db8cb42a0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write application runtime configurable settings to SPIFFs file as a JSON string. <br /></td></tr>
 <tr class="separator:af1af861ce5a7129b7e1e6e1db8cb42a0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aeb93a2b8e93cf9d60c55dfcec2c7cc99"><td class="memItemLeft" align="right" valign="top"><a id="aeb93a2b8e93cf9d60c55dfcec2c7cc99"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_app_state.html#aeb93a2b8e93cf9d60c55dfcec2c7cc99">restore_from_file</a> (const char *filename)</td></tr>
@@ -107,27 +103,21 @@ uint32_t&#160;</td><td class="memItemRight" valign="bottom"><b>oneshot_power_pul
 <tr class="memitem:a9ae28bea2ef6ea33876a63ee43aa40fa"><td class="memItemLeft" align="right" valign="top"><a id="a9ae28bea2ef6ea33876a63ee43aa40fa"></a>
 <a class="el" href="struct_aux_hw_drv_state.html">AuxHwDrvState</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>aux_hw_drv_state</b> = nullptr</td></tr>
 <tr class="separator:a9ae28bea2ef6ea33876a63ee43aa40fa"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a051fa3ac97529806b54a586270e2a98c"><td class="memItemLeft" align="right" valign="top">char&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_app_state.html#a051fa3ac97529806b54a586270e2a98c">json_buf_data</a> [json_size]</td></tr>
-<tr class="memdesc:a051fa3ac97529806b54a586270e2a98c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Application live data state in JSON format.  <a href="struct_app_state.html#a051fa3ac97529806b54a586270e2a98c">More...</a><br /></td></tr>
-<tr class="separator:a051fa3ac97529806b54a586270e2a98c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9f9a6519b60724cafb064ff7eefd9b4e"><td class="memItemLeft" align="right" valign="top">char&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_app_state.html#a9f9a6519b60724cafb064ff7eefd9b4e">json_buf_settings</a> [json_size]</td></tr>
-<tr class="memdesc:a9f9a6519b60724cafb064ff7eefd9b4e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Application runtime configurable settings in JSON format.  <a href="struct_app_state.html#a9f9a6519b60724cafb064ff7eefd9b4e">More...</a><br /></td></tr>
-<tr class="separator:a9f9a6519b60724cafb064ff7eefd9b4e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
 Static Public Attributes</h2></td></tr>
 <tr class="memitem:a7b614db50f97ba389544867747279889"><td class="memItemLeft" align="right" valign="top"><a id="a7b614db50f97ba389544867747279889"></a>
 static constexpr <a class="el" href="struct_app_config.html">AppConfig</a>&#160;</td><td class="memItemRight" valign="bottom"><b>app_conf</b> {}</td></tr>
 <tr class="separator:a7b614db50f97ba389544867747279889"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a498531f58acbee8c16481369ce282927"><td class="memItemLeft" align="right" valign="top">static constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_app_state.html#a498531f58acbee8c16481369ce282927">_json_objects_size</a> = JSON_OBJECT_SIZE(22)</td></tr>
+<tr class="memitem:a498531f58acbee8c16481369ce282927"><td class="memItemLeft" align="right" valign="top">static constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_app_state.html#a498531f58acbee8c16481369ce282927">_json_objects_size</a> = JSON_OBJECT_SIZE(23)</td></tr>
 <tr class="separator:a498531f58acbee8c16481369ce282927"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1015df01e1ae92e97fad95b6df3882a5"><td class="memItemLeft" align="right" valign="top">static constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><b>_strings_size</b></td></tr>
 <tr class="separator:a1015df01e1ae92e97fad95b6df3882a5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a34527c9f05434309e238ab58ff2e7ced"><td class="memItemLeft" align="right" valign="top"><a id="a34527c9f05434309e238ab58ff2e7ced"></a>
 static constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><b>I_AM_SCARED_MARGIN</b> = 50</td></tr>
 <tr class="separator:a34527c9f05434309e238ab58ff2e7ced"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3f308ed536b93949f135761865e2e68d"><td class="memItemLeft" align="right" valign="top">static constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><b>json_size</b></td></tr>
-<tr class="separator:a3f308ed536b93949f135761865e2e68d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a50e9d5eb33d232d6bfa926b6f87f1674"><td class="memItemLeft" align="right" valign="top">static constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><b>json_buf_len</b></td></tr>
+<tr class="separator:a50e9d5eb33d232d6bfa926b6f87f1674"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Application state containing data and settings model. </p>
@@ -144,7 +134,7 @@ static constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><b>I_
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">constexpr size_t AppState::_json_objects_size = JSON_OBJECT_SIZE(22)</td>
+          <td class="memname">constexpr size_t AppState::_json_objects_size = JSON_OBJECT_SIZE(23)</td>
         </tr>
       </table>
   </td>
@@ -185,46 +175,13 @@ static constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><b>I_
 <div class="line">        <span class="stringliteral">&quot;base_div&quot;</span><span class="stringliteral">&quot;timer_div&quot;</span></div>
 <div class="line">        <span class="stringliteral">&quot;drv_supply_active&quot;</span><span class="stringliteral">&quot;drv_disabled&quot;</span></div>
 <div class="line">        <span class="stringliteral">&quot;hw_oc_fault_present&quot;</span><span class="stringliteral">&quot;hw_oc_fault_occurred&quot;</span></div>
+<div class="line">        <span class="stringliteral">&quot;oneshot_len&quot;</span></div>
 <div class="line">        )</div>
 </div><!-- fragment -->
 </div>
 </div>
-<a id="a051fa3ac97529806b54a586270e2a98c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a051fa3ac97529806b54a586270e2a98c">&#9670;&nbsp;</a></span>json_buf_data</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">char AppState::json_buf_data[json_size]</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Application live data state in JSON format. </p>
-<p>You must call <a class="el" href="struct_app_state.html#a093bc43c5cd4a1240124bef9124df706" title="Serialize application live data into json_buf_data.">serialize_data()</a> before using the content. </p>
-
-</div>
-</div>
-<a id="a9f9a6519b60724cafb064ff7eefd9b4e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9f9a6519b60724cafb064ff7eefd9b4e">&#9670;&nbsp;</a></span>json_buf_settings</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">char AppState::json_buf_settings[json_size]</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Application runtime configurable settings in JSON format. </p>
-<p>You must call <a class="el" href="struct_app_state.html#acaf7161029735dbde1e6ace8fdb6a6d8" title="Serialize application runtime configurable settings into json_buf.">serialize_settings()</a> before using the content. </p>
-
-</div>
-</div>
-<a id="a3f308ed536b93949f135761865e2e68d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3f308ed536b93949f135761865e2e68d">&#9670;&nbsp;</a></span>json_size</h2>
+<a id="a50e9d5eb33d232d6bfa926b6f87f1674"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a50e9d5eb33d232d6bfa926b6f87f1674">&#9670;&nbsp;</a></span>json_buf_len</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -233,7 +190,7 @@ static constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><b>I_
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">constexpr size_t AppState::json_size</td>
+          <td class="memname">constexpr size_t AppState::json_buf_len</td>
         </tr>
       </table>
   </td>
@@ -243,8 +200,8 @@ static constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><b>I_
 </table>
 </div><div class="memdoc">
 <b>Initial value:</b><div class="fragment"><div class="line">= <a class="code" href="struct_app_state.html#a498531f58acbee8c16481369ce282927">_json_objects_size</a></div>
-<div class="line">                                        + _strings_size</div>
-<div class="line">                                        + I_AM_SCARED_MARGIN</div>
+<div class="line">                                           + _strings_size</div>
+<div class="line">                                           + I_AM_SCARED_MARGIN</div>
 </div><!-- fragment -->
 </div>
 </div>

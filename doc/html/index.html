@@ -19,7 +19,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">ESP-AJAX-Lab
-   &#160;<span id="projectnumber">0.99.6</span>
+   &#160;<span id="projectnumber">1.0-rc</span>
    </div>
    <div id="projectbrief">HTTP server, AJAX API backend, web application and Soc hardware drivers for WiFi remote control of the MCPWM hardware modules on the Espressif ESP32 SoC</div>
   </td>
@@ -52,7 +52,7 @@ ESP-AJAX-Lab</h1>
 <li>Calibrated temperature sensor readout for KTY81-121 type silicon temperature sensors using the ESP32 ADC in its high-linearity region</li>
 <li>PWM reference signal generation for hardware overcurrent detector</li>
 <li>External GPIO output control for relays, fan, enable and error-reset</li>
-<li>TBD: Delta-Sigma conversion control and filter for insulated current sensing</li>
+<li>TBD: Delta-Sigma conversion control</li>
 </ul>
 <p>The HTML web application interface features a responsive CSS grid layout and requires a web browser with at least JavaScript ES 7 support.</p>
 <p>The toolchain compiler must support at least std=c++17.</p>
@@ -128,12 +128,14 @@ List of HTTP GET requests for application control:</h3>
  /cmd?set_frequency=500</li>
 <li>Set bridge output resulting duty cycle in %:<br  />
  /cmd?set_duty=45.3</li>
-<li>set lead bridge leg dead time in nanoseconds:<br  />
- /cmd?set_lead_dt=300</li>
 <li>set lag bridge leg dead time in nanoseconds:<br  />
  /cmd?set_lag_dt=300</li>
+<li>set lead bridge leg dead time in nanoseconds:<br  />
+ /cmd?set_lead_dt=300</li>
 <li>Activate|deactivate the output:<br  />
  /cmd?set_power_pwm_active=true|false</li>
+<li>Set the length of the one-shot power output pulse in seconds:<br  />
+ /cmd?set_oneshot_len=40.5</li>
 <li>Trigger a one-shot output power pulse of configurable length:<br  />
  /cmd?trigger_oneshot</li>
 <li>Clear error shutdown condition:<br  />
@@ -145,6 +147,8 @@ List of HTTP GET requests for application control:</h3>
  /cmd?set_relay_dut_active=true|false</li>
 <li>Activate|deactivate the heatsink fan:<br  />
  /cmd?set_power_pwm_active=true|false</li>
+<li>Save all runtime settings to SPI flash:<br  />
+ /cmd?save_settings</li>
 </ul>
 <h3><a class="anchor" id="autotoc_md12"></a>
 Server sends periodic application status update via Server-Sent Events:</h3>
@@ -185,6 +189,8 @@ Server sends periodic application status update via Server-Sent Events:</h3>
 <div class="line">    &quot;hw_oc_fault_present&quot;: Boolean</div>
 <div class="line">    // Hardware Fault Shutdown Status is latched using this flag</div>
 <div class="line">    &quot;hw_oc_fault_occurred&quot;: Boolean</div>
+<div class="line">    // Length of the power output one-shot timer pulse</div>
+<div class="line">    json_doc[&quot;oneshot_len&quot;] = oneshot_power_pulse_length_ms/1e3;</div>
 <div class="line">}</div>
 </div><!-- fragment --></li>
 </ul>

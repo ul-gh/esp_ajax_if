@@ -107,6 +107,11 @@ public:
 
     void set_fan_active(bool state);
 
+    /** @brief Save all runtime configurable settings to SPI flash
+     * These settings are restored on reboot.
+     */
+    void save_settings();
+
 
 private:
     // FreeRTOS task handle for application event task

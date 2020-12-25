@@ -19,7 +19,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">ESP-AJAX-Lab
-   &#160;<span id="projectnumber">0.99.6</span>
+   &#160;<span id="projectnumber">1.0-rc</span>
    </div>
    <div id="projectbrief">HTTP server, AJAX API backend, web application and Soc hardware drivers for WiFi remote control of the MCPWM hardware modules on the Espressif ESP32 SoC</div>
   </td>
@@ -64,7 +64,7 @@ $(function() {
 <div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160; </div>
 <div class="line"><a name="l00031"></a><span class="lineno"><a class="line" href="struct_k_t_y81__1xx_common_config.html#ae6c40cb51bed8f184c657308f364deb5">   31</a></span>&#160;    adc_atten_t <a class="code" href="struct_k_t_y81__1xx_common_config.html#ae6c40cb51bed8f184c657308f364deb5">adc_ch_attenuation</a> = ADC_ATTEN_DB_6;</div>
 <div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;    <span class="keywordtype">size_t</span> averaged_samples = 64;</div>
-<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;    <span class="keywordtype">size_t</span> moving_average_filter_len = 16;</div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;    <span class="keywordtype">size_t</span> moving_average_filter_len = 32;</div>
 <div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;    <span class="keywordtype">float</span> temp_fsr_lower_lin = 0.0;</div>
 <div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;    <span class="keywordtype">float</span> temp_fsr_upper_lin = 100.0;</div>
 <div class="line"><a name="l00040"></a><span class="lineno"><a class="line" href="struct_k_t_y81__1xx_common_config.html#ae255292e1fe6cce1955ad1b264bfcc62">   40</a></span>&#160;    int32_t <a class="code" href="struct_k_t_y81__1xx_common_config.html#ae255292e1fe6cce1955ad1b264bfcc62">v_in_fsr_lower_lin</a> = 886; <span class="comment">// Corresponds to 0°C</span></div>

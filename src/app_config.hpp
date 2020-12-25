@@ -23,10 +23,13 @@ struct AppConfig
     BaseType_t app_event_task_core_id{APP_CPU_NUM};
     // Fast timer for ADC conversion triggering etc
     uint32_t timer_fast_interval_ms{100};
-    /** Update non-critical application state and send cyclic
-     * state updates to the HTTP client using this time interval (ms)
+    /** @brief In addition to event-based async state update telegrams, we also
+     * send cyclic updates to the HTTP client using this time interval (ms).
      */
-    uint32_t timer_slow_interval_ms{1000};
+    uint32_t timer_slow_interval_ms{750};
+    /** @brief Filename for persistent storage of runtime settings
+     */
+    const char *settings_filename{"/www/settings.json"};
 
     ///////////////////////////// For ps_pwm C module: ////////////////////////
     // MCPWM unit can be [0,1]

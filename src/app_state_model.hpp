@@ -40,9 +40,9 @@ struct AppState
         );
     // Prevent buffer overflow even if above calculations are wrong...
     static constexpr size_t I_AM_SCARED_MARGIN = 50;
-    static constexpr size_t json_size = _json_objects_size
-                                        + _strings_size
-                                        + I_AM_SCARED_MARGIN;
+    static constexpr size_t json_buf_len = _json_objects_size
+                                           + _strings_size
+                                           + I_AM_SCARED_MARGIN;
 
     /////////////////////// Runtime state starts here ///////////////////////
     // Zero-Copy values using pointers read from the PSPWM C API
@@ -53,7 +53,7 @@ struct AppState
     bool hw_oc_fault_present = true;
     // Hardware Fault Shutdown Status is latched using this flag
     bool hw_oc_fault_occurred = true;
-    // Runtime user settpoint limits for output frequency
+    // Runtime user setpoint limits for output frequency
     float frequency_min = app_conf.frequency_min;
     float frequency_max = app_conf.frequency_max;
     // Pulse length for one-shot mode power output pulse
@@ -62,32 +62,18 @@ struct AppState
     // State from AuxHwDrv module
     AuxHwDrvState *aux_hw_drv_state = nullptr;
 
-    /** @brief Application live data state in JSON format.
-     * 
-     * You must call serialize_data() before using the content.
+    /** @brief Serialize application runtime state and configurable settings
+     * into buffer as a JSON string.
      */
-    char json_buf_data[json_size];
-
-    /** @brief Application runtime configurable settings in JSON format.
-     * 
-     * You must call serialize_settings() before using the content.
-     */
-    char json_buf_settings[json_size];
-
-    /** @brief Serialize application live data into json_buf_data
-     */
-    void serialize_data();
-
-    /** @brief Serialize application runtime configurable settings into json_buf
-     */
-    void serialize_settings();
+     size_t serialize_full_state(char *buf, size_t buf_len);
 
     /** @brief Restore application runtime configurable settings
-     * from json_buf_settings back into this instance.
+     * from json string in buffer back into this instance.
      */
-    void deserialize_settings();
+    bool deserialize_settings(const char *buf, size_t buf_len);
 
-    /** @brief Write application runtime configurable settings as JSON to SPIFFs file.
+    /** @brief Write application runtime configurable settings
+     * to SPIFFs file as a JSON string.
      */
     bool save_to_file(const char *filename);
 

@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.18"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>ESP-AJAX-Lab: src/app_controller.hpp File Reference</title>
+<title>ESP-AJAX-Lab: src/fs_io.hpp File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -45,36 +45,39 @@ $(function() {
 </div><!-- top -->
 <div class="header">
   <div class="summary">
-<a href="#nested-classes">Classes</a> &#124;
-<a href="#define-members">Macros</a>  </div>
+<a href="#define-members">Macros</a> &#124;
+<a href="#func-members">Functions</a>  </div>
   <div class="headertitle">
-<div class="title">app_controller.hpp File Reference</div>  </div>
+<div class="title">fs_io.hpp File Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
 
-<p>Application Controller Implementing C++ and HTTP GET API.  
+<p>Basic file input/output.  
 <a href="#details">More...</a></p>
-<div class="textblock"><code>#include &lt;Ticker.h&gt;</code><br />
-<code>#include &quot;<a class="el" href="aux__hw__drv_8hpp_source.html">aux_hw_drv.hpp</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="api__server_8hpp_source.html">api_server.hpp</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="multi__timer_8hpp_source.html">multi_timer.hpp</a>&quot;</code><br />
-<code>#include &quot;app_config.hpp&quot;</code><br />
-<code>#include &quot;<a class="el" href="app__state__model_8hpp_source.html">app_state_model.hpp</a>&quot;</code><br />
+<div class="textblock"><code>#include &lt;SPIFFS.h&gt;</code><br />
+<code>#include &lt;FS.h&gt;</code><br />
+<code>#include &quot;esp_log.h&quot;</code><br />
 </div>
-<p><a href="app__controller_8hpp_source.html">Go to the source code of this file.</a></p>
+<p><a href="fs__io_8hpp_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
-Classes</h2></td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_app_controller.html">AppController</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Application main controller for PS-PWM generator hardware.  <a href="class_app_controller.html#details">More...</a><br /></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
+Macros</h2></td></tr>
+<tr class="memitem:a5155a7b7465dd9b5e6167122827d0158"><td class="memItemLeft" align="right" valign="top"><a id="a5155a7b7465dd9b5e6167122827d0158"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>LOG_LOCAL_LEVEL</b>&#160;&#160;&#160;ESP_LOG_DEBUG</td></tr>
+<tr class="separator:a5155a7b7465dd9b5e6167122827d0158"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:a7599d0a6eff6fb4d696e2d1d5b271ff0"><td class="memItemLeft" align="right" valign="top"><a id="a7599d0a6eff6fb4d696e2d1d5b271ff0"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>FSIO::write_to_file_uint8</b> (const char *filename, uint8_t *buf, size_t len)</td></tr>
+<tr class="separator:a7599d0a6eff6fb4d696e2d1d5b271ff0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a22d74e22931589175b6ea8eb3463584d"><td class="memItemLeft" align="right" valign="top"><a id="a22d74e22931589175b6ea8eb3463584d"></a>
+size_t&#160;</td><td class="memItemRight" valign="bottom"><b>FSIO::read_from_file_uint8</b> (const char *filename, uint8_t *buf, size_t max_len)</td></tr>
+<tr class="separator:a22d74e22931589175b6ea8eb3463584d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Application Controller Implementing C++ and HTTP GET API. </p>
-<p>This features the main control functions for PWM frequency, duty cycle etc.</p>
-<p>Also, periodic state feedback for all hardware functions is sent to the HTTP remote application using Server-Sent Events from a FreeRTOS timer task.</p>
-<p>Some auxiliary functions like GPIO and temperature readouts is outsourced to the <a class="el" href="class_aux_hw_drv.html" title="Auxiliary hardware driver for ESP-AJAX-Lab This implements GPIO control for relays,...">AuxHwDrv</a> class, see aux_hw_drv.cpp.</p>
-<p>License: GPL v.3 U. Lukas 2020-12-07 </p>
+<div class="textblock"><p>Basic file input/output. </p>
+<p>License: GPL v.3 U. Lukas 2020-12-24 </p>
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

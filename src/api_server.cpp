@@ -13,7 +13,8 @@
 #include "api_server.hpp"
 #include "http_content.hpp"
 
-#define LOG_LOCAL_LEVEL ESP_LOG_DEBUG
+#undef LOG_LOCAL_LEVEL
+#define LOG_LOCAL_LEVEL ESP_LOG_INFO
 #include "esp_log.h"
 static const char* TAG = "APIServer";
 
@@ -33,7 +34,7 @@ APIServer::~APIServer() {
  */
 void APIServer::begin() {
     if (srv_conf.serve_static_from_spiffs) {
-        ESP_LOGD(TAG, "Mounting SPI Flash File System...");
+        ESP_LOGI(TAG, "Mounting SPI Flash File System...");
         if (!SPIFFS.begin(false)) {
             ESP_LOGE(TAG, "Error mounting SPI Flash File System!");
             abort();
@@ -64,7 +65,7 @@ void APIServer::set_template(const char* placeholder, const char* replacement) {
 
 void APIServer::register_api_cb(const char* cmd_name, CbStringT cmd_callback) {
     cmd_map[cmd_name] = cmd_callback;
-    ESP_LOGD(TAG, "Registered String command: %s", cmd_name);
+    ESP_LOGI(TAG, "Registered String command: %s", cmd_name);
 }
 
 void APIServer::register_api_cb(const char* cmd_name, CbFloatT cmd_callback) {
@@ -72,7 +73,7 @@ void APIServer::register_api_cb(const char* cmd_name, CbFloatT cmd_callback) {
         // Arduino String.toFloat() defaults to zero for invalid string, hmm...
         cmd_callback(value.toFloat());
         };
-    ESP_LOGD(TAG, "Registered float command: %s", cmd_name);
+    ESP_LOGI(TAG, "Registered float command: %s", cmd_name);
 }
 
 void APIServer::register_api_cb(const char* cmd_name, CbIntT cmd_callback) {
@@ -80,14 +81,14 @@ void APIServer::register_api_cb(const char* cmd_name, CbIntT cmd_callback) {
         // Arduino String.toFloat() defaults to zero for invalid string, hmm...
         cmd_callback(value.toInt());
         };
-    ESP_LOGD(TAG, "Registered int command: %s", cmd_name);
+    ESP_LOGI(TAG, "Registered int command: %s", cmd_name);
 }
 
 void APIServer::register_api_cb(const char* cmd_name, CbVoidT cmd_callback) {
     cmd_map[cmd_name] = [cmd_callback](const String& value) {
         cmd_callback();
         };
-    ESP_LOGD(TAG, "Registered void command: %s", cmd_name);
+    ESP_LOGI(TAG, "Registered void command: %s", cmd_name);
 }
 
 
@@ -147,13 +148,13 @@ void APIServer::_add_handlers() {
 
     backend->onNotFound([](AsyncWebServerRequest *request){
             request->send_P(404, "text/html", srv_conf.error_404_html);
-            ESP_LOGD(TAG, "%s", srv_conf.error_404_html);
+            ESP_LOGE(TAG, "%s", srv_conf.error_404_html);
         });
     backend->onFileUpload(_on_upload);
     backend->onRequestBody(_on_body);
     // Handler called when any DNS query is made via access point
     // addHandler(new CaptiveRequestHandler()).setFilter(ON_AP_FILTER);
-    ESP_LOGD(TAG, "Default callbacks set up");
+    ESP_LOGI(TAG, "Default callbacks set up");
 }
 
 

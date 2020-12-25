@@ -19,7 +19,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">ESP-AJAX-Lab
-   &#160;<span id="projectnumber">0.99.6</span>
+   &#160;<span id="projectnumber">1.0-rc</span>
    </div>
    <div id="projectbrief">HTTP server, AJAX API backend, web application and Soc hardware drivers for WiFi remote control of the MCPWM hardware modules on the Espressif ESP32 SoC</div>
   </td>
@@ -83,10 +83,16 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>set_lag_dt_ns</b> (fl
 void&#160;</td><td class="memItemRight" valign="bottom"><b>set_lead_dt_ns</b> (float n)</td></tr>
 <tr class="separator:aaaccfb8c9dc0c656516b72eb8e15aa84"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5692ec198476bba9456f51176f39f3dd"><td class="memItemLeft" align="right" valign="top"><a id="a5692ec198476bba9456f51176f39f3dd"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>set_power_pwm_active</b> (bool state)</td></tr>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_app_controller.html#a5692ec198476bba9456f51176f39f3dd">set_power_pwm_active</a> (bool state)</td></tr>
+<tr class="memdesc:a5692ec198476bba9456f51176f39f3dd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Activate PWM power output if arg is true. <br /></td></tr>
 <tr class="separator:a5692ec198476bba9456f51176f39f3dd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2597ae7d2aab468382c8bd5a957d27ac"><td class="memItemLeft" align="right" valign="top"><a id="a2597ae7d2aab468382c8bd5a957d27ac"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_app_controller.html#a2597ae7d2aab468382c8bd5a957d27ac">set_oneshot_len</a> (float n)</td></tr>
+<tr class="memdesc:a2597ae7d2aab468382c8bd5a957d27ac"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set power output oneshot pulse timer pulse length in seconds. <br /></td></tr>
+<tr class="separator:a2597ae7d2aab468382c8bd5a957d27ac"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac009c4f1c8abbd7637485b47736e3da1"><td class="memItemLeft" align="right" valign="top"><a id="ac009c4f1c8abbd7637485b47736e3da1"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>trigger_oneshot</b> ()</td></tr>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_app_controller.html#ac009c4f1c8abbd7637485b47736e3da1">trigger_oneshot</a> ()</td></tr>
+<tr class="memdesc:ac009c4f1c8abbd7637485b47736e3da1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Trigger the power output oneshot pulse. <br /></td></tr>
 <tr class="separator:ac009c4f1c8abbd7637485b47736e3da1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8a95afefb7aa7ce246c483b860bf5830"><td class="memItemLeft" align="right" valign="top"><a id="a8a95afefb7aa7ce246c483b860bf5830"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>clear_shutdown</b> ()</td></tr>
@@ -103,6 +109,10 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>set_relay_dut_active<
 <tr class="memitem:a0b450d6d93c7f7f028a6fd5a15c87980"><td class="memItemLeft" align="right" valign="top"><a id="a0b450d6d93c7f7f028a6fd5a15c87980"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>set_fan_active</b> (bool state)</td></tr>
 <tr class="separator:a0b450d6d93c7f7f028a6fd5a15c87980"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa1c0e1ef35e4fc9e75897040e480d04a"><td class="memItemLeft" align="right" valign="top"><a id="aa1c0e1ef35e4fc9e75897040e480d04a"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_app_controller.html#aa1c0e1ef35e4fc9e75897040e480d04a">save_settings</a> ()</td></tr>
+<tr class="memdesc:aa1c0e1ef35e4fc9e75897040e480d04a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Save all runtime configurable settings to SPI flash These settings are restored on reboot. <br /></td></tr>
+<tr class="separator:aa1c0e1ef35e4fc9e75897040e480d04a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>

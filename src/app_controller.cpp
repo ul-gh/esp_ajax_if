@@ -9,7 +9,7 @@
  * to the AuxHwDrv class, see aux_hw_drv.cpp.
  * 
  * License: GPL v.3 
- * U. Lukas 2020-12-07
+ * U. Lukas 2020-12-25
  */
 #include "FreeRTOS.h"
 #include "freertos/task.h"
@@ -90,7 +90,12 @@ AppController::~AppController() {
  * This will fail if networking etc. is not set up correctly!
  */
 void AppController::begin() {
-    ESP_LOGD(TAG, "Activating Gate driver power supply...");
+    ESP_LOGI(TAG, "Restoring state from settings.json...");
+    state.restore_from_file(app_conf.settings_filename);
+    set_relay_dut_active(state.aux_hw_drv_state->relay_dut_active);
+    set_relay_ref_active(state.aux_hw_drv_state->relay_ref_active);
+    set_fan_active(state.aux_hw_drv_state->fan_active);
+    ESP_LOGI(TAG, "Activating Gate driver power supply...");
     aux_hw_drv.set_drv_supply_active(true);
     _register_http_api(api_server);
     _connect_timer_callbacks();
@@ -181,6 +186,11 @@ void AppController::set_relay_dut_active(bool state) {
 }
 void AppController::set_fan_active(bool state) {
     aux_hw_drv.set_fan_active(state);
+    _send_state_changed_event();
+}
+
+void AppController::save_settings() {
+    state.save_to_file(app_conf.settings_filename);
     _send_state_changed_event();
 }
 
@@ -276,6 +286,9 @@ void AppController::_register_http_api(APIServer* api_server) {
     // "set_fan_active"
     cb_text = [this](const String &text) {set_fan_active(text=="true");};
     api_server->register_api_cb("set_fan_active", cb_text);
+    // "save_settings"
+    cb_void = [this](){save_settings();};
+    api_server->register_api_cb("save_settings", cb_void);
 }
 
 /* Connect timer callbacks
@@ -359,7 +372,7 @@ void AppController::_connect_timer_callbacks(){
  */
 void AppController::_app_event_task(void *pVParameters) {
     auto self = static_cast<AppController*>(pVParameters);
-    ESP_LOGD(TAG, "Starting AppController event task");
+    ESP_LOGI(TAG, "Starting AppController event task");
     // Main application event loop
     while (true) {
         const auto flags = EventFlags{
@@ -404,7 +417,8 @@ void AppController::_send_state_changed_event() {
  */
 void AppController::_push_state_update() {
     assert(api_server && api_server->event_source);
-    // Prepare JSON message for sending
-    state.serialize_data();
-    api_server->event_source->send(state.json_buf_data, "hw_app_state");
+    constexpr auto len = AppState::json_buf_len;
+    auto json_buf = std::array<char, len>{};
+    state.serialize_full_state(json_buf.data(), len);
+    api_server->event_source->send(json_buf.data(), "hw_app_state");
 }

@@ -12,8 +12,7 @@ measurement and control functions:
   temperature sensors using the ESP32 ADC in its high-linearity region
 * PWM reference signal generation for hardware overcurrent detector
 * External GPIO output control for relays, fan, enable and error-reset
-* TBD: Delta-Sigma conversion control and filter for insulated current
-  sensing
+* TBD: Delta-Sigma conversion control
 
 The HTML web application interface features a responsive CSS grid layout and
 requires a web browser with at least JavaScript ES 7 support.
@@ -84,14 +83,17 @@ HTTP Status 200 OK and plain text content "OK"
 * Set bridge output resulting duty cycle in %:<br>
 /cmd?set_duty=45.3
 
-* set lead bridge leg dead time in nanoseconds:<br>
-/cmd?set_lead_dt=300
-
 * set lag bridge leg dead time in nanoseconds:<br>
 /cmd?set_lag_dt=300
 
+* set lead bridge leg dead time in nanoseconds:<br>
+/cmd?set_lead_dt=300
+
 * Activate|deactivate the output:<br>
 /cmd?set_power_pwm_active=true|false
+
+* Set the length of the one-shot power output pulse in seconds:<br>
+/cmd?set_oneshot_len=40.5
 
 * Trigger a one-shot output power pulse of configurable length:<br>
 /cmd?trigger_oneshot
@@ -108,6 +110,9 @@ HTTP Status 200 OK and plain text content "OK"
 
 * Activate|deactivate the heatsink fan:<br>
 /cmd?set_power_pwm_active=true|false
+
+* Save all runtime settings to SPI flash:<br>
+/cmd?save_settings
 
 ### Server sends periodic application status update via Server-Sent Events:
 * SSE event source endpoint:<br>
@@ -149,6 +154,8 @@ HTTP Status 200 OK and plain text content "OK"
     "hw_oc_fault_present": Boolean
     // Hardware Fault Shutdown Status is latched using this flag
     "hw_oc_fault_occurred": Boolean
+    // Length of the power output one-shot timer pulse
+    json_doc["oneshot_len"] = oneshot_power_pulse_length_ms/1e3;
 }
 ```
 

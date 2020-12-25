@@ -19,7 +19,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">ESP-AJAX-Lab
-   &#160;<span id="projectnumber">0.99.6</span>
+   &#160;<span id="projectnumber">1.0-rc</span>
    </div>
    <div id="projectbrief">HTTP server, AJAX API backend, web application and Soc hardware drivers for WiFi remote control of the MCPWM hardware modules on the Espressif ESP32 SoC</div>
   </td>
@@ -99,69 +99,75 @@ $(function() {
 <div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160; </div>
 <div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;    <span class="keywordtype">void</span> set_lead_dt_ns(<span class="keywordtype">float</span> n);</div>
 <div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160; </div>
-<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;    <span class="comment">/* Activate PWM power output if arg is true</span></div>
-<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;    <span class="keywordtype">void</span> set_power_pwm_active(<span class="keywordtype">bool</span> state);</div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_app_controller.html#a5692ec198476bba9456f51176f39f3dd">set_power_pwm_active</a>(<span class="keywordtype">bool</span> state);</div>
 <div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160; </div>
-<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;    <span class="keywordtype">void</span> trigger_oneshot();</div>
-<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160; </div>
-<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;    <span class="keywordtype">void</span> clear_shutdown();</div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_app_controller.html#a2597ae7d2aab468382c8bd5a957d27ac">set_oneshot_len</a>(<span class="keywordtype">float</span> n);</div>
 <div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160; </div>
-<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;    <span class="keywordtype">void</span> set_current_limit(<span class="keywordtype">float</span> n);</div>
-<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160; </div>
-<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;    <span class="keywordtype">void</span> set_relay_ref_active(<span class="keywordtype">bool</span> state);</div>
+<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_app_controller.html#ac009c4f1c8abbd7637485b47736e3da1">trigger_oneshot</a>();</div>
 <div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160; </div>
-<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;    <span class="keywordtype">void</span> set_relay_dut_active(<span class="keywordtype">bool</span> state);</div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;    <span class="keywordtype">void</span> clear_shutdown();</div>
 <div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160; </div>
-<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;    <span class="keywordtype">void</span> set_fan_active(<span class="keywordtype">bool</span> state);</div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;    <span class="keywordtype">void</span> set_current_limit(<span class="keywordtype">float</span> n);</div>
 <div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160; </div>
-<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160; </div>
-<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;<span class="keyword">private</span>:</div>
-<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;    <span class="comment">// FreeRTOS task handle for application event task</span></div>
-<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;    <span class="keyword">static</span> TaskHandle_t _app_event_task_handle;</div>
-<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;    <span class="comment">// FreeRTOS event group handle for triggering event task actions</span></div>
-<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;    <span class="keyword">static</span> EventGroupHandle_t _app_event_group;</div>
-<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;    <span class="comment">// Timer for periodic events</span></div>
-<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;    Ticker event_timer_fast;</div>
-<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;    Ticker event_timer_slow;</div>
-<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;    <span class="comment">// Timer for generating overcurrent reset pulse</span></div>
-<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;    <a class="code" href="class_multi_timer.html">MultiTimer</a> oc_reset_timer;</div>
-<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;    <span class="comment">// Timer for power output timing</span></div>
-<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;    <a class="code" href="class_multi_timer_non_static.html">MultiTimerNonStatic&lt;AppController&gt;</a> power_output_timer;</div>
-<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160; </div>
-<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;    </div>
-<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;    <span class="keywordtype">void</span> _initialize_ps_pwm_drv();</div>
-<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;    <span class="keywordtype">void</span> _create_app_event_task();</div>
-<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160; </div>
-<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;    <span class="keywordtype">void</span> _register_http_api(<a class="code" href="class_a_p_i_server.html">APIServer</a>* api_server);</div>
-<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160; </div>
-<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;    <span class="keywordtype">void</span> _connect_timer_callbacks();</div>
-<div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160; </div>
-<div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160;    </div>
-<div class="line"><a name="l00138"></a><span class="lineno">  138</span>&#160;    <span class="keyword">static</span> <span class="keywordtype">void</span> _app_event_task(<span class="keywordtype">void</span> *pVParameters);</div>
-<div class="line"><a name="l00139"></a><span class="lineno">  139</span>&#160; </div>
-<div class="line"><a name="l00143"></a><span class="lineno">  143</span>&#160;    <span class="keywordtype">void</span> _on_fast_timer_event_update_state();</div>
+<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;    <span class="keywordtype">void</span> set_relay_ref_active(<span class="keywordtype">bool</span> state);</div>
+<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160; </div>
+<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;    <span class="keywordtype">void</span> set_relay_dut_active(<span class="keywordtype">bool</span> state);</div>
+<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160; </div>
+<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;    <span class="keywordtype">void</span> set_fan_active(<span class="keywordtype">bool</span> state);</div>
+<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160; </div>
+<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_app_controller.html#aa1c0e1ef35e4fc9e75897040e480d04a">save_settings</a>();</div>
+<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160; </div>
+<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160; </div>
+<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;<span class="keyword">private</span>:</div>
+<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;    <span class="comment">// FreeRTOS task handle for application event task</span></div>
+<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;    <span class="keyword">static</span> TaskHandle_t _app_event_task_handle;</div>
+<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;    <span class="comment">// FreeRTOS event group handle for triggering event task actions</span></div>
+<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;    <span class="keyword">static</span> EventGroupHandle_t _app_event_group;</div>
+<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;    <span class="comment">// Timer for periodic events</span></div>
+<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;    Ticker event_timer_fast;</div>
+<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;    Ticker event_timer_slow;</div>
+<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;    <span class="comment">// Timer for generating overcurrent reset pulse</span></div>
+<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;    <a class="code" href="class_multi_timer.html">MultiTimer</a> oc_reset_timer;</div>
+<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;    <span class="comment">// Timer for power output timing</span></div>
+<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;    <a class="code" href="class_multi_timer_non_static.html">MultiTimerNonStatic&lt;AppController&gt;</a> power_output_timer;</div>
+<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160; </div>
+<div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;    </div>
+<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160;    <span class="keywordtype">void</span> _initialize_ps_pwm_drv();</div>
+<div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160;    <span class="keywordtype">void</span> _create_app_event_task();</div>
+<div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160; </div>
+<div class="line"><a name="l00139"></a><span class="lineno">  139</span>&#160;    <span class="keywordtype">void</span> _register_http_api(<a class="code" href="class_a_p_i_server.html">APIServer</a>* api_server);</div>
+<div class="line"><a name="l00140"></a><span class="lineno">  140</span>&#160; </div>
+<div class="line"><a name="l00143"></a><span class="lineno">  143</span>&#160;    <span class="keywordtype">void</span> _connect_timer_callbacks();</div>
 <div class="line"><a name="l00144"></a><span class="lineno">  144</span>&#160; </div>
-<div class="line"><a name="l00148"></a><span class="lineno">  148</span>&#160;    <span class="keyword">static</span> <span class="keywordtype">void</span> _send_state_changed_event();</div>
-<div class="line"><a name="l00149"></a><span class="lineno">  149</span>&#160; </div>
-<div class="line"><a name="l00153"></a><span class="lineno">  153</span>&#160;    <span class="keywordtype">void</span> _push_state_update();</div>
-<div class="line"><a name="l00154"></a><span class="lineno">  154</span>&#160;};</div>
+<div class="line"><a name="l00146"></a><span class="lineno">  146</span>&#160;    </div>
+<div class="line"><a name="l00149"></a><span class="lineno">  149</span>&#160;    <span class="keyword">static</span> <span class="keywordtype">void</span> _app_event_task(<span class="keywordtype">void</span> *pVParameters);</div>
+<div class="line"><a name="l00150"></a><span class="lineno">  150</span>&#160; </div>
+<div class="line"><a name="l00154"></a><span class="lineno">  154</span>&#160;    <span class="keywordtype">void</span> _on_fast_timer_event_update_state();</div>
 <div class="line"><a name="l00155"></a><span class="lineno">  155</span>&#160; </div>
-<div class="line"><a name="l00156"></a><span class="lineno">  156</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00159"></a><span class="lineno">  159</span>&#160;    <span class="keyword">static</span> <span class="keywordtype">void</span> _send_state_changed_event();</div>
+<div class="line"><a name="l00160"></a><span class="lineno">  160</span>&#160; </div>
+<div class="line"><a name="l00164"></a><span class="lineno">  164</span>&#160;    <span class="keywordtype">void</span> _push_state_update();</div>
+<div class="line"><a name="l00165"></a><span class="lineno">  165</span>&#160;};</div>
+<div class="line"><a name="l00166"></a><span class="lineno">  166</span>&#160; </div>
+<div class="line"><a name="l00167"></a><span class="lineno">  167</span>&#160;<span class="preprocessor">#endif</span></div>
 </div><!-- fragment --></div><!-- contents -->
 <div class="ttc" id="aclass_app_controller_html_a2c0417955b0617ff964239e3438f8e9c"><div class="ttname"><a href="class_app_controller.html#a2c0417955b0617ff964239e3438f8e9c">AppController::app_conf</a></div><div class="ttdeci">static constexpr auto app_conf</div><div class="ttdoc">Configuration and initial values for the application state.</div><div class="ttdef"><b>Definition:</b> app_controller.hpp:55</div></div>
+<div class="ttc" id="aclass_app_controller_html_aa1c0e1ef35e4fc9e75897040e480d04a"><div class="ttname"><a href="class_app_controller.html#aa1c0e1ef35e4fc9e75897040e480d04a">AppController::save_settings</a></div><div class="ttdeci">void save_settings()</div><div class="ttdoc">Save all runtime configurable settings to SPI flash These settings are restored on reboot.</div><div class="ttdef"><b>Definition:</b> app_controller.cpp:192</div></div>
 <div class="ttc" id="aclass_multi_timer_html"><div class="ttname"><a href="class_multi_timer.html">MultiTimer</a></div><div class="ttdoc">Ticker timer derivative allowing for a fixed number of repeated calls.</div><div class="ttdef"><b>Definition:</b> multi_timer.hpp:34</div></div>
 <div class="ttc" id="aclass_aux_hw_drv_html"><div class="ttname"><a href="class_aux_hw_drv.html">AuxHwDrv</a></div><div class="ttdoc">Auxiliary hardware driver for ESP-AJAX-Lab This implements GPIO control for relays,...</div><div class="ttdef"><b>Definition:</b> aux_hw_drv.hpp:32</div></div>
+<div class="ttc" id="aclass_app_controller_html_a2597ae7d2aab468382c8bd5a957d27ac"><div class="ttname"><a href="class_app_controller.html#a2597ae7d2aab468382c8bd5a957d27ac">AppController::set_oneshot_len</a></div><div class="ttdeci">void set_oneshot_len(float n)</div><div class="ttdoc">Set power output oneshot pulse timer pulse length in seconds.</div><div class="ttdef"><b>Definition:</b> app_controller.cpp:155</div></div>
 <div class="ttc" id="amulti__timer_8hpp_html"><div class="ttname"><a href="multi__timer_8hpp.html">multi_timer.hpp</a></div><div class="ttdoc">Ticker timer derivative allowing for a fixed number of repeated calls.</div></div>
 <div class="ttc" id="astruct_app_state_html"><div class="ttname"><a href="struct_app_state.html">AppState</a></div><div class="ttdoc">Application state containing data and settings model.</div><div class="ttdef"><b>Definition:</b> app_state_model.hpp:23</div></div>
-<div class="ttc" id="aclass_app_controller_html_aecffa94d28172d6effaaa72903bf06cf"><div class="ttname"><a href="class_app_controller.html#aecffa94d28172d6effaaa72903bf06cf">AppController::begin</a></div><div class="ttdeci">void begin()</div><div class="ttdoc">Begin operation. This also starts the timer callbacks etc. This will fail if networking etc....</div><div class="ttdef"><b>Definition:</b> app_controller.cpp:91</div></div>
+<div class="ttc" id="aclass_app_controller_html_aecffa94d28172d6effaaa72903bf06cf"><div class="ttname"><a href="class_app_controller.html#aecffa94d28172d6effaaa72903bf06cf">AppController::begin</a></div><div class="ttdeci">void begin()</div><div class="ttdoc">Begin operation. This also starts the timer callbacks etc. This will fail if networking etc....</div><div class="ttdef"><b>Definition:</b> app_controller.cpp:92</div></div>
 <div class="ttc" id="aclass_a_p_i_server_html"><div class="ttname"><a href="class_a_p_i_server.html">APIServer</a></div><div class="ttdoc">AJAX HTTP API server for ESP-AJAX-Lab.</div><div class="ttdef"><b>Definition:</b> api_server.hpp:45</div></div>
 <div class="ttc" id="astruct_app_config_html"><div class="ttname"><a href="struct_app_config.html">AppConfig</a></div><div class="ttdoc">Application configuration and default values for class AppController.</div><div class="ttdef"><b>Definition:</b> app_config.hpp:13</div></div>
 <div class="ttc" id="aapp__state__model_8hpp_html"><div class="ttname"><a href="app__state__model_8hpp.html">app_state_model.hpp</a></div></div>
 <div class="ttc" id="aaux__hw__drv_8hpp_html"><div class="ttname"><a href="aux__hw__drv_8hpp.html">aux_hw_drv.hpp</a></div><div class="ttdoc">Auxiliary hardware driver for ESP-AJAX-Lab.</div></div>
 <div class="ttc" id="aclass_multi_timer_non_static_html"><div class="ttname"><a href="class_multi_timer_non_static.html">MultiTimerNonStatic&lt; AppController &gt;</a></div></div>
+<div class="ttc" id="aclass_app_controller_html_ac009c4f1c8abbd7637485b47736e3da1"><div class="ttname"><a href="class_app_controller.html#ac009c4f1c8abbd7637485b47736e3da1">AppController::trigger_oneshot</a></div><div class="ttdeci">void trigger_oneshot()</div><div class="ttdoc">Trigger the power output oneshot pulse.</div><div class="ttdef"><b>Definition:</b> app_controller.cpp:162</div></div>
 <div class="ttc" id="aapi__server_8hpp_html"><div class="ttname"><a href="api__server_8hpp.html">api_server.hpp</a></div></div>
 <div class="ttc" id="aclass_app_controller_html"><div class="ttname"><a href="class_app_controller.html">AppController</a></div><div class="ttdoc">Application main controller for PS-PWM generator hardware.</div><div class="ttdef"><b>Definition:</b> app_controller.hpp:51</div></div>
+<div class="ttc" id="aclass_app_controller_html_a5692ec198476bba9456f51176f39f3dd"><div class="ttname"><a href="class_app_controller.html#a5692ec198476bba9456f51176f39f3dd">AppController::set_power_pwm_active</a></div><div class="ttdeci">void set_power_pwm_active(bool state)</div><div class="ttdoc">Activate PWM power output if arg is true.</div><div class="ttdef"><b>Definition:</b> app_controller.cpp:142</div></div>
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
 Generated by &#160;<a href="http://www.doxygen.org/index.html">

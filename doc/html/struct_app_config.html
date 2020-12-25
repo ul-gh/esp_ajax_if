@@ -19,7 +19,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">ESP-AJAX-Lab
-   &#160;<span id="projectnumber">0.99.6</span>
+   &#160;<span id="projectnumber">1.0-rc</span>
    </div>
    <div id="projectbrief">HTTP server, AJAX API backend, web application and Soc hardware drivers for WiFi remote control of the MCPWM hardware modules on the Espressif ESP32 SoC</div>
   </td>
@@ -67,8 +67,14 @@ BaseType_t&#160;</td><td class="memItemRight" valign="bottom"><b>app_event_task_
 <tr class="memitem:a663afd11977ed6f2c9c53563c246abdb"><td class="memItemLeft" align="right" valign="top"><a id="a663afd11977ed6f2c9c53563c246abdb"></a>
 uint32_t&#160;</td><td class="memItemRight" valign="bottom"><b>timer_fast_interval_ms</b> {100}</td></tr>
 <tr class="separator:a663afd11977ed6f2c9c53563c246abdb"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:adce347d0bb675ad99a00b3c746a84c10"><td class="memItemLeft" align="right" valign="top">uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_app_config.html#adce347d0bb675ad99a00b3c746a84c10">timer_slow_interval_ms</a> {1000}</td></tr>
+<tr class="memitem:adce347d0bb675ad99a00b3c746a84c10"><td class="memItemLeft" align="right" valign="top"><a id="adce347d0bb675ad99a00b3c746a84c10"></a>
+uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_app_config.html#adce347d0bb675ad99a00b3c746a84c10">timer_slow_interval_ms</a> {750}</td></tr>
+<tr class="memdesc:adce347d0bb675ad99a00b3c746a84c10"><td class="mdescLeft">&#160;</td><td class="mdescRight">In addition to event-based async state update telegrams, we also send cyclic updates to the HTTP client using this time interval (ms). <br /></td></tr>
 <tr class="separator:adce347d0bb675ad99a00b3c746a84c10"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a38926254adc07706dc915b11c29a1999"><td class="memItemLeft" align="right" valign="top"><a id="a38926254adc07706dc915b11c29a1999"></a>
+const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_app_config.html#a38926254adc07706dc915b11c29a1999">settings_filename</a> {&quot;/www/settings.json&quot;}</td></tr>
+<tr class="memdesc:a38926254adc07706dc915b11c29a1999"><td class="mdescLeft">&#160;</td><td class="mdescRight">Filename for persistent storage of runtime settings. <br /></td></tr>
+<tr class="separator:a38926254adc07706dc915b11c29a1999"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac4ec3958796b7e074fe780f9463366da"><td class="memItemLeft" align="right" valign="top"><a id="ac4ec3958796b7e074fe780f9463366da"></a>
 mcpwm_unit_t&#160;</td><td class="memItemRight" valign="bottom"><b>mcpwm_num</b> {MCPWM_UNIT_0}</td></tr>
 <tr class="separator:ac4ec3958796b7e074fe780f9463366da"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -120,23 +126,7 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>init_power_pwm_active
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Application configuration and default values for class <a class="el" href="class_app_controller.html" title="Application main controller for PS-PWM generator hardware.">AppController</a>. </p>
-</div><h2 class="groupheader">Member Data Documentation</h2>
-<a id="adce347d0bb675ad99a00b3c746a84c10"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#adce347d0bb675ad99a00b3c746a84c10">&#9670;&nbsp;</a></span>timer_slow_interval_ms</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">uint32_t AppConfig::timer_slow_interval_ms {1000}</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Update non-critical application state and send cyclic state updates to the HTTP client using this time interval (ms) </p>
-
-</div>
-</div>
-<hr/>The documentation for this struct was generated from the following file:<ul>
+</div><hr/>The documentation for this struct was generated from the following file:<ul>
 <li>src/<a class="el" href="app__config_8hpp_source.html">app_config.hpp</a></li>
 </ul>
 </div><!-- contents -->
