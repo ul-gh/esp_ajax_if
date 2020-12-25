@@ -18,8 +18,7 @@ requires a web browser with at least JavaScript ES 7 support.
 
 The toolchain compiler must support at least std=c++17.
 
-## HTML Documentation
-[ESP-AJAX-LAB](https://ul-gh.github.io/esp_ajax_if/)
+## HTML Documentation: [ESP-AJAX-LAB](https://ul-gh.github.io/esp_ajax_if/)
 
 ## License
 [GPL v3.0](./LICENSE)
