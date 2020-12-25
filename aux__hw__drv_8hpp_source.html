@@ -77,25 +77,27 @@ $(function() {
 <div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;    <span class="keywordtype">void</span> set_relay_ref_active(<span class="keywordtype">bool</span> state);</div>
 <div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;    <span class="keywordtype">void</span> set_relay_dut_active(<span class="keywordtype">bool</span> state);</div>
 <div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;    <span class="keywordtype">void</span> set_fan_active(<span class="keywordtype">bool</span> state);</div>
-<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;    <span class="keywordtype">void</span> set_drv_supply_active(<span class="keywordtype">bool</span> state);</div>
-<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;    <span class="keywordtype">void</span> set_drv_disabled(<span class="keywordtype">bool</span> state);</div>
-<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;    <span class="keyword">static</span> <span class="keywordtype">void</span> reset_oc_shutdown_start();</div>
-<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;    <span class="keyword">static</span> <span class="keywordtype">void</span> reset_oc_shutdown_finish();</div>
-<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_aux_hw_drv.html#ab1e68dc34099bf707d28a25f4fe45350">update_temperature_sensors</a>();</div>
-<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160; </div>
-<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160; </div>
-<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;<span class="keyword">private</span>:</div>
-<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160; </div>
-<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;};</div>
-<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160; </div>
-<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;    <span class="keywordtype">void</span> set_fan_override(<span class="keywordtype">bool</span> new_state);</div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;    <span class="keywordtype">void</span> set_drv_supply_active(<span class="keywordtype">bool</span> state);</div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;    <span class="keywordtype">void</span> set_drv_disabled(<span class="keywordtype">bool</span> state);</div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;    <span class="keyword">static</span> <span class="keywordtype">void</span> reset_oc_shutdown_start();</div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;    <span class="keyword">static</span> <span class="keywordtype">void</span> reset_oc_shutdown_finish();</div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_aux_hw_drv.html#ab1e68dc34099bf707d28a25f4fe45350">update_temperature_sensors</a>();</div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_aux_hw_drv.html#a2342239f757f2305013b3e48e97d07c0">update_fan_state</a>();</div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160; </div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;<span class="keyword">private</span>:</div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160; </div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;};</div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160; </div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;<span class="preprocessor">#endif</span></div>
 </div><!-- fragment --></div><!-- contents -->
 <div class="ttc" id="asensor__kty81__1xx_8hpp_html"><div class="ttname"><a href="sensor__kty81__1xx_8hpp.html">sensor_kty81_1xx.hpp</a></div></div>
 <div class="ttc" id="astruct_aux_hw_drv_config_html"><div class="ttname"><a href="struct_aux_hw_drv_config.html">AuxHwDrvConfig</a></div><div class="ttdoc">Hardware configuration for AuxHwDrv.</div><div class="ttdef"><b>Definition:</b> app_config.hpp:72</div></div>
 <div class="ttc" id="aclass_sensor_k_t_y81__121_html"><div class="ttname"><a href="class_sensor_k_t_y81__121.html">SensorKTY81_121</a></div><div class="ttdoc">KTY81-121 type silicon temperature sensor readout using the ESP32 ADC in its high-linearity region.</div><div class="ttdef"><b>Definition:</b> sensor_kty81_1xx.hpp:160</div></div>
 <div class="ttc" id="aclass_aux_hw_drv_html"><div class="ttname"><a href="class_aux_hw_drv.html">AuxHwDrv</a></div><div class="ttdoc">Auxiliary hardware driver for ESP-AJAX-Lab This implements GPIO control for relays,...</div><div class="ttdef"><b>Definition:</b> aux_hw_drv.hpp:32</div></div>
-<div class="ttc" id="astruct_aux_hw_drv_state_html"><div class="ttname"><a href="struct_aux_hw_drv_state.html">AuxHwDrvState</a></div><div class="ttdef"><b>Definition:</b> app_config.hpp:160</div></div>
-<div class="ttc" id="aclass_aux_hw_drv_html_ab1e68dc34099bf707d28a25f4fe45350"><div class="ttname"><a href="class_aux_hw_drv.html#ab1e68dc34099bf707d28a25f4fe45350">AuxHwDrv::update_temperature_sensors</a></div><div class="ttdeci">void update_temperature_sensors()</div><div class="ttdoc">Only updates the state structure for temperature sensors. Other state variables are only modified by ...</div><div class="ttdef"><b>Definition:</b> aux_hw_drv.cpp:112</div></div>
+<div class="ttc" id="astruct_aux_hw_drv_state_html"><div class="ttname"><a href="struct_aux_hw_drv_state.html">AuxHwDrvState</a></div><div class="ttdef"><b>Definition:</b> app_config.hpp:165</div></div>
+<div class="ttc" id="aclass_aux_hw_drv_html_ab1e68dc34099bf707d28a25f4fe45350"><div class="ttname"><a href="class_aux_hw_drv.html#ab1e68dc34099bf707d28a25f4fe45350">AuxHwDrv::update_temperature_sensors</a></div><div class="ttdeci">void update_temperature_sensors()</div><div class="ttdoc">Only updates the state structure for temperature sensors. Other state variables are only modified by ...</div><div class="ttdef"><b>Definition:</b> aux_hw_drv.cpp:120</div></div>
+<div class="ttc" id="aclass_aux_hw_drv_html_a2342239f757f2305013b3e48e97d07c0"><div class="ttname"><a href="class_aux_hw_drv.html#a2342239f757f2305013b3e48e97d07c0">AuxHwDrv::update_fan_state</a></div><div class="ttdeci">void update_fan_state()</div><div class="ttdoc">Switch heatsink fan on or off depending on current temperature.</div><div class="ttdef"><b>Definition:</b> aux_hw_drv.cpp:131</div></div>
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
 Generated by &#160;<a href="http://www.doxygen.org/index.html">

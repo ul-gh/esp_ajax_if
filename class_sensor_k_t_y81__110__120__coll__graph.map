@@ -1,0 +1,8 @@
+<map id="SensorKTY81_110_120" name="SensorKTY81_110_120">
+<area shape="rect" id="node1" title="KTY81&#45;110 or KTY81&#45;120 type silicon temperature sensor readout using the ESP32 ADC in its high&#45;linear..." alt="" coords="783,85,951,112"/>
+<area shape="rect" id="node2" href="$class_sensor_k_t_y81__1xx.html" title="KTY81&#45;1xx type silicon temperature sensor readout and conversion functions using the ESP32 ADC in its..." alt="" coords="596,85,733,112"/>
+<area shape="rect" id="node3" href="$class_e_s_p32_a_d_c_channel_filtered.html" title=" " alt="" coords="263,20,453,76"/>
+<area shape="rect" id="node4" href="$class_e_s_p32_a_d_c_channel.html" title="ESP32 ADC 1 channel access with configurable averaging." alt="" coords="17,5,160,32"/>
+<area shape="rect" id="node5" href="$class_moving_average_u_int16.html" title=" " alt="" coords="5,57,172,98"/>
+<area shape="rect" id="node6" href="$class_equidistant_p_w_l_u_int16.html" title=" " alt="" coords="256,101,460,142"/>
+</map>

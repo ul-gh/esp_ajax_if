@@ -1,0 +1,8 @@
+<map id="AppState" name="AppState">
+<area shape="rect" id="node1" title="Application state containing data and settings model." alt="" coords="317,95,398,121"/>
+<area shape="rect" id="node2" href="$structpspwm__setpoint__t.html" title=" " alt="" coords="5,5,147,32"/>
+<area shape="rect" id="node3" href="$struct_app_config.html" title="Application configuration and default values for class AppController." alt="" coords="173,5,262,32"/>
+<area shape="rect" id="node4" href="$structpspwm__clk__conf__t.html" title=" " alt="" coords="286,5,429,32"/>
+<area shape="rect" id="node5" href="$structpspwm__setpoint__limits__t.html" title=" " alt="" coords="453,5,638,32"/>
+<area shape="rect" id="node6" href="$struct_aux_hw_drv_state.html" title=" " alt="" coords="665,5,791,32"/>
+</map>

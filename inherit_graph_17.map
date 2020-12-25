@@ -1,0 +1,5 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="node1" href="$class_multi_timer_non_static.html" title=" " alt="" coords="5,5,160,47"/>
+<area shape="rect" id="node2" href="$class_multi_timer.html" title="Ticker timer derivative allowing for a fixed number of repeated calls." alt="" coords="208,13,300,39"/>
+<area shape="rect" id="node3" href="$class_multi_timer_non_static.html" title="Same as MultiTimer but allows a pointer to a non&#45;static member function as a callback." alt="" coords="348,5,503,47"/>
+</map>
