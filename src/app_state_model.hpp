@@ -26,13 +26,13 @@ struct AppState
     /** ATTENTION!
      * Following constants need to be adapted if JSON object size is changed!
      */
-    static constexpr size_t _json_objects_size = JSON_OBJECT_SIZE(23);
+    static constexpr size_t _json_objects_size = JSON_OBJECT_SIZE(24);
     static constexpr size_t _strings_size = sizeof(
         "frequency_min_hw""frequency_max_hw""dt_sum_max_hw"
         "frequency_min""frequency_max"
         "frequency""duty""lead_dt""lag_dt""power_pwm_active"
         "current_limit""relay_ref_active""relay_dut_active"
-        "aux_temp""heatsink_temp""fan_active"
+        "aux_temp""heatsink_temp""fan_active""fan_override"
         "base_div""timer_div"
         "drv_supply_active""drv_disabled"
         "hw_oc_fault_present""hw_oc_fault_occurred"
