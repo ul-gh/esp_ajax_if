@@ -1,15 +1,15 @@
 <template>
-  <img alt="Vue logo" src="./assets/logo.png">
-  <HelloWorld msg="Welcome to Your Vue.js App"/>
+  <img src="./assets/logo.svg" alt="Application Logo" style="height: 3rem">
+  <EspAjaxLabMain msg="Welcome to ESP AJAX Lab!"/>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import EspAjaxLabMain from './components/EspAjaxLabMain.vue'
 
 export default {
-  name: 'App',
+  name: 'EspAjaxLab',
   components: {
-    HelloWorld
+    EspAjaxLabMain
   }
 }
 </script>
