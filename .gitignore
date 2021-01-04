@@ -7,8 +7,10 @@ doc/latex/*
 doc/xml/*
 doc/hardware/*
 src/wifi_config.hpp
+src/data/www/logo.svg
 README.md
 firmware.zip
 gdb*.txt
 *.pcap
 *.pcapng
+vue_app/esp_ajax_lab/node_modules
