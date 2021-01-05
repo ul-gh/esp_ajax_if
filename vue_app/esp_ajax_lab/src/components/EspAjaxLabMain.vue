@@ -54,7 +54,7 @@
                 </tr>
                 <tr>
                     <td>
-                        <div class="flex-centered number_vw" id="aux_temp_vw">
+                        <div class="flex-centered number_vw" id="aux_temp_vw" disabled>
                         </div>
                     </td>
                     <td>
