@@ -55,10 +55,12 @@
                 <tr>
                     <td>
                         <div class="flex-centered number_vw" id="aux_temp_vw" disabled>
+                            {{temp_hs1}}
                         </div>
                     </td>
                     <td>
                         <div class="flex-centered number_vw" id="heatsink_temp_vw" disabled>
+                            {{temp_hs2}}
                         </div>
                     </td>
                     <td>
@@ -249,6 +251,12 @@
 <script>
 export default {
   name: 'EspAjaxLabMain',
+  data() {
+      return {
+          temp_hs1: 88.8,
+          temp_hs2: 99.9,
+      }
+  },
   props: {
     msg: String
   }
