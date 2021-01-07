@@ -22,16 +22,20 @@
             </tr>
             <tr>
                 <td>
-                    <div class="flex-centered state_vw" id="connection_vw">
+                    <div class="flex-centered state_vw" id="connection_vw" v-if="disabled">
+                        No Connection <br>to Hardware!
+                    </div>
+                    <div class="flex-centered state_vw" id="connection_vw" v-if="!disabled">
+                        OK
                     </div>
                 </td>
                 <td>
-                    <div class="flex-centered state_vw" id="power_pwm_vw" disabled>
+                    <div class="flex-centered state_vw" id="power_pwm_vw" :disabled="disabled">
                     </div>
                 </td>
                 <td>
                     <div class="flex-centered state_vw ajax_btn" id="shutdown_vw"
-                            name="clear_shutdown" value="true" disabled>
+                            name="clear_shutdown" value="true" :disabled="disabled">
                     </div>
                 </td>
             </tr>
@@ -54,18 +58,18 @@
                 </tr>
                 <tr>
                     <td>
-                        <div class="flex-centered number_vw" id="aux_temp_vw" disabled>
+                        <div class="flex-centered number_vw" id="aux_temp_vw" :disabled="disabled">
                             {{temp_hs1}}
                         </div>
                     </td>
                     <td>
-                        <div class="flex-centered number_vw" id="heatsink_temp_vw" disabled>
+                        <div class="flex-centered number_vw" id="heatsink_temp_vw" :disabled="disabled">
                             {{temp_hs2}}
                         </div>
                     </td>
                     <td>
                         <label class="toggle-switchy ajax_btn" id="fan_vw">
-                            <input type="checkbox" name="set_fan_override" checked disabled>
+                            <input type="checkbox" name="set_fan_override" checked :disabled="disabled">
                             <span class="toggle">
                                 <span class="switch"></span>
                             </span>
@@ -96,7 +100,7 @@
                     <td><input type="number" id="lag_dt_vw"
                             name="set_lag_dt" value="125" min="6" max="1000"></td>
                     <td><button class="ajax_btn" id="btn_save_settings"
-                            name="save_settings" value="true" disabled>
+                            name="save_settings" value="true" :disabled="disabled">
                             Save!</button></td>
                 </tr>
             </tbody>
@@ -183,18 +187,18 @@
                     <td>
                         <span style="white-space: nowrap">
                         <button class="ajax_btn" id="btn_pwm_on"
-                                name="set_power_pwm_active" value="true" disabled>
+                                name="set_power_pwm_active" value="true" :disabled="disabled">
                             ON
                         </button>
                         <button class="ajax_btn" id="btn_pwm_off"
-                                name="set_power_pwm_active" value="false" disabled>
+                                name="set_power_pwm_active" value="false" :disabled="disabled">
                             OFF
                         </button>
                         </span>
                     </td>
                     <td>
                         <label class="toggle-switchy ajax_btn" id="ref_vw" data-size="lg">
-                            <input type="checkbox" name="set_relay_ref_active" disabled>
+                            <input type="checkbox" name="set_relay_ref_active" :disabled="disabled">
                             <span class="toggle">
                                 <span class="switch"></span>
                             </span>
@@ -202,7 +206,7 @@
                     </td>
                     <td>
                         <label class="toggle-switchy ajax_btn" id="dut_vw" data-size="lg">
-                            <input type="checkbox" name="set_relay_dut_active" disabled>
+                            <input type="checkbox" name="set_relay_dut_active" :disabled="disabled">
                             <span class="toggle">
                                 <span class="switch"></span>
                             </span>
@@ -229,7 +233,7 @@
                         <td><input type="number" id="oneshot_len_vw"
                                 name="set_oneshot_len" value="0.0" min="0" step=0.001 max="1800"></td>
                         <td><button class="ajax_btn" id="btn_trigger_oneshot"
-                                name="trigger_oneshot" value="true" disabled>
+                                name="trigger_oneshot" value="true" :disabled="disabled">
                                 TRIGGER!</button></td>
                     </tr>
                 </tbody>
@@ -258,8 +262,12 @@ export default {
       }
   },
   props: {
-    msg: String
-  }
+    msg: String,
+    disabled: Boolean,
+  },
+  computed: {
+      text1: function(){return typeof this.disabled == undefined ? "No Connection <br>to Hardware!" : "OK";},
+  },
 }
 </script>
 
