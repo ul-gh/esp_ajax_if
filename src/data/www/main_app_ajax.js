@@ -275,7 +275,7 @@ class ViewUpdater {
 
         if (remote_state.hw_oc_fault_present) {
             this.shutdown_vw.setAttribute("fault_present", "true");
-            this.shutdown_vw.innerText = "HW OC FAULT\nClick here to Reset!!";
+            this.shutdown_vw.innerText = "HW OC FAULT\nClick here to Reset!";
         } else {
             this.shutdown_vw.removeAttribute("fault_present")
             if (remote_state.hw_oc_fault_occurred) {

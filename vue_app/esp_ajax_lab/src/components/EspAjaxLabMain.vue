@@ -22,20 +22,32 @@
             </tr>
             <tr>
                 <td>
-                    <div class="flex-centered state_vw" id="connection_vw" v-if="disabled">
-                        No Connection <br>to Hardware!
-                    </div>
-                    <div class="flex-centered state_vw" id="connection_vw" v-if="!disabled">
-                        OK
+                    <div class="flex-centered state_vw" id="connection_vw"
+                            :active="set_if(!disabled)">
+                        <span style="white-space: pre;">
+                            {{disabled ? 'No Connection\nto Hardware!' : 'OK'}}
+                        </span>
                     </div>
                 </td>
                 <td>
-                    <div class="flex-centered state_vw" id="power_pwm_vw" :disabled="disabled">
+                    <div class="flex-centered state_vw" id="power_pwm_vw"
+                            :disabled="set_if(disabled)" :active="set_if(power_active)">
+                        <span style="white-space: pre;">
+                            {{power_active ? 'Power PWM ON' : 'Power PWM OFF'}}
+                        </span>
                     </div>
                 </td>
                 <td>
                     <div class="flex-centered state_vw ajax_btn" id="shutdown_vw"
-                            name="clear_shutdown" value="true" :disabled="disabled">
+                            name="clear_shutdown" value="true"
+                            :disabled="set_if(disabled)"
+                            :fault_occurred="set_if(hw_oc_fault_occurred)"
+                            :fault_present="set_if(hw_oc_fault_present)">
+                        <span style="white-space: pre;">
+                            {{hw_oc_fault_occurred ? "HW OC fault latched!\nClick here to Reset!" : ""}}
+                            {{hw_oc_fault_present ? "HW OC FAULT\nClick here to Reset!" : ""}}
+                            {{!hw_oc_fault_occurred && !hw_oc_fault_present ? "State: Normal" : ""}}
+                        </span>
                     </div>
                 </td>
             </tr>
@@ -58,12 +70,12 @@
                 </tr>
                 <tr>
                     <td>
-                        <div class="flex-centered number_vw" id="aux_temp_vw" :disabled="disabled">
+                        <div class="flex-centered number_vw" id="aux_temp_vw" :disabled="set_if(disabled)">
                             {{temp_hs1}}
                         </div>
                     </td>
                     <td>
-                        <div class="flex-centered number_vw" id="heatsink_temp_vw" :disabled="disabled">
+                        <div class="flex-centered number_vw" id="heatsink_temp_vw" :disabled="set_if(disabled)">
                             {{temp_hs2}}
                         </div>
                     </td>
@@ -259,14 +271,18 @@ export default {
       return {
           temp_hs1: 88.8,
           temp_hs2: 99.9,
+          power_active: false,
+          hw_oc_fault_occurred: false,
+          hw_oc_fault_present: false,
       }
   },
   props: {
-    msg: String,
     disabled: Boolean,
   },
-  computed: {
-      text1: function(){return typeof this.disabled == undefined ? "No Connection <br>to Hardware!" : "OK";},
+  methods: {
+      set_if(state) {
+          return state ? "" : undefined;
+      }
   },
 }
 </script>

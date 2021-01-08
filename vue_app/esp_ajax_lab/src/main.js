@@ -1,4 +1,8 @@
 import { createApp } from 'vue'
 import EspAjaxLab from './EspAjaxLab.vue'
 
-createApp(EspAjaxLab).mount('#app')
+const app = createApp(EspAjaxLab);
+const vm = app.mount('#app');
+
+document.vm = vm;
+document.eal = vm.$refs.eal;

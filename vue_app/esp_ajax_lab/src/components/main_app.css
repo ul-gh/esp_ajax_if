@@ -186,13 +186,13 @@ div.number_vw[disabled] {
     background-color: red;
 }
 
-#shutdown_vw:not([disabled]) {
+#shutdown_vw:not([disabled=true]) {
     background-color: rgb(139, 255, 143);
 }
-#shutdown_vw[fault_occurred]:not([disabled]) {
+#shutdown_vw[fault_occurred]:not([disabled=true]) {
     background-color: rgb(250, 192, 84);
 }
-#shutdown_vw[fault_present]:not([disabled]) {
+#shutdown_vw[fault_present]:not([disabled=true]) {
     background-color: rgb(250, 84, 84);
 }
 

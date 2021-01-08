@@ -1,6 +1,6 @@
 <template>
   <img src="./assets/logo.svg" alt="Application Logo" style="height: 3rem">
-  <EspAjaxLabMain msg="Welcome to ESP AJAX Lab!" :disabled="disabled"/>
+  <EspAjaxLabMain ref="eal" :disabled="$data.disabled"/>
 </template>
 
 <script>
@@ -10,7 +10,7 @@ export default {
   name: 'EspAjaxLab',
   data(){
       return {
-          disabled: undefined,
+          disabled: false,
       }
   },
   components: {
