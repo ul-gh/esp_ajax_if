@@ -43,11 +43,12 @@
                             :disabled="set_if(disabled)"
                             :fault_occurred="set_if(hw_oc_fault_occurred)"
                             :fault_present="set_if(hw_oc_fault_present)">
-                        <span style="white-space: pre;">
-                            {{hw_oc_fault_occurred ? "HW OC fault latched!\nClick here to Reset!" : ""}}
+                        <span style="white-space: pre;" v-if="!disabled">
                             {{hw_oc_fault_present ? "HW OC FAULT\nClick here to Reset!" : ""}}
+                            {{hw_oc_fault_occurred && !hw_oc_fault_present ? "HW OC fault latched!\nClick here to Reset!" : ""}}
                             {{!hw_oc_fault_occurred && !hw_oc_fault_present ? "State: Normal" : ""}}
                         </span>
+                        {{disabled ? "Unknown.." : ""}}
                     </div>
                 </td>
             </tr>
@@ -107,12 +108,12 @@
                     <td>Save All Settings</td>
                 </tr>
                 <tr>
-                    <td><input type="number" id="lead_dt_vw"
+                    <td><input type="number" id="lead_dt_vw" :disabled="disabled"
                             name="set_lead_dt" value="125" min="6" max="1000"></td>
-                    <td><input type="number" id="lag_dt_vw"
+                    <td><input type="number" id="lag_dt_vw" :disabled="disabled"
                             name="set_lag_dt" value="125" min="6" max="1000"></td>
-                    <td><button class="ajax_btn" id="btn_save_settings"
-                            name="save_settings" value="true" :disabled="disabled">
+                    <td><button class="ajax_btn" id="btn_save_settings" :disabled="disabled"
+                            name="save_settings" value="true">
                             Save!</button></td>
                 </tr>
             </tbody>
@@ -133,11 +134,11 @@
                     <td>Frequency MAX /kHz</td>
                 </tr>
                 <tr>
-                    <td><input type="number" id="current_limit_vw"
+                    <td><input type="number" id="current_limit_vw" :disabled="disabled"
                             name="set_current_limit" value="8" min="0" max="100" step=1></td>
-                    <td><input type="number" id="frequency_min_vw"
+                    <td><input type="number" id="frequency_min_vw" :disabled="disabled"
                             name="set_frequency_min" value="100" min="5" max="2000" step=1></td>
-                    <td><input type="number" id="frequency_max_vw"
+                    <td><input type="number" id="frequency_max_vw" :disabled="disabled"
                             name="set_frequency_max" value="300" min="5" max="2000" step=1></td>
                 </tr>
             </tbody>
@@ -154,13 +155,13 @@
             <tbody>
                 <tr class="alternating_bg">
                     <td>Frequency /kHz:</td>
-                    <td><input type="number" id="frequency_number_vw"
+                    <td><input type="number" id="frequency_number_vw" :disabled="disabled"
                             name="set_frequency" value="100" min="5" max="1000" step=1>
                     </td>
                 </tr>
                 <tr class="alternating_bg">
                     <td colspan="2">
-                        <input type="range" id="frequency_range_vw"
+                        <input type="range" id="frequency_range_vw" :disabled="disabled"
                             name="set_frequency" value="100" min="5" max="1000" step=1>
                     </td>
                 </tr>
@@ -168,13 +169,13 @@
                 <tr class="alternating_bg">
                     <td>Duty Cycle /%:</td>
                     <td>
-                        <input type="number" id="duty_number_vw"
+                        <input type="number" id="duty_number_vw" :disabled="disabled"
                             name="set_duty" value="45.0" min="0" max="100" step=0.1>
                     </td>
                 </tr>
                 <tr class="alternating_bg">
                     <td colspan="2">
-                        <input type="range" id="duty_range_vw"
+                        <input type="range" id="duty_range_vw" :disabled="disabled"
                             name="set_duty" value="45.0" min="0" max="100" step=0.1>
                     </td>
                 </tr>
@@ -198,12 +199,12 @@
                 <tr>
                     <td>
                         <span style="white-space: nowrap">
-                        <button class="ajax_btn" id="btn_pwm_on"
-                                name="set_power_pwm_active" value="true" :disabled="disabled">
+                        <button class="ajax_btn" id="btn_pwm_on" :disabled="disabled"
+                                name="set_power_pwm_active" value="true">
                             ON
                         </button>
-                        <button class="ajax_btn" id="btn_pwm_off"
-                                name="set_power_pwm_active" value="false" :disabled="disabled">
+                        <button class="ajax_btn" id="btn_pwm_off" :disabled="disabled"
+                                name="set_power_pwm_active" value="false">
                             OFF
                         </button>
                         </span>
@@ -242,10 +243,10 @@
                         <td>Trigger One-Shot</td>
                     </tr>
                     <tr>
-                        <td><input type="number" id="oneshot_len_vw"
+                        <td><input type="number" id="oneshot_len_vw" :disabled="disabled"
                                 name="set_oneshot_len" value="0.0" min="0" step=0.001 max="1800"></td>
-                        <td><button class="ajax_btn" id="btn_trigger_oneshot"
-                                name="trigger_oneshot" value="true" :disabled="disabled">
+                        <td><button class="ajax_btn" id="btn_trigger_oneshot" :disabled="disabled"
+                                name="trigger_oneshot" value="true">
                                 TRIGGER!</button></td>
                     </tr>
                 </tbody>
