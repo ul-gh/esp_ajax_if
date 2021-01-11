@@ -27,10 +27,10 @@
               <td>
                 <div class="flex-centered state_vw" id="power_pwm_vw"
                     :disabled="set_if(disabled)"
-                    :active="set_if(state.power_active)"
+                    :active="set_if(state.power_pwm_active)"
                 >
                   <span style="white-space: pre">
-                    {{ state.power_active ? "Power PWM ON" : "Power PWM OFF" }}
+                    {{ state.power_pwm_active ? "Power PWM ON" : "Power PWM OFF" }}
                   </span>
                 </div>
               </td>
@@ -38,16 +38,16 @@
                 <div class="flex-centered state_vw ajax_btn" id="shutdown_vw"
                     name="clear_shutdown" value="true"
                     :disabled="set_if(disabled)"
-                    :fault_occurred="set_if(state.fault_occurred)"
-                    :fault_present="set_if(state.fault_present)">
+                    :hw_oc_fault_occurred="set_if(state.hw_oc_fault_occurred)"
+                    :hw_oc_fault_present="set_if(state.hw_oc_fault_present)">
                   <span style="white-space: pre" v-if="!disabled">
-                    {{ state.fault_present
+                    {{ state.hw_oc_fault_present
                        ? "HW OC FAULT\nClick here to Reset!"
                        : "" }}
-                    {{ state.fault_occurred && !state.fault_present
+                    {{ state.hw_oc_fault_occurred && !state.hw_oc_fault_present
                        ? "HW OC fault latched!\nClick here to Reset!"
                        : "" }}
-                    {{ !state.fault_occurred && !state.fault_present
+                    {{ !state.hw_oc_fault_occurred && !state.hw_oc_fault_present
                        ? "State: Normal"
                        : "" }}
                   </span>
@@ -342,49 +342,9 @@ export default {
     return {};
   },
   props: {
-    remote_state: Object,
+    state: Object,
     view_updates_inhibited: Boolean,
     disabled: Boolean,
-  },
-  computed: {
-    state() {
-      const rs = this.remote_state;
-      return {
-        frequency_min_hw: Number(rs.frequency_min_hw),
-        frequency_max_hw: Number(rs.frequency_max_hw),
-        dt_sum_max_hw: Number(rs.dt_sum_max_hw),
-        // Runtime user setpoint limits for output frequency
-        frequency_min: Number(rs.frequency_min),
-        frequency_max: Number(rs.frequency_max),
-        // Operational setpoints for PSPWM module
-        frequency: Number(rs.frequency),
-        duty: Number(rs.duty),
-        lead_dt: Number(rs.lead_dt),
-        lag_dt: Number(rs.lag_dt),
-        power_active: Boolean(rs.power_pwm_active),
-        // Settings for auxiliary HW control module
-        current_limit: Number(rs.current_limit),
-        relay_ref_active: Boolean(rs.relay_ref_active),
-        relay_dut_active: Boolean(rs.relay_dut_active),
-        // Temperatures and fan
-        heatsink_temp: Number(rs.heatsink_temp),
-        aux_temp: Number(rs.aux_temp),
-        fan_active: Boolean(rs.fan_active),
-        fan_override: Boolean(rs.fan_override),
-        // Clock divider settings
-        base_div: Number(rs.base_div),
-        timer_div: Number(rs.timer_div),
-        // Gate driver supply and disable signals
-        drv_supply_active: Boolean(rs.drv_supply_active),
-        drv_disabled: Boolean(rs.drv_disabled),
-        // True when hardware OC shutdown condition is present
-        fault_present: Boolean(rs.hw_oc_fault_present),
-        // Hardware Fault Shutdown Status is latched using this flag
-        fault_occurred: Boolean(rs.hw_oc_fault_occurred),
-        // Length of the power output one-shot timer pulse
-        oneshot_len: Number(rs.oneshot_len),
-      };
-    },
   },
   methods: {
     // Helper function for setting custom boolean attributes on any HTML element.

@@ -1,13 +1,8 @@
 <template>
-  <link rel="icon" type="image/svg+xml" href='data:image/svg+xml;utf-8,
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 27.452 66.148">
-        <path fill="red" d="M13.307 66.146l-2.897-16.43 3.2 4.572 4.042-23.543L0 40.936
-            10.97 0h10.46L9.885 30.02l17.568-10.143-9.084 35.147 5.178-3.5-10.24 14.624"/>
-      </svg>'/>
   <img alt="Application Logo" style="height: 3rem" src="./assets/logo.svg">
 
   <EspAjaxLabMain ref="eal"
-      :remote_state="remote_state"
+      :state="state"
       :disabled="disabled"
       :view_updates_inhibited="view_updates_inhibited"
       @submit_cmd="submit_cmd"/>
@@ -16,29 +11,96 @@
 <script>
 import EspAjaxLabMain from './components/EspAjaxLabMain.vue'
 
+import { AsyncRequestGenerator,
+         ServerSentEventHandler,
+         AppWatchdog,
+        } from './async_requests_sse.js'
+
+let view_state_store = {
+  debug: false,
+  updates_inhibited: false,
+  state: {
+      frequency_min_hw: Number(),
+      frequency_max_hw: Number(),
+      dt_sum_max_hw: Number(),
+      // Runtime user setpoint limits for output frequency
+      frequency_min: Number(),
+      frequency_max: Number(),
+      // Operational setpoints for PSPWM module
+      frequency: Number(),
+      duty: Number(),
+      lead_dt: Number(),
+      lag_dt: Number(),
+      power_pwm_active: Boolean(),
+      // Settings for auxiliary HW control module
+      current_limit: Number(),
+      relay_ref_active: Boolean(),
+      relay_dut_active: Boolean(),
+      // Temperatures and fan
+      heatsink_temp: Number(),
+      aux_temp: Number(),
+      fan_active: Boolean(),
+      fan_override: Boolean(),
+      // Clock divider settings
+      base_div: Number(),
+      timer_div: Number(),
+      // Gate driver supply and disable signals
+      drv_supply_active: Boolean(),
+      drv_disabled: Boolean(),
+      // True when hardware OC shutdown condition is present
+      hw_oc_fault_present: Boolean(),
+      // Hardware Fault Shutdown Status is latched using this flag
+      hw_oc_fault_occurred: Boolean(),
+      // Length of the power output one-shot timer pulse
+      oneshot_len: Number(),
+    },
+  update_state (new_state) {
+    if (this.debug) {
+      console.log('update_state called with', new_state);
+    }
+    if (!this.updates_inhibited) {
+      //for (let key of this.state.keys) {
+      //    this.state[key] = new_state[key];
+      //}
+      Object.assign(this.state, new_state);
+    }
+  },
+};
+
+
 export default {
   name: 'EspAjaxLab',
   components: {
     EspAjaxLabMain
   },
-  data(){
+  data() {
     return {
-      disabled: false,
-        view_updates_inhibited: false,
-        remote_state: {
-          heatsink_temp: 88.8,
-          aux_temp: 99.9,
-          power_pwm_active: true,
-          hw_oc_fault_occurred: false,
-          hw_oc_fault_present: false,
-        }
-      }
+      disabled: true,
+      view_updates_inhibited: view_state_store.updates_inhibited,
+      state: view_state_store.state,
+      };
   },
   methods: {
     submit_cmd(name, value) {
-        
-    }
-  }
+        this.request_generator.send_cmd(name, value);
+    },
+    inhibit_view_updates() {
+        this.view_state_store.inhibit_view_updates = true;
+    },
+    allow_view_updates() {
+        this.view_state_store.inhibit_view_updates = false;
+    },
+    set_disabled(new_state) {
+        this.disabled = new_state;
+    },
+  },
+  created() {
+    this.app_watchdog = new AppWatchdog(1500, this.set_disabled);
+    this.request_generator = new AsyncRequestGenerator();
+    this.sse_handler = new ServerSentEventHandler("/events",
+                                                  this.remote_state_store,
+                                                  this.app_watchdog);
+  },
 }
 </script>
 
@@ -49,6 +111,5 @@ export default {
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  margin-top: 60px;
 }
 </style>
