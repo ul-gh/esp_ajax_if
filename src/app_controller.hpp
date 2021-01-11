@@ -109,10 +109,19 @@ public:
      */
     void set_fan_override(bool state);
 
-    /** @brief Save all runtime configurable settings to SPI flash
-     * These settings are restored on reboot.
+    /** @brief Save all runtime configurable settings to SPI flash.
+     * The settings are a subset of all values in struct AppState.
+     * 
+     * The stored settings are restored on reboot.
      */
     void save_settings();
+
+    /** @brief Read state back from SPI flash file and run all setter
+     * functions associated with the saved settings.
+     * 
+     * This is called on boot when state is restored from file.
+     */
+    void restore_settings();
 
 
 private:
@@ -126,7 +135,7 @@ private:
     // Timer for generating overcurrent reset pulse
     MultiTimer oc_reset_timer;
     // Timer for power output timing
-    MultiTimerNonStatic<AppController> power_output_timer;
+    MultiTimer power_output_timer;
 
     /////////// Setup functions called from this constructor //////
     

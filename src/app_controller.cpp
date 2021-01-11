@@ -21,7 +21,7 @@
 #include "app_controller.hpp"
 
 #undef LOG_LOCAL_LEVEL
-#define LOG_LOCAL_LEVEL ESP_LOG_DEBUG
+#define LOG_LOCAL_LEVEL ESP_LOG_INFO
 #include "esp_log.h"
 static auto TAG = "AppController";
 
@@ -90,16 +90,11 @@ AppController::~AppController() {
  * This will fail if networking etc. is not set up correctly!
  */
 void AppController::begin() {
-    ESP_LOGI(TAG, "Restoring state from settings.json...");
-    state.restore_from_file(app_conf.settings_filename);
-    set_relay_dut_active(state.aux_hw_drv_state->relay_dut_active);
-    set_relay_ref_active(state.aux_hw_drv_state->relay_ref_active);
-    set_fan_override(state.aux_hw_drv_state->fan_override);
-    ESP_LOGI(TAG, "Activating Gate driver power supply...");
-    aux_hw_drv.set_drv_supply_active(true);
-    _register_http_api(api_server);
     _connect_timer_callbacks();
+    restore_settings();
+    _register_http_api(api_server);
 }
+
 
 //////////// Application API ///////////
 void AppController::set_frequency_min_khz(float n) {
@@ -117,7 +112,7 @@ void AppController::set_frequency_khz(float n) {
     _send_state_changed_event();
 }
 void AppController::set_duty_percent(float n) {
-    state.pspwm_setpoint->ps_duty = n / 100;
+    state.pspwm_setpoint->ps_duty = n / 100.0f;
     API_CHOICE_SET_PS_DUTY(app_conf.mcpwm_num, state.pspwm_setpoint->ps_duty);
     _send_state_changed_event();
 }
@@ -189,11 +184,37 @@ void AppController::set_fan_override(bool state) {
     _send_state_changed_event();
 }
 
+
+/* Save all runtime configurable settings to SPI flash.
+ * The settings are a subset of all values in struct AppState.
+ * 
+ * The stored settings are restored on reboot.
+ */
 void AppController::save_settings() {
     state.save_to_file(app_conf.settings_filename);
     _send_state_changed_event();
 }
 
+/* Run all setter functions associated with the saved settings.
+ * 
+ * This is called on boot when state is restored from file.
+ */
+void AppController::restore_settings() {
+    ESP_LOGI(TAG, "Restoring state from settings.json...");
+    state.restore_from_file(app_conf.settings_filename);
+    set_frequency_khz(state.pspwm_setpoint->frequency / 1E3f);
+    set_duty_percent(state.pspwm_setpoint->ps_duty * 100.0f);
+    set_lead_dt_ns(state.pspwm_setpoint->lead_red * 1E9f);
+    set_lag_dt_ns(state.pspwm_setpoint->lag_red * 1E9f);
+    set_current_limit(state.aux_hw_drv_state->current_limit);
+    set_relay_ref_active(state.aux_hw_drv_state->relay_ref_active);
+    set_relay_dut_active(state.aux_hw_drv_state->relay_dut_active);
+    set_fan_override(state.aux_hw_drv_state->fan_override);
+    set_oneshot_len(state.oneshot_power_pulse_length_ms);
+    // There is no API for this at the moment, so this is always active..
+    ESP_LOGI(TAG, "Activating Gate driver power supply...");
+    aux_hw_drv.set_drv_supply_active(true);
+}
 
 /////////// Setup functions called from this constructor //////
 

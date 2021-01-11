@@ -2,13 +2,14 @@
   * @brief Ticker timer derivative allowing for a fixed number of repeated calls.
   * 
   * License: GPL v.3 
-  * U. Lukas 2020-12-10
+  * U. Lukas 2021-01-11
   */
 #ifndef MULTI_TIMER_HPP__
 #define MULTI_TIMER_HPP__
 
 //#include <functional> // Has std::invoke but is only available from C++17..
 //#include <type_traits> // C++20 version has the std::type_identity_t built in
+#include "freertos/semphr.h"
 #include <Ticker.h>
 
 // Allows calling a ordinary (non-static) class member function by inserting a
@@ -44,6 +45,17 @@ public:
     ////////////////////// End soon to be obsolete part
 
     using callback_with_arg_and_count_t = void (*)(void*, uint32_t);
+
+    MultiTimer() {
+        // When starting the timer with first_tick_nodelay=true, the first
+        // invocation of the timer callback is from the application task.
+        // Because any successive call is made from the high-priority esp_timer
+        // task, we need a mutex to prevent the timer task to proceed before
+        // the very first callback invocation has finished...
+        _reentry_mutex = xSemaphoreCreateMutex();
+        assert(_reentry_mutex);
+    }
+
 
     /** @brief Attach a free function, static member function
      * or a non-capturing lambda function to the timer.
@@ -122,6 +134,7 @@ public:
         _first_tick_nodelay = first_tick_nodelay;
         _cb_lambda = [](void *_this){
             auto self = static_cast<decltype(this)>(_this);
+            self->_mutex_take();
             auto repeat_count = ++self->_repeat_count;
             if (repeat_count < self->_repeat_count_requested) {
                 esp_timer_start_once(self->_timer, self->_interval_ms*1000ull);
@@ -131,6 +144,7 @@ public:
             auto cb = reinterpret_cast<callback_with_arg_and_count_t>(self->_callback);
             auto arg = (TArg)(self->_orig_arg);
             cb(arg, repeat_count);
+            self->_mutex_give();
             };
         return _attach_ms((uint32_t)this);
     }
@@ -150,6 +164,7 @@ public:
         _first_tick_nodelay = first_tick_nodelay;
         _cb_lambda = [](void *_this){
             auto self = static_cast<decltype(this)>(_this);
+            self->_mutex_take();
             auto repeat_count = ++self->_repeat_count;
             if (repeat_count < self->_repeat_count_requested) {
                 esp_timer_start_once(self->_timer, self->_interval_ms*1000ull);
@@ -159,6 +174,7 @@ public:
             auto cb = reinterpret_cast<callback_with_arg_t>(self->_callback);
             auto arg = (TArg)(self->_orig_arg);
             cb(arg);
+            self->_mutex_give();
             };
         return _attach_ms((uint32_t)this);
     }
@@ -173,6 +189,7 @@ public:
         _first_tick_nodelay = first_tick_nodelay;
         _cb_lambda = [](void *_this){
             auto self = static_cast<decltype(this)>(_this);
+            self->_mutex_take();
             auto repeat_count = ++self->_repeat_count;
             if (repeat_count < self->_repeat_count_requested) {
                 esp_timer_start_once(self->_timer, self->_interval_ms*1000ull);
@@ -180,6 +197,7 @@ public:
                 self->_repeat_count = 0;
             }
             self->_callback();
+            self->_mutex_give();
             };
         return _attach_ms((uint32_t)this);
     }
@@ -242,6 +260,7 @@ protected:
     // Callback encapsulated into lambda function with repeat counter etc.
     callback_with_arg_t _cb_lambda{nullptr};
     bool _first_tick_nodelay{false};
+    SemaphoreHandle_t _reentry_mutex = NULL;
 
     esp_err_t _attach_ms(uint32_t arg) {
         esp_timer_create_args_t _timerConfig;
@@ -254,6 +273,14 @@ protected:
             esp_timer_delete(_timer);
         }
         return esp_timer_create(&_timerConfig, &_timer);
+    }
+
+    inline void _mutex_take() {
+        xSemaphoreTake(_reentry_mutex, portMAX_DELAY);
+    }
+
+    inline void _mutex_give() {
+        xSemaphoreGive(_reentry_mutex);
     }
 };
 
@@ -306,6 +333,7 @@ public:
         _first_tick_nodelay = first_tick_nodelay;
         _cb_lambda = [](void *_this){
             auto self = static_cast<decltype(this)>(_this);
+            self->_mutex_take();
             auto repeat_count = ++self->_repeat_count;
             if (repeat_count < self->_repeat_count_requested) {
                 esp_timer_start_once(self->_timer, self->_interval_ms*1000ull);
@@ -316,6 +344,7 @@ public:
             //std::invoke(self->_mem_func_ptr, *inst);
             auto mfp = self->_mem_func_ptr;
             (inst->*mfp)();
+            self->_mutex_give();
             };
         return _attach_ms((uint32_t)this);
     }
@@ -333,6 +362,7 @@ public:
         _first_tick_nodelay = first_tick_nodelay;
         _cb_lambda = [](void *_this){
             auto self = static_cast<decltype(this)>(_this);
+            self->_mutex_take();
             auto repeat_count = ++self->_repeat_count;
             if (repeat_count < self->_repeat_count_requested) {
                 esp_timer_start_once(self->_timer, self->_interval_ms*1000ull);
@@ -344,6 +374,7 @@ public:
             auto mfp = reinterpret_cast<mem_func_ptr_with_count_t>(self->_mem_func_ptr);
             //auto mfp = self->_mem_func_ptr_with_count;
             (inst->*mfp)(repeat_count);
+            self->_mutex_give();
             };
         return _attach_ms((uint32_t)this);
     }
