@@ -49,13 +49,16 @@ struct AppState
     pspwm_clk_conf_t* pspwm_clk_conf = nullptr;
     pspwm_setpoint_t* pspwm_setpoint = nullptr;
     pspwm_setpoint_limits_t* pspwm_setpoint_limits = nullptr;
+    // Runtime user setpoint limits for output frequency
+    float frequency_min = app_conf.frequency_min;
+    float frequency_max = app_conf.frequency_max;
+    // Setpoint throttling (limit rate of change)
+    bool setpoint_throttling_active = true;
+    float 
     // True when hardware OC shutdown condition is currently present
     bool hw_oc_fault_present = true;
     // Hardware Fault Shutdown Status is latched using this flag
     bool hw_oc_fault_occurred = true;
-    // Runtime user setpoint limits for output frequency
-    float frequency_min = app_conf.frequency_min;
-    float frequency_max = app_conf.frequency_max;
     // Pulse length for one-shot mode power output pulse
     uint32_t oneshot_power_pulse_length_ms{1};
 
