@@ -52,11 +52,11 @@ class AsyncRequestGenerator {
         this._rate_limit_active = true;
         // Recursive call. If no requests are pending when timer expires, the
         // called method exits early and only rate_limit_active flag is reset.
-        window.setTimeout(() => {this._rate_limit_active = false;
-                                 this.do_http_request("");
-                                 },
-                          request_interval_min_ms
-                          );
+        setTimeout(() => {this._rate_limit_active = false;
+                          this.do_http_request("");
+                          },
+                   request_interval_min_ms
+                   );
         try {
             const response = await fetch(req_str);
             if (!response.ok) {
@@ -112,7 +112,7 @@ class ServerSentEventHandler {
                 if (e.target.readyState != EventSource.OPEN) {
                     console.log("Events Disconnected!");
                     // Start Auto-Reconnect
-                    this.reconnect_timer_id = window.setTimeout(
+                    this.reconnect_timer_id = setTimeout(
                         () => this.connect(), sse_reconnect_timeout);
                 }
             },
@@ -129,11 +129,11 @@ class ServerSentEventHandler {
             false);
     }
     
-    /** For debugging, reconnect clutters the console.
+    /** For debugging, disable reconnect feature cluttering the console.
      * Also disables the app watchdog.
      */
     disable_reconnect_and_watchdog() {
-        window.clearTimeout(this.reconnect_timer_id);
+        clearTimeout(this.reconnect_timer_id);
         this.watchdog.disable();
     }
 }
@@ -150,7 +150,7 @@ class AppWatchdog {
     }
 
     enable() {
-        this.timer_id = window.setTimeout(
+        this.timer_id = setTimeout(
             () => {
                 this._triggered = true;
                 this.disable_callback(true);
@@ -159,7 +159,7 @@ class AppWatchdog {
     }
 
     disable() {
-        window.clearTimeout(this.timer_id);
+        clearTimeout(this.timer_id);
          if (this._triggered) {
             this._triggered = false;
             this.this.disable_callback(false);

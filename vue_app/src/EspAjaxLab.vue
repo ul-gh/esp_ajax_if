@@ -86,6 +86,7 @@ export default {
     },
     inhibit_view_updates() {
         this.view_state_store.inhibit_view_updates = true;
+        setTimeout(() => this.allow_view_updates(), 5000);
     },
     allow_view_updates() {
         this.view_state_store.inhibit_view_updates = false;
@@ -96,10 +97,12 @@ export default {
   },
   created() {
     this.app_watchdog = new AppWatchdog(1500, this.set_disabled);
-    this.request_generator = new AsyncRequestGenerator();
+    this.request_generator = new AsyncRequestGenerator("/cmd");
     this.sse_handler = new ServerSentEventHandler("/events",
                                                   this.remote_state_store,
                                                   this.app_watchdog);
+    document.addEventListener("input", e => this.inhibit_view_updates());
+    document.addEventListener("blur", e => this.allow_view_updates());
   },
 }
 </script>

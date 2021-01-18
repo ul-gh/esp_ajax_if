@@ -37,6 +37,7 @@ static auto TAG = "AppController";
 #define API_CHOICE_SET_DEADTIMES pspwm_up_down_ctr_mode_set_deadtimes
 #endif
 
+bool throttle_value(float *x_current, float x_target, float x_increment);
 
 struct EventFlags
 {
@@ -97,6 +98,10 @@ void AppController::begin() {
 
 
 //////////// Application API ///////////
+void AppController::set_setpoint_throttling_enabled(bool new_val) {
+    state.setpoint_throttling_enabled = new_val;
+}
+
 void AppController::set_frequency_min_khz(float n) {
     state.frequency_min = n * 1E3;
     _send_state_changed_event();
@@ -107,13 +112,32 @@ void AppController::set_frequency_max_khz(float n) {
 }
 
 void AppController::set_frequency_khz(float n) {
-    state.pspwm_setpoint->frequency = n * 1E3;
-    API_CHOICE_SET_FREQUENCY(app_conf.mcpwm_num, state.pspwm_setpoint->frequency);
+    state.frequency_target = n*1E3;
+    if (!state.setpoint_throttling_enabled) {
+        _set_frequency_raw(state.frequency_target);
+    }
+}
+void AppController::set_frequency_khz_changerate(float n) {
+    state.frequency_increment = n * app_conf.timer_fast_interval_ms;
+}
+void AppController::_set_frequency_raw(float n) {
+    // state.pspwm_setpoint->frequency = n;
+    API_CHOICE_SET_FREQUENCY(app_conf.mcpwm_num, n);
     _send_state_changed_event();
 }
+
 void AppController::set_duty_percent(float n) {
-    state.pspwm_setpoint->ps_duty = n / 100.0f;
-    API_CHOICE_SET_PS_DUTY(app_conf.mcpwm_num, state.pspwm_setpoint->ps_duty);
+    state.duty_target = n*0.01f;
+    if (!state.setpoint_throttling_enabled) {
+        _set_duty_raw(state.duty_target);
+    }
+}
+void AppController::set_duty_percent_changerate(float n) {
+    state.duty_increment = n * app_conf.timer_fast_interval_ms*1E-3f*1E-2f;
+}
+void AppController::_set_duty_raw(float n) {
+    // state.pspwm_setpoint->ps_duty = n;
+    API_CHOICE_SET_PS_DUTY(app_conf.mcpwm_num, n);
     _send_state_changed_event();
 }
 
@@ -134,8 +158,8 @@ void AppController::set_lead_dt_ns(float n) {
 
 /* Activate PWM power output if arg is true
  */
-void AppController::set_power_pwm_active(bool state) {
-    if (state == true) {
+void AppController::set_power_pwm_active(bool new_val) {
+    if (new_val == true) {
         // aux_hw_drv.set_drv_disabled(false);
         pspwm_resync_enable_output(app_conf.mcpwm_num);
     } else {
@@ -171,16 +195,16 @@ void AppController::set_current_limit(float n) {
     _send_state_changed_event();
 }
 
-void AppController::set_relay_ref_active(bool state) {
-    aux_hw_drv.set_relay_ref_active(state);
+void AppController::set_relay_ref_active(bool new_val) {
+    aux_hw_drv.set_relay_ref_active(new_val);
     _send_state_changed_event();
 }
-void AppController::set_relay_dut_active(bool state) {
-    aux_hw_drv.set_relay_dut_active(state);
+void AppController::set_relay_dut_active(bool new_val) {
+    aux_hw_drv.set_relay_dut_active(new_val);
     _send_state_changed_event();
 }
-void AppController::set_fan_override(bool state) {
-    aux_hw_drv.set_fan_override(state);
+void AppController::set_fan_override(bool new_val) {
+    aux_hw_drv.set_fan_override(new_val);
     _send_state_changed_event();
 }
 
@@ -202,8 +226,11 @@ void AppController::save_settings() {
 void AppController::restore_settings() {
     ESP_LOGI(TAG, "Restoring state from settings.json...");
     state.restore_from_file(app_conf.settings_filename);
-    set_frequency_khz(state.pspwm_setpoint->frequency / 1E3f);
-    set_duty_percent(state.pspwm_setpoint->ps_duty * 100.0f);
+    set_setpoint_throttling_enabled(state.setpoint_throttling_enabled);
+    set_frequency_khz(state.frequency_target * 1E-3f);
+    set_frequency_khz_changerate(state.frequency_increment / app_conf.timer_fast_interval_ms);
+    set_duty_percent(state.duty_target * 100.0f);
+    set_duty_percent_changerate(state.duty_increment * 100.0f * 1e3f);
     set_lead_dt_ns(state.pspwm_setpoint->lead_red * 1E9f);
     set_lag_dt_ns(state.pspwm_setpoint->lag_red * 1E9f);
     set_current_limit(state.aux_hw_drv_state->current_limit);
@@ -265,6 +292,9 @@ void AppController::_register_http_api(APIServer* api_server) {
     CbVoidT cb_void;
     CbFloatT cb_float;
     CbStringT cb_text;
+    // "set_setpoint_throttling_enabled"
+    cb_text = [this](const String &text) {set_setpoint_throttling_enabled(text=="true");};
+    api_server->register_api_cb("set_setpoint_throttling_enabled", cb_text);
     // "set_frequency_min"
     cb_float = [this](float n) {set_frequency_min_khz(n);};
     api_server->register_api_cb("set_frequency_min", cb_float);
@@ -274,9 +304,15 @@ void AppController::_register_http_api(APIServer* api_server) {
     // "set_frequency"
     cb_float = [this](float n) {set_frequency_khz(n);};
     api_server->register_api_cb("set_frequency", cb_float);
+    // "set_frequency_changerate"
+    cb_float = [this](float n) {set_frequency_khz_changerate(n);};
+    api_server->register_api_cb("set_frequency_changerate", cb_float);
     // "set_duty"
     cb_float = [this](float n) {set_duty_percent(n);};
     api_server->register_api_cb("set_duty", cb_float);
+    // "set_duty_changerate"
+    cb_float = [this](float n) {set_duty_percent_changerate(n);};
+    api_server->register_api_cb("set_duty_changerate", cb_float);
     // "set_lag_dt"
     cb_float = [this](float n) {set_lag_dt_ns(n);};
     api_server->register_api_cb("set_lag_dt", cb_float);
@@ -424,6 +460,21 @@ void AppController::_on_fast_timer_event_update_state() {
     // With averaging of 64 samples, both channels acquisition
     // takes approx. 9 ms combined.
     aux_hw_drv.update_temperature_sensors();
+    // Apply setpoint throttling
+    if (state.setpoint_throttling_enabled) {
+        auto values_differ = throttle_value(&state.pspwm_setpoint->ps_duty,
+                                            state.duty_target,
+                                            state.duty_increment);
+        if (values_differ) { 
+            _set_duty_raw(state.pspwm_setpoint->ps_duty);
+        }
+        auto values_differ = throttle_value(&state.pspwm_setpoint->frequency,
+                                            state.frequency_target,
+                                            state.frequency_increment);
+        if (values_differ) { 
+            _set_frequency_raw(state.pspwm_setpoint->frequency);
+        }
+    }
 }
 
 /* Application state is sent as a push update via the SSE event source.
@@ -443,4 +494,17 @@ void AppController::_push_state_update() {
     auto json_buf = std::array<char, len>{};
     state.serialize_full_state(json_buf.data(), len);
     api_server->event_source->send(json_buf.data(), "hw_app_state");
+}
+
+bool throttle_value(float *x_current, float x_target, float x_increment) {
+    auto dx = x_target - *x_current;
+    if (dx == 0.0f) {
+        return false;
+    }
+    if (dx > 0.0f) {
+        *x_current += std::min(dx, x_increment);
+    } else if (dx < 0.0f) {
+        *x_current += std::max(dx, -x_increment);
+    }
+    return true;
 }

@@ -73,13 +73,22 @@ public:
     void begin();
 
     //////////// Application API ///////////
-    void set_frequency_min_khz(float n);
+    void set_setpoint_throttling_enabled(bool new_val);
 
+    void set_frequency_min_khz(float n);
     void set_frequency_max_khz(float n);
 
     void set_frequency_khz(float n);
+    /** @brief Set rate of change of frequency in kHz per second
+     */
+    void set_frequency_khz_changerate(float n);
+    void _set_frequency_raw(float n);
 
     void set_duty_percent(float n);
+    /** @brief Set rate of change of duty cycle in percent per second
+     */
+    void set_duty_percent_changerate(float n);
+    void _set_duty_raw(float n);
 
     void set_lag_dt_ns(float n);
 
@@ -87,7 +96,7 @@ public:
 
     /** @brief Activate PWM power output if arg is true
      */
-    void set_power_pwm_active(bool state);
+    void set_power_pwm_active(bool new_val);
 
     /** @brief Set power output oneshot pulse timer pulse length in seconds
      */
@@ -101,13 +110,13 @@ public:
 
     void set_current_limit(float n);
 
-    void set_relay_ref_active(bool state);
+    void set_relay_ref_active(bool new_val);
 
-    void set_relay_dut_active(bool state);
+    void set_relay_dut_active(bool new_val);
 
     /** @brief When set to true, override automatic and set fan permanently on
      */
-    void set_fan_override(bool state);
+    void set_fan_override(bool new_val);
 
     /** @brief Save all runtime configurable settings to SPI flash.
      * The settings are a subset of all values in struct AppState.

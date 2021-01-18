@@ -19,6 +19,8 @@ size_t AppState::serialize_full_state(char *buf, size_t buf_len) {
     assert(pspwm_clk_conf && pspwm_setpoint && pspwm_setpoint_limits && aux_hw_drv_state);
     // ArduinoJson JsonDocument object, see https://arduinojson.org
     auto json_doc = StaticJsonDocument<_json_objects_size>{};
+    // Setpoint throttling
+    json_doc["setpoint_throttling_enabled"] = setpoint_throttling_enabled;
     // Setpoint limits from PSPWM hw constraints. Scaled to kHz, ns and % respectively...
     json_doc["frequency_min_hw"] = pspwm_setpoint_limits->frequency_min * 1e-3f;
     json_doc["frequency_max_hw"] = pspwm_setpoint_limits->frequency_max * 1e-3f;
@@ -27,8 +29,10 @@ size_t AppState::serialize_full_state(char *buf, size_t buf_len) {
     json_doc["frequency_min"] = frequency_min * 1e-3f;
     json_doc["frequency_max"] = frequency_max * 1e-3f;
     // Operational setpoints for PSPWM module
-    json_doc["frequency"] = pspwm_setpoint->frequency * 1e-3f;
-    json_doc["duty"] = pspwm_setpoint->ps_duty * 100.0f;
+    json_doc["frequency"] = frequency_target * 1e-3f;
+    json_doc["frequency_changerate"] = frequency_increment / app_conf.timer_fast_interval_ms;
+    json_doc["duty"] = duty_target * 100.0f;
+    json_doc["duty_changerate"] = duty_increment * 100.0f * 1e3f;
     json_doc["lead_dt"] = pspwm_setpoint->lead_red * 1e9f;
     json_doc["lag_dt"] = pspwm_setpoint->lag_red * 1e9f;
     json_doc["power_pwm_active"] = pspwm_setpoint->output_enabled;
@@ -71,12 +75,15 @@ bool AppState::deserialize_settings(const char *buf, size_t buf_len) {
         return false;
     }
     ///// We restore only a limited sub-set of all values...
+    setpoint_throttling_enabled = json_doc["setpoint_throttling_enabled"];
     // Runtime user setpoint limits for output frequency
     frequency_min = float{json_doc["frequency_min"]} * 1e3f;
     frequency_max = float{json_doc["frequency_max"]} * 1e3f;
     // Operational setpoints for PSPWM module
-    pspwm_setpoint->frequency = float{json_doc["frequency"]} * 1e3f;
-    pspwm_setpoint->ps_duty = float{json_doc["duty"]} * 0.01f;
+    frequency_target = float{json_doc["frequency"]} * 1e3f;
+    frequency_increment = float{json_doc["frequency_changerate"]} * app_conf.timer_fast_interval_ms;
+    duty_target = float{json_doc["duty"]} * 0.01f;
+    duty_increment = float{json_doc["duty_changerate"]} * 1e-2f * 1e-3f;
     pspwm_setpoint->lead_red = float{json_doc["lead_dt"]} * 1e-9f;
     pspwm_setpoint->lag_red = float{json_doc["lag_dt"]} * 1e-9f;
     // Settings for auxiliary HW control module

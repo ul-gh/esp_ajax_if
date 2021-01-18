@@ -26,11 +26,13 @@ struct AppState
     /** ATTENTION!
      * Following constants need to be adapted if JSON object size is changed!
      */
-    static constexpr size_t _json_objects_size = JSON_OBJECT_SIZE(24);
+    static constexpr size_t _json_objects_size = JSON_OBJECT_SIZE(27);
     static constexpr size_t _strings_size = sizeof(
+        "setpoint_throttling_enabled"
         "frequency_min_hw""frequency_max_hw""dt_sum_max_hw"
         "frequency_min""frequency_max"
-        "frequency""duty""lead_dt""lag_dt""power_pwm_active"
+        "frequency""frequency_changerate""duty""duty_changerate"
+        "lead_dt""lag_dt""power_pwm_active"
         "current_limit""relay_ref_active""relay_dut_active"
         "aux_temp""heatsink_temp""fan_active""fan_override"
         "base_div""timer_div"
@@ -45,16 +47,20 @@ struct AppState
                                            + I_AM_SCARED_MARGIN;
 
     /////////////////////// Runtime state starts here ///////////////////////
-    // Zero-Copy values using pointers read from the PSPWM C API
+    // Setpoint throttling (rate of change limiting) takes place when enabled
+    bool setpoint_throttling_enabled = true;
+    // Internal setpoints of PSPWM C API
     pspwm_clk_conf_t* pspwm_clk_conf = nullptr;
     pspwm_setpoint_t* pspwm_setpoint = nullptr;
     pspwm_setpoint_limits_t* pspwm_setpoint_limits = nullptr;
-    // Runtime user setpoint limits for output frequency
+    // Runtime user setpoint limits
     float frequency_min = app_conf.frequency_min;
     float frequency_max = app_conf.frequency_max;
-    // Setpoint throttling (limit rate of change)
-    bool setpoint_throttling_active = true;
-    float 
+    // Runtime setpoints and throttling increment per fast event timer interval
+    float frequency_target = 100.0E3f;
+    float frequency_increment = 500.0f;
+    float duty_target = 0.0f;
+    float duty_increment = 0.05f;
     // True when hardware OC shutdown condition is currently present
     bool hw_oc_fault_present = true;
     // Hardware Fault Shutdown Status is latched using this flag
