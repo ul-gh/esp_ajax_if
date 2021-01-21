@@ -21,6 +21,8 @@
 #include "app_controller.hpp"
 
 #undef LOG_LOCAL_LEVEL
+// When setting log level to ESP_LOG_DEBUG:
+// AppConfig::timer_fast_interval_ms must be at least 50
 #define LOG_LOCAL_LEVEL ESP_LOG_INFO
 #include "esp_log.h"
 static auto TAG = "AppController";
@@ -91,8 +93,8 @@ AppController::~AppController() {
  * This will fail if networking etc. is not set up correctly!
  */
 void AppController::begin() {
-    _connect_timer_callbacks();
     restore_settings();
+    _connect_timer_callbacks();
     _register_http_api(api_server);
 }
 
@@ -100,6 +102,7 @@ void AppController::begin() {
 //////////// Application API ///////////
 void AppController::set_setpoint_throttling_enabled(bool new_val) {
     state.setpoint_throttling_enabled = new_val;
+    _send_state_changed_event();
 }
 
 void AppController::set_frequency_min_khz(float n) {
@@ -112,12 +115,13 @@ void AppController::set_frequency_max_khz(float n) {
 }
 
 void AppController::set_frequency_khz(float n) {
-    state.frequency_target = n*1E3;
+    auto f_requested = std::max(n*1e3f, state.frequency_min);
+    state.frequency_target = std::min(f_requested, state.frequency_max);
     if (!state.setpoint_throttling_enabled) {
         _set_frequency_raw(state.frequency_target);
     }
 }
-void AppController::set_frequency_khz_changerate(float n) {
+void AppController::set_frequency_changerate_khz_sec(float n) {
     state.frequency_increment = n * app_conf.timer_fast_interval_ms;
 }
 void AppController::_set_frequency_raw(float n) {
@@ -132,8 +136,9 @@ void AppController::set_duty_percent(float n) {
         _set_duty_raw(state.duty_target);
     }
 }
-void AppController::set_duty_percent_changerate(float n) {
-    state.duty_increment = n * app_conf.timer_fast_interval_ms*1E-3f*1E-2f;
+void AppController::set_duty_changerate_percent_sec(float n) {
+    state.duty_increment = n * app_conf.timer_fast_interval_ms * 1e-5f;
+    _send_state_changed_event();
 }
 void AppController::_set_duty_raw(float n) {
     // state.pspwm_setpoint->ps_duty = n;
@@ -142,14 +147,14 @@ void AppController::_set_duty_raw(float n) {
 }
 
 void AppController::set_lag_dt_ns(float n) {
-    state.pspwm_setpoint->lag_red = n * 1E-9;
+    state.pspwm_setpoint->lag_red = n * 1e-9;
     API_CHOICE_SET_DEADTIMES(app_conf.mcpwm_num,
                              state.pspwm_setpoint->lead_red,
                              state.pspwm_setpoint->lag_red);
     _send_state_changed_event();
 }
 void AppController::set_lead_dt_ns(float n) {
-    state.pspwm_setpoint->lead_red = n * 1E-9;
+    state.pspwm_setpoint->lead_red = n * 1e-9;
     API_CHOICE_SET_DEADTIMES(app_conf.mcpwm_num,
                              state.pspwm_setpoint->lead_red,
                              state.pspwm_setpoint->lag_red);
@@ -160,6 +165,11 @@ void AppController::set_lead_dt_ns(float n) {
  */
 void AppController::set_power_pwm_active(bool new_val) {
     if (new_val == true) {
+        if (state.setpoint_throttling_enabled) {
+            // Begin with duty = 0.0 for soft start
+            // state.pspwm_setpoint->ps_duty = n;
+            API_CHOICE_SET_PS_DUTY(app_conf.mcpwm_num, 0.0f);
+        }
         // aux_hw_drv.set_drv_disabled(false);
         pspwm_resync_enable_output(app_conf.mcpwm_num);
     } else {
@@ -226,18 +236,19 @@ void AppController::save_settings() {
 void AppController::restore_settings() {
     ESP_LOGI(TAG, "Restoring state from settings.json...");
     state.restore_from_file(app_conf.settings_filename);
-    set_setpoint_throttling_enabled(state.setpoint_throttling_enabled);
+    // We only need to run the setters for properties which affect the hardware.
+    //set_setpoint_throttling_enabled(state.setpoint_throttling_enabled);
+    //set_duty_changerate_percent_sec(state.duty_increment * 1e5f / app_conf.timer_fast_interval_ms);
+    //set_frequency_changerate_khz_sec(state.frequency_increment / app_conf.timer_fast_interval_ms); 
+    //set_oneshot_len(state.oneshot_power_pulse_length_ms);
     set_frequency_khz(state.frequency_target * 1E-3f);
-    set_frequency_khz_changerate(state.frequency_increment / app_conf.timer_fast_interval_ms);
     set_duty_percent(state.duty_target * 100.0f);
-    set_duty_percent_changerate(state.duty_increment * 100.0f * 1e3f);
     set_lead_dt_ns(state.pspwm_setpoint->lead_red * 1E9f);
     set_lag_dt_ns(state.pspwm_setpoint->lag_red * 1E9f);
     set_current_limit(state.aux_hw_drv_state->current_limit);
     set_relay_ref_active(state.aux_hw_drv_state->relay_ref_active);
     set_relay_dut_active(state.aux_hw_drv_state->relay_dut_active);
     set_fan_override(state.aux_hw_drv_state->fan_override);
-    set_oneshot_len(state.oneshot_power_pulse_length_ms);
     // There is no API for this at the moment, so this is always active..
     ESP_LOGI(TAG, "Activating Gate driver power supply...");
     aux_hw_drv.set_drv_supply_active(true);
@@ -305,13 +316,13 @@ void AppController::_register_http_api(APIServer* api_server) {
     cb_float = [this](float n) {set_frequency_khz(n);};
     api_server->register_api_cb("set_frequency", cb_float);
     // "set_frequency_changerate"
-    cb_float = [this](float n) {set_frequency_khz_changerate(n);};
+    cb_float = [this](float n) {set_frequency_changerate_khz_sec(n);};
     api_server->register_api_cb("set_frequency_changerate", cb_float);
     // "set_duty"
     cb_float = [this](float n) {set_duty_percent(n);};
     api_server->register_api_cb("set_duty", cb_float);
     // "set_duty_changerate"
-    cb_float = [this](float n) {set_duty_percent_changerate(n);};
+    cb_float = [this](float n) {set_duty_changerate_percent_sec(n);};
     api_server->register_api_cb("set_duty_changerate", cb_float);
     // "set_lag_dt"
     cb_float = [this](float n) {set_lag_dt_ns(n);};
@@ -348,7 +359,7 @@ void AppController::_register_http_api(APIServer* api_server) {
     api_server->register_api_cb("save_settings", cb_void);
 }
 
-/* Connect timer callbacks
+/* Connect timer callbacks. These are run from esp_timer task.
  */
 void AppController::_connect_timer_callbacks(){
     esp_err_t errors;
@@ -465,13 +476,13 @@ void AppController::_on_fast_timer_event_update_state() {
         auto values_differ = throttle_value(&state.pspwm_setpoint->ps_duty,
                                             state.duty_target,
                                             state.duty_increment);
-        if (values_differ) { 
+        if (values_differ) {
             _set_duty_raw(state.pspwm_setpoint->ps_duty);
         }
-        auto values_differ = throttle_value(&state.pspwm_setpoint->frequency,
-                                            state.frequency_target,
-                                            state.frequency_increment);
-        if (values_differ) { 
+        values_differ = throttle_value(&state.pspwm_setpoint->frequency,
+                                       state.frequency_target,
+                                       state.frequency_increment);
+        if (values_differ) {
             _set_frequency_raw(state.pspwm_setpoint->frequency);
         }
     }
@@ -496,14 +507,22 @@ void AppController::_push_state_update() {
     api_server->event_source->send(json_buf.data(), "hw_app_state");
 }
 
+/* Perform setpoint chang rate throttling to a value at ptr x_current
+ * by adding or subtracting a maximum x_increment for each invocation
+ * of this function until the final value x_target is reached.
+ * This does float equality evaluation w/o epsilon which should be safe here
+ * as it is done only after adding/subtracting an exact float type difference.
+ */
 bool throttle_value(float *x_current, float x_target, float x_increment) {
     auto dx = x_target - *x_current;
     if (dx == 0.0f) {
         return false;
     }
+    ESP_LOGD(TAG, "Throttling. Value is: %f.  Target: %f.  Increment: %f.",
+                  *x_current, x_target, x_increment);
     if (dx > 0.0f) {
         *x_current += std::min(dx, x_increment);
-    } else if (dx < 0.0f) {
+    } else { // (dx < 0.0f)
         *x_current += std::max(dx, -x_increment);
     }
     return true;

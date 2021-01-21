@@ -81,13 +81,13 @@ public:
     void set_frequency_khz(float n);
     /** @brief Set rate of change of frequency in kHz per second
      */
-    void set_frequency_khz_changerate(float n);
+    void set_frequency_changerate_khz_sec(float n);
     void _set_frequency_raw(float n);
 
     void set_duty_percent(float n);
     /** @brief Set rate of change of duty cycle in percent per second
      */
-    void set_duty_percent_changerate(float n);
+    void set_duty_changerate_percent_sec(float n);
     void _set_duty_raw(float n);
 
     void set_lag_dt_ns(float n);

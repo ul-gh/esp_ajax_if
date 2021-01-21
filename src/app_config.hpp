@@ -22,7 +22,7 @@ struct AppConfig
     // PRO_CPU_NUM == 1; APP_CPU_NUM == 0 on ESP32
     BaseType_t app_event_task_core_id{APP_CPU_NUM};
     // Fast timer for ADC conversion triggering etc
-    uint32_t timer_fast_interval_ms{100};
+    uint32_t timer_fast_interval_ms{20};
     /** @brief In addition to event-based async state update telegrams, we also
      * send cyclic updates to the HTTP client using this time interval (ms).
      */

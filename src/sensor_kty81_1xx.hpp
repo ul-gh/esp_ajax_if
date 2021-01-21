@@ -30,7 +30,7 @@ struct KTY81_1xxCommonConfig
      */
     adc_atten_t adc_ch_attenuation = ADC_ATTEN_DB_6;
     ////////// Initial averaging when each ADC sample is taken
-    size_t averaged_samples = 64;
+    size_t averaged_samples = 32;
     ////////// Moving average filter length. Must be power of two.
     size_t moving_average_filter_len = 32;
     ////////// Configuration constants for get_kty_temp_lin()

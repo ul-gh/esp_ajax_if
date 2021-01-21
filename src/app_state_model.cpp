@@ -32,7 +32,7 @@ size_t AppState::serialize_full_state(char *buf, size_t buf_len) {
     json_doc["frequency"] = frequency_target * 1e-3f;
     json_doc["frequency_changerate"] = frequency_increment / app_conf.timer_fast_interval_ms;
     json_doc["duty"] = duty_target * 100.0f;
-    json_doc["duty_changerate"] = duty_increment * 100.0f * 1e3f;
+    json_doc["duty_changerate"] = duty_increment * 1e5f / app_conf.timer_fast_interval_ms;
     json_doc["lead_dt"] = pspwm_setpoint->lead_red * 1e9f;
     json_doc["lag_dt"] = pspwm_setpoint->lag_red * 1e9f;
     json_doc["power_pwm_active"] = pspwm_setpoint->output_enabled;
@@ -83,7 +83,7 @@ bool AppState::deserialize_settings(const char *buf, size_t buf_len) {
     frequency_target = float{json_doc["frequency"]} * 1e3f;
     frequency_increment = float{json_doc["frequency_changerate"]} * app_conf.timer_fast_interval_ms;
     duty_target = float{json_doc["duty"]} * 0.01f;
-    duty_increment = float{json_doc["duty_changerate"]} * 1e-2f * 1e-3f;
+    duty_increment = float{json_doc["duty_changerate"]} * app_conf.timer_fast_interval_ms * 1e-5f;;
     pspwm_setpoint->lead_red = float{json_doc["lead_dt"]} * 1e-9f;
     pspwm_setpoint->lag_red = float{json_doc["lag_dt"]} * 1e-9f;
     // Settings for auxiliary HW control module

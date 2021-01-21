@@ -66,7 +66,7 @@ struct AppState
     // Hardware Fault Shutdown Status is latched using this flag
     bool hw_oc_fault_occurred = true;
     // Pulse length for one-shot mode power output pulse
-    uint32_t oneshot_power_pulse_length_ms{1};
+    uint32_t oneshot_power_pulse_length_ms = 1;
 
     // State from AuxHwDrv module
     AuxHwDrvState *aux_hw_drv_state = nullptr;
