@@ -8,7 +8,7 @@
  *
  * @note This depends on the ESP-IDF SDK source files.
  *
- * 2020-02-27 Ulrich Lukas
+ * 2021-01-21 Ulrich Lukas
  */
 #ifndef PS_PWM_H__
 #define PS_PWM_H__
@@ -117,43 +117,36 @@ typedef struct {
  *                                 (See typedef for mcpwm_action_on_pwmxa_t)
  * @param disable_action_lag_leg: Same for lag leg
  */
-esp_err_t pspwm_up_ctr_mode_init(mcpwm_unit_t mcpwm_num,
-                                 const int gpio_lead_a, const int gpio_lead_b,
-                                 const int gpio_lag_a, const int gpio_lag_b,
-                                 const float frequency,
-                                 const float ps_duty,
-                                 const float lead_red, const float lead_fed,
-                                 const float lag_red, const float lag_fed,
-                                 const bool output_enabled,
-                                 mcpwm_action_on_pwmxa_t disable_action_lead_leg,
-                                 mcpwm_action_on_pwmxa_t disable_action_lag_leg);
+esp_err_t pspwm_init(mcpwm_unit_t mcpwm_num,
+                     int gpio_lead_a,
+                     int gpio_lead_b,
+                     int gpio_lag_a,
+                     int gpio_lag_b,
+                     float frequency,
+                     float ps_duty,
+                     float lead_red, float lead_fed,
+                     float lag_red, float lag_fed,
+                     bool output_enabled,
+                     mcpwm_action_on_pwmxa_t disable_action_lead_leg,
+                     mcpwm_action_on_pwmxa_t disable_action_lag_leg);
 
-/** @brief Shortcut version of pspwm_up_ctr_mode_init() with identical
+/** @brief Shortcut version of pspwm_init() with identical
  * rising and falling edge dead times applied for each of lead and lag leg.
  * 
- * This is for compatibility with the call signature of up_down_ctr_mode API.
+ * This is also call compatible with the up_down_ctr_mode API (different file).
  */
-inline esp_err_t pspwm_up_ctr_mode_init_compat(
-        mcpwm_unit_t mcpwm_num,
-        const int gpio_lead_a, const int gpio_lead_b,
-        const int gpio_lag_a, const int gpio_lag_b,
-        const float frequency,
-        const float ps_duty,
-        const float lead_dt, const float lag_dt,
-        const bool output_enabled,
-        mcpwm_action_on_pwmxa_t disable_action_lead_leg,
-        mcpwm_action_on_pwmxa_t disable_action_lag_leg) {
-    return pspwm_up_ctr_mode_init(mcpwm_num,
-                                  gpio_lead_a, gpio_lead_b,
-                                  gpio_lag_a, gpio_lag_b,
-                                  frequency,
-                                  ps_duty,
-                                  lead_dt, lead_dt,
-                                  lag_dt, lag_dt,
-                                  output_enabled,
-                                  disable_action_lead_leg,
-                                  disable_action_lag_leg);
-}
+esp_err_t pspwm_init_symmetrical(mcpwm_unit_t mcpwm_num,
+                                 int gpio_lead_a,
+                                 int gpio_lead_b,
+                                 int gpio_lag_a,
+                                 int gpio_lag_b,
+                                 float frequency,
+                                 float ps_duty,
+                                 float lead_dt,
+                                 float lag_dt,
+                                 bool output_enabled,
+                                 mcpwm_action_on_pwmxa_t disable_action_lead_leg,
+                                 mcpwm_action_on_pwmxa_t disable_action_lag_leg);
 
 /** @brief Set frequency when running PS-PWM generator in up-counting mode
  * @note
@@ -162,8 +155,8 @@ inline esp_err_t pspwm_up_ctr_mode_init_compat(
  * @param mcpwm_num: PWM unit number (enum, MCPWM_UNIT_0 = 0, MCPWM_UNIT_1 = 1),
  * @param frequency: Frequency of the non-rectified waveform in Hz,
  */
-esp_err_t pspwm_up_ctr_mode_set_frequency(mcpwm_unit_t mcpwm_num,
-                                          const float frequency);
+esp_err_t pspwm_set_frequency(mcpwm_unit_t mcpwm_num,
+                              float frequency);
 
 /** @brief Set deadtime values individually for leading leg rising and
  * falling edge as well as for lagging leg rising and falling edge
@@ -175,19 +168,20 @@ esp_err_t pspwm_up_ctr_mode_set_frequency(mcpwm_unit_t mcpwm_num,
  * @param  lag_red: dead time value for rising edge, lagging leg
  * @param  lag_fed: dead time value for falling edge, lagging leg
  */
-esp_err_t pspwm_up_ctr_mode_set_deadtimes(mcpwm_unit_t mcpwm_num,
-                                          const float lead_red, const float lead_fed,
-                                          const float lag_red, const float lag_fed);
+esp_err_t pspwm_set_deadtimes(mcpwm_unit_t mcpwm_num,
+                              float lead_red,
+                              float lead_fed,
+                              float lag_red,
+                              float lag_fed);
 
-/** @brief Shortcut version of pspwm_up_ctr_mode_set_deadtimes() with identical
+/** @brief Shortcut version of pspwm_set_deadtimes() with identical
  * rising and falling edge dead times applied for each of lead and lag leg.
  * 
- * This is for compatibility with the call signature of up_down_ctr_mode API.
+ * This is also call compatible with the up_down_ctr_mode API (different file).
  */
-inline esp_err_t pspwm_up_ctr_mode_set_deadtimes_compat(
-        mcpwm_unit_t mcpwm_num, const float lead_dt, const float lag_dt) {
-    return pspwm_up_ctr_mode_set_deadtimes(mcpwm_num, lead_dt, lead_dt, lag_dt, lag_dt);
-}
+esp_err_t pspwm_set_deadtimes_symmetrical(mcpwm_unit_t mcpwm_num,
+                                          float lead_dt,
+                                          float lag_dt);
 
 /** @brief Set PS-PWM phase shift between lead and lag leg output pairs
  * 
@@ -199,87 +193,8 @@ inline esp_err_t pspwm_up_ctr_mode_set_deadtimes_compat(
  * @param  mcpwm_num: PWM unit number (enum, MCPWM_UNIT_0 = 0, MCPWM_UNIT_1 = 1),
  * @param  ps_duty: Duty cycle of the rectified waveform (0..1)
  */
-esp_err_t pspwm_up_ctr_mode_set_ps_duty(mcpwm_unit_t mcpwm_num, const float ps_duty);
-
-
-
-/*************************************************************//**
- * @brief Set up the PS-PWM generator module for up-down-counting mode, which
- * assures identical ON times for high side and low side outputs of each leg.
- * 
- * Individual dead-times both half-bridge PWM outputs are still possible.
- * 
- * This PWM generation mode does not use the dead-band generator hardware.
- * Instead, the dead-time for each two outputs of a half-bridge is configured
- * by running the main timers in up-down-counting mode and using both compare
- * registers for each timer to generate two symmetric outputs.
- * 
- * Because of the up/down-counting mode, maximum output frequency is half of
- * the value which is possible when using the hardware dead-band generator.
- * 
- * @note When using this mode, it is NOT SAFE to change the frequency, phase
- * shift duty or dead-time setpoints during operation as timer compare events
- * could be missed, causing invalid output waveforms for up to one timer period.
- * THIS WILL CAUSE SHORT-CIRCUITS for bridge output stages!
- * 
- * @param mcpwm_num: PWM unit number (enum, MCPWM_UNIT_0 = 0, MCPWM_UNIT_1 = 1),
- * @param gpio_lead_a: GPIO number leading leg low_side
- * @param gpio_lead_b: GPIO number leading leg high_side
- * @param gpio_lag_a: GPIO number lagging leg low_side
- * @param gpio_lag_b: GPIO number lagging leg high_side
- * @param frequency: Frequency of the non-rectified waveform in Hz,
- * @param ps_duty: Duty cycle of the rectified waveform (0..1)
- * @param lead_dt: leading bridge-leg dead-time in sec (0..),
- * @param lag_dt: lagging bridge-leg dead-time in sec (0..)
- * @param output_enabled: initial output state (true <==> ON)
- * @param disable_action_lead_leg: Choice of actions when lead bridge leg is disabled
- *                                 (See typedef for mcpwm_action_on_pwmxa_t)
- * @param disable_action_lag_leg: Same for lag leg
- */
-esp_err_t pspwm_up_down_ctr_mode_init(mcpwm_unit_t mcpwm_num,
-                                      const int gpio_lead_a, const int gpio_lead_b,
-                                      const int gpio_lag_a, const int gpio_lag_b,
-                                      const float frequency,
-                                      const float ps_duty,
-                                      const float lead_dt, const float lag_dt,
-                                      const bool output_enabled,
-                                      mcpwm_action_on_pwmxa_t disable_action_lead_leg,
-                                      mcpwm_action_on_pwmxa_t disable_action_lag_leg);
-
-/** @brief Set frequency (and update dead-time values) for both output pairs
- * signals of the phase-shift-PWM when using the timer in up/down counting mode.
- * 
- * Because of the up/down-counting mode, maximum output frequency is half of
- * the value which is possible when using the hardware dead-band generator.
- * 
- * @note
- * This does not alter prescaler settings.
- * 
- * @param mcpwm_num: PWM unit number (enum, MCPWM_UNIT_0 = 0, MCPWM_UNIT_1 = 1),
- * @param frequency: Frequency of the non-rectified waveform in Hz,
- */
-esp_err_t pspwm_up_down_ctr_mode_set_frequency(mcpwm_unit_t mcpwm_num,
-                                               const float frequency);
-
-/** @brief Set dead-time values for both output pairs of the phase-shift-PWM
- * when using the timer in up/down counting mode.
- * 
- * @param mcpwm_num: PWM unit number (enum, MCPWM_UNIT_0 = 0, MCPWM_UNIT_1 = 1),
- * @param lead_dt: leading bridge-leg dead-time in sec (0..),
- * @param lag_dt: lagging bridge-leg dead-time in sec (0..)
- */
-esp_err_t pspwm_up_down_ctr_mode_set_deadtimes(mcpwm_unit_t mcpwm_num,
-                                               const float lead_dt, const float lag_dt);
-
-/** @brief Set PS-PWM phase shift between the two output pairs based on the
- * current period time setting as stored in the PWM hardware "period" register.
- * 
- * @param mcpwm_num: PWM unit number (enum, MCPWM_UNIT_0 = 0, MCPWM_UNIT_1 = 1),
- * @param ps_duty: Duty cycle of the rectified waveform (0..1)
- */
-esp_err_t pspwm_up_down_ctr_mode_set_ps_duty(mcpwm_unit_t mcpwm_num,
-                                             const float ps_duty);
-
+esp_err_t pspwm_set_ps_duty(mcpwm_unit_t mcpwm_num,
+                            float ps_duty);
 
 
 /*****************************************************************
@@ -335,7 +250,7 @@ esp_err_t pspwm_resync_enable_output(mcpwm_unit_t mcpwm_num);
  *                                [MCPWM_LOW_LEVEL_TGR | MCPWM_HIGH_LEVEL_TGR]
  */
 esp_err_t pspwm_enable_hw_fault_shutdown(mcpwm_unit_t mcpwm_num,
-                                         const int gpio_fault_shutdown,
+                                         int gpio_fault_shutdown,
                                          mcpwm_fault_input_level_t fault_pin_active_level);
 
 /** @brief Disable hardware fault shutdown pin, resetting the GPIO to default state.
@@ -344,10 +259,9 @@ esp_err_t pspwm_enable_hw_fault_shutdown(mcpwm_unit_t mcpwm_num,
  * @param gpio_fault_shutdown: GPIO pin number for shutdown input
  */
 esp_err_t pspwm_disable_hw_fault_shutdown(mcpwm_unit_t mcpwm_num,
-                                          const int gpio_fault_shutdown);
+                                          int gpio_fault_shutdown);
 
-/** @brief Read from PSPWM state the calculated setpoint into the given
- *  pointer to struct pspwm_setpoint_t.
+/** @brief Return a pointer to PSPWM stage runtime setpoints.
  * 
  * @param mcpwm_num: PWM unit number (enum, MCPWM_UNIT_0 = 0, MCPWM_UNIT_1 = 1),
  * @param setpoint: Pointer to a struct instance of pspwm_setpoint_t
@@ -355,8 +269,8 @@ esp_err_t pspwm_disable_hw_fault_shutdown(mcpwm_unit_t mcpwm_num,
 esp_err_t pspwm_get_setpoint_ptr(mcpwm_unit_t mcpwm_num,
                                  pspwm_setpoint_t** setpoint);
 
-/** @brief Read from PSPWM state the calculated setpoint limits into the given
- *  pointer to struct pspwm_setpoint_limits_t.
+/** @brief Return a pointer to PSPWM stage setpoint limits as
+ * calculated from clock configuration.
  * 
  * @param mcpwm_num: PWM unit number (enum, MCPWM_UNIT_0 = 0, MCPWM_UNIT_1 = 1),
  * @param setpoint_limits: Pointer to a struct instance of pspwm_setpoint_limits_t
@@ -364,8 +278,7 @@ esp_err_t pspwm_get_setpoint_ptr(mcpwm_unit_t mcpwm_num,
 esp_err_t pspwm_get_setpoint_limits_ptr(mcpwm_unit_t mcpwm_num,
                                         pspwm_setpoint_limits_t** setpoint_limits);
 
-/** @brief Read from PSPWM state the base clock and timer clock prescaler
- * settings into the given pointer to struct pspwm_clk_conf_t.
+/** @brief Return a pointer to PSPWM stage clock configuration.
  * 
  * @param mcpwm_num: PWM unit number (enum, MCPWM_UNIT_0 = 0, MCPWM_UNIT_1 = 1),
  * @param clk_conf: Pointer to a struct instance of pspwm_setpoint_t

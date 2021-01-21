@@ -1,0 +1,5 @@
+<map id="SensorKTY81_1xx::get_temp_lin" name="SensorKTY81_1xx::get_temp_lin">
+<area shape="rect" id="node1" title="Fairly precise temperature conversion if the temperature sensor voltage has good linearisation...." alt="" coords="5,39,161,80"/>
+<area shape="rect" id="node2" href="$class_e_s_p32_a_d_c_channel.html#a127f58070640b416c4e0ce6291697773" title="Calculate backwards the raw ADC reading for given input voltage, based on calibration constants from ..." alt="" coords="209,5,407,47"/>
+<area shape="rect" id="node3" href="$class_e_s_p32_a_d_c_channel_filtered.html#a5bd415b08cf7b7486b750a31dd762996" title="Get raw ADC channel conversion value, through moving average filter." alt="" coords="218,71,398,112"/>
+</map>

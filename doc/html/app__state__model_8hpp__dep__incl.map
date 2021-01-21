@@ -1,5 +1,5 @@
 <map id="src/app_state_model.hpp" name="src/app_state_model.hpp">
-<area shape="rect" id="node1" title=" " alt="" coords="5,5,191,32"/>
-<area shape="rect" id="node2" href="$app__controller_8hpp.html" title="Application Controller Implementing C++ and HTTP GET API." alt="" coords="15,80,181,107"/>
-<area shape="rect" id="node3" href="$app__main_8cpp.html" title="ESP&#45;AJAX&#45;Lab HTTP server, AJAX API backend, web application and Soc hardware drivers for WiFi remote ..." alt="" coords="30,155,166,181"/>
+<area shape="rect" id="node1" title=" " alt="" coords="5,5,173,32"/>
+<area shape="rect" id="node2" href="$app__controller_8hpp.html" title="Application Controller Implementing C++ and HTTP GET API." alt="" coords="14,80,165,107"/>
+<area shape="rect" id="node3" href="$app__main_8cpp.html" title="ESP&#45;AJAX&#45;Lab HTTP server, AJAX API backend, web application and Soc hardware drivers for WiFi remote ..." alt="" coords="27,155,152,181"/>
 </map>

@@ -1,5 +1,5 @@
 <map id="src/aux_hw_drv.hpp" name="src/aux_hw_drv.hpp">
-<area shape="rect" id="node1" title="Auxiliary hardware driver for ESP&#45;AJAX&#45;Lab." alt="" coords="13,5,164,32"/>
-<area shape="rect" id="node2" href="$app__controller_8hpp.html" title="Application Controller Implementing C++ and HTTP GET API." alt="" coords="5,80,172,107"/>
-<area shape="rect" id="node3" href="$app__main_8cpp.html" title="ESP&#45;AJAX&#45;Lab HTTP server, AJAX API backend, web application and Soc hardware drivers for WiFi remote ..." alt="" coords="21,155,157,181"/>
+<area shape="rect" id="node1" title="Auxiliary hardware driver for ESP&#45;AJAX&#45;Lab." alt="" coords="13,5,149,32"/>
+<area shape="rect" id="node2" href="$app__controller_8hpp.html" title="Application Controller Implementing C++ and HTTP GET API." alt="" coords="5,80,156,107"/>
+<area shape="rect" id="node3" href="$app__main_8cpp.html" title="ESP&#45;AJAX&#45;Lab HTTP server, AJAX API backend, web application and Soc hardware drivers for WiFi remote ..." alt="" coords="18,155,143,181"/>
 </map>

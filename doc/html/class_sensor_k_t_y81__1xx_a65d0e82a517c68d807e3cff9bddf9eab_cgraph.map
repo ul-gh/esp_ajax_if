@@ -1,0 +1,4 @@
+<map id="SensorKTY81_1xx::update_filter" name="SensorKTY81_1xx::update_filter">
+<area shape="rect" id="node1" title="Updates the moving average with a new sampled value from ADC." alt="" coords="5,5,183,47"/>
+<area shape="rect" id="node2" href="$class_e_s_p32_a_d_c_channel_filtered.html#ae388e9f2c2d7f24498429ed5c891f8f9" title="Explicitly trigger a new ADC analog input channel acquisition." alt="" coords="231,5,411,47"/>
+</map>

@@ -60,9 +60,9 @@ Inheritance diagram for SensorKTY81_1xx:</div>
 <div class="dyncontent">
 <div class="center"><img src="class_sensor_k_t_y81__1xx__inherit__graph.png" border="0" usemap="#_sensor_k_t_y81__1xx_inherit__map" alt="Inheritance graph"/></div>
 <map name="_sensor_k_t_y81__1xx_inherit__map" id="_sensor_k_t_y81__1xx_inherit__map">
-<area shape="rect" title="KTY81&#45;1xx type silicon temperature sensor readout and conversion functions using the ESP32 ADC in its..." alt="" coords="109,5,246,32"/>
-<area shape="rect" href="class_sensor_k_t_y81__110__120.html" title="KTY81&#45;110 or KTY81&#45;120 type silicon temperature sensor readout using the ESP32 ADC in its high&#45;linear..." alt="" coords="5,80,173,107"/>
-<area shape="rect" href="class_sensor_k_t_y81__121.html" title="KTY81&#45;121 type silicon temperature sensor readout using the ESP32 ADC in its high&#45;linearity region." alt="" coords="198,80,335,107"/>
+<area shape="rect" title="KTY81&#45;1xx type silicon temperature sensor readout and conversion functions using the ESP32 ADC in its..." alt="" coords="103,5,234,32"/>
+<area shape="rect" href="class_sensor_k_t_y81__110__120.html" title="KTY81&#45;110 or KTY81&#45;120 type silicon temperature sensor readout using the ESP32 ADC in its high&#45;linear..." alt="" coords="5,80,164,107"/>
+<area shape="rect" href="class_sensor_k_t_y81__121.html" title="KTY81&#45;121 type silicon temperature sensor readout using the ESP32 ADC in its high&#45;linearity region." alt="" coords="189,80,319,107"/>
 </map>
 <center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
 <div class="dynheader">
@@ -70,11 +70,11 @@ Collaboration diagram for SensorKTY81_1xx:</div>
 <div class="dyncontent">
 <div class="center"><img src="class_sensor_k_t_y81__1xx__coll__graph.png" border="0" usemap="#_sensor_k_t_y81__1xx_coll__map" alt="Collaboration graph"/></div>
 <map name="_sensor_k_t_y81__1xx_coll__map" id="_sensor_k_t_y81__1xx_coll__map">
-<area shape="rect" title="KTY81&#45;1xx type silicon temperature sensor readout and conversion functions using the ESP32 ADC in its..." alt="" coords="596,85,733,112"/>
-<area shape="rect" href="class_e_s_p32_a_d_c_channel_filtered.html" title=" " alt="" coords="263,20,453,76"/>
-<area shape="rect" href="class_e_s_p32_a_d_c_channel.html" title="ESP32 ADC 1 channel access with configurable averaging." alt="" coords="17,5,160,32"/>
-<area shape="rect" href="class_moving_average_u_int16.html" title=" " alt="" coords="5,57,172,98"/>
-<area shape="rect" href="class_equidistant_p_w_l_u_int16.html" title=" " alt="" coords="256,101,460,142"/>
+<area shape="rect" title="KTY81&#45;1xx type silicon temperature sensor readout and conversion functions using the ESP32 ADC in its..." alt="" coords="535,85,665,112"/>
+<area shape="rect" href="class_e_s_p32_a_d_c_channel_filtered.html" title=" " alt="" coords="229,20,409,76"/>
+<area shape="rect" href="class_e_s_p32_a_d_c_channel.html" title="ESP32 ADC 1 channel access with configurable averaging." alt="" coords="9,5,147,32"/>
+<area shape="rect" href="class_moving_average_u_int16.html" title=" " alt="" coords="5,57,151,98"/>
+<area shape="rect" href="class_equidistant_p_w_l_u_int16.html" title=" " alt="" coords="228,101,411,142"/>
 </map>
 <center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
 <table class="memberdecls">
@@ -188,6 +188,16 @@ Protected Attributes</h2></td></tr>
 <p>Fairly precise temperature conversion if the temperature sensor voltage has good linearisation. Worst results at temperature extremes. </p>
 <dl class="section return"><dt>Returns</dt><dd>Temperature in °C</dd></dl>
 <dl class="section note"><dt>Note</dt><dd>This only reports the current state of the internal filter. You must call <a class="el" href="class_sensor_k_t_y81__1xx.html#a65d0e82a517c68d807e3cff9bddf9eab" title="Updates the moving average with a new sampled value from ADC.">update_filter()</a> periodicly to read new physical data! </dd></dl>
+<div class="dynheader">
+Here is the call graph for this function:</div>
+<div class="dyncontent">
+<div class="center"><img src="class_sensor_k_t_y81__1xx_a99d1d041700d389eefae738b0a43ebd8_cgraph.png" border="0" usemap="#class_sensor_k_t_y81__1xx_a99d1d041700d389eefae738b0a43ebd8_cgraph" alt=""/></div>
+<map name="class_sensor_k_t_y81__1xx_a99d1d041700d389eefae738b0a43ebd8_cgraph" id="class_sensor_k_t_y81__1xx_a99d1d041700d389eefae738b0a43ebd8_cgraph">
+<area shape="rect" title="Fairly precise temperature conversion if the temperature sensor voltage has good linearisation...." alt="" coords="5,39,161,80"/>
+<area shape="rect" href="class_e_s_p32_a_d_c_channel.html#a127f58070640b416c4e0ce6291697773" title="Calculate backwards the raw ADC reading for given input voltage, based on calibration constants from ..." alt="" coords="209,5,407,47"/>
+<area shape="rect" href="class_e_s_p32_a_d_c_channel_filtered.html#a5bd415b08cf7b7486b750a31dd762996" title="Get raw ADC channel conversion value, through moving average filter." alt="" coords="218,71,398,112"/>
+</map>
+</div>
 
 </div>
 </div>
@@ -209,6 +219,15 @@ Protected Attributes</h2></td></tr>
 <p>Excellent precision temperature sensing using piecewise linear interpolation of Look-Up-Table values for a KTY81-121 type sensor. Use this if temperatures above 100°C ore below 0°C are to be measured. </p>
 <dl class="section return"><dt>Returns</dt><dd>Temperature in °C</dd></dl>
 <dl class="section note"><dt>Note</dt><dd>This only reports the current state of the internal filter. You must call <a class="el" href="class_sensor_k_t_y81__1xx.html#a65d0e82a517c68d807e3cff9bddf9eab" title="Updates the moving average with a new sampled value from ADC.">update_filter()</a> periodicly to read new physical data! </dd></dl>
+<div class="dynheader">
+Here is the call graph for this function:</div>
+<div class="dyncontent">
+<div class="center"><img src="class_sensor_k_t_y81__1xx_a57845a222631a08139de0f22edd47f28_cgraph.png" border="0" usemap="#class_sensor_k_t_y81__1xx_a57845a222631a08139de0f22edd47f28_cgraph" alt=""/></div>
+<map name="class_sensor_k_t_y81__1xx_a57845a222631a08139de0f22edd47f28_cgraph" id="class_sensor_k_t_y81__1xx_a57845a222631a08139de0f22edd47f28_cgraph">
+<area shape="rect" title="Excellent precision temperature sensing using piecewise linear interpolation of Look&#45;Up&#45;Table values ..." alt="" coords="5,5,161,47"/>
+<area shape="rect" href="class_e_s_p32_a_d_c_channel_filtered.html#a5bd415b08cf7b7486b750a31dd762996" title="Get raw ADC channel conversion value, through moving average filter." alt="" coords="209,5,389,47"/>
+</map>
+</div>
 
 </div>
 </div>
@@ -229,6 +248,15 @@ Protected Attributes</h2></td></tr>
 
 <p>Updates the moving average with a new sampled value from ADC. </p>
 <p>This must be called periodically. </p>
+<div class="dynheader">
+Here is the call graph for this function:</div>
+<div class="dyncontent">
+<div class="center"><img src="class_sensor_k_t_y81__1xx_a65d0e82a517c68d807e3cff9bddf9eab_cgraph.png" border="0" usemap="#class_sensor_k_t_y81__1xx_a65d0e82a517c68d807e3cff9bddf9eab_cgraph" alt=""/></div>
+<map name="class_sensor_k_t_y81__1xx_a65d0e82a517c68d807e3cff9bddf9eab_cgraph" id="class_sensor_k_t_y81__1xx_a65d0e82a517c68d807e3cff9bddf9eab_cgraph">
+<area shape="rect" title="Updates the moving average with a new sampled value from ADC." alt="" coords="5,5,183,47"/>
+<area shape="rect" href="class_e_s_p32_a_d_c_channel_filtered.html#ae388e9f2c2d7f24498429ed5c891f8f9" title="Explicitly trigger a new ADC analog input channel acquisition." alt="" coords="231,5,411,47"/>
+</map>
+</div>
 
 </div>
 </div>

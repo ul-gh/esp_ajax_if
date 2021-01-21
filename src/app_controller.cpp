@@ -9,7 +9,7 @@
  * to the AuxHwDrv class, see aux_hw_drv.cpp.
  * 
  * License: GPL v.3 
- * U. Lukas 2020-12-25
+ * U. Lukas 2021-01-21
  */
 #include "FreeRTOS.h"
 #include "freertos/task.h"
@@ -27,20 +27,12 @@
 #include "esp_log.h"
 static auto TAG = "AppController";
 
-#ifdef USE_ASYMMETRIC_FULL_SPEED_DRIVE_API
-#define API_CHOICE_INIT pspwm_up_ctr_mode_init_compat
-#define API_CHOICE_SET_FREQUENCY pspwm_up_ctr_mode_set_frequency
-#define API_CHOICE_SET_PS_DUTY pspwm_up_ctr_mode_set_ps_duty
-#define API_CHOICE_SET_DEADTIMES pspwm_up_ctr_mode_set_deadtimes_compat
-#else
-#define API_CHOICE_INIT pspwm_up_down_ctr_mode_init
-#define API_CHOICE_SET_FREQUENCY pspwm_up_down_ctr_mode_set_frequency
-#define API_CHOICE_SET_PS_DUTY pspwm_up_down_ctr_mode_set_ps_duty
-#define API_CHOICE_SET_DEADTIMES pspwm_up_down_ctr_mode_set_deadtimes
-#endif
-
+/* Perform setpoint rate throttling, see definition at bottom of this file
+ */
 bool throttle_value(float *x_current, float x_target, float x_increment);
 
+/** FreeRTOS event group bits definition for application event_task event loop
+ */
 struct EventFlags
 {
     enum {TIMER_FAST, TIMER_SLOW, STATE_CHANGED, CONFIG_CHANGED};
@@ -126,7 +118,7 @@ void AppController::set_frequency_changerate_khz_sec(float n) {
 }
 void AppController::_set_frequency_raw(float n) {
     // state.pspwm_setpoint->frequency = n;
-    API_CHOICE_SET_FREQUENCY(app_conf.mcpwm_num, n);
+    pspwm_set_frequency(app_conf.mcpwm_num, n);
     _send_state_changed_event();
 }
 
@@ -142,22 +134,22 @@ void AppController::set_duty_changerate_percent_sec(float n) {
 }
 void AppController::_set_duty_raw(float n) {
     // state.pspwm_setpoint->ps_duty = n;
-    API_CHOICE_SET_PS_DUTY(app_conf.mcpwm_num, n);
+    pspwm_set_ps_duty(app_conf.mcpwm_num, n);
     _send_state_changed_event();
 }
 
 void AppController::set_lag_dt_ns(float n) {
     state.pspwm_setpoint->lag_red = n * 1e-9;
-    API_CHOICE_SET_DEADTIMES(app_conf.mcpwm_num,
-                             state.pspwm_setpoint->lead_red,
-                             state.pspwm_setpoint->lag_red);
+    pspwm_set_deadtimes_symmetrical(app_conf.mcpwm_num,
+                                    state.pspwm_setpoint->lead_red,
+                                    state.pspwm_setpoint->lag_red);
     _send_state_changed_event();
 }
 void AppController::set_lead_dt_ns(float n) {
     state.pspwm_setpoint->lead_red = n * 1e-9;
-    API_CHOICE_SET_DEADTIMES(app_conf.mcpwm_num,
-                             state.pspwm_setpoint->lead_red,
-                             state.pspwm_setpoint->lag_red);
+    pspwm_set_deadtimes_symmetrical(app_conf.mcpwm_num,
+                                    state.pspwm_setpoint->lead_red,
+                                    state.pspwm_setpoint->lag_red);
     _send_state_changed_event();
 }
 
@@ -168,7 +160,7 @@ void AppController::set_power_pwm_active(bool new_val) {
         if (state.setpoint_throttling_enabled) {
             // Begin with duty = 0.0 for soft start
             // state.pspwm_setpoint->ps_duty = n;
-            API_CHOICE_SET_PS_DUTY(app_conf.mcpwm_num, 0.0f);
+            pspwm_set_ps_duty(app_conf.mcpwm_num, 0.0f);
         }
         // aux_hw_drv.set_drv_disabled(false);
         pspwm_resync_enable_output(app_conf.mcpwm_num);
@@ -229,18 +221,15 @@ void AppController::save_settings() {
     _send_state_changed_event();
 }
 
-/* Run all setter functions associated with the saved settings.
+/* Read state back from SPI flash file and initialize the hardware
+ * with these settings.
  * 
- * This is called on boot when state is restored from file.
+ * This is called on boot.
  */
 void AppController::restore_settings() {
     ESP_LOGI(TAG, "Restoring state from settings.json...");
     state.restore_from_file(app_conf.settings_filename);
     // We only need to run the setters for properties which affect the hardware.
-    //set_setpoint_throttling_enabled(state.setpoint_throttling_enabled);
-    //set_duty_changerate_percent_sec(state.duty_increment * 1e5f / app_conf.timer_fast_interval_ms);
-    //set_frequency_changerate_khz_sec(state.frequency_increment / app_conf.timer_fast_interval_ms); 
-    //set_oneshot_len(state.oneshot_power_pulse_length_ms);
     set_frequency_khz(state.frequency_target * 1E-3f);
     set_duty_percent(state.duty_target * 100.0f);
     set_lead_dt_ns(state.pspwm_setpoint->lead_red * 1E9f);
@@ -258,18 +247,25 @@ void AppController::restore_settings() {
 
 void AppController::_initialize_ps_pwm_drv() {
     ESP_LOGI(TAG, "Configuring Phase-Shift-PWM...");
-    auto errors = API_CHOICE_INIT(
+    auto errors = pspwm_init_symmetrical(
         app_conf.mcpwm_num,
-        app_conf.gpio_pwm0a_out, app_conf.gpio_pwm0b_out,
-        app_conf.gpio_pwm1a_out, app_conf.gpio_pwm1b_out,
-        app_conf.init_frequency, app_conf.init_ps_duty,
-        app_conf.init_lead_dt, app_conf.init_lag_dt,
+        app_conf.gpio_pwm0a_out,
+        app_conf.gpio_pwm0b_out,
+        app_conf.gpio_pwm1a_out,
+        app_conf.gpio_pwm1b_out,
+        app_conf.init_frequency,
+        app_conf.init_ps_duty,
+        app_conf.init_lead_dt,
+        app_conf.init_lag_dt,
         app_conf.init_power_pwm_active,
-        app_conf.disable_action_lead_leg, app_conf.disable_action_lag_leg);
+        app_conf.disable_action_lead_leg,
+        app_conf.disable_action_lag_leg);
     errors |= pspwm_get_setpoint_limits_ptr(app_conf.mcpwm_num,
                                             &state.pspwm_setpoint_limits);
-    errors |= pspwm_get_setpoint_ptr(app_conf.mcpwm_num, &state.pspwm_setpoint);
-    errors |= pspwm_get_clk_conf_ptr(app_conf.mcpwm_num, &state.pspwm_clk_conf);
+    errors |= pspwm_get_setpoint_ptr(app_conf.mcpwm_num,
+                                     &state.pspwm_setpoint);
+    errors |= pspwm_get_clk_conf_ptr(app_conf.mcpwm_num,
+                                     &state.pspwm_clk_conf);
     errors |= pspwm_enable_hw_fault_shutdown(app_conf.mcpwm_num,
                                              app_conf.gpio_fault_shutdown,
                                              MCPWM_LOW_LEVEL_TGR);
@@ -488,7 +484,8 @@ void AppController::_on_fast_timer_event_update_state() {
     }
 }
 
-/* Application state is sent as a push update via the SSE event source.
+/* Called when app state is changed and triggers the respective event.
+ * Used for sending push updates to the clients.
  */
 void AppController::_send_state_changed_event() {
     xEventGroupSetBits(_app_event_group, EventFlags::state_changed);
@@ -507,7 +504,7 @@ void AppController::_push_state_update() {
     api_server->event_source->send(json_buf.data(), "hw_app_state");
 }
 
-/* Perform setpoint chang rate throttling to a value at ptr x_current
+/* Perform setpoint change rate throttling to a value at ptr x_current
  * by adding or subtracting a maximum x_increment for each invocation
  * of this function until the final value x_target is reached.
  * This does float equality evaluation w/o epsilon which should be safe here

@@ -1,0 +1,5 @@
+<map id="AppController::save_settings" name="AppController::save_settings">
+<area shape="rect" id="node1" title="Save all runtime configurable settings to SPI flash. The settings are a subset of all values in struc..." alt="" coords="5,5,140,47"/>
+<area shape="rect" id="node2" href="$struct_app_state.html#af1af861ce5a7129b7e1e6e1db8cb42a0" title="Write application runtime configurable settings to SPIFFs file as a JSON string." alt="" coords="188,13,339,39"/>
+<area shape="rect" id="node3" href="$struct_app_state.html#ae715e881aa094d0ce9c7ff6a86e98d58" title="Serialize application runtime state and configurable settings into buffer as a JSON string." alt="" coords="387,5,519,47"/>
+</map>

@@ -26,10 +26,6 @@
 #include "app_config.hpp"
 #include "app_state_model.hpp"
 
-// Only the up-counting mode using the hardware dead-band generator is safe
-// for changing setpoints on-the-fly
-#define USE_ASYMMETRIC_FULL_SPEED_DRIVE_API
-
 
 /** @brief Application main controller for PS-PWM generator hardware
  *
@@ -125,10 +121,10 @@ public:
      */
     void save_settings();
 
-    /** @brief Read state back from SPI flash file and run all setter
-     * functions associated with the saved settings.
+    /** @brief Read state back from SPI flash file and initialize the hardware
+     * with these settings.
      * 
-     * This is called on boot when state is restored from file.
+     * This is called on boot.
      */
     void restore_settings();
 

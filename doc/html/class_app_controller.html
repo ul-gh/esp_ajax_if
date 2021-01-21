@@ -59,22 +59,22 @@ Collaboration diagram for AppController:</div>
 <div class="dyncontent">
 <div class="center"><img src="class_app_controller__coll__graph.png" border="0" usemap="#_app_controller_coll__map" alt="Collaboration graph"/></div>
 <map name="_app_controller_coll__map" id="_app_controller_coll__map">
-<area shape="rect" title="Application main controller for PS&#45;PWM generator hardware." alt="" coords="1393,260,1504,287"/>
-<area shape="rect" href="struct_app_state.html" title="Application state containing data and settings model." alt="" coords="1177,132,1258,159"/>
-<area shape="rect" href="structpspwm__setpoint__t.html" title=" " alt="" coords="805,8,946,35"/>
-<area shape="rect" href="struct_app_config.html" title="Application configuration and default values for class AppController." alt="" coords="831,59,920,85"/>
-<area shape="rect" href="structpspwm__clk__conf__t.html" title=" " alt="" coords="804,109,947,136"/>
-<area shape="rect" href="structpspwm__setpoint__limits__t.html" title=" " alt="" coords="783,160,968,187"/>
-<area shape="rect" href="struct_aux_hw_drv_state.html" title=" " alt="" coords="813,228,938,255"/>
-<area shape="rect" href="class_aux_hw_drv.html" title="Auxiliary hardware driver for ESP&#45;AJAX&#45;Lab This implements GPIO control for relays,..." alt="" coords="1172,260,1263,287"/>
-<area shape="rect" href="class_sensor_k_t_y81__121.html" title="KTY81&#45;121 type silicon temperature sensor readout using the ESP32 ADC in its high&#45;linearity region." alt="" coords="807,303,944,329"/>
-<area shape="rect" href="class_sensor_k_t_y81__1xx.html" title="KTY81&#45;1xx type silicon temperature sensor readout and conversion functions using the ESP32 ADC in its..." alt="" coords="596,303,733,329"/>
-<area shape="rect" href="class_e_s_p32_a_d_c_channel_filtered.html" title=" " alt="" coords="263,237,453,293"/>
-<area shape="rect" href="class_e_s_p32_a_d_c_channel.html" title="ESP32 ADC 1 channel access with configurable averaging." alt="" coords="17,223,160,249"/>
-<area shape="rect" href="class_moving_average_u_int16.html" title=" " alt="" coords="5,274,172,315"/>
-<area shape="rect" href="class_equidistant_p_w_l_u_int16.html" title=" " alt="" coords="256,318,460,359"/>
-<area shape="rect" href="class_a_p_i_server.html" title="AJAX HTTP API server for ESP&#45;AJAX&#45;Lab." alt="" coords="1175,337,1260,364"/>
-<area shape="rect" href="struct_a_p_i_server_config.html" title=" " alt="" coords="812,353,939,380"/>
+<area shape="rect" title="Application main controller for PS&#45;PWM generator hardware." alt="" coords="1267,257,1367,284"/>
+<area shape="rect" href="struct_app_state.html" title="Application state containing data and settings model." alt="" coords="1068,129,1144,156"/>
+<area shape="rect" href="structpspwm__setpoint__t.html" title=" " alt="" coords="734,5,861,32"/>
+<area shape="rect" href="struct_app_config.html" title="Application configuration and default values for class AppController." alt="" coords="757,56,838,83"/>
+<area shape="rect" href="structpspwm__clk__conf__t.html" title=" " alt="" coords="733,107,862,133"/>
+<area shape="rect" href="structpspwm__setpoint__limits__t.html" title=" " alt="" coords="715,157,880,184"/>
+<area shape="rect" href="struct_aux_hw_drv_state.html" title=" " alt="" coords="741,225,853,252"/>
+<area shape="rect" href="class_aux_hw_drv.html" title="Auxiliary hardware driver for ESP&#45;AJAX&#45;Lab This implements GPIO control for relays,..." alt="" coords="1065,257,1147,284"/>
+<area shape="rect" href="class_sensor_k_t_y81__121.html" title="KTY81&#45;121 type silicon temperature sensor readout using the ESP32 ADC in its high&#45;linearity region." alt="" coords="732,300,863,327"/>
+<area shape="rect" href="class_sensor_k_t_y81__1xx.html" title="KTY81&#45;1xx type silicon temperature sensor readout and conversion functions using the ESP32 ADC in its..." alt="" coords="535,300,665,327"/>
+<area shape="rect" href="class_e_s_p32_a_d_c_channel_filtered.html" title=" " alt="" coords="229,235,409,291"/>
+<area shape="rect" href="class_e_s_p32_a_d_c_channel.html" title="ESP32 ADC 1 channel access with configurable averaging." alt="" coords="9,220,147,247"/>
+<area shape="rect" href="class_moving_average_u_int16.html" title=" " alt="" coords="5,271,151,313"/>
+<area shape="rect" href="class_equidistant_p_w_l_u_int16.html" title=" " alt="" coords="228,315,411,357"/>
+<area shape="rect" href="class_a_p_i_server.html" title="AJAX HTTP API server for ESP&#45;AJAX&#45;Lab." alt="" coords="1067,335,1145,361"/>
+<area shape="rect" href="struct_a_p_i_server_config.html" title=" " alt="" coords="740,351,855,377"/>
 </map>
 <center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
 <table class="memberdecls">
@@ -87,6 +87,9 @@ Public Member Functions</h2></td></tr>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_app_controller.html#aecffa94d28172d6effaaa72903bf06cf">begin</a> ()</td></tr>
 <tr class="memdesc:aecffa94d28172d6effaaa72903bf06cf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Begin operation. This also starts the timer callbacks etc. This will fail if networking etc. is not set up correctly! <br /></td></tr>
 <tr class="separator:aecffa94d28172d6effaaa72903bf06cf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa60c4e365c2e0980d3a2e2628da23f52"><td class="memItemLeft" align="right" valign="top"><a id="aa60c4e365c2e0980d3a2e2628da23f52"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>set_setpoint_throttling_enabled</b> (bool new_val)</td></tr>
+<tr class="separator:aa60c4e365c2e0980d3a2e2628da23f52"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac769c9e35b7391ebed9674a87724caf6"><td class="memItemLeft" align="right" valign="top"><a id="ac769c9e35b7391ebed9674a87724caf6"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>set_frequency_min_khz</b> (float n)</td></tr>
 <tr class="separator:ac769c9e35b7391ebed9674a87724caf6"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -96,19 +99,33 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>set_frequency_max_khz
 <tr class="memitem:aefd459afa9d082ac9cb12047e564bb77"><td class="memItemLeft" align="right" valign="top"><a id="aefd459afa9d082ac9cb12047e564bb77"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>set_frequency_khz</b> (float n)</td></tr>
 <tr class="separator:aefd459afa9d082ac9cb12047e564bb77"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad6b8bbf280237736f3952a7a51eab9c7"><td class="memItemLeft" align="right" valign="top"><a id="ad6b8bbf280237736f3952a7a51eab9c7"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_app_controller.html#ad6b8bbf280237736f3952a7a51eab9c7">set_frequency_changerate_khz_sec</a> (float n)</td></tr>
+<tr class="memdesc:ad6b8bbf280237736f3952a7a51eab9c7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set rate of change of frequency in kHz per second. <br /></td></tr>
+<tr class="separator:ad6b8bbf280237736f3952a7a51eab9c7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4e21be6f1ac3ff16eae0311323476789"><td class="memItemLeft" align="right" valign="top"><a id="a4e21be6f1ac3ff16eae0311323476789"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>_set_frequency_raw</b> (float n)</td></tr>
+<tr class="separator:a4e21be6f1ac3ff16eae0311323476789"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aedfd4b4e63e1a46b76440d68fbdfbb6e"><td class="memItemLeft" align="right" valign="top"><a id="aedfd4b4e63e1a46b76440d68fbdfbb6e"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>set_duty_percent</b> (float n)</td></tr>
 <tr class="separator:aedfd4b4e63e1a46b76440d68fbdfbb6e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a71aab84ad92bb3ef13c13c87d6d15b11"><td class="memItemLeft" align="right" valign="top"><a id="a71aab84ad92bb3ef13c13c87d6d15b11"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_app_controller.html#a71aab84ad92bb3ef13c13c87d6d15b11">set_duty_changerate_percent_sec</a> (float n)</td></tr>
+<tr class="memdesc:a71aab84ad92bb3ef13c13c87d6d15b11"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set rate of change of duty cycle in percent per second. <br /></td></tr>
+<tr class="separator:a71aab84ad92bb3ef13c13c87d6d15b11"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab85d5304238646cf1ce1cb7896cf260e"><td class="memItemLeft" align="right" valign="top"><a id="ab85d5304238646cf1ce1cb7896cf260e"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>_set_duty_raw</b> (float n)</td></tr>
+<tr class="separator:ab85d5304238646cf1ce1cb7896cf260e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad284ae7890b27ed6fdd086613ecc3eca"><td class="memItemLeft" align="right" valign="top"><a id="ad284ae7890b27ed6fdd086613ecc3eca"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>set_lag_dt_ns</b> (float n)</td></tr>
 <tr class="separator:ad284ae7890b27ed6fdd086613ecc3eca"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aaaccfb8c9dc0c656516b72eb8e15aa84"><td class="memItemLeft" align="right" valign="top"><a id="aaaccfb8c9dc0c656516b72eb8e15aa84"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>set_lead_dt_ns</b> (float n)</td></tr>
 <tr class="separator:aaaccfb8c9dc0c656516b72eb8e15aa84"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5692ec198476bba9456f51176f39f3dd"><td class="memItemLeft" align="right" valign="top"><a id="a5692ec198476bba9456f51176f39f3dd"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_app_controller.html#a5692ec198476bba9456f51176f39f3dd">set_power_pwm_active</a> (bool state)</td></tr>
-<tr class="memdesc:a5692ec198476bba9456f51176f39f3dd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Activate PWM power output if arg is true. <br /></td></tr>
-<tr class="separator:a5692ec198476bba9456f51176f39f3dd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad9b0dcd08b3ea49136f1a374133b2243"><td class="memItemLeft" align="right" valign="top"><a id="ad9b0dcd08b3ea49136f1a374133b2243"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_app_controller.html#ad9b0dcd08b3ea49136f1a374133b2243">set_power_pwm_active</a> (bool new_val)</td></tr>
+<tr class="memdesc:ad9b0dcd08b3ea49136f1a374133b2243"><td class="mdescLeft">&#160;</td><td class="mdescRight">Activate PWM power output if arg is true. <br /></td></tr>
+<tr class="separator:ad9b0dcd08b3ea49136f1a374133b2243"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2597ae7d2aab468382c8bd5a957d27ac"><td class="memItemLeft" align="right" valign="top"><a id="a2597ae7d2aab468382c8bd5a957d27ac"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_app_controller.html#a2597ae7d2aab468382c8bd5a957d27ac">set_oneshot_len</a> (float n)</td></tr>
 <tr class="memdesc:a2597ae7d2aab468382c8bd5a957d27ac"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set power output oneshot pulse timer pulse length in seconds. <br /></td></tr>
@@ -123,21 +140,21 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>clear_shutdown</b> ()
 <tr class="memitem:ad7b8fbf8b2eb96e8efe6d3888364f5db"><td class="memItemLeft" align="right" valign="top"><a id="ad7b8fbf8b2eb96e8efe6d3888364f5db"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>set_current_limit</b> (float n)</td></tr>
 <tr class="separator:ad7b8fbf8b2eb96e8efe6d3888364f5db"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1aa25b4fe24142ae138d66f4ec0e9907"><td class="memItemLeft" align="right" valign="top"><a id="a1aa25b4fe24142ae138d66f4ec0e9907"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>set_relay_ref_active</b> (bool state)</td></tr>
-<tr class="separator:a1aa25b4fe24142ae138d66f4ec0e9907"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac893da038736198462a839c078eb21c2"><td class="memItemLeft" align="right" valign="top"><a id="ac893da038736198462a839c078eb21c2"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>set_relay_dut_active</b> (bool state)</td></tr>
-<tr class="separator:ac893da038736198462a839c078eb21c2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5d163b19926cb62217da6396a26aa3d1"><td class="memItemLeft" align="right" valign="top"><a id="a5d163b19926cb62217da6396a26aa3d1"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_app_controller.html#a5d163b19926cb62217da6396a26aa3d1">set_fan_override</a> (bool state)</td></tr>
-<tr class="memdesc:a5d163b19926cb62217da6396a26aa3d1"><td class="mdescLeft">&#160;</td><td class="mdescRight">When set to true, override automatic and set fan permanently on. <br /></td></tr>
-<tr class="separator:a5d163b19926cb62217da6396a26aa3d1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab4c0d03a4a8ffa772c81d173f581ed00"><td class="memItemLeft" align="right" valign="top"><a id="ab4c0d03a4a8ffa772c81d173f581ed00"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>set_relay_ref_active</b> (bool new_val)</td></tr>
+<tr class="separator:ab4c0d03a4a8ffa772c81d173f581ed00"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5145c3d2b16cb26dc8be0842d6b546e7"><td class="memItemLeft" align="right" valign="top"><a id="a5145c3d2b16cb26dc8be0842d6b546e7"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>set_relay_dut_active</b> (bool new_val)</td></tr>
+<tr class="separator:a5145c3d2b16cb26dc8be0842d6b546e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a51cf068dc73dccc286a82be6c0e03da2"><td class="memItemLeft" align="right" valign="top"><a id="a51cf068dc73dccc286a82be6c0e03da2"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_app_controller.html#a51cf068dc73dccc286a82be6c0e03da2">set_fan_override</a> (bool new_val)</td></tr>
+<tr class="memdesc:a51cf068dc73dccc286a82be6c0e03da2"><td class="mdescLeft">&#160;</td><td class="mdescRight">When set to true, override automatic and set fan permanently on. <br /></td></tr>
+<tr class="separator:a51cf068dc73dccc286a82be6c0e03da2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa1c0e1ef35e4fc9e75897040e480d04a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_app_controller.html#aa1c0e1ef35e4fc9e75897040e480d04a">save_settings</a> ()</td></tr>
 <tr class="memdesc:aa1c0e1ef35e4fc9e75897040e480d04a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Save all runtime configurable settings to SPI flash. The settings are a subset of all values in struct <a class="el" href="struct_app_state.html" title="Application state containing data and settings model.">AppState</a>.  <a href="class_app_controller.html#aa1c0e1ef35e4fc9e75897040e480d04a">More...</a><br /></td></tr>
 <tr class="separator:aa1c0e1ef35e4fc9e75897040e480d04a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ada552fdadd8b875d56b2072cfd0cf612"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_app_controller.html#ada552fdadd8b875d56b2072cfd0cf612">restore_settings</a> ()</td></tr>
-<tr class="memdesc:ada552fdadd8b875d56b2072cfd0cf612"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read state back from SPI flash file and run all setter functions associated with the saved settings.  <a href="class_app_controller.html#ada552fdadd8b875d56b2072cfd0cf612">More...</a><br /></td></tr>
+<tr class="memdesc:ada552fdadd8b875d56b2072cfd0cf612"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read state back from SPI flash file and initialize the hardware with these settings.  <a href="class_app_controller.html#ada552fdadd8b875d56b2072cfd0cf612">More...</a><br /></td></tr>
 <tr class="separator:ada552fdadd8b875d56b2072cfd0cf612"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
@@ -181,8 +198,8 @@ static constexpr auto&#160;</td><td class="memItemRight" valign="bottom"><a clas
       </table>
 </div><div class="memdoc">
 
-<p>Read state back from SPI flash file and run all setter functions associated with the saved settings. </p>
-<p>This is called on boot when state is restored from file. </p>
+<p>Read state back from SPI flash file and initialize the hardware with these settings. </p>
+<p>This is called on boot. </p>
 
 </div>
 </div>
@@ -203,6 +220,16 @@ static constexpr auto&#160;</td><td class="memItemRight" valign="bottom"><a clas
 
 <p>Save all runtime configurable settings to SPI flash. The settings are a subset of all values in struct <a class="el" href="struct_app_state.html" title="Application state containing data and settings model.">AppState</a>. </p>
 <p>The stored settings are restored on reboot. </p>
+<div class="dynheader">
+Here is the call graph for this function:</div>
+<div class="dyncontent">
+<div class="center"><img src="class_app_controller_aa1c0e1ef35e4fc9e75897040e480d04a_cgraph.png" border="0" usemap="#class_app_controller_aa1c0e1ef35e4fc9e75897040e480d04a_cgraph" alt=""/></div>
+<map name="class_app_controller_aa1c0e1ef35e4fc9e75897040e480d04a_cgraph" id="class_app_controller_aa1c0e1ef35e4fc9e75897040e480d04a_cgraph">
+<area shape="rect" title="Save all runtime configurable settings to SPI flash. The settings are a subset of all values in struc..." alt="" coords="5,5,140,47"/>
+<area shape="rect" href="struct_app_state.html#af1af861ce5a7129b7e1e6e1db8cb42a0" title="Write application runtime configurable settings to SPIFFs file as a JSON string." alt="" coords="188,13,339,39"/>
+<area shape="rect" href="struct_app_state.html#ae715e881aa094d0ce9c7ff6a86e98d58" title="Serialize application runtime state and configurable settings into buffer as a JSON string." alt="" coords="387,5,519,47"/>
+</map>
+</div>
 
 </div>
 </div>

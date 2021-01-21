@@ -1,0 +1,4 @@
+<map id="SensorKTY81_1xx::get_temp_pwl" name="SensorKTY81_1xx::get_temp_pwl">
+<area shape="rect" id="node1" title="Excellent precision temperature sensing using piecewise linear interpolation of Look&#45;Up&#45;Table values ..." alt="" coords="5,5,161,47"/>
+<area shape="rect" id="node2" href="$class_e_s_p32_a_d_c_channel_filtered.html#a5bd415b08cf7b7486b750a31dd762996" title="Get raw ADC channel conversion value, through moving average filter." alt="" coords="209,5,389,47"/>
+</map>

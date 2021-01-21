@@ -63,114 +63,140 @@ $(function() {
 <div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;<span class="preprocessor">#include &quot;app_config.hpp&quot;</span></div>
 <div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="app__state__model_8hpp.html">app_state_model.hpp</a>&quot;</span></div>
 <div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160; </div>
-<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;<span class="comment">// Only the up-counting mode using the hardware dead-band generator is safe</span></div>
-<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;<span class="comment">// for changing setpoints on-the-fly</span></div>
-<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;<span class="preprocessor">#define USE_ASYMMETRIC_FULL_SPEED_DRIVE_API</span></div>
-<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160; </div>
-<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160; </div>
-<div class="line"><a name="l00050"></a><span class="lineno"><a class="line" href="class_app_controller.html">   50</a></span>&#160;<span class="keyword">class </span><a class="code" href="class_app_controller.html">AppController</a></div>
-<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;{</div>
-<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;<span class="keyword">public</span>:</div>
-<div class="line"><a name="l00055"></a><span class="lineno"><a class="line" href="class_app_controller.html#a2c0417955b0617ff964239e3438f8e9c">   55</a></span>&#160;    <span class="keyword">static</span> constexpr <span class="keyword">auto</span> <a class="code" href="class_app_controller.html#a2c0417955b0617ff964239e3438f8e9c">app_conf</a> = <a class="code" href="struct_app_config.html">AppConfig</a>{};</div>
-<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160; </div>
-<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;    <span class="comment">// Runtime state plus JSON serialisation import/export</span></div>
-<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;    <a class="code" href="struct_app_state.html">AppState</a> state;</div>
-<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160; </div>
-<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;    <span class="comment">// Instance of auxiliary HW control module</span></div>
-<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;    <a class="code" href="class_aux_hw_drv.html">AuxHwDrv</a> aux_hw_drv;</div>
-<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160; </div>
-<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;    <span class="comment">// Instance of HTTP API server. There must only be one.</span></div>
-<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;    <a class="code" href="class_a_p_i_server.html">APIServer</a>* api_server;</div>
-<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160; </div>
-<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;    <a class="code" href="class_app_controller.html">AppController</a>(<a class="code" href="class_a_p_i_server.html">APIServer</a>* api_server);</div>
-<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;    <span class="keyword">virtual</span> ~<a class="code" href="class_app_controller.html">AppController</a>();</div>
-<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160; </div>
-<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_app_controller.html#aecffa94d28172d6effaaa72903bf06cf">begin</a>();</div>
-<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160; </div>
-<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;    <span class="keywordtype">void</span> set_frequency_min_khz(<span class="keywordtype">float</span> n);</div>
-<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160; </div>
-<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;    <span class="keywordtype">void</span> set_frequency_max_khz(<span class="keywordtype">float</span> n);</div>
-<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160; </div>
-<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;    <span class="keywordtype">void</span> set_frequency_khz(<span class="keywordtype">float</span> n);</div>
-<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160; </div>
-<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;    <span class="keywordtype">void</span> set_duty_percent(<span class="keywordtype">float</span> n);</div>
-<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160; </div>
-<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;    <span class="keywordtype">void</span> set_lag_dt_ns(<span class="keywordtype">float</span> n);</div>
-<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160; </div>
-<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;    <span class="keywordtype">void</span> set_lead_dt_ns(<span class="keywordtype">float</span> n);</div>
-<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160; </div>
-<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_app_controller.html#a5692ec198476bba9456f51176f39f3dd">set_power_pwm_active</a>(<span class="keywordtype">bool</span> state);</div>
-<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160; </div>
-<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_app_controller.html#a2597ae7d2aab468382c8bd5a957d27ac">set_oneshot_len</a>(<span class="keywordtype">float</span> n);</div>
-<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160; </div>
-<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_app_controller.html#ac009c4f1c8abbd7637485b47736e3da1">trigger_oneshot</a>();</div>
-<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160; </div>
-<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;    <span class="keywordtype">void</span> clear_shutdown();</div>
-<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160; </div>
-<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;    <span class="keywordtype">void</span> set_current_limit(<span class="keywordtype">float</span> n);</div>
-<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160; </div>
-<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;    <span class="keywordtype">void</span> set_relay_ref_active(<span class="keywordtype">bool</span> state);</div>
-<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160; </div>
-<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;    <span class="keywordtype">void</span> set_relay_dut_active(<span class="keywordtype">bool</span> state);</div>
-<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160; </div>
-<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_app_controller.html#a5d163b19926cb62217da6396a26aa3d1">set_fan_override</a>(<span class="keywordtype">bool</span> state);</div>
-<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160; </div>
-<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_app_controller.html#aa1c0e1ef35e4fc9e75897040e480d04a">save_settings</a>();</div>
-<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160; </div>
-<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_app_controller.html#ada552fdadd8b875d56b2072cfd0cf612">restore_settings</a>();</div>
-<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160; </div>
-<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160; </div>
-<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;<span class="keyword">private</span>:</div>
-<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;    <span class="comment">// FreeRTOS task handle for application event task</span></div>
-<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;    <span class="keyword">static</span> TaskHandle_t _app_event_task_handle;</div>
-<div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;    <span class="comment">// FreeRTOS event group handle for triggering event task actions</span></div>
-<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160;    <span class="keyword">static</span> EventGroupHandle_t _app_event_group;</div>
-<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;    <span class="comment">// Timer for periodic events</span></div>
-<div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160;    Ticker event_timer_fast;</div>
-<div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160;    Ticker event_timer_slow;</div>
-<div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160;    <span class="comment">// Timer for generating overcurrent reset pulse</span></div>
-<div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160;    <a class="code" href="class_multi_timer.html">MultiTimer</a> oc_reset_timer;</div>
-<div class="line"><a name="l00137"></a><span class="lineno">  137</span>&#160;    <span class="comment">// Timer for power output timing</span></div>
-<div class="line"><a name="l00138"></a><span class="lineno">  138</span>&#160;    <a class="code" href="class_multi_timer.html">MultiTimer</a> power_output_timer;</div>
-<div class="line"><a name="l00139"></a><span class="lineno">  139</span>&#160; </div>
-<div class="line"><a name="l00141"></a><span class="lineno">  141</span>&#160;    </div>
-<div class="line"><a name="l00142"></a><span class="lineno">  142</span>&#160;    <span class="keywordtype">void</span> _initialize_ps_pwm_drv();</div>
-<div class="line"><a name="l00146"></a><span class="lineno">  146</span>&#160;    <span class="keywordtype">void</span> _create_app_event_task();</div>
-<div class="line"><a name="l00147"></a><span class="lineno">  147</span>&#160; </div>
-<div class="line"><a name="l00150"></a><span class="lineno">  150</span>&#160;    <span class="keywordtype">void</span> _register_http_api(<a class="code" href="class_a_p_i_server.html">APIServer</a>* api_server);</div>
-<div class="line"><a name="l00151"></a><span class="lineno">  151</span>&#160; </div>
-<div class="line"><a name="l00154"></a><span class="lineno">  154</span>&#160;    <span class="keywordtype">void</span> _connect_timer_callbacks();</div>
-<div class="line"><a name="l00155"></a><span class="lineno">  155</span>&#160; </div>
-<div class="line"><a name="l00157"></a><span class="lineno">  157</span>&#160;    </div>
-<div class="line"><a name="l00160"></a><span class="lineno">  160</span>&#160;    <span class="keyword">static</span> <span class="keywordtype">void</span> _app_event_task(<span class="keywordtype">void</span> *pVParameters);</div>
-<div class="line"><a name="l00161"></a><span class="lineno">  161</span>&#160; </div>
-<div class="line"><a name="l00165"></a><span class="lineno">  165</span>&#160;    <span class="keywordtype">void</span> _on_fast_timer_event_update_state();</div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160; </div>
+<div class="line"><a name="l00046"></a><span class="lineno"><a class="line" href="class_app_controller.html">   46</a></span>&#160;<span class="keyword">class </span><a class="code" href="class_app_controller.html">AppController</a></div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;{</div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;<span class="keyword">public</span>:</div>
+<div class="line"><a name="l00051"></a><span class="lineno"><a class="line" href="class_app_controller.html#a2c0417955b0617ff964239e3438f8e9c">   51</a></span>&#160;    <span class="keyword">static</span> constexpr <span class="keyword">auto</span> <a class="code" href="class_app_controller.html#a2c0417955b0617ff964239e3438f8e9c">app_conf</a> = <a class="code" href="struct_app_config.html">AppConfig</a>{};</div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160; </div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;    <span class="comment">// Runtime state plus JSON serialisation import/export</span></div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;    <a class="code" href="struct_app_state.html">AppState</a> state;</div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160; </div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;    <span class="comment">// Instance of auxiliary HW control module</span></div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;    <a class="code" href="class_aux_hw_drv.html">AuxHwDrv</a> aux_hw_drv;</div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160; </div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;    <span class="comment">// Instance of HTTP API server. There must only be one.</span></div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;    <a class="code" href="class_a_p_i_server.html">APIServer</a>* api_server;</div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160; </div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;    <a class="code" href="class_app_controller.html">AppController</a>(<a class="code" href="class_a_p_i_server.html">APIServer</a>* api_server);</div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;    <span class="keyword">virtual</span> ~<a class="code" href="class_app_controller.html">AppController</a>();</div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160; </div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_app_controller.html#aecffa94d28172d6effaaa72903bf06cf">begin</a>();</div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160; </div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;    <span class="keywordtype">void</span> set_setpoint_throttling_enabled(<span class="keywordtype">bool</span> new_val);</div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160; </div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;    <span class="keywordtype">void</span> set_frequency_min_khz(<span class="keywordtype">float</span> n);</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;    <span class="keywordtype">void</span> set_frequency_max_khz(<span class="keywordtype">float</span> n);</div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160; </div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;    <span class="keywordtype">void</span> set_frequency_khz(<span class="keywordtype">float</span> n);</div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_app_controller.html#ad6b8bbf280237736f3952a7a51eab9c7">set_frequency_changerate_khz_sec</a>(<span class="keywordtype">float</span> n);</div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;    <span class="keywordtype">void</span> _set_frequency_raw(<span class="keywordtype">float</span> n);</div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160; </div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;    <span class="keywordtype">void</span> set_duty_percent(<span class="keywordtype">float</span> n);</div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_app_controller.html#a71aab84ad92bb3ef13c13c87d6d15b11">set_duty_changerate_percent_sec</a>(<span class="keywordtype">float</span> n);</div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;    <span class="keywordtype">void</span> _set_duty_raw(<span class="keywordtype">float</span> n);</div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160; </div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;    <span class="keywordtype">void</span> set_lag_dt_ns(<span class="keywordtype">float</span> n);</div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160; </div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;    <span class="keywordtype">void</span> set_lead_dt_ns(<span class="keywordtype">float</span> n);</div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160; </div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_app_controller.html#ad9b0dcd08b3ea49136f1a374133b2243">set_power_pwm_active</a>(<span class="keywordtype">bool</span> new_val);</div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160; </div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_app_controller.html#a2597ae7d2aab468382c8bd5a957d27ac">set_oneshot_len</a>(<span class="keywordtype">float</span> n);</div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160; </div>
+<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_app_controller.html#ac009c4f1c8abbd7637485b47736e3da1">trigger_oneshot</a>();</div>
+<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160; </div>
+<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;    <span class="keywordtype">void</span> clear_shutdown();</div>
+<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160; </div>
+<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;    <span class="keywordtype">void</span> set_current_limit(<span class="keywordtype">float</span> n);</div>
+<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160; </div>
+<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;    <span class="keywordtype">void</span> set_relay_ref_active(<span class="keywordtype">bool</span> new_val);</div>
+<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160; </div>
+<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;    <span class="keywordtype">void</span> set_relay_dut_active(<span class="keywordtype">bool</span> new_val);</div>
+<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160; </div>
+<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_app_controller.html#a51cf068dc73dccc286a82be6c0e03da2">set_fan_override</a>(<span class="keywordtype">bool</span> new_val);</div>
+<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160; </div>
+<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_app_controller.html#aa1c0e1ef35e4fc9e75897040e480d04a">save_settings</a>();</div>
+<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160; </div>
+<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_app_controller.html#ada552fdadd8b875d56b2072cfd0cf612">restore_settings</a>();</div>
+<div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160; </div>
+<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160; </div>
+<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;<span class="keyword">private</span>:</div>
+<div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160;    <span class="comment">// FreeRTOS task handle for application event task</span></div>
+<div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160;    <span class="keyword">static</span> TaskHandle_t _app_event_task_handle;</div>
+<div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160;    <span class="comment">// FreeRTOS event group handle for triggering event task actions</span></div>
+<div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160;    <span class="keyword">static</span> EventGroupHandle_t _app_event_group;</div>
+<div class="line"><a name="l00137"></a><span class="lineno">  137</span>&#160;    <span class="comment">// Timer for periodic events</span></div>
+<div class="line"><a name="l00138"></a><span class="lineno">  138</span>&#160;    Ticker event_timer_fast;</div>
+<div class="line"><a name="l00139"></a><span class="lineno">  139</span>&#160;    Ticker event_timer_slow;</div>
+<div class="line"><a name="l00140"></a><span class="lineno">  140</span>&#160;    <span class="comment">// Timer for generating overcurrent reset pulse</span></div>
+<div class="line"><a name="l00141"></a><span class="lineno">  141</span>&#160;    <a class="code" href="class_multi_timer.html">MultiTimer</a> oc_reset_timer;</div>
+<div class="line"><a name="l00142"></a><span class="lineno">  142</span>&#160;    <span class="comment">// Timer for power output timing</span></div>
+<div class="line"><a name="l00143"></a><span class="lineno">  143</span>&#160;    <a class="code" href="class_multi_timer.html">MultiTimer</a> power_output_timer;</div>
+<div class="line"><a name="l00144"></a><span class="lineno">  144</span>&#160; </div>
+<div class="line"><a name="l00146"></a><span class="lineno">  146</span>&#160;    </div>
+<div class="line"><a name="l00147"></a><span class="lineno">  147</span>&#160;    <span class="keywordtype">void</span> _initialize_ps_pwm_drv();</div>
+<div class="line"><a name="l00151"></a><span class="lineno">  151</span>&#160;    <span class="keywordtype">void</span> _create_app_event_task();</div>
+<div class="line"><a name="l00152"></a><span class="lineno">  152</span>&#160; </div>
+<div class="line"><a name="l00155"></a><span class="lineno">  155</span>&#160;    <span class="keywordtype">void</span> _register_http_api(<a class="code" href="class_a_p_i_server.html">APIServer</a>* api_server);</div>
+<div class="line"><a name="l00156"></a><span class="lineno">  156</span>&#160; </div>
+<div class="line"><a name="l00159"></a><span class="lineno">  159</span>&#160;    <span class="keywordtype">void</span> _connect_timer_callbacks();</div>
+<div class="line"><a name="l00160"></a><span class="lineno">  160</span>&#160; </div>
+<div class="line"><a name="l00162"></a><span class="lineno">  162</span>&#160;    </div>
+<div class="line"><a name="l00165"></a><span class="lineno">  165</span>&#160;    <span class="keyword">static</span> <span class="keywordtype">void</span> _app_event_task(<span class="keywordtype">void</span> *pVParameters);</div>
 <div class="line"><a name="l00166"></a><span class="lineno">  166</span>&#160; </div>
-<div class="line"><a name="l00170"></a><span class="lineno">  170</span>&#160;    <span class="keyword">static</span> <span class="keywordtype">void</span> _send_state_changed_event();</div>
+<div class="line"><a name="l00170"></a><span class="lineno">  170</span>&#160;    <span class="keywordtype">void</span> _on_fast_timer_event_update_state();</div>
 <div class="line"><a name="l00171"></a><span class="lineno">  171</span>&#160; </div>
-<div class="line"><a name="l00175"></a><span class="lineno">  175</span>&#160;    <span class="keywordtype">void</span> _push_state_update();</div>
-<div class="line"><a name="l00176"></a><span class="lineno">  176</span>&#160;};</div>
-<div class="line"><a name="l00177"></a><span class="lineno">  177</span>&#160; </div>
-<div class="line"><a name="l00178"></a><span class="lineno">  178</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00175"></a><span class="lineno">  175</span>&#160;    <span class="keyword">static</span> <span class="keywordtype">void</span> _send_state_changed_event();</div>
+<div class="line"><a name="l00176"></a><span class="lineno">  176</span>&#160; </div>
+<div class="line"><a name="l00180"></a><span class="lineno">  180</span>&#160;    <span class="keywordtype">void</span> _push_state_update();</div>
+<div class="line"><a name="l00181"></a><span class="lineno">  181</span>&#160;};</div>
+<div class="line"><a name="l00182"></a><span class="lineno">  182</span>&#160; </div>
+<div class="line"><a name="l00183"></a><span class="lineno">  183</span>&#160;<span class="preprocessor">#endif</span></div>
 </div><!-- fragment --></div><!-- contents -->
-<div class="ttc" id="aclass_app_controller_html_a2c0417955b0617ff964239e3438f8e9c"><div class="ttname"><a href="class_app_controller.html#a2c0417955b0617ff964239e3438f8e9c">AppController::app_conf</a></div><div class="ttdeci">static constexpr auto app_conf</div><div class="ttdoc">Configuration and initial values for the application state.</div><div class="ttdef"><b>Definition:</b> app_controller.hpp:55</div></div>
-<div class="ttc" id="aclass_app_controller_html_aa1c0e1ef35e4fc9e75897040e480d04a"><div class="ttname"><a href="class_app_controller.html#aa1c0e1ef35e4fc9e75897040e480d04a">AppController::save_settings</a></div><div class="ttdeci">void save_settings()</div><div class="ttdoc">Save all runtime configurable settings to SPI flash. The settings are a subset of all values in struc...</div><div class="ttdef"><b>Definition:</b> app_controller.cpp:193</div></div>
+<div class="ttc" id="aclass_app_controller_html_a2c0417955b0617ff964239e3438f8e9c"><div class="ttname"><a href="class_app_controller.html#a2c0417955b0617ff964239e3438f8e9c">AppController::app_conf</a></div><div class="ttdeci">static constexpr auto app_conf</div><div class="ttdoc">Configuration and initial values for the application state.</div><div class="ttdef"><b>Definition:</b> app_controller.hpp:51</div></div>
+<div class="ttc" id="aclass_app_controller_html_aa1c0e1ef35e4fc9e75897040e480d04a"><div class="ttname"><a href="class_app_controller.html#aa1c0e1ef35e4fc9e75897040e480d04a">AppController::save_settings</a></div><div class="ttdeci">void save_settings()</div><div class="ttdoc">Save all runtime configurable settings to SPI flash. The settings are a subset of all values in struc...</div><div class="ttdef"><b>Definition:</b> app_controller.cpp:219</div></div>
+<div class="ttc" id="aps__pwm_8h_html_a200f9f9fe7fb4473e532a922792d190d"><div class="ttname"><a href="ps__pwm_8h.html#a200f9f9fe7fb4473e532a922792d190d">pspwm_enable_hw_fault_shutdown</a></div><div class="ttdeci">esp_err_t pspwm_enable_hw_fault_shutdown(mcpwm_unit_t mcpwm_num, int gpio_fault_shutdown, mcpwm_fault_input_level_t fault_pin_active_level)</div><div class="ttdoc">Enable hardware fault shutdown (&quot;tripzone&quot;) input on given GPIO pin.</div><div class="ttdef"><b>Definition:</b> ps_pwm.c:449</div></div>
+<div class="ttc" id="aps__pwm_8h_html_a901715fdd774356f15e8dfca890a7a3b"><div class="ttname"><a href="ps__pwm_8h.html#a901715fdd774356f15e8dfca890a7a3b">pspwm_get_hw_fault_shutdown_occurred</a></div><div class="ttdeci">bool pspwm_get_hw_fault_shutdown_occurred(mcpwm_unit_t mcpwm_num)</div><div class="ttdoc">Returns true when the hardware fault shutdown pin has been activated.</div><div class="ttdef"><b>Definition:</b> ps_pwm.c:382</div></div>
+<div class="ttc" id="aps__pwm_8h_html_a554821948e25b7c2a25929fe6ccdc45e"><div class="ttname"><a href="ps__pwm_8h.html#a554821948e25b7c2a25929fe6ccdc45e">pspwm_init_symmetrical</a></div><div class="ttdeci">esp_err_t pspwm_init_symmetrical(mcpwm_unit_t mcpwm_num, int gpio_lead_a, int gpio_lead_b, int gpio_lag_a, int gpio_lag_b, float frequency, float ps_duty, float lead_dt, float lag_dt, bool output_enabled, mcpwm_action_on_pwmxa_t disable_action_lead_leg, mcpwm_action_on_pwmxa_t disable_action_lag_leg)</div><div class="ttdoc">Shortcut version of pspwm_init() with identical rising and falling edge dead times applied for each o...</div><div class="ttdef"><b>Definition:</b> ps_pwm.c:163</div></div>
+<div class="ttc" id="aps__pwm_8h_html_a9324368d1cd7d3e8f0c0fa4d7e1b5bb1"><div class="ttname"><a href="ps__pwm_8h.html#a9324368d1cd7d3e8f0c0fa4d7e1b5bb1">pspwm_get_hw_fault_shutdown_present</a></div><div class="ttdeci">bool pspwm_get_hw_fault_shutdown_present(mcpwm_unit_t mcpwm_num)</div><div class="ttdoc">Returns true while the hardware fault shutdown pin is active i.e. for as long as the failure is still...</div><div class="ttdef"><b>Definition:</b> ps_pwm.c:371</div></div>
+<div class="ttc" id="aps__pwm_8h_html_ac7047c0a9227bee351af307ac76fe703"><div class="ttname"><a href="ps__pwm_8h.html#ac7047c0a9227bee351af307ac76fe703">pspwm_get_setpoint_ptr</a></div><div class="ttdeci">esp_err_t pspwm_get_setpoint_ptr(mcpwm_unit_t mcpwm_num, pspwm_setpoint_t **setpoint)</div><div class="ttdoc">Return a pointer to PSPWM stage runtime setpoints.</div><div class="ttdef"><b>Definition:</b> ps_pwm.c:477</div></div>
+<div class="ttc" id="aps__pwm_8h_html_a809a0e93057954966377291fee48376f"><div class="ttname"><a href="ps__pwm_8h.html#a809a0e93057954966377291fee48376f">pspwm_get_clk_conf_ptr</a></div><div class="ttdeci">esp_err_t pspwm_get_clk_conf_ptr(mcpwm_unit_t mcpwm_num, pspwm_clk_conf_t **clk_conf)</div><div class="ttdoc">Return a pointer to PSPWM stage clock configuration.</div><div class="ttdef"><b>Definition:</b> ps_pwm.c:497</div></div>
 <div class="ttc" id="aclass_multi_timer_html"><div class="ttname"><a href="class_multi_timer.html">MultiTimer</a></div><div class="ttdoc">Ticker timer derivative allowing for a fixed number of repeated calls.</div><div class="ttdef"><b>Definition:</b> multi_timer.hpp:34</div></div>
 <div class="ttc" id="aclass_aux_hw_drv_html"><div class="ttname"><a href="class_aux_hw_drv.html">AuxHwDrv</a></div><div class="ttdoc">Auxiliary hardware driver for ESP-AJAX-Lab This implements GPIO control for relays,...</div><div class="ttdef"><b>Definition:</b> aux_hw_drv.hpp:31</div></div>
-<div class="ttc" id="aclass_app_controller_html_a2597ae7d2aab468382c8bd5a957d27ac"><div class="ttname"><a href="class_app_controller.html#a2597ae7d2aab468382c8bd5a957d27ac">AppController::set_oneshot_len</a></div><div class="ttdeci">void set_oneshot_len(float n)</div><div class="ttdoc">Set power output oneshot pulse timer pulse length in seconds.</div><div class="ttdef"><b>Definition:</b> app_controller.cpp:150</div></div>
+<div class="ttc" id="aclass_app_controller_html_a2597ae7d2aab468382c8bd5a957d27ac"><div class="ttname"><a href="class_app_controller.html#a2597ae7d2aab468382c8bd5a957d27ac">AppController::set_oneshot_len</a></div><div class="ttdeci">void set_oneshot_len(float n)</div><div class="ttdoc">Set power output oneshot pulse timer pulse length in seconds.</div><div class="ttdef"><b>Definition:</b> app_controller.cpp:176</div></div>
 <div class="ttc" id="amulti__timer_8hpp_html"><div class="ttname"><a href="multi__timer_8hpp.html">multi_timer.hpp</a></div><div class="ttdoc">Ticker timer derivative allowing for a fixed number of repeated calls.</div></div>
-<div class="ttc" id="aclass_app_controller_html_a5d163b19926cb62217da6396a26aa3d1"><div class="ttname"><a href="class_app_controller.html#a5d163b19926cb62217da6396a26aa3d1">AppController::set_fan_override</a></div><div class="ttdeci">void set_fan_override(bool state)</div><div class="ttdoc">When set to true, override automatic and set fan permanently on.</div><div class="ttdef"><b>Definition:</b> app_controller.cpp:182</div></div>
+<div class="ttc" id="aclass_app_controller_html_ad9b0dcd08b3ea49136f1a374133b2243"><div class="ttname"><a href="class_app_controller.html#ad9b0dcd08b3ea49136f1a374133b2243">AppController::set_power_pwm_active</a></div><div class="ttdeci">void set_power_pwm_active(bool new_val)</div><div class="ttdoc">Activate PWM power output if arg is true.</div><div class="ttdef"><b>Definition:</b> app_controller.cpp:158</div></div>
+<div class="ttc" id="aclass_app_controller_html_a51cf068dc73dccc286a82be6c0e03da2"><div class="ttname"><a href="class_app_controller.html#a51cf068dc73dccc286a82be6c0e03da2">AppController::set_fan_override</a></div><div class="ttdeci">void set_fan_override(bool new_val)</div><div class="ttdoc">When set to true, override automatic and set fan permanently on.</div><div class="ttdef"><b>Definition:</b> app_controller.cpp:208</div></div>
 <div class="ttc" id="astruct_app_state_html"><div class="ttname"><a href="struct_app_state.html">AppState</a></div><div class="ttdoc">Application state containing data and settings model.</div><div class="ttdef"><b>Definition:</b> app_state_model.hpp:22</div></div>
-<div class="ttc" id="aclass_app_controller_html_aecffa94d28172d6effaaa72903bf06cf"><div class="ttname"><a href="class_app_controller.html#aecffa94d28172d6effaaa72903bf06cf">AppController::begin</a></div><div class="ttdeci">void begin()</div><div class="ttdoc">Begin operation. This also starts the timer callbacks etc. This will fail if networking etc....</div><div class="ttdef"><b>Definition:</b> app_controller.cpp:92</div></div>
+<div class="ttc" id="aclass_app_controller_html_aecffa94d28172d6effaaa72903bf06cf"><div class="ttname"><a href="class_app_controller.html#aecffa94d28172d6effaaa72903bf06cf">AppController::begin</a></div><div class="ttdeci">void begin()</div><div class="ttdoc">Begin operation. This also starts the timer callbacks etc. This will fail if networking etc....</div><div class="ttdef"><b>Definition:</b> app_controller.cpp:87</div></div>
+<div class="ttc" id="aapp__controller_8hpp_html"><div class="ttname"><a href="app__controller_8hpp.html">app_controller.hpp</a></div><div class="ttdoc">Application Controller Implementing C++ and HTTP GET API.</div></div>
+<div class="ttc" id="aps__pwm_8h_html_af7932614270524046433c7993130a438"><div class="ttname"><a href="ps__pwm_8h.html#af7932614270524046433c7993130a438">pspwm_get_setpoint_limits_ptr</a></div><div class="ttdeci">esp_err_t pspwm_get_setpoint_limits_ptr(mcpwm_unit_t mcpwm_num, pspwm_setpoint_limits_t **setpoint_limits)</div><div class="ttdoc">Return a pointer to PSPWM stage setpoint limits as calculated from clock configuration.</div><div class="ttdef"><b>Definition:</b> ps_pwm.c:487</div></div>
+<div class="ttc" id="aps__pwm_8h_html_a47ba06c34fa239db4fc78e7aff5be834"><div class="ttname"><a href="ps__pwm_8h.html#a47ba06c34fa239db4fc78e7aff5be834">pspwm_set_frequency</a></div><div class="ttdeci">esp_err_t pspwm_set_frequency(mcpwm_unit_t mcpwm_num, float frequency)</div><div class="ttdoc">Set frequency when running PS-PWM generator in up-counting mode.</div><div class="ttdef"><b>Definition:</b> ps_pwm.c:187</div></div>
+<div class="ttc" id="astruct_app_state_html_af1af861ce5a7129b7e1e6e1db8cb42a0"><div class="ttname"><a href="struct_app_state.html#af1af861ce5a7129b7e1e6e1db8cb42a0">AppState::save_to_file</a></div><div class="ttdeci">bool save_to_file(const char *filename)</div><div class="ttdoc">Write application runtime configurable settings to SPIFFs file as a JSON string.</div><div class="ttdef"><b>Definition:</b> app_state_model.cpp:106</div></div>
 <div class="ttc" id="aclass_a_p_i_server_html"><div class="ttname"><a href="class_a_p_i_server.html">APIServer</a></div><div class="ttdoc">AJAX HTTP API server for ESP-AJAX-Lab.</div><div class="ttdef"><b>Definition:</b> api_server.hpp:44</div></div>
+<div class="ttc" id="astruct_event_flags_html"><div class="ttname"><a href="struct_event_flags.html">EventFlags</a></div><div class="ttdef"><b>Definition:</b> app_controller.cpp:36</div></div>
+<div class="ttc" id="aps__pwm_8h_html_ad33f497fe3be5cbe41ae918fb775512f"><div class="ttname"><a href="ps__pwm_8h.html#ad33f497fe3be5cbe41ae918fb775512f">pspwm_clear_hw_fault_shutdown_occurred</a></div><div class="ttdeci">void pspwm_clear_hw_fault_shutdown_occurred(mcpwm_unit_t mcpwm_num)</div><div class="ttdoc">Resets the fault shutdown active flag without re-enabling the output.</div><div class="ttdef"><b>Definition:</b> ps_pwm.c:395</div></div>
+<div class="ttc" id="astruct_event_flags_html_a5c8efe69d1188dfc8646e83937cb7b44"><div class="ttname"><a href="struct_event_flags.html#a5c8efe69d1188dfc8646e83937cb7b44">EventFlags::have</a></div><div class="ttdeci">bool have(EventBits_t bitmask) const</div><div class="ttdef"><b>Definition:</b> app_controller.cpp:53</div></div>
 <div class="ttc" id="astruct_app_config_html"><div class="ttname"><a href="struct_app_config.html">AppConfig</a></div><div class="ttdoc">Application configuration and default values for class AppController.</div><div class="ttdef"><b>Definition:</b> app_config.hpp:12</div></div>
+<div class="ttc" id="aclass_app_controller_html_ad6b8bbf280237736f3952a7a51eab9c7"><div class="ttname"><a href="class_app_controller.html#ad6b8bbf280237736f3952a7a51eab9c7">AppController::set_frequency_changerate_khz_sec</a></div><div class="ttdeci">void set_frequency_changerate_khz_sec(float n)</div><div class="ttdoc">Set rate of change of frequency in kHz per second.</div><div class="ttdef"><b>Definition:</b> app_controller.cpp:116</div></div>
+<div class="ttc" id="aps__pwm_8h_html"><div class="ttname"><a href="ps__pwm_8h.html">ps_pwm.h</a></div><div class="ttdoc">Driver for the MCPWM hardware modules on the Espressif ESP32 SoC for generating a Phase-Shift-PWM wav...</div></div>
 <div class="ttc" id="aapp__state__model_8hpp_html"><div class="ttname"><a href="app__state__model_8hpp.html">app_state_model.hpp</a></div></div>
+<div class="ttc" id="aclass_multi_timer_html_ab11322a4f50ffccc19cde0caf302b221"><div class="ttname"><a href="class_multi_timer.html#ab11322a4f50ffccc19cde0caf302b221">MultiTimer::attach_static_ms</a></div><div class="ttdeci">esp_err_t attach_static_ms(uint32_t milliseconds, uint32_t total_repeat_count, void(*callback)(type_identity_t&lt; TArg &gt;, uint32_t), TArg arg, bool first_tick_nodelay=false)</div><div class="ttdoc">Attach a free function, static member function or a non-capturing lambda function to the timer.</div><div class="ttdef"><b>Definition:</b> multi_timer.hpp:123</div></div>
 <div class="ttc" id="aaux__hw__drv_8hpp_html"><div class="ttname"><a href="aux__hw__drv_8hpp.html">aux_hw_drv.hpp</a></div><div class="ttdoc">Auxiliary hardware driver for ESP-AJAX-Lab.</div></div>
-<div class="ttc" id="aclass_app_controller_html_ac009c4f1c8abbd7637485b47736e3da1"><div class="ttname"><a href="class_app_controller.html#ac009c4f1c8abbd7637485b47736e3da1">AppController::trigger_oneshot</a></div><div class="ttdeci">void trigger_oneshot()</div><div class="ttdoc">Trigger the power output oneshot pulse.</div><div class="ttdef"><b>Definition:</b> app_controller.cpp:157</div></div>
+<div class="ttc" id="aclass_aux_hw_drv_html_ab1e68dc34099bf707d28a25f4fe45350"><div class="ttname"><a href="class_aux_hw_drv.html#ab1e68dc34099bf707d28a25f4fe45350">AuxHwDrv::update_temperature_sensors</a></div><div class="ttdeci">void update_temperature_sensors()</div><div class="ttdoc">Only updates the state structure for temperature sensors. Other state variables are only modified by ...</div><div class="ttdef"><b>Definition:</b> aux_hw_drv.cpp:120</div></div>
+<div class="ttc" id="aclass_app_controller_html_ac009c4f1c8abbd7637485b47736e3da1"><div class="ttname"><a href="class_app_controller.html#ac009c4f1c8abbd7637485b47736e3da1">AppController::trigger_oneshot</a></div><div class="ttdeci">void trigger_oneshot()</div><div class="ttdoc">Trigger the power output oneshot pulse.</div><div class="ttdef"><b>Definition:</b> app_controller.cpp:183</div></div>
+<div class="ttc" id="aps__pwm_8h_html_a5c89d8014ef3cbb0e96cb771dd9dbe8e"><div class="ttname"><a href="ps__pwm_8h.html#a5c89d8014ef3cbb0e96cb771dd9dbe8e">pspwm_set_deadtimes_symmetrical</a></div><div class="ttdeci">esp_err_t pspwm_set_deadtimes_symmetrical(mcpwm_unit_t mcpwm_num, float lead_dt, float lag_dt)</div><div class="ttdoc">Shortcut version of pspwm_set_deadtimes() with identical rising and falling edge dead times applied f...</div><div class="ttdef"><b>Definition:</b> ps_pwm.c:324</div></div>
+<div class="ttc" id="aps__pwm_8h_html_ad72e8ec85dfbb20872a028695c9dde6f"><div class="ttname"><a href="ps__pwm_8h.html#ad72e8ec85dfbb20872a028695c9dde6f">pspwm_resync_enable_output</a></div><div class="ttdeci">esp_err_t pspwm_resync_enable_output(mcpwm_unit_t mcpwm_num)</div><div class="ttdoc">(Re-)enable PWM output by clearing fault handler one-shot trigger after software-triggering a re-sync...</div><div class="ttdef"><b>Definition:</b> ps_pwm.c:420</div></div>
 <div class="ttc" id="aapi__server_8hpp_html"><div class="ttname"><a href="api__server_8hpp.html">api_server.hpp</a></div></div>
-<div class="ttc" id="aclass_app_controller_html"><div class="ttname"><a href="class_app_controller.html">AppController</a></div><div class="ttdoc">Application main controller for PS-PWM generator hardware.</div><div class="ttdef"><b>Definition:</b> app_controller.hpp:50</div></div>
-<div class="ttc" id="aclass_app_controller_html_a5692ec198476bba9456f51176f39f3dd"><div class="ttname"><a href="class_app_controller.html#a5692ec198476bba9456f51176f39f3dd">AppController::set_power_pwm_active</a></div><div class="ttdeci">void set_power_pwm_active(bool state)</div><div class="ttdoc">Activate PWM power output if arg is true.</div><div class="ttdef"><b>Definition:</b> app_controller.cpp:137</div></div>
-<div class="ttc" id="aclass_app_controller_html_ada552fdadd8b875d56b2072cfd0cf612"><div class="ttname"><a href="class_app_controller.html#ada552fdadd8b875d56b2072cfd0cf612">AppController::restore_settings</a></div><div class="ttdeci">void restore_settings()</div><div class="ttdoc">Read state back from SPI flash file and run all setter functions associated with the saved settings.</div><div class="ttdef"><b>Definition:</b> app_controller.cpp:202</div></div>
+<div class="ttc" id="aps__pwm_8h_html_a9c3c611469c41ed1ae07c55360d5b490"><div class="ttname"><a href="ps__pwm_8h.html#a9c3c611469c41ed1ae07c55360d5b490">pspwm_disable_output</a></div><div class="ttdeci">esp_err_t pspwm_disable_output(mcpwm_unit_t mcpwm_num)</div><div class="ttdoc">Disable PWM output immediately by software-triggering the one-shot fault input of the &quot;trip-zone&quot; fau...</div><div class="ttdef"><b>Definition:</b> ps_pwm.c:401</div></div>
+<div class="ttc" id="aps__pwm_8h_html_a551d3619e2952ab770aee3c0f6df5066"><div class="ttname"><a href="ps__pwm_8h.html#a551d3619e2952ab770aee3c0f6df5066">pspwm_set_ps_duty</a></div><div class="ttdeci">esp_err_t pspwm_set_ps_duty(mcpwm_unit_t mcpwm_num, float ps_duty)</div><div class="ttdoc">Set PS-PWM phase shift between lead and lag leg output pairs.</div><div class="ttdef"><b>Definition:</b> ps_pwm.c:334</div></div>
+<div class="ttc" id="aclass_multi_timer_html_a2478d115c8db9b4c1e3013ebfe525c81"><div class="ttname"><a href="class_multi_timer.html#a2478d115c8db9b4c1e3013ebfe525c81">MultiTimer::start</a></div><div class="ttdeci">void start()</div><div class="ttdef"><b>Definition:</b> multi_timer.hpp:208</div></div>
+<div class="ttc" id="astruct_app_state_html_aeb93a2b8e93cf9d60c55dfcec2c7cc99"><div class="ttname"><a href="struct_app_state.html#aeb93a2b8e93cf9d60c55dfcec2c7cc99">AppState::restore_from_file</a></div><div class="ttdeci">bool restore_from_file(const char *filename)</div><div class="ttdoc">Restore application runtime configurable settings from SPIFFs file back into this instance.</div><div class="ttdef"><b>Definition:</b> app_state_model.cpp:125</div></div>
+<div class="ttc" id="aclass_app_controller_html_a71aab84ad92bb3ef13c13c87d6d15b11"><div class="ttname"><a href="class_app_controller.html#a71aab84ad92bb3ef13c13c87d6d15b11">AppController::set_duty_changerate_percent_sec</a></div><div class="ttdeci">void set_duty_changerate_percent_sec(float n)</div><div class="ttdoc">Set rate of change of duty cycle in percent per second.</div><div class="ttdef"><b>Definition:</b> app_controller.cpp:131</div></div>
+<div class="ttc" id="astruct_app_state_html_ae715e881aa094d0ce9c7ff6a86e98d58"><div class="ttname"><a href="struct_app_state.html#ae715e881aa094d0ce9c7ff6a86e98d58">AppState::serialize_full_state</a></div><div class="ttdeci">size_t serialize_full_state(char *buf, size_t buf_len)</div><div class="ttdoc">Serialize application runtime state and configurable settings into buffer as a JSON string.</div><div class="ttdef"><b>Definition:</b> app_state_model.cpp:18</div></div>
+<div class="ttc" id="aclass_app_controller_html"><div class="ttname"><a href="class_app_controller.html">AppController</a></div><div class="ttdoc">Application main controller for PS-PWM generator hardware.</div><div class="ttdef"><b>Definition:</b> app_controller.hpp:46</div></div>
+<div class="ttc" id="aclass_app_controller_html_ada552fdadd8b875d56b2072cfd0cf612"><div class="ttname"><a href="class_app_controller.html#ada552fdadd8b875d56b2072cfd0cf612">AppController::restore_settings</a></div><div class="ttdeci">void restore_settings()</div><div class="ttdoc">Read state back from SPI flash file and initialize the hardware with these settings.</div><div class="ttdef"><b>Definition:</b> app_controller.cpp:229</div></div>
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
 Generated by &#160;<a href="http://www.doxygen.org/index.html">

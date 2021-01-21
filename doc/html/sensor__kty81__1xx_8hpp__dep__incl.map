@@ -1,6 +1,6 @@
 <map id="src/sensor_kty81_1xx.hpp" name="src/sensor_kty81_1xx.hpp">
-<area shape="rect" id="node1" title=" " alt="" coords="5,5,196,32"/>
-<area shape="rect" id="node2" href="$aux__hw__drv_8hpp.html" title="Auxiliary hardware driver for ESP&#45;AJAX&#45;Lab." alt="" coords="25,80,176,107"/>
-<area shape="rect" id="node3" href="$app__controller_8hpp.html" title="Application Controller Implementing C++ and HTTP GET API." alt="" coords="17,155,184,181"/>
-<area shape="rect" id="node4" href="$app__main_8cpp.html" title="ESP&#45;AJAX&#45;Lab HTTP server, AJAX API backend, web application and Soc hardware drivers for WiFi remote ..." alt="" coords="33,229,169,256"/>
+<area shape="rect" id="node1" title=" " alt="" coords="5,5,180,32"/>
+<area shape="rect" id="node2" href="$aux__hw__drv_8hpp.html" title="Auxiliary hardware driver for ESP&#45;AJAX&#45;Lab." alt="" coords="25,80,161,107"/>
+<area shape="rect" id="node3" href="$app__controller_8hpp.html" title="Application Controller Implementing C++ and HTTP GET API." alt="" coords="17,155,168,181"/>
+<area shape="rect" id="node4" href="$app__main_8cpp.html" title="ESP&#45;AJAX&#45;Lab HTTP server, AJAX API backend, web application and Soc hardware drivers for WiFi remote ..." alt="" coords="30,229,155,256"/>
 </map>
