@@ -2,8 +2,8 @@
  * @brief Driver for the MCPWM hardware modules on the Espressif ESP32 SoC for
  * generating a Phase-Shift-PWM waveform between two pairs of hardware pins.
  * 
- * Application in power electronics, e.g. Zero-Voltage-Switching (ZVS) Full-Bridge-,
- * Dual-Active-Bridge- and LLC converters.
+ * Application in power electronics, e.g. Zero-Voltage-Switching (ZVS)
+ * Full-Bridge-, Dual-Active-Bridge- and LLC converters.
  * 
  *
  * @note This depends on the ESP-IDF SDK source files.
@@ -285,6 +285,94 @@ esp_err_t pspwm_get_setpoint_limits_ptr(mcpwm_unit_t mcpwm_num,
  */
 esp_err_t pspwm_get_clk_conf_ptr(mcpwm_unit_t mcpwm_num,
                                  pspwm_clk_conf_t** clk_conf);
+
+
+// Disabled by default, included as reference or to be enabled on demand
+#ifdef PSPWM_USE_UP_DOWN_CTR_MODE_API
+/*************************************************************//**
+ * @brief Set up the PS-PWM generator module for up-down-counting mode, which
+ * assures identical ON times for high side and low side outputs of each leg.
+ * 
+ * Individual dead-times both half-bridge PWM outputs are still possible.
+ * 
+ * This PWM generation mode does not use the dead-band generator hardware.
+ * Instead, the dead-time for each two outputs of a half-bridge is configured
+ * by running the main timers in up-down-counting mode and using both compare
+ * registers for each timer to generate two symmetric outputs.
+ * 
+ * Because of the up/down-counting mode, maximum output frequency is half of
+ * the value which is possible when using the hardware dead-band generator.
+ * 
+ * @note When using up/down mode implemented here, it is NOT SAFE to change the
+ * frequency, phase shift duty or dead-time setpoints during operation as
+ * timer compare events could be missed, causing invalid output waveforms
+ * for up to one timer period.
+ * THIS WILL CAUSE SHORT-CIRCUITS for bridge output stages!
+ * See ps_pwm.c for implementation using the dead-time genrator to avoid this.
+ * 
+ * @param mcpwm_num: PWM unit number (enum, MCPWM_UNIT_0 = 0, MCPWM_UNIT_1 = 1),
+ * @param gpio_lead_a: GPIO number leading leg low_side
+ * @param gpio_lead_b: GPIO number leading leg high_side
+ * @param gpio_lag_a: GPIO number lagging leg low_side
+ * @param gpio_lag_b: GPIO number lagging leg high_side
+ * @param frequency: Frequency of the non-rectified waveform in Hz,
+ * @param ps_duty: Duty cycle of the rectified waveform (0..1)
+ * @param lead_dt: leading bridge-leg dead-time in sec (0..),
+ * @param lag_dt: lagging bridge-leg dead-time in sec (0..)
+ * @param output_enabled: initial output state (true <==> ON)
+ * @param disable_action_lead_leg: Choice of actions when lead bridge leg is disabled
+ *                                 (See typedef for mcpwm_action_on_pwmxa_t)
+ * @param disable_action_lag_leg: Same for lag leg
+ */
+esp_err_t pspwm_up_down_ctr_mode_init(mcpwm_unit_t mcpwm_num,
+                                      int gpio_lead_a,
+                                      int gpio_lead_b,
+                                      int gpio_lag_a,
+                                      int gpio_lag_b,
+                                      float frequency,
+                                      float ps_duty,
+                                      float lead_dt,
+                                      float lag_dt,
+                                      bool output_enabled,
+                                      mcpwm_action_on_pwmxa_t disable_action_lead_leg,
+                                      mcpwm_action_on_pwmxa_t disable_action_lag_leg);
+
+/** @brief Set frequency (and update dead-time values) for both output pairs
+ * signals of the phase-shift-PWM when using the timer in up/down counting mode.
+ * 
+ * Because of the up/down-counting mode, maximum output frequency is half of
+ * the value which is possible when using the hardware dead-band generator.
+ * 
+ * @note
+ * This does not alter prescaler settings.
+ * 
+ * @param mcpwm_num: PWM unit number (enum, MCPWM_UNIT_0 = 0, MCPWM_UNIT_1 = 1),
+ * @param frequency: Frequency of the non-rectified waveform in Hz,
+ */
+esp_err_t pspwm_up_down_ctr_mode_set_frequency(mcpwm_unit_t mcpwm_num,
+                                               float frequency);
+
+/** @brief Set dead-time values for both output pairs of the phase-shift-PWM
+ * when using the timer in up/down counting mode.
+ * 
+ * @param mcpwm_num: PWM unit number (enum, MCPWM_UNIT_0 = 0, MCPWM_UNIT_1 = 1),
+ * @param lead_dt: leading bridge-leg dead-time in sec (0..),
+ * @param lag_dt: lagging bridge-leg dead-time in sec (0..)
+ */
+esp_err_t pspwm_up_down_ctr_mode_set_deadtimes(mcpwm_unit_t mcpwm_num,
+                                               float lead_dt,
+                                               float lag_dt);
+
+/** @brief Set PS-PWM phase shift between the two output pairs based on the
+ * current period time setting as stored in the PWM hardware "period" register.
+ * 
+ * @param mcpwm_num: PWM unit number (enum, MCPWM_UNIT_0 = 0, MCPWM_UNIT_1 = 1),
+ * @param ps_duty: Duty cycle of the rectified waveform (0..1)
+ */
+esp_err_t pspwm_up_down_ctr_mode_set_ps_duty(mcpwm_unit_t mcpwm_num,
+                                             float ps_duty);
+
+#endif // PSPWM_USE_UP_DOWN_CTR_MODE_API
 
 #ifdef __cplusplus
 }

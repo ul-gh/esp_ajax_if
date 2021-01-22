@@ -247,19 +247,18 @@ void AppController::restore_settings() {
 
 void AppController::_initialize_ps_pwm_drv() {
     ESP_LOGI(TAG, "Configuring Phase-Shift-PWM...");
-    auto errors = pspwm_init_symmetrical(
-        app_conf.mcpwm_num,
-        app_conf.gpio_pwm0a_out,
-        app_conf.gpio_pwm0b_out,
-        app_conf.gpio_pwm1a_out,
-        app_conf.gpio_pwm1b_out,
-        app_conf.init_frequency,
-        app_conf.init_ps_duty,
-        app_conf.init_lead_dt,
-        app_conf.init_lag_dt,
-        app_conf.init_power_pwm_active,
-        app_conf.disable_action_lead_leg,
-        app_conf.disable_action_lag_leg);
+    auto errors = pspwm_init_symmetrical(app_conf.mcpwm_num,
+                                         app_conf.gpio_pwm0a_out,
+                                         app_conf.gpio_pwm0b_out,
+                                         app_conf.gpio_pwm1a_out,
+                                         app_conf.gpio_pwm1b_out,
+                                         app_conf.init_frequency,
+                                         app_conf.init_ps_duty,
+                                         app_conf.init_lead_dt,
+                                         app_conf.init_lag_dt,
+                                         app_conf.init_power_pwm_active,
+                                         app_conf.disable_action_lead_leg,
+                                         app_conf.disable_action_lag_leg);
     errors |= pspwm_get_setpoint_limits_ptr(app_conf.mcpwm_num,
                                             &state.pspwm_setpoint_limits);
     errors |= pspwm_get_setpoint_ptr(app_conf.mcpwm_num,

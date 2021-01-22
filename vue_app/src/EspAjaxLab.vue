@@ -85,23 +85,25 @@ export default {
         this.request_generator.send_cmd(name, value);
     },
     inhibit_view_updates() {
-        this.view_state_store.inhibit_view_updates = true;
+        this.view_updates_inhibited = true;
         setTimeout(() => this.allow_view_updates(), 5000);
     },
     allow_view_updates() {
-        this.view_state_store.inhibit_view_updates = false;
+        this.view_updates_inhibited = false;
     },
     set_disabled(new_state) {
         this.disabled = new_state;
     },
   },
   created() {
-    this.app_watchdog = new AppWatchdog(1500, this.set_disabled);
+    this.app_watchdog = new AppWatchdog(1500, (s) => this.set_disabled(s));
     this.request_generator = new AsyncRequestGenerator("/cmd");
     this.sse_handler = new ServerSentEventHandler("/events",
-                                                  this.remote_state_store,
+                                                  view_state_store,
                                                   this.app_watchdog);
+    // eslint-disable-next-line no-unused-vars
     document.addEventListener("input", e => this.inhibit_view_updates());
+    // eslint-disable-next-line no-unused-vars
     document.addEventListener("blur", e => this.allow_view_updates());
   },
 }

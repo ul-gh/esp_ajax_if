@@ -1,10 +1,10 @@
 /* Driver for the MCPWM hardware modules on the Espressif ESP32 SoC for
  * generating a Phase-Shift-PWM waveform between two pairs of output pins.
  * 
- * @note Application in power electronics, e.g.
- *       ZVS-PS-PWM, DAB-DCM and LLC converters.
+ * Application in power electronics, e.g. Zero-Voltage-Switching (ZVS)
+ * Full-Bridge-, Dual-Active-Bridge- and LLC converters.
  * 
- * @note This depends on the ESP-IDF SDK source files.
+ * This depends on the ESP-IDF SDK source files.
  *
  * 2021-01-21 Ulrich Lukas
  */
@@ -35,16 +35,14 @@ static pspwm_clk_conf_t s_clk_conf = {
             BASE_CLK_PRESCALE_DEFAULT * TIMER_CLK_PRESCALE_DEFAULT)
 };
 
-/* MMAP IO using direct register access.
- * External definition and declaration in mcpwm_struct.h.
- */
 // Hardware addresses for both MCPWM stages
+// Declaration in ESP-IDF SDK, see mcpwm_struct.h.
 static mcpwm_dev_t* const MCPWM[2] = {&MCPWM0, &MCPWM1};
 // Mutual exclusive register access uses spinlock polling via
 // portENTER_CRITICAL() and portENTER_CRITICAL_ISR() macro (FreeRTOS API).
 static portMUX_TYPE mcpwm_spinlock = portMUX_INITIALIZER_UNLOCKED;
 
-// Some internal setup functions
+// Basic configuration, implemented further below
 static void pspwm_register_base_setup(mcpwm_unit_t mcpwm_num);
 // This not only sets up the fault handler hardware module
 // but also registers the pspwm_isr_handler().
@@ -673,3 +671,309 @@ static void IRAM_ATTR pspwm_isr_handler(void* arg) {
     ost_fault_event_occurred[1] |= flag_state;
     MCPWM[MCPWM_UNIT_1]->int_clr.fault0_int_clr = flag_state;
 }
+
+
+#ifdef PSPWM_USE_UP_DOWN_CTR_MODE_API
+/********************* Optional, up/down ctr mode API *************************/
+static void pspwm_up_down_ctr_mode_register_base_setup(mcpwm_unit_t mcpwm_num);
+
+/*****************************************************************
+ * TIMER UP/DOWN-COUNTING MODE; DOES NOT USE HW-DEAD-TIME-MODULE *
+ * IMPORTANT NOTE: When using this API, it is not safe to change *
+ * the frequency, phase shift duty or dead-time setpoints during *
+ * operation as timer compare events could be missed, causing    *
+ * invalid output waveforms for up to one timer period.          *
+ * THIS WILL CAUSE SHORT-CIRCUITS for bridge output stages!      *
+ *****************************************************************
+ */
+esp_err_t pspwm_up_down_ctr_mode_init(mcpwm_unit_t mcpwm_num,
+                                      int gpio_lead_a,
+                                      int gpio_lead_b,
+                                      int gpio_lag_a,
+                                      int gpio_lag_b,
+                                      float frequency,
+                                      float ps_duty,
+                                      float lead_dt,
+                                      float lag_dt,
+                                      bool output_enabled,
+                                      mcpwm_action_on_pwmxa_t disable_action_lead_leg,
+                                      mcpwm_action_on_pwmxa_t disable_action_lag_leg)
+{
+    ESP_LOGD(TAG, "Call pspwm_up_down_ctr_mode_init");
+    if (mcpwm_num != MCPWM_UNIT_0 && mcpwm_num != MCPWM_UNIT_1) {
+        ESP_LOGE(TAG, "mcpwm_num must be MCPWM_UNIT_0 or MCPWM_UNIT_1!");
+        return ESP_FAIL;
+    }
+    if (!s_setpoints[mcpwm_num]) {
+        s_setpoints[mcpwm_num] = malloc(sizeof(pspwm_setpoint_t));
+        if (!s_setpoints[mcpwm_num]) {
+            ESP_LOGE(TAG, "Malloc failure!");
+            return ESP_FAIL;
+        }
+    }
+    if (!s_setpoint_limits[mcpwm_num]) {
+        s_setpoint_limits[mcpwm_num] = malloc(sizeof(pspwm_setpoint_limits_t));
+        if (!s_setpoint_limits[mcpwm_num]) {
+            ESP_LOGE(TAG, "Malloc failure!");
+            return ESP_FAIL;
+        }
+    }
+    s_setpoint_limits[mcpwm_num]->frequency_min = 0.5 * s_clk_conf.timer_clk / UINT16_MAX;
+    s_setpoint_limits[mcpwm_num]->frequency_max = 0.5 * s_clk_conf.timer_clk / period_min;
+    s_setpoint_limits[mcpwm_num]->dt_sum_max = 1.0 / frequency;
+    ESP_LOGD(TAG, "frequency_min is now: %g", s_setpoint_limits[mcpwm_num]->frequency_min);
+    ESP_LOGD(TAG, "frequency_max is now: %g", s_setpoint_limits[mcpwm_num]->frequency_max);
+    ESP_LOGD(TAG, "dt_sum_max is now: %g", s_setpoint_limits[mcpwm_num]->dt_sum_max);
+    // This is a 16-Bit timer register, although the API struct uses uint32_t...
+    if (frequency <= s_setpoint_limits[mcpwm_num]->frequency_min
+        || frequency > s_setpoint_limits[mcpwm_num]->frequency_max) {
+            ESP_LOGE(TAG, "Frequency setpoint out of range!");
+            return ESP_FAIL;
+    }
+    if (ps_duty < 0 || ps_duty > 1) {
+        ESP_LOGE(TAG, "Invalid setpoint value for ps_duty");
+        return ESP_FAIL;
+    }
+    if (lead_dt < 0 || lag_dt < 0
+            || lead_dt >= 0.5 * s_setpoint_limits[mcpwm_num]->dt_sum_max
+            || lag_dt  >= 0.5 * s_setpoint_limits[mcpwm_num]->dt_sum_max) {
+        ESP_LOGE(TAG, "Dead time setpoint out of range");
+        return ESP_FAIL;
+    }
+    s_setpoints[mcpwm_num]->frequency = frequency;
+    s_setpoints[mcpwm_num]->ps_duty = ps_duty;
+    s_setpoints[mcpwm_num]->lead_red = lead_dt;
+    s_setpoints[mcpwm_num]->lead_fed = lead_dt; // Set but unused because identical
+    s_setpoints[mcpwm_num]->lag_red = lag_dt;
+    s_setpoints[mcpwm_num]->lag_fed = lag_dt; // Set but unused because identical
+    s_setpoints[mcpwm_num]->output_enabled = output_enabled;
+    periph_module_enable(PERIPH_PWM0_MODULE + mcpwm_num);
+    // Basic setup for PS_PWM in up/down counting mode
+    pspwm_up_down_ctr_mode_register_base_setup(mcpwm_num);
+    // Setup the fault handler module as this is required for disabling the outputs
+    esp_err_t errors = pspwm_setup_fault_handler_module(mcpwm_num,
+                                                        disable_action_lag_leg,
+                                                        disable_action_lead_leg);
+    // Continue by setting a Fault Event forcing the GPIOs to defined "OFF" state
+    errors |= pspwm_disable_output(mcpwm_num);
+    errors |= mcpwm_gpio_init(mcpwm_num, MCPWM0A, gpio_lead_a);
+    errors |= mcpwm_gpio_init(mcpwm_num, MCPWM0B, gpio_lead_b);
+    errors |= mcpwm_gpio_init(mcpwm_num, MCPWM1A, gpio_lag_a);
+    errors |= mcpwm_gpio_init(mcpwm_num, MCPWM1B, gpio_lag_b);
+    // In up_down_ctr_mode, this also sets the dead time; there should
+    // be no need to call pspwm_up_down_ctr_mode_set_deadtimes() again.
+    errors |= pspwm_up_down_ctr_mode_set_frequency(mcpwm_num, frequency);
+    errors |= pspwm_up_down_ctr_mode_set_ps_duty(mcpwm_num, ps_duty);
+    if (output_enabled) {
+        errors |= pspwm_resync_enable_output(mcpwm_num);
+    }
+    if (errors == ESP_OK) {
+        ESP_LOGD(TAG, "pspwm_up_down_ctr_mode_init OK!");
+    } else {
+        ESP_LOGE(TAG, "pspwm_up_down_ctr_mode_init failed!");
+    }
+    return errors;
+}
+
+esp_err_t pspwm_up_down_ctr_mode_set_frequency(mcpwm_unit_t mcpwm_num,
+                                               float frequency)
+{
+    ESP_LOGD(TAG, "Call pspwm_up_down_ctr_mode_set_frequency");
+    // PWM hardware must have been initialised first
+    pspwm_setpoint_t* setpoints = s_setpoints[mcpwm_num];
+    assert(setpoints != NULL);
+    // This is a 16-Bit timer register, although the API struct uses uint32_t...
+    if (frequency <= s_setpoint_limits[mcpwm_num]->frequency_min
+        || frequency > s_setpoint_limits[mcpwm_num]->frequency_max) {
+            ESP_LOGE(TAG, "Frequency setpoint out of range!");
+            return ESP_FAIL;
+    }
+    // Set global state
+    setpoints->frequency = frequency;
+    s_setpoint_limits[mcpwm_num]->dt_sum_max = 1.0 / frequency;
+    float half_period = 0.5 * s_clk_conf.timer_clk / frequency;
+    uint32_t timer_top = (uint32_t)half_period;
+    uint32_t cmpr_lead_a = (uint32_t)(
+        0.5 * (half_period - s_clk_conf.timer_clk * setpoints->lead_red));
+    uint32_t cmpr_lag_a = (uint32_t)(
+        0.5 * (half_period - s_clk_conf.timer_clk * setpoints->lag_red));
+    uint32_t cmpr_lead_b = timer_top - cmpr_lead_a;
+    uint32_t cmpr_lag_b = timer_top - cmpr_lag_a;
+    // Phase shift value for Timer 1 needs updating when changing frequency.
+    // Timer 0 is the reference phase and needs no update.
+    uint32_t phase_setval = (uint32_t)(half_period * setpoints->ps_duty);
+    // This must not be equal to timer_top, otherwise timer seems to stop.
+    // Instead, this is UNDOCUMENTED in the reference manual:
+    // Set the 17th bit to start the timer in down-counting mode.......
+    if (phase_setval >= timer_top) {
+        phase_setval = timer_top;
+        phase_setval |= 1<<16;
+    } 
+    mcpwm_dev_t* const module = MCPWM[mcpwm_num];
+    portENTER_CRITICAL(&mcpwm_spinlock);
+    // Register 16.17: PWM_GEN0_TSTMP_A_REG (0x0040) etc.
+    // also for GEN1 with different register offset
+    module->channel[MCPWM_TIMER_0].cmpr_value[MCPWM_OPR_A].cmpr_val = cmpr_lead_a;
+    // Register 16.18: PWM_GEN0_TSTMP_B_REG (0x0044) etc.
+    // also for GEN1 with different register offset
+    module->channel[MCPWM_TIMER_0].cmpr_value[MCPWM_OPR_B].cmpr_val = cmpr_lead_b;
+    // Register 16.2: PWM_TIMER0_CFG0_REG (0x0004) etc.
+    module->timer[MCPWM_TIMER_0].period.period = timer_top;
+    // Same for timer 1
+    module->channel[MCPWM_TIMER_1].cmpr_value[MCPWM_OPR_A].cmpr_val = cmpr_lag_a;
+    module->channel[MCPWM_TIMER_1].cmpr_value[MCPWM_OPR_B].cmpr_val = cmpr_lag_b;
+    module->timer[MCPWM_TIMER_1].period.period = timer_top;
+    // Phase shift value is based on timer 0 period setting but intentionally
+    // only set for timer 1. Timer 0 is the reference phase.
+    // Register 16.8: PWM_TIMER1_SYNC_REG (0x001c)
+    module->timer[MCPWM_TIMER_1].sync.timer_phase = phase_setval;
+    portEXIT_CRITICAL(&mcpwm_spinlock);
+    ESP_LOGD(TAG, "Timer TOP is now: %d", timer_top);
+    ESP_LOGD(TAG, "cmpr_0_a register value: %d", cmpr_lead_a);
+    ESP_LOGD(TAG, "cmpr_0_b register value: %d", cmpr_lead_b);
+    ESP_LOGD(TAG, "cmpr_1_a register value: %d", cmpr_lag_a);
+    ESP_LOGD(TAG, "cmpr_1_b register value: %d", cmpr_lag_b);
+    ESP_LOGD(TAG, "Phase register set to: %d", phase_setval);
+    return ESP_OK;
+}
+
+esp_err_t pspwm_up_down_ctr_mode_set_deadtimes(mcpwm_unit_t mcpwm_num,
+                                               float lead_dt,
+                                               float lag_dt)
+{
+    ESP_LOGD(TAG, "Call pspwm_up_down_ctr_mode_set_deadtimes()");
+    // PWM hardware must be initialised first
+    pspwm_setpoint_t* setpoints = s_setpoints[mcpwm_num];
+    assert(setpoints != NULL);
+    if (lead_dt < 0 || lag_dt < 0
+            || lead_dt >= 0.5 * s_setpoint_limits[mcpwm_num]->dt_sum_max
+            || lag_dt  >= 0.5 * s_setpoint_limits[mcpwm_num]->dt_sum_max) {
+        ESP_LOGE(TAG, "Dead time setpoint out of range");
+        return ESP_FAIL;
+    }
+    setpoints->lead_red = lead_dt;
+    setpoints->lag_red = lag_dt;
+    // PWM base period and duty cycle must be adjusted when changing dead-times
+    // uint32_t timer_top = module->timer[MCPWM_TIMER_0].period.period;
+    float half_period = 0.5 * s_clk_conf.timer_clk / setpoints->frequency;
+    uint32_t timer_top = (uint32_t)half_period;
+    uint32_t cmpr_lead_a = (uint32_t)(
+        0.5 * (half_period - s_clk_conf.timer_clk * setpoints->lead_red));
+    uint32_t cmpr_lag_a = (uint32_t)(
+        0.5 * (half_period - s_clk_conf.timer_clk * setpoints->lag_red));
+    uint32_t cmpr_lead_b = timer_top - cmpr_lead_a;
+    uint32_t cmpr_lag_b = timer_top - cmpr_lag_a;
+    mcpwm_dev_t* const module = MCPWM[mcpwm_num];
+    portENTER_CRITICAL(&mcpwm_spinlock);
+    // Register 16.17: PWM_GEN0_TSTMP_A_REG (0x0040) etc.
+    // also for GEN1 with different register offset
+    module->channel[MCPWM_TIMER_0].cmpr_value[MCPWM_OPR_A].cmpr_val = cmpr_lead_a;
+    // Register 16.18: PWM_GEN0_TSTMP_B_REG (0x0044) etc.
+    // also for GEN1 with different register offset
+    module->channel[MCPWM_TIMER_0].cmpr_value[MCPWM_OPR_B].cmpr_val = cmpr_lead_b;
+    // Same for timer 1
+    module->channel[MCPWM_TIMER_1].cmpr_value[MCPWM_OPR_A].cmpr_val = cmpr_lag_a;
+    module->channel[MCPWM_TIMER_1].cmpr_value[MCPWM_OPR_B].cmpr_val = cmpr_lag_b;
+    portEXIT_CRITICAL(&mcpwm_spinlock);
+    ESP_LOGD(TAG, "cmpr_0_a register value: %d", cmpr_lead_a);
+    ESP_LOGD(TAG, "cmpr_0_b register value: %d", cmpr_lead_b);
+    ESP_LOGD(TAG, "cmpr_1_a register value: %d", cmpr_lag_a);
+    ESP_LOGD(TAG, "cmpr_1_b register value: %d", cmpr_lag_b);
+    return ESP_OK;
+}
+
+esp_err_t pspwm_up_down_ctr_mode_set_ps_duty(mcpwm_unit_t mcpwm_num,
+                                             float ps_duty)
+{
+    ESP_LOGD(TAG, "Call pspwm_up_down_ctr_mode_set_ps_duty");
+    if (ps_duty < 0 || ps_duty > 1) {
+        ESP_LOGE(TAG, "Invalid setpoint value for ps_duty");
+        return ESP_FAIL;
+    }
+    // Set global state
+    pspwm_setpoint_t* setpoints = s_setpoints[mcpwm_num];
+    assert(setpoints != NULL);
+    setpoints->ps_duty = ps_duty;
+    mcpwm_dev_t* const module = MCPWM[mcpwm_num];
+    portENTER_CRITICAL(&mcpwm_spinlock);
+    uint32_t timer_top = module->timer[MCPWM_TIMER_0].period.period;
+    uint32_t phase_setval = (uint32_t)(timer_top * ps_duty);
+    // This must not be equal to timer_top, otherwise timer seems to stop.
+    // Instead, this is UNDOCUMENTED in the reference manual:
+    // Set the 17th bit to start the timer in down-counting mode.......
+    if (phase_setval >= timer_top) {
+        phase_setval = timer_top;
+        phase_setval |= 1<<16;
+    } 
+    // Phase shift value is based on timer 0 period setting but intentionally
+    // only set for timer 1. Timer 0 is the reference phase.
+    // Register 16.8: PWM_TIMER1_SYNC_REG (0x001c)
+    module->timer[MCPWM_TIMER_1].sync.timer_phase = phase_setval;
+    portEXIT_CRITICAL(&mcpwm_spinlock);
+    ESP_LOGD(TAG, "Phase register set to: %d", phase_setval);
+    return ESP_OK;
+}
+
+static void pspwm_up_down_ctr_mode_register_base_setup(mcpwm_unit_t mcpwm_num) {
+    mcpwm_dev_t* const module = MCPWM[mcpwm_num];
+    portENTER_CRITICAL(&mcpwm_spinlock);
+    // Timer and deadtime module clock prescaler/divider configuration
+    // Datasheet 16.1: PWM_CLK_CFG_REG (0x0000)
+    // Hardware prescales by register value plus one, thus subtracting it here
+    module->clk_cfg.prescale = s_clk_conf.base_clk_prescale - 1;
+
+    for (int timer_i=0; timer_i < 2; ++timer_i){
+        // Datasheet 16.2: PWM_TIMER0_CFG0_REG (0x0004) etc.
+        // Hardware prescales by register value plus one, thus subtracting it here
+        module->timer[timer_i].period.prescale = s_clk_conf.timer_clk_prescale - 1;
+        // Datasheet 16.3: PWM_TIMER0_CFG1_REG (0x0008) etc.
+        module->timer[timer_i].mode.mode = MCPWM_UP_DOWN_COUNTER;
+        // 2 => Set output high; 1 => set output low
+        // Datasheet 16.21: PWM_GEN0_A_REG (0x0050) etc.
+        //module->channel[timer_i].generator[MCPWM_OPR_A].utez = 2;
+        module->channel[timer_i].generator[MCPWM_OPR_A].utea = 1;
+        module->channel[timer_i].generator[MCPWM_OPR_A].dtea = 2;
+        // Datasheet 16.21: PWM_GEN0_B_REG (0x0054) etc.
+        //module->channel[timer_i].generator[MCPWM_OPR_B].utez = 1;
+        module->channel[timer_i].generator[MCPWM_OPR_B].uteb = 2;
+        module->channel[timer_i].generator[MCPWM_OPR_B].dteb = 1;
+    }
+    // Update/swap shadow registers at timer equals zero for timer0,
+    // update at sync for timer1.
+    // Datasheet 16.2: PWM_TIMER0_CFG0_REG (0x0004) etc.
+    module->timer[MCPWM_TIMER_0].period.upmethod = 1; // TEZ
+    module->timer[MCPWM_TIMER_1].period.upmethod = 2; // Literal 2 correct: At sync
+    // Datasheet 16.16: PWM_GEN0_STMP_CFG_REG (0x003c) etc.
+    module->channel[MCPWM_TIMER_0].cmpr_cfg.a_upmethod = 1; // TEZ
+    module->channel[MCPWM_TIMER_0].cmpr_cfg.b_upmethod = 1; // TEZ
+    module->channel[MCPWM_TIMER_1].cmpr_cfg.a_upmethod = 1ul<<2; // At sync
+    module->channel[MCPWM_TIMER_1].cmpr_cfg.b_upmethod = 1ul<<2; // At sync
+    // Datasheet 16.15: PWM_OPERATOR_TIMERSEL_REG (0x0038)
+    module->timer_sel.operator0_sel = 0;
+    module->timer_sel.operator1_sel = 1;
+    // module->timer_sel.operator2_sel = 2;
+    // SYNC input coupling setup: Timer 1 input coupled to timer 0 sync output
+    // Datasheet 16.14: PWM_TIMER_SYNCI_CFG_REG (0x0034)
+    module->timer_synci_cfg.t0_in_sel = 0; // None
+    module->timer_synci_cfg.t1_in_sel = 1; // timer0 sync out
+    // SYNC input and output configuration for both timers
+    // Datasheet 16.4: PWM_TIMER0_SYNC_REG (0x000c)
+    module->timer[MCPWM_TIMER_0].sync.in_en = 0; // Off
+    // Generate sync output at timer equals zero of first timer
+    module->timer[MCPWM_TIMER_0].sync.out_sel = 1;
+    // Second timer is synchronized to first timer
+    // Datasheet 16.8: PWM_TIMER1_SYNC_REG (0x001c)
+    module->timer[MCPWM_TIMER_1].sync.in_en = 1; // On
+    module->timer[MCPWM_TIMER_1].sync.out_sel = 3; // Off
+    ///// Start continuously running mode /////
+    module->timer[MCPWM_TIMER_0].mode.start = 2;
+    module->timer[MCPWM_TIMER_1].mode.start = 2;
+    ///// Force update on all registers for settings to take effect /////
+    // Datasheet 17.68: PWM_UPDATE_CFG_REG (0x010c)
+    module->update_cfg.global_up_en = 1;
+    // Toggle triggers a "forced register update" whatever that means..
+    module->update_cfg.global_force_up = 1;
+    module->update_cfg.global_force_up = 0;
+    portEXIT_CRITICAL(&mcpwm_spinlock);
+}
+#endif //PSPWM_USE_UP_DOWN_CTR_MODE_API

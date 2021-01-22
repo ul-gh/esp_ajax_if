@@ -105,6 +105,7 @@ class ServerSentEventHandler {
         }
         this.source = new EventSource(this.endpoint);
         this.source.addEventListener(
+            // eslint-disable-next-line no-unused-vars
             "open", e => console.log("Events Connected"), false);
         this.source.addEventListener(
             "error",
@@ -162,7 +163,7 @@ class AppWatchdog {
         clearTimeout(this.timer_id);
          if (this._triggered) {
             this._triggered = false;
-            this.this.disable_callback(false);
+            this.disable_callback(false);
          }
     }
 
