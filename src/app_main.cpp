@@ -57,9 +57,13 @@ auto app_controller = AppController{&api_server};
 void setup() {
     esp_log_level_set("*", ESP_LOG_DEBUG);
     Serial.begin(serial_baudrate);
-    //setup_wifi_station(); // Optional, when not using AsyncWifiManager
-    setup_wifi_hostap(net_conf); // Optional, when not using AsyncWifiManager
-    http_backend.begin(); // Needed when not using AsyncWifiManager!
+    /* WIFI setup when not using AsyncWifiManager:
+     * Call either "setup_wifi_hostap" or "setup_wifi_station" and then
+     * call http_backend.begin()
+     */
+    setup_wifi_station(net_conf); // Setup WiFi for station mode
+    //setup_wifi_hostap(net_conf); // Setup WiFi for access point mode
+    http_backend.begin(); // Only when not using AsyncWifiManager!
     setup_dns_server(dns_server, net_conf);
     // Disable above setup_wifi... calls when using AsyncWifiManager
     //run_wifi_manager(&dns_server, &http_backend);

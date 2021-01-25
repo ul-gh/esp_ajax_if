@@ -1,0 +1,52 @@
+// AUTOMATICALLY GENERATED FILE. PLEASE DO NOT MODIFY IT MANUALLY
+
+// PIO Unified Debugger
+//
+// Documentation: https://docs.platformio.org/page/plus/debugging.html
+// Configuration: https://docs.platformio.org/page/projectconf/section_env_debug.html
+
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Vue App Firefox Debug 192.168.4.1",
+            "type": "firefox",
+            "request": "launch",
+            "reAttach": true,
+            "url": "http://192.168.4.1/static/index.html",
+            "webRoot": "${workspaceFolder}/vue_app/dist",
+            "pathMappings": [{ "url": "webpack:///src/", "path": "${webRoot}/" }],
+        },
+        {
+            "name": "Vue App Firefox Debug npm serve",
+            "type": "firefox",
+            "request": "launch",
+            "reAttach": true,
+            "url": "http://localhost:8080/static/index.html",
+            "webRoot": "${workspaceFolder}/vue_app/dist",
+            "pathMappings": [{ "url": "webpack:///src/", "path": "${webRoot}/" }],
+        },
+        {
+            "type": "platformio-debug",
+            "request": "launch",
+            "name": "PIO Debug",
+            "executable": "/home/ulrich/mysrc/esp32/esp_ajax_if/.pio/build/release/firmware.elf",
+            "projectEnvName": "release",
+            "toolchainBinDir": "/home/ulrich/.platformio/packages/toolchain-xtensa32/bin",
+            "preLaunchTask": {
+                "type": "PlatformIO",
+                "task": "Pre-Debug (release)"
+            },
+            "internalConsoleOptions": "openOnSessionStart"
+        },
+        {
+            "type": "platformio-debug",
+            "request": "launch",
+            "name": "PIO Debug (skip Pre-Debug)",
+            "executable": "/home/ulrich/mysrc/esp32/esp_ajax_if/.pio/build/release/firmware.elf",
+            "projectEnvName": "release",
+            "toolchainBinDir": "/home/ulrich/.platformio/packages/toolchain-xtensa32/bin",
+            "internalConsoleOptions": "openOnSessionStart"
+        }
+    ]
+}
