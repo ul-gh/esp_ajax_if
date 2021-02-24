@@ -149,7 +149,7 @@ class AppWatchdog {
         this.on_timeout = on_timeout;
         this._triggered = false;
         // Debug
-        console.loog("App Watchdog instance created...");
+        console.log("App Watchdog instance created...");
     }
 
     enable() {
