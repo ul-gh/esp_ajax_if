@@ -140,21 +140,23 @@ class ServerSentEventHandler {
 }
 
 
-/** Watchdog timer cals disable_callback with "true" value on timeout,
- * and calls with "false" when reset
+/** Watchdog calls "on_timeout" callback with "true" argument when expired,
+ * and calls with "false" when reset is needed
  */
 class AppWatchdog {
-    constructor(timeout_ms, disable_callback) {
+    constructor(timeout_ms, on_timeout) {
         this.timeout_ms = timeout_ms;
-        this.disable_callback = disable_callback;
+        this.on_timeout = on_timeout;
         this._triggered = false;
+        // Debug
+        console.loog("App Watchdog instance created...");
     }
 
     enable() {
         this.timer_id = setTimeout(
             () => {
                 this._triggered = true;
-                this.disable_callback(true);
+                this.on_timeout(true);
             },
             this.timeout_ms);
     }
@@ -163,7 +165,7 @@ class AppWatchdog {
         clearTimeout(this.timer_id);
          if (this._triggered) {
             this._triggered = false;
-            this.disable_callback(false);
+            this.on_timeout(false);
          }
     }
 

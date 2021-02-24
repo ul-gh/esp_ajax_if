@@ -8,7 +8,7 @@ struct APIServerConfig
     // The name of the URL route for static file content. Default is "/static/".
     const char* static_route = "/static/";
     // Default file served from SPIFFS when server root URL without filename is requested
-    const char* index_html_file = "/static/main_app.html";
+    const char* index_html_file = "/static/index.html";
     // Add to static file responses a CacheControl header.
     // Default is "public, max-age=86400" which instructs remote clients to
     // normally not request again for the specified time in seconds (one day).
