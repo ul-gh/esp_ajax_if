@@ -16,6 +16,7 @@ struct NetworkConfig {
     const char* host_name = "isocal";
     const char* dns_domain = "isocal.lan";
 
+    bool use_dns = false;
     bool use_mdns = false;
 
     uint16_t http_tcp_port = 80;

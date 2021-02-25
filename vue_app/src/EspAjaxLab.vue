@@ -59,10 +59,10 @@ let view_state_store = {
       console.log('update_state called with', new_state);
     }
     if (!this.updates_inhibited) {
-      //for (let key of this.state.keys) {
-      //    this.state[key] = new_state[key];
-      //}
-      Object.assign(this.state, new_state);
+      for (let key of this.state.keys) {
+          this.state[key] = new_state[key];
+      }
+      //Object.assign(this.state, new_state);
     }
   },
 };

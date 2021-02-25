@@ -360,6 +360,7 @@ export default {
     },
     // When clicking on a button, we want to toggle its state, so requested value is inverse
     submit_btn(event) {
+      console.log(event);
       this.$emit("submit_cmd",
                  event.target.name,
                  !event.target.value);

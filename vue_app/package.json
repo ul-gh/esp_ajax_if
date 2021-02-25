@@ -6,6 +6,7 @@
     "serve": "vue-cli-service serve",
     "dev build": "vue-cli-service build --mode development",
     "build": "vue-cli-service build",
+    "deploy EAL": "./deploy-eal.js",
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
@@ -19,6 +20,7 @@
     "@vue/compiler-sfc": "^3.0.0",
     "babel-eslint": "^10.1.0",
     "compression-webpack-plugin": "^4.0.1",
+    "copyfiles": "^2.4.1",
     "eslint": "^6.7.2",
     "eslint-plugin-vue": "^7.0.0-0"
   },

@@ -64,7 +64,9 @@ void setup() {
     setup_wifi_station(net_conf); // Setup WiFi for station mode
     //setup_wifi_hostap(net_conf); // Setup WiFi for access point mode
     http_backend.begin(); // Only when not using AsyncWifiManager!
-    setup_dns_server(dns_server, net_conf);
+    if (net_conf.use_dns) {
+        setup_dns_server(dns_server, net_conf);
+    }
     // Disable above setup_wifi... calls when using AsyncWifiManager
     //run_wifi_manager(&dns_server, &http_backend);
     // Run HTTP server and prepare AJAX API registration
@@ -77,7 +79,9 @@ void setup() {
 }
 
 void loop() {
-    dns_server.processNextRequest();
+    if (net_conf.use_dns) {
+        dns_server.processNextRequest();
+    }
     update_debug_messages();
     delay(20);
 }
