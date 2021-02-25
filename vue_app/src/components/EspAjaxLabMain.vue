@@ -165,17 +165,17 @@
               </td>
               <td>
                 <input type="number"
-                    name="set_frequency_min" value="100"
+                    name="set_frequency_min" value="100.00"
                     min="5" max="2000"
-                    step="1"
+                    step="0.01"
                     @change="submit_number"
                     :disabled="disabled"/>
               </td>
               <td>
                 <input type="number"
-                    name="set_frequency_max" value="300"
+                    name="set_frequency_max" value="300.00"
                     min="5" max="2000"
-                    step="1"
+                    step="0.01"
                     @change="submit_number"
                     :disabled="disabled"/>
               </td>
@@ -196,9 +196,9 @@
               <td>Frequency /kHz:</td>
               <td>
                 <input type="number"
-                    name="set_frequency" value="100"
+                    name="set_frequency" value="100.00"
                     min="5" max="1000"
-                    step="1"
+                    step="0.01"
                     @change="submit_number"
                     :disabled="disabled"/>
               </td>
@@ -206,9 +206,9 @@
             <tr class="alternating_bg">
               <td colspan="2">
                 <input type="range"
-                    name="set_frequency" value="100"
+                    name="set_frequency" value="100.00"
                     min="5" max="1000"
-                    step="1"
+                    step="0.01"
                     @change="submit_number"
                     :disabled="disabled"/>
               </td>

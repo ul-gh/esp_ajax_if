@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<!--
+Main application HTML for ESP-AJAX-Lab
+Requires at least ES7 JavaScript/
+2020-11-18 Ulrich Lukas
+-->
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        ESP-AJAX-Lab
+    </title>
+    <link rel="stylesheet" type="text/css" href="toggle-switchy.css">
+    <link rel="stylesheet" type="text/css" href="main_app.css">
+    <link rel="icon" type="image/svg+xml" href='data:image/svg+xml;utf-8,
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 27.452 66.148">
+            <path fill="red" d="M13.307 66.146l-2.897-16.43 3.2 4.572 4.042-23.543L0 40.936 10.97 0h10.46L9.885 30.02l17.568-10.143-9.084 35.147 5.178-3.5-10.24 14.624"/>
+        </svg>'>
+    <script src="main_app_ajax.js"></script>
+</head>
+<body>
+    <img src="logo.svg" alt="Application Logo" style="height: 3rem">
+    <!--Responsive grid layout for main content-->
+    <ul class="grid_container main_grid">
+
+    <li class="grid_item lr_center">
+    <table>
+        <thead>
+            <tr>
+                <th colspan="3">Operation Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Network Connection</td>
+                <td>Power Output State</td>
+                <td>HW Error Shutdown</td>
+            </tr>
+            <tr>
+                <td>
+                    <div class="flex-centered state_vw" id="connection_vw">
+                    </div>
+                </td>
+                <td>
+                    <div class="flex-centered state_vw" id="power_pwm_vw" disabled>
+                    </div>
+                </td>
+                <td>
+                    <div class="flex-centered state_vw ajax_btn" id="shutdown_vw"
+                            name="clear_shutdown" value="true" disabled>
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    </li>
+
+    <li class="grid_item lr_center">
+        <table>
+            <thead>
+                <tr>
+                    <th colspan="3">Temperatures and Fan</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Heatsink 1 Temp</td>
+                    <td>Heatsink 2 Temp</td>
+                    <td>Fan Override ON</td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="flex-centered number_vw" id="aux_temp_vw">
+                        </div>
+                    </td>
+                    <td>
+                        <div class="flex-centered number_vw" id="heatsink_temp_vw" disabled>
+                        </div>
+                    </td>
+                    <td>
+                        <label class="toggle-switchy ajax_btn" id="fan_vw">
+                            <input type="checkbox" name="set_fan_override" checked disabled>
+                            <span class="toggle">
+                                <span class="switch"></span>
+                            </span>
+                        </label>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </li>
+
+    <li class="grid_item lr_center">
+        <table>
+            <thead>
+                <tr>
+                    <th colspan="2">Dead Time Settings</th>
+                    <th colspan="1">All Settings</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Lead (ZVS) DT /ns</td>
+                    <td>Lag (ZCS) DT /ns</td>
+                    <td>Save All Settings</td>
+                </tr>
+                <tr>
+                    <td><input type="number" id="lead_dt_vw"
+                            name="set_lead_dt" value="125" min="6" max="1000"></td>
+                    <td><input type="number" id="lag_dt_vw"
+                            name="set_lag_dt" value="125" min="6" max="1000"></td>
+                    <td><button class="ajax_btn" id="btn_save_settings"
+                            name="save_settings" value="true" disabled>
+                            Save!</button></td>
+                </tr>
+            </tbody>
+        </table>
+    </li>
+
+    <li class="grid_item lr_center">
+        <table>
+            <thead>
+                <tr>
+                    <th colspan="3">Limit Values</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Current Limit /A</td>
+                    <td>Frequency MIN /kHz</td>
+                    <td>Frequency MAX /kHz</td>
+                </tr>
+                <tr>
+                    <td><input type="number" id="current_limit_vw"
+                            name="set_current_limit" value="8" min="0" max="100" step=1></td>
+                    <td><input type="number" id="frequency_min_vw"
+                            name="set_frequency_min" value="100.00" min="5" max="2000" step=0.01></td>
+                    <td><input type="number" id="frequency_max_vw"
+                            name="set_frequency_max" value="300.00" min="5" max="2000" step=0.01></td>
+                </tr>
+            </tbody>
+        </table>
+    </li>
+
+    <li class="grid_item lr_center">
+        <table>
+            <thead>
+                <tr>
+                    <th colspan="2">Operation Settings</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="alternating_bg">
+                    <td>Frequency /kHz:</td>
+                    <td><input type="number" id="frequency_number_vw"
+                            name="set_frequency" value="100.00" min="5" max="1000" step=0.01>
+                    </td>
+                </tr>
+                <tr class="alternating_bg">
+                    <td colspan="2">
+                        <input type="range" id="frequency_range_vw"
+                            name="set_frequency" value="100.00" min="5" max="1000" step=0.01>
+                    </td>
+                </tr>
+                
+                <tr class="alternating_bg">
+                    <td>Duty Cycle /%:</td>
+                    <td>
+                        <input type="number" id="duty_number_vw"
+                            name="set_duty" value="45.0" min="0" max="100" step=0.1>
+                    </td>
+                </tr>
+                <tr class="alternating_bg">
+                    <td colspan="2">
+                        <input type="range" id="duty_range_vw"
+                            name="set_duty" value="45.0" min="0" max="100" step=0.1>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </li>
+
+    <li class="grid_item lr_center">
+        <table>
+            <thead>
+                <tr>
+                    <th colspan="3">Power Output Switches</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Power PWM</td>
+                    <td>REF/CAL Load</td>
+                    <td>DUT Output</td>
+                </tr>
+                <tr>
+                    <td>
+                        <span style="white-space: nowrap">
+                        <button class="ajax_btn" id="btn_pwm_on"
+                                name="set_power_pwm_active" value="true" disabled>
+                            ON
+                        </button>
+                        <button class="ajax_btn" id="btn_pwm_off"
+                                name="set_power_pwm_active" value="false" disabled>
+                            OFF
+                        </button>
+                        </span>
+                    </td>
+                    <td>
+                        <label class="toggle-switchy ajax_btn" id="ref_vw" data-size="lg">
+                            <input type="checkbox" name="set_relay_ref_active" disabled>
+                            <span class="toggle">
+                                <span class="switch"></span>
+                            </span>
+                        </label>
+                    </td>
+                    <td>
+                        <label class="toggle-switchy ajax_btn" id="dut_vw" data-size="lg">
+                            <input type="checkbox" name="set_relay_dut_active" disabled>
+                            <span class="toggle">
+                                <span class="switch"></span>
+                            </span>
+                        </label>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        </li>
+
+        <li class="grid_item lr_center">
+            <table>
+                <thead>
+                    <tr>
+                        <th colspan="2">Output Interval Timer</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Pulse Length /sec</td>
+                        <td>Trigger One-Shot</td>
+                    </tr>
+                    <tr>
+                        <td><input type="number" id="oneshot_len_vw"
+                                name="set_oneshot_len" value="0.000"
+                                min="0.000" max="1800" step=0.001></td>
+                        <td><button class="ajax_btn" id="btn_trigger_oneshot"
+                                name="trigger_oneshot" value="true" disabled>
+                                TRIGGER!</button></td>
+                    </tr>
+                </tbody>
+            </table>
+        </li>
+
+    <!--End responsive grid layout-->
+    </ul>
+
+    <p>
+        <a href="update.html">Perform OTA Firmware Upload</a>
+    </p>
+    <p>
+        2020-11-18 Ulrich Lukas
+    </p>
+    <script>
+        const request_generator = new AsyncRequestGenerator();
+        const view_updater = new ViewUpdater();
+        const app_watchdog = new AppWatchdog(1500, view_updater);
+        const sse_handler = new ServerSentEventHandler("/events", view_updater, app_watchdog);
+    </script>
+</body>
+</html>
