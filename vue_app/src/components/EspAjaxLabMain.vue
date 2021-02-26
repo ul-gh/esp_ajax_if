@@ -36,7 +36,7 @@
               </td>
               <td>
                 <div class="flex-centered state_vw ajax_btn" id="shutdown_vw"
-                    name="clear_shutdown" value="true"
+                    @click="e => submit_nv('clear_shutdown', 'true')"
                     :disabled="set_if(disabled)"
                     :hw_oc_fault_occurred="set_if(state.hw_oc_fault_occurred)"
                     :hw_oc_fault_present="set_if(state.hw_oc_fault_present)">
@@ -88,8 +88,9 @@
               <td>
                 <label class="toggle-switchy">
                   <input type="checkbox"
-                      name="set_fan_override"
-                      @change="submit_btn"
+                      name="set_fan_override" :value="state.fan_override"
+                      :checked="state.fan_override"
+                      @change="submit_toggle"
                       :disabled="disabled"/>
                   <span class="toggle"><span class="switch"></span></span>
                 </label>
@@ -116,14 +117,14 @@
             <tr>
               <td>
                 <input type="number"
-                    name="set_lead_dt" value="125"
+                    name="set_lead_dt" :value="state.lead_dt.toFixed(0)"
                     min="6" max="1000"
                     @change="submit_number"
                     :disabled="disabled"/>
               </td>
               <td>
                 <input type="number"
-                    name="set_lag_dt" value="125"
+                    name="set_lag_dt" :value="state.lag_dt.toFixed(0)"
                     min="6" max="1000"
                     @change="submit_number"
                     :disabled="disabled"/>
@@ -131,7 +132,7 @@
               <td>
                 <button class="ajax_btn" id="btn_save_settings"
                     name="save_settings" value="true"
-                    @change="submit_btn"
+                    @click="submit_btn"
                     :disabled="disabled">
                   Save!
                 </button>
@@ -157,7 +158,7 @@
             <tr>
               <td>
                 <input type="number"
-                    name="set_current_limit" value="8"
+                    name="set_current_limit" :value="state.current_limit.toFixed(0)"
                     min="0" max="100"
                     step="1"
                     @change="submit_number"
@@ -165,7 +166,7 @@
               </td>
               <td>
                 <input type="number"
-                    name="set_frequency_min" value="100.00"
+                    name="set_frequency_min" :value="state.frequency_min.toFixed(2)"
                     min="5" max="2000"
                     step="0.01"
                     @change="submit_number"
@@ -173,7 +174,7 @@
               </td>
               <td>
                 <input type="number"
-                    name="set_frequency_max" value="300.00"
+                    name="set_frequency_max" :value="state.frequency_max.toFixed(2)"
                     min="5" max="2000"
                     step="0.01"
                     @change="submit_number"
@@ -196,8 +197,8 @@
               <td>Frequency /kHz:</td>
               <td>
                 <input type="number"
-                    name="set_frequency" value="100.00"
-                    min="5" max="1000"
+                    name="set_frequency" :value="state.frequency.toFixed(2)"
+                    :min="state.frequency_min" :max="state.frequency_max"
                     step="0.01"
                     @change="submit_number"
                     :disabled="disabled"/>
@@ -206,8 +207,8 @@
             <tr class="alternating_bg">
               <td colspan="2">
                 <input type="range"
-                    name="set_frequency" value="100.00"
-                    min="5" max="1000"
+                    name="set_frequency" :value="state.frequency.toFixed(2)"
+                    :min="state.frequency_min" :max="state.frequency_max"
                     step="0.01"
                     @change="submit_number"
                     :disabled="disabled"/>
@@ -218,7 +219,7 @@
               <td>Duty Cycle /%:</td>
               <td>
                 <input type="number"
-                    name="set_duty" value="45.0"
+                    name="set_duty" :value="state.duty.toFixed(1)"
                     min="0" max="100"
                     step="0.1"
                     @change="submit_number"
@@ -228,7 +229,7 @@
             <tr class="alternating_bg">
               <td colspan="2">
                 <input type="range"
-                    name="set_duty" value="45.0"
+                    name="set_duty" :value="state.duty.toFixed(1)"
                     min="0" max="100"
                     step="0.1"
                     @change="submit_number"
@@ -258,12 +259,14 @@
                   <button class="ajax_btn"
                       id="btn_pwm_on"
                       name="set_power_pwm_active" value="true"
+                      @click="submit_btn"
                       :disabled="disabled">
                     ON
                   </button>
                   <button class="ajax_btn"
                       id="btn_pwm_off"
                       name="set_power_pwm_active" value="false"
+                      @click="submit_btn"
                       :disabled="disabled">
                     OFF
                   </button>
@@ -273,6 +276,8 @@
                 <label class="toggle-switchy ajax_btn" data-size="lg">
                   <input type="checkbox"
                       name="set_relay_ref_active"
+                      :checked="state.relay_ref_active"
+                      @change="submit_toggle"
                       :disabled="disabled"/>
                   <span class="toggle"><span class="switch"></span></span>
                 </label>
@@ -281,6 +286,8 @@
                 <label class="toggle-switchy ajax_btn" data-size="lg">
                   <input type="checkbox"
                       name="set_relay_dut_active"
+                      :checked="state.relay_dut_active"
+                      @change="submit_toggle"
                       :disabled="disabled"/>
                   <span class="toggle"><span class="switch"></span></span>
                 </label>
@@ -306,7 +313,7 @@
               <td>
                 <input type="number"
                     id="oneshot_len_vw"
-                    name="set_oneshot_len" value="0.0"
+                    name="set_oneshot_len" :value="state.oneshot_len.toFixed(3)"
                     min="0" max="1800"
                     step="0.001"
                     @change="submit_number"
@@ -354,16 +361,22 @@ export default {
     },
     // Submit number input, we emit an event with name and value
     submit_number(event) {
-      this.$emit("submit_cmd",
-                 event.target.name,
-                 Number(event.target.value));
+      this.$emit("submit_cmd", event.target.name, Number(event.target.value));
     },
-    // When clicking on a button, we want to toggle its state, so requested value is inverse
+    // Push buttons can have a name and value
     submit_btn(event) {
       console.log(event);
-      this.$emit("submit_cmd",
-                 event.target.name,
-                 !event.target.value);
+      this.$emit("submit_cmd", event.target.name, event.target.value);
+    },
+    // When clicking on a checkbox, submit the (already toggled) checked attribute
+    submit_toggle(event) {
+      console.log(event);
+      this.$emit("submit_cmd", event.target.name, event.target.checked);
+    },
+    // Submit name=value pair
+    submit_nv(name, value) {
+        console.log("submitting " + name + "=" + value);
+        this.$emit("submit_cmd", name, value);
     },
   },
   emits: ["submit_cmd"],

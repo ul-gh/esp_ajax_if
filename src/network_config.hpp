@@ -10,8 +10,11 @@ struct NetworkConfig {
     const char* ap_ssid = "isocal";
     const char* ap_psk = "123FOO456";
 
-    const char* sta_ssid = "K9m";
-    const char* sta_psk = "1c185GFzFgk";
+    const char* sta_ssid = "g7B";
+    const char* sta_psk = "fH5mhq9Q2Ant";
+
+    //const char* sta_ssid = "K9m";
+    //const char* sta_psk = "1c185GFzFgk";
 
     const char* host_name = "isocal";
     const char* dns_domain = "isocal.lan";

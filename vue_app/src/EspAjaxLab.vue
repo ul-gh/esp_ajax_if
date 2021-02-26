@@ -59,7 +59,7 @@ let view_state_store = {
       console.log('update_state called with', new_state);
     }
     if (!this.updates_inhibited) {
-      for (let key of this.state.keys) {
+      for (let key in this.state) {
           this.state[key] = new_state[key];
       }
       //Object.assign(this.state, new_state);
@@ -105,6 +105,8 @@ export default {
     document.addEventListener("input", e => this.inhibit_view_updates());
     // eslint-disable-next-line no-unused-vars
     document.addEventListener("blur", e => this.allow_view_updates());
+    // Debug
+    //this.view_state_store = view_state_store;
   },
 }
 </script>

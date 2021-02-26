@@ -147,7 +147,8 @@ class AppWatchdog {
     constructor(timeout_ms, on_timeout) {
         this.timeout_ms = timeout_ms;
         this.on_timeout = on_timeout;
-        this._triggered = false;
+        this.timer_id = undefined;
+        this._triggered = true;
         // Debug
         console.log("App Watchdog instance created...");
     }
