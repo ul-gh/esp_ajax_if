@@ -1,22 +1,22 @@
 <template>
-  <img alt="Application Logo" style="height: 3rem" src="./assets/logo.svg">
+  <img alt="Application Logo" style="height: 2rem" src="./assets/logo.svg">
 
   <EspAjaxLabMain ref="eal"
       :state="state"
       :disabled="disabled"
-      :view_updates_inhibited="view_updates_inhibited"
+      :view_updates_inhibited="store.updates_inhibited"
       @submit_cmd="submit_cmd"/>
 </template>
 
 <script>
-import EspAjaxLabMain from './components/EspAjaxLabMain.vue'
-
+import { reactive } from 'vue';
+import EspAjaxLabMain from './components/EspAjaxLabMain.vue';
 import { AsyncRequestGenerator,
          ServerSentEventHandler,
          AppWatchdog,
-        } from './async_requests_sse.js'
+        } from './async_requests_sse.js';
 
-let view_state_store = {
+let view_state_store = reactive({
   debug: false,
   updates_inhibited: false,
   state: {
@@ -54,6 +54,7 @@ let view_state_store = {
       // Length of the power output one-shot timer pulse
       oneshot_len: Number(),
     },
+  // Called by server-sent event handler
   update_state (new_state) {
     if (this.debug) {
       console.log('update_state called with', new_state);
@@ -62,10 +63,11 @@ let view_state_store = {
       for (let key in this.state) {
           this.state[key] = new_state[key];
       }
+      // Probably unsafe as it adds arbitrary new attributes from unsafe JSON
       //Object.assign(this.state, new_state);
     }
   },
-};
+});
 
 
 export default {
@@ -76,7 +78,7 @@ export default {
   data() {
     return {
       disabled: true,
-      view_updates_inhibited: view_state_store.updates_inhibited,
+      store: view_state_store,
       state: view_state_store.state,
       };
   },
@@ -85,11 +87,11 @@ export default {
         this.request_generator.send_cmd(name, value);
     },
     inhibit_view_updates() {
-        this.view_updates_inhibited = true;
+        this.store.updates_inhibited = true;
         setTimeout(() => this.allow_view_updates(), 5000);
     },
     allow_view_updates() {
-        this.view_updates_inhibited = false;
+        this.store.updates_inhibited = false;
     },
     set_disabled(new_state) {
         this.disabled = new_state;
@@ -102,9 +104,9 @@ export default {
                                                   view_state_store,
                                                   this.app_watchdog);
     // eslint-disable-next-line no-unused-vars
-    document.addEventListener("input", e => this.inhibit_view_updates());
+    document.addEventListener("input", e => { console.log("inhibiting", e); this.inhibit_view_updates(); });
     // eslint-disable-next-line no-unused-vars
-    document.addEventListener("blur", e => this.allow_view_updates());
+    document.addEventListener("blur", e => { console.log("re-allowing", e); this.allow_view_updates(); });
     // Debug
     //this.view_state_store = view_state_store;
   },

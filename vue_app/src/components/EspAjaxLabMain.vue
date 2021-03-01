@@ -197,7 +197,7 @@
               <td>Frequency /kHz:</td>
               <td>
                 <input type="number"
-                    name="set_frequency" :value="state.frequency.toFixed(2)"
+                    name="set_frequency" v-model="frequency_internal"
                     :min="state.frequency_min" :max="state.frequency_max"
                     step="0.01"
                     @change="submit_number"
@@ -207,7 +207,7 @@
             <tr class="alternating_bg">
               <td colspan="2">
                 <input type="range"
-                    name="set_frequency" :value="state.frequency.toFixed(2)"
+                    name="set_frequency" v-model="frequency_internal"
                     :min="state.frequency_min" :max="state.frequency_max"
                     step="0.01"
                     @change="submit_number"
@@ -338,7 +338,7 @@
     <p>
       <a href="update.html">Perform OTA Firmware Upload</a>
     </p>
-    <p>2020-11-18 Ulrich Lukas</p>
+    <p>2021-02-27 Ulrich Lukas</p>
   </div>
 </template>
 
@@ -359,6 +359,8 @@ export default {
     set_if(is_true) {
       return is_true ? "" : undefined;
     },
+    // Set editing state of a number or text input box, prevent view updates
+    // from happening 
     // Submit number input, we emit an event with name and value
     submit_number(event) {
       this.$emit("submit_cmd", event.target.name, Number(event.target.value));
@@ -384,7 +386,5 @@ export default {
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped src="./main_app.css">
-</style>
-<style scoped src="./toggle-switchy.css">
-</style>
+<style scoped src="./main_app.css"></style>
+<style scoped src="./toggle-switchy.css"></style>

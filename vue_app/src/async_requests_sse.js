@@ -27,10 +27,9 @@ class AsyncRequestGenerator {
     }
 
     /** Send HTTP requests rate-limited by a minimum delay timer.
-     * We do not queue requests but only store the last one.
      * If requests cannot be sent due to exceeding the maximum rate,
-     * all intermediate requests are ignored without any action, but the
-     * very last one is stored for delayed transmission.
+     * all intermediate requests are ignored without any action, except for the
+     * very last one which is stored for automatic pending transmission.
      */
     async do_http_request(req_str) {
         if (this._rate_limit_active) {
