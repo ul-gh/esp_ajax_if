@@ -4,5 +4,5 @@ import EspAjaxLab from './EspAjaxLab.vue'
 const app = createApp(EspAjaxLab);
 const vm = app.mount('#app');
 
-document.vm = vm;
-document.eal = vm.$refs.eal;
+window.eal = vm;
+window.eal_main = vm.$refs.eal;

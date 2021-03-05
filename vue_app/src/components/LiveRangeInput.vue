@@ -1,7 +1,7 @@
 <template>
-  <div class="live_number_input">
+  <div class="live_range_input">
     <input
-      type="number"
+      type="range"
       :class="{editing: editing}"
       :name="name_prop"
       :value="value_displayed"
@@ -9,7 +9,6 @@
       :max="max.toFixed(digits)"
       :step="10 ** (-digits)"
       @input="on_input"
-      @blur="on_blur"
       @change="on_change"
       :disabled="disabled"
     />
@@ -18,7 +17,7 @@
 
 <script>
 export default {
-  name: "LiveNumberInput",
+  name: "LiveRangeInput",
   data() {
     return {
       value_edit: 0.0,
@@ -39,7 +38,7 @@ export default {
   computed: {
     value_displayed() {
       if (this.editing || this.$attrs.editing) {
-          return this.value_edit;
+          return this.value_edit.toFixed(this.digits);
       } else {
           return this.value_feedback.toFixed(this.digits);
       }
@@ -51,14 +50,11 @@ export default {
       // Set editing state of a number or text input box, prevent view updates
       // from happening
       this.editing = true;
+      this.$emit("value_changed", this.name_prop, Number(event.target.value));
       setTimeout(() => this.editing = false, 1000*this.timeout_s);
     },
     // Submit value, we emit an event with name and value
     on_change(event) {
-      this.$emit("value_changed", this.name_prop, Number(event.target.value));
-      this.on_blur();
-    },
-    on_blur() {
       setTimeout(() => this.editing = false, 1.1*this.roundtrip_ms);
     },
   },
@@ -67,7 +63,4 @@ export default {
 </script>
 
 <style scoped>
-input.editing {
-  background-color: #ffa8a8;
-}
 </style>

@@ -86,14 +86,12 @@
                 </div>
               </td>
               <td>
-                <label class="toggle-switchy">
-                  <input type="checkbox"
-                      name="set_fan_override" :value="state.fan_override"
-                      :checked="state.fan_override"
-                      @change="submit_toggle"
-                      :disabled="disabled"/>
-                  <span class="toggle"><span class="switch"></span></span>
-                </label>
+                <LiveToggleSwitch
+                  name_prop="set_fan_override"
+                  :value_feedback="state.fan_override"
+                  @value_changed="submit_nv"
+                  :disabled="disabled"
+                />
               </td>
             </tr>
           </tbody>
@@ -116,18 +114,24 @@
             </tr>
             <tr>
               <td>
-                <input type="number"
-                    name="set_lead_dt" :value="state.lead_dt.toFixed(0)"
-                    min="6" max="1000"
-                    @change="submit_number"
-                    :disabled="disabled"/>
+                <LiveNumberInput
+                    name_prop="set_lead_dt"
+                    :value_feedback="state.lead_dt"
+                    :min="6" :max="5000"
+                    :digits="0"
+                    @value_changed="submit_nv"
+                    :disabled="disabled"
+                />
               </td>
               <td>
-                <input type="number"
-                    name="set_lag_dt" :value="state.lag_dt.toFixed(0)"
-                    min="6" max="1000"
-                    @change="submit_number"
-                    :disabled="disabled"/>
+                <LiveNumberInput
+                    name_prop="set_lag_dt"
+                    :value_feedback="state.lag_dt"
+                    :min="6" :max="5000"
+                    :digits="0"
+                    @value_changed="submit_nv"
+                    :disabled="disabled"
+                />
               </td>
               <td>
                 <button class="ajax_btn" id="btn_save_settings"
@@ -157,28 +161,34 @@
             </tr>
             <tr>
               <td>
-                <input type="number"
-                    name="set_current_limit" :value="state.current_limit.toFixed(0)"
-                    min="0" max="100"
-                    step="1"
-                    @change="submit_number"
-                    :disabled="disabled"/>
+                <LiveNumberInput
+                    name_prop="set_current_limit"
+                    :value_feedback="state.current_limit"
+                    :min="0" :max="100"
+                    :digits="0"
+                    @value_changed="submit_nv"
+                    :disabled="disabled"
+                />
               </td>
               <td>
-                <input type="number"
-                    name="set_frequency_min" :value="state.frequency_min.toFixed(2)"
-                    min="5" max="2000"
-                    step="0.01"
-                    @change="submit_number"
-                    :disabled="disabled"/>
+                <LiveNumberInput
+                    name_prop="set_frequency_min"
+                    :value_feedback="state.frequency_min"
+                    :min="0.00" :max="5000.00"
+                    :digits="2"
+                    @value_changed="submit_nv"
+                    :disabled="disabled"
+                />
               </td>
               <td>
-                <input type="number"
-                    name="set_frequency_max" :value="state.frequency_max.toFixed(2)"
-                    min="5" max="2000"
-                    step="0.01"
-                    @change="submit_number"
-                    :disabled="disabled"/>
+                <LiveNumberInput
+                    name_prop="set_frequency_max"
+                    :value_feedback="state.frequency_max"
+                    :min="0.00" :max="5000.00"
+                    :digits="2"
+                    @value_changed="submit_nv"
+                    :disabled="disabled"
+                />
               </td>
             </tr>
           </tbody>
@@ -196,44 +206,52 @@
             <tr class="alternating_bg">
               <td>Frequency /kHz:</td>
               <td>
-                <input type="number"
-                    name="set_frequency" v-model="frequency_internal"
+                <LiveNumberInput
+                    name_prop="set_frequency"
+                    :value_feedback="state.frequency"
                     :min="state.frequency_min" :max="state.frequency_max"
-                    step="0.01"
-                    @change="submit_number"
-                    :disabled="disabled"/>
+                    :digits="2"
+                    @value_changed="submit_nv"
+                    :disabled="disabled"
+                />
               </td>
             </tr>
             <tr class="alternating_bg">
               <td colspan="2">
-                <input type="range"
-                    name="set_frequency" v-model="frequency_internal"
+                <LiveRangeInput
+                    name_prop="set_frequency"
+                    :value_feedback="state.frequency"
                     :min="state.frequency_min" :max="state.frequency_max"
-                    step="0.01"
-                    @change="submit_number"
-                    :disabled="disabled"/>
+                    :digits="2"
+                    @value_changed="submit_nv"
+                    :disabled="disabled"
+                />
               </td>
             </tr>
 
             <tr class="alternating_bg">
               <td>Duty Cycle /%:</td>
               <td>
-                <input type="number"
-                    name="set_duty" :value="state.duty.toFixed(1)"
-                    min="0" max="100"
-                    step="0.1"
-                    @change="submit_number"
-                    :disabled="disabled"/>
+                <LiveNumberInput
+                    name_prop="set_duty"
+                    :value_feedback="state.duty"
+                    :min="0" :max="100"
+                    :digits="1"
+                    @value_changed="submit_nv"
+                    :disabled="disabled"
+                />
               </td>
             </tr>
             <tr class="alternating_bg">
               <td colspan="2">
-                <input type="range"
-                    name="set_duty" :value="state.duty.toFixed(1)"
-                    min="0" max="100"
-                    step="0.1"
-                    @change="submit_number"
-                    :disabled="disabled"/>
+                <LiveRangeInput
+                    name_prop="set_duty"
+                    :value_feedback="state.duty"
+                    :min="0" :max="100"
+                    :digits="1"
+                    @value_changed="submit_nv"
+                    :disabled="disabled"
+                />
               </td>
             </tr>
           </tbody>
@@ -273,24 +291,22 @@
                 </span>
               </td>
               <td>
-                <label class="toggle-switchy ajax_btn" data-size="lg">
-                  <input type="checkbox"
-                      name="set_relay_ref_active"
-                      :checked="state.relay_ref_active"
-                      @change="submit_toggle"
-                      :disabled="disabled"/>
-                  <span class="toggle"><span class="switch"></span></span>
-                </label>
+                <LiveToggleSwitch
+                  data-size="lg"
+                  name_prop="set_relay_ref_active"
+                  :value_feedback="state.relay_ref_active"
+                  @value_changed="submit_nv"
+                  :disabled="disabled"
+                />
               </td>
               <td>
-                <label class="toggle-switchy ajax_btn" data-size="lg">
-                  <input type="checkbox"
-                      name="set_relay_dut_active"
-                      :checked="state.relay_dut_active"
-                      @change="submit_toggle"
-                      :disabled="disabled"/>
-                  <span class="toggle"><span class="switch"></span></span>
-                </label>
+                <LiveToggleSwitch
+                  data-size="lg"
+                  name_prop="set_relay_dut_active"
+                  :value_feedback="state.relay_dut_active"
+                  @value_changed="submit_nv"
+                  :disabled="disabled"
+                />
               </td>
             </tr>
           </tbody>
@@ -311,13 +327,15 @@
             </tr>
             <tr>
               <td>
-                <input type="number"
-                    id="oneshot_len_vw"
-                    name="set_oneshot_len" :value="state.oneshot_len.toFixed(3)"
-                    min="0" max="1800"
-                    step="0.001"
-                    @change="submit_number"
-                    :disabled="disabled"/>
+                <LiveNumberInput
+                    name="set_oneshot_len"
+                    :value_feedback="state.oneshot_len"
+                    :min="0"
+                    :max="1800"
+                    :digits="3"
+                    @value_changed="submit_nv"
+                    :disabled="disabled"
+                />
               </td>
               <td>
                 <button class="ajax_btn"
@@ -343,14 +361,22 @@
 </template>
 
 <script>
+import LiveToggleSwitch from './LiveToggleSwitch.vue';
+import LiveNumberInput from './LiveNumberInput.vue';
+import LiveRangeInput from './LiveRangeInput.vue';
+
 export default {
   name: "EspAjaxLabMain",
+  components: {
+      LiveToggleSwitch,
+      LiveNumberInput,
+      LiveRangeInput,
+  },
   data() {
     return {};
   },
   props: {
     state: Object,
-    view_updates_inhibited: Boolean,
     disabled: Boolean,
   },
   methods: {
@@ -359,21 +385,10 @@ export default {
     set_if(is_true) {
       return is_true ? "" : undefined;
     },
-    // Set editing state of a number or text input box, prevent view updates
-    // from happening 
-    // Submit number input, we emit an event with name and value
-    submit_number(event) {
-      this.$emit("submit_cmd", event.target.name, Number(event.target.value));
-    },
     // Push buttons can have a name and value
     submit_btn(event) {
       console.log(event);
       this.$emit("submit_cmd", event.target.name, event.target.value);
-    },
-    // When clicking on a checkbox, submit the (already toggled) checked attribute
-    submit_toggle(event) {
-      console.log(event);
-      this.$emit("submit_cmd", event.target.name, event.target.checked);
     },
     // Submit name=value pair
     submit_nv(name, value) {
@@ -386,5 +401,4 @@ export default {
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped src="./main_app.css"></style>
-<style scoped src="./toggle-switchy.css"></style>
+<style src="./main_app.css"></style>

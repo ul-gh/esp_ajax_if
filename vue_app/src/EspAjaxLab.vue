@@ -4,7 +4,6 @@
   <EspAjaxLabMain ref="eal"
       :state="state"
       :disabled="disabled"
-      :view_updates_inhibited="store.updates_inhibited"
       @submit_cmd="submit_cmd"/>
 </template>
 
@@ -18,19 +17,18 @@ import { AsyncRequestGenerator,
 
 let view_state_store = reactive({
   debug: false,
-  updates_inhibited: false,
   state: {
       frequency_min_hw: Number(),
       frequency_max_hw: Number(),
       dt_sum_max_hw: Number(),
       // Runtime user setpoint limits for output frequency
-      frequency_min: Number(),
-      frequency_max: Number(),
+      frequency_min: 90.00,
+      frequency_max: 110.00,
       // Operational setpoints for PSPWM module
-      frequency: Number(),
-      duty: Number(),
-      lead_dt: Number(),
-      lag_dt: Number(),
+      frequency: 100.00,
+      duty: 0.0,
+      lead_dt: 300,
+      lag_dt: 300,
       power_pwm_active: Boolean(),
       // Settings for auxiliary HW control module
       current_limit: Number(),
@@ -59,13 +57,11 @@ let view_state_store = reactive({
     if (this.debug) {
       console.log('update_state called with', new_state);
     }
-    if (!this.updates_inhibited) {
       for (let key in this.state) {
           this.state[key] = new_state[key];
       }
       // Probably unsafe as it adds arbitrary new attributes from unsafe JSON
       //Object.assign(this.state, new_state);
-    }
   },
 });
 
@@ -73,7 +69,7 @@ let view_state_store = reactive({
 export default {
   name: 'EspAjaxLab',
   components: {
-    EspAjaxLabMain
+    EspAjaxLabMain,
   },
   data() {
     return {
@@ -86,15 +82,12 @@ export default {
     submit_cmd(name, value) {
         this.request_generator.send_cmd(name, value);
     },
-    inhibit_view_updates() {
-        this.store.updates_inhibited = true;
-        setTimeout(() => this.allow_view_updates(), 5000);
+    set_disabled(bv) {
+        this.disabled = bv;
     },
-    allow_view_updates() {
-        this.store.updates_inhibited = false;
-    },
-    set_disabled(new_state) {
-        this.disabled = new_state;
+    set_debug() {
+        this.store.debug = true;
+        this.sse_handler.disable_reconnect_and_watchdog();
     },
   },
   created() {
@@ -103,12 +96,6 @@ export default {
     this.sse_handler = new ServerSentEventHandler("/events",
                                                   view_state_store,
                                                   this.app_watchdog);
-    // eslint-disable-next-line no-unused-vars
-    document.addEventListener("input", e => { console.log("inhibiting", e); this.inhibit_view_updates(); });
-    // eslint-disable-next-line no-unused-vars
-    document.addEventListener("blur", e => { console.log("re-allowing", e); this.allow_view_updates(); });
-    // Debug
-    //this.view_state_store = view_state_store;
   },
 }
 </script>
