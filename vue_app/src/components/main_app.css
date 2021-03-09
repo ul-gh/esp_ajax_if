@@ -245,23 +245,6 @@ div.number_vw[disabled] {
     background-color: red;
 }
 
-#shutdown_vw:not([disabled]) {
-    background-color: rgb(139, 255, 143);
-}
-#shutdown_vw[fault_occurred]:not([disabled]) {
-    background-color: rgb(250, 192, 84);
-}
-#shutdown_vw[fault_present]:not([disabled]) {
-    background-color: rgb(250, 84, 84);
-}
-
-#btn_clear_shutdown {
-    display: block;
-    margin: auto;
-    background-color: white;
-    /* width: 100%; */
-}
-
 #btn_pwm_on {
     display: inline-block;
     font-size: 1.3rem;

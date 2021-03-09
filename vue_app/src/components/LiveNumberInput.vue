@@ -3,30 +3,32 @@
     <input
       type="number"
       :class="{editing: editing}"
-      :name="name_prop"
-      :value="value_displayed"
+      :name="cmd_name"
+      v-model="value_displayed"
       :min="min.toFixed(digits)"
       :max="max.toFixed(digits)"
       :step="10 ** (-digits)"
+      :disabled="disabled"
       @input="on_input"
       @blur="on_blur"
       @change="on_change"
-      :disabled="disabled"
     />
   </div>
 </template>
 
 <script>
+let timeout_timer_id = undefined;
+
 export default {
   name: "LiveNumberInput",
   data() {
     return {
-      value_edit: 0.0,
       editing: false,
+      value_displayed: 0.0,
     };
   },
   props: {
-    name_prop: String,
+    cmd_name: String,
     value_feedback: Number,
     min: Number,
     max: Number,
@@ -36,26 +38,25 @@ export default {
     roundtrip_ms: {default: 750, type: Number},
     disabled: {default: false, type: Boolean}
   },
-  computed: {
-    value_displayed() {
-      if (this.editing || this.$attrs.editing) {
-          return this.value_edit;
-      } else {
-          return this.value_feedback.toFixed(this.digits);
+  watch: {
+    value_feedback: function(val) {
+      if (this.editing) {
+        return;
       }
-    },
+      this.value_displayed = val.toFixed(this.digits);
+    }
   },
   methods: {
-    on_input(event) {
-      this.value_edit = Number(event.target.value);
+    on_input(_) {
       // Set editing state of a number or text input box, prevent view updates
       // from happening
       this.editing = true;
-      setTimeout(() => this.editing = false, 1000*this.timeout_s);
+      clearTimeout(timeout_timer_id);
+      timeout_timer_id = setTimeout(() => this.editing = false, 1000*this.timeout_s);
     },
     // Submit value, we emit an event with name and value
     on_change(event) {
-      this.$emit("value_changed", this.name_prop, Number(event.target.value));
+      this.$emit("value_changed", this.cmd_name, Number(event.target.value));
       this.on_blur();
     },
     on_blur() {

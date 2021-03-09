@@ -35,24 +35,14 @@
                 </div>
               </td>
               <td>
-                <div class="flex-centered state_vw ajax_btn" id="shutdown_vw"
-                    @click="e => submit_nv('clear_shutdown', 'true')"
-                    :disabled="set_if(disabled)"
-                    :hw_oc_fault_occurred="set_if(state.hw_oc_fault_occurred)"
-                    :hw_oc_fault_present="set_if(state.hw_oc_fault_present)">
-                  <span style="white-space: pre" v-if="!disabled">
-                    {{ state.hw_oc_fault_present
-                       ? "HW OC FAULT\nClick here to Reset!"
-                       : "" }}
-                    {{ state.hw_oc_fault_occurred && !state.hw_oc_fault_present
-                       ? "HW OC fault latched!\nClick here to Reset!"
-                       : "" }}
-                    {{ !state.hw_oc_fault_occurred && !state.hw_oc_fault_present
-                       ? "State: Normal"
-                       : "" }}
-                  </span>
-                  {{ disabled ? "Unknown.." : "" }}
-                </div>
+                <LiveErrorIndicatorBtn
+                  cmd_name="clear_shutdown"
+                  :value_feedback="state.hw_oc_fault_present"
+                  ok_text="State: Normal"
+                  :error_text="'HW OC FAULT\nClick here to Reset!'"
+                  :disabled="disabled"
+                  @click="submit_nv"
+                />
               </td>
             </tr>
           </tbody>
@@ -87,7 +77,7 @@
               </td>
               <td>
                 <LiveToggleSwitch
-                  name_prop="set_fan_override"
+                  cmd_name="set_fan_override"
                   :value_feedback="state.fan_override"
                   @value_changed="submit_nv"
                   :disabled="disabled"
@@ -115,7 +105,7 @@
             <tr>
               <td>
                 <LiveNumberInput
-                    name_prop="set_lead_dt"
+                    cmd_name="set_lead_dt"
                     :value_feedback="state.lead_dt"
                     :min="6" :max="5000"
                     :digits="0"
@@ -125,7 +115,7 @@
               </td>
               <td>
                 <LiveNumberInput
-                    name_prop="set_lag_dt"
+                    cmd_name="set_lag_dt"
                     :value_feedback="state.lag_dt"
                     :min="6" :max="5000"
                     :digits="0"
@@ -162,7 +152,7 @@
             <tr>
               <td>
                 <LiveNumberInput
-                    name_prop="set_current_limit"
+                    cmd_name="set_current_limit"
                     :value_feedback="state.current_limit"
                     :min="0" :max="100"
                     :digits="0"
@@ -172,7 +162,7 @@
               </td>
               <td>
                 <LiveNumberInput
-                    name_prop="set_frequency_min"
+                    cmd_name="set_frequency_min"
                     :value_feedback="state.frequency_min"
                     :min="0.00" :max="5000.00"
                     :digits="2"
@@ -182,7 +172,7 @@
               </td>
               <td>
                 <LiveNumberInput
-                    name_prop="set_frequency_max"
+                    cmd_name="set_frequency_max"
                     :value_feedback="state.frequency_max"
                     :min="0.00" :max="5000.00"
                     :digits="2"
@@ -207,7 +197,7 @@
               <td>Frequency /kHz:</td>
               <td>
                 <LiveNumberInput
-                    name_prop="set_frequency"
+                    cmd_name="set_frequency"
                     :value_feedback="state.frequency"
                     :min="state.frequency_min" :max="state.frequency_max"
                     :digits="2"
@@ -219,7 +209,7 @@
             <tr class="alternating_bg">
               <td colspan="2">
                 <LiveRangeInput
-                    name_prop="set_frequency"
+                    cmd_name="set_frequency"
                     :value_feedback="state.frequency"
                     :min="state.frequency_min" :max="state.frequency_max"
                     :digits="2"
@@ -233,7 +223,7 @@
               <td>Duty Cycle /%:</td>
               <td>
                 <LiveNumberInput
-                    name_prop="set_duty"
+                    cmd_name="set_duty"
                     :value_feedback="state.duty"
                     :min="0" :max="100"
                     :digits="1"
@@ -245,7 +235,7 @@
             <tr class="alternating_bg">
               <td colspan="2">
                 <LiveRangeInput
-                    name_prop="set_duty"
+                    cmd_name="set_duty"
                     :value_feedback="state.duty"
                     :min="0" :max="100"
                     :digits="1"
@@ -293,7 +283,7 @@
               <td>
                 <LiveToggleSwitch
                   data-size="lg"
-                  name_prop="set_relay_ref_active"
+                  cmd_name="set_relay_ref_active"
                   :value_feedback="state.relay_ref_active"
                   @value_changed="submit_nv"
                   :disabled="disabled"
@@ -302,7 +292,7 @@
               <td>
                 <LiveToggleSwitch
                   data-size="lg"
-                  name_prop="set_relay_dut_active"
+                  cmd_name="set_relay_dut_active"
                   :value_feedback="state.relay_dut_active"
                   @value_changed="submit_nv"
                   :disabled="disabled"
@@ -361,6 +351,7 @@
 </template>
 
 <script>
+import LiveErrorIndicatorBtn from './LiveErrorIndicatorBtn.vue'
 import LiveToggleSwitch from './LiveToggleSwitch.vue';
 import LiveNumberInput from './LiveNumberInput.vue';
 import LiveRangeInput from './LiveRangeInput.vue';
@@ -368,6 +359,7 @@ import LiveRangeInput from './LiveRangeInput.vue';
 export default {
   name: "EspAjaxLabMain",
   components: {
+      LiveErrorIndicatorBtn,
       LiveToggleSwitch,
       LiveNumberInput,
       LiveRangeInput,
