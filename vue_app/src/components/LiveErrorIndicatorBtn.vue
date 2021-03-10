@@ -17,7 +17,7 @@ export default {
       return {};
   },
   props: {
-    cmd_name: String,
+    change_action: String,
     value_feedback: {default: false, type: Boolean},
     ok_text: String,
     error_text: String,
@@ -26,10 +26,10 @@ export default {
   methods: {
     // Submit command with "true" as a string
     on_click() {
-      this.$emit("click", this.cmd_name, "true");
+      this.$emit("action_triggered", this.change_action, "true");
     },
   },
-  emits: ["click"]
+  emits: ["action_triggered"]
 };
 </script>
 

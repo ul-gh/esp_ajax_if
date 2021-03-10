@@ -36,12 +36,12 @@
               </td>
               <td>
                 <LiveErrorIndicatorBtn
-                  cmd_name="clear_shutdown"
+                  change_action="clear_shutdown"
                   :value_feedback="state.hw_oc_fault_present"
                   ok_text="State: Normal"
                   :error_text="'HW OC FAULT\nClick here to Reset!'"
                   :disabled="disabled"
-                  @click="submit_nv"
+                  @action_triggered="submit_nv"
                 />
               </td>
             </tr>
@@ -77,10 +77,10 @@
               </td>
               <td>
                 <LiveToggleSwitch
-                  cmd_name="set_fan_override"
+                  change_action="set_fan_override"
                   :value_feedback="state.fan_override"
-                  @value_changed="submit_nv"
                   :disabled="disabled"
+                  @action_triggered="submit_nv"
                 />
               </td>
             </tr>
@@ -105,29 +105,31 @@
             <tr>
               <td>
                 <LiveNumberInput
-                    cmd_name="set_lead_dt"
+                    change_action="set_lead_dt"
                     :value_feedback="state.lead_dt"
                     :min="6" :max="5000"
                     :digits="0"
-                    @value_changed="submit_nv"
                     :disabled="disabled"
+                    @action_triggered="submit_nv"
                 />
               </td>
               <td>
                 <LiveNumberInput
-                    cmd_name="set_lag_dt"
+                    change_action="set_lag_dt"
                     :value_feedback="state.lag_dt"
                     :min="6" :max="5000"
                     :digits="0"
-                    @value_changed="submit_nv"
                     :disabled="disabled"
+                    @action_triggered="submit_nv"
                 />
               </td>
               <td>
                 <button class="ajax_btn" id="btn_save_settings"
-                    name="save_settings" value="true"
+                    name="save_settings"
+                    value="true"
+                    :disabled="disabled"
                     @click="submit_btn"
-                    :disabled="disabled">
+                >
                   Save!
                 </button>
               </td>
@@ -152,32 +154,32 @@
             <tr>
               <td>
                 <LiveNumberInput
-                    cmd_name="set_current_limit"
+                    change_action="set_current_limit"
                     :value_feedback="state.current_limit"
                     :min="0" :max="100"
                     :digits="0"
-                    @value_changed="submit_nv"
                     :disabled="disabled"
+                    @action_triggered="submit_nv"
                 />
               </td>
               <td>
                 <LiveNumberInput
-                    cmd_name="set_frequency_min"
+                    change_action="set_frequency_min"
                     :value_feedback="state.frequency_min"
                     :min="0.00" :max="5000.00"
                     :digits="2"
-                    @value_changed="submit_nv"
                     :disabled="disabled"
+                    @action_triggered="submit_nv"
                 />
               </td>
               <td>
                 <LiveNumberInput
-                    cmd_name="set_frequency_max"
+                    change_action="set_frequency_max"
                     :value_feedback="state.frequency_max"
                     :min="0.00" :max="5000.00"
                     :digits="2"
-                    @value_changed="submit_nv"
                     :disabled="disabled"
+                    @action_triggered="submit_nv"
                 />
               </td>
             </tr>
@@ -197,24 +199,24 @@
               <td>Frequency /kHz:</td>
               <td>
                 <LiveNumberInput
-                    cmd_name="set_frequency"
+                    change_action="set_frequency"
                     :value_feedback="state.frequency"
                     :min="state.frequency_min" :max="state.frequency_max"
                     :digits="2"
-                    @value_changed="submit_nv"
                     :disabled="disabled"
+                    @action_triggered="submit_nv"
                 />
               </td>
             </tr>
             <tr class="alternating_bg">
               <td colspan="2">
                 <LiveRangeInput
-                    cmd_name="set_frequency"
+                    change_action="set_frequency"
                     :value_feedback="state.frequency"
                     :min="state.frequency_min" :max="state.frequency_max"
                     :digits="2"
-                    @value_changed="submit_nv"
                     :disabled="disabled"
+                    @action_triggered="submit_nv"
                 />
               </td>
             </tr>
@@ -223,24 +225,24 @@
               <td>Duty Cycle /%:</td>
               <td>
                 <LiveNumberInput
-                    cmd_name="set_duty"
+                    change_action="set_duty"
                     :value_feedback="state.duty"
                     :min="0" :max="100"
                     :digits="1"
-                    @value_changed="submit_nv"
                     :disabled="disabled"
+                    @action_triggered="submit_nv"
                 />
               </td>
             </tr>
             <tr class="alternating_bg">
               <td colspan="2">
                 <LiveRangeInput
-                    cmd_name="set_duty"
+                    change_action="set_duty"
                     :value_feedback="state.duty"
                     :min="0" :max="100"
                     :digits="1"
-                    @value_changed="submit_nv"
                     :disabled="disabled"
+                    @action_triggered="submit_nv"
                 />
               </td>
             </tr>
@@ -266,16 +268,20 @@
                 <span style="white-space: nowrap">
                   <button class="ajax_btn"
                       id="btn_pwm_on"
-                      name="set_power_pwm_active" value="true"
+                      name="set_power_pwm_active"
+                      value="true"
+                      :disabled="disabled"
                       @click="submit_btn"
-                      :disabled="disabled">
+                  >
                     ON
                   </button>
                   <button class="ajax_btn"
                       id="btn_pwm_off"
-                      name="set_power_pwm_active" value="false"
+                      name="set_power_pwm_active"
+                      value="false"
+                      :disabled="disabled"
                       @click="submit_btn"
-                      :disabled="disabled">
+                  >
                     OFF
                   </button>
                 </span>
@@ -283,19 +289,19 @@
               <td>
                 <LiveToggleSwitch
                   data-size="lg"
-                  cmd_name="set_relay_ref_active"
+                  change_action="set_relay_ref_active"
                   :value_feedback="state.relay_ref_active"
-                  @value_changed="submit_nv"
                   :disabled="disabled"
+                  @action_triggered="submit_nv"
                 />
               </td>
               <td>
                 <LiveToggleSwitch
                   data-size="lg"
-                  cmd_name="set_relay_dut_active"
+                  change_action="set_relay_dut_active"
                   :value_feedback="state.relay_dut_active"
-                  @value_changed="submit_nv"
                   :disabled="disabled"
+                  @action_triggered="submit_nv"
                 />
               </td>
             </tr>
@@ -318,20 +324,23 @@
             <tr>
               <td>
                 <LiveNumberInput
-                    name="set_oneshot_len"
+                    change_action="set_oneshot_len"
                     :value_feedback="state.oneshot_len"
                     :min="0"
                     :max="1800"
                     :digits="3"
-                    @value_changed="submit_nv"
                     :disabled="disabled"
+                    @action_triggered="submit_nv"
                 />
               </td>
               <td>
                 <button class="ajax_btn"
                     id="btn_trigger_oneshot"
-                    name="trigger_oneshot" value="true"
-                    :disabled="disabled">
+                    name="trigger_oneshot"
+                    value="true"
+                    :disabled="disabled"
+                    @click="submit_btn"
+                >
                   TRIGGER!
                 </button>
               </td>
@@ -357,7 +366,7 @@ import LiveNumberInput from './LiveNumberInput.vue';
 import LiveRangeInput from './LiveRangeInput.vue';
 
 export default {
-  name: "EspAjaxLabMain",
+  name: "OperationSettings",
   components: {
       LiveErrorIndicatorBtn,
       LiveToggleSwitch,
@@ -392,5 +401,6 @@ export default {
 };
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
-<style src="./main_app.css"></style>
+
+<style>
+</style>

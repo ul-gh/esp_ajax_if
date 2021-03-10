@@ -1,15 +1,32 @@
 <template>
-  <img alt="Application Logo" style="height: 2rem" src="./assets/logo.svg">
-
-  <EspAjaxLabMain ref="eal"
+  <img alt="Application Logo" style="height: 3rem" src="./assets/logo.svg">
+  <span id="tab-bar">
+    <button
+        v-for="tab in tabs"
+        :key="tab"
+        :class="['tab-button', { active: current_tab === tab }]"
+        @click="current_tab = tab"
+    >
+        {{ tab }}
+    </button>
+  </span>
+  <component
+      :is="current_tab"
+      :ref="current_tab"
       :state="state"
       :disabled="disabled"
-      @submit_cmd="submit_cmd"/>
+      @submit_cmd="submit_cmd"
+  >
+  </component>
 </template>
 
 <script>
 import { reactive } from 'vue';
-import EspAjaxLabMain from './components/EspAjaxLabMain.vue';
+
+import LiveController from './components/LiveController.vue';
+import OperationSettings from './components/OperationSettings.vue';
+import UpdateNetworkSetup from './components/UpdateNetworkSetup.vue';
+
 import { AsyncRequestGenerator,
          ServerSentEventHandler,
          AppWatchdog,
@@ -69,13 +86,17 @@ let view_state_store = reactive({
 export default {
   name: 'EspAjaxLab',
   components: {
-    EspAjaxLabMain,
+    LiveController,
+    OperationSettings,
+    UpdateNetworkSetup,
   },
   data() {
     return {
-      disabled: true,
+      tabs: ['LiveController', 'OperationSettings', 'UpdateNetworkSetup'],
+      current_tab: 'LiveController',
       store: view_state_store,
       state: view_state_store.state,
+      disabled: true,
       };
   },
   methods: {
@@ -100,12 +121,31 @@ export default {
 }
 </script>
 
+<style src="./main_app.css"></style>
 <style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
+.tab-button {
+  padding: 6px 10px;
+  border-top-left-radius: 3px;
+  border-top-right-radius: 3px;
+  border: 1px solid #ccc;
+  cursor: pointer;
+  background: #f0f0f0;
+  margin-bottom: -1px;
+  margin-right: -1px;
+}
+.tab-button:hover {
+  background: #e0e0e0;
+}
+.tab-button.active {
+  background: #e0e0e0;
+}
+
+#tab-bar {
+    height: 100%;
+    margin-right: auto;
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    justify-content: center;
 }
 </style>

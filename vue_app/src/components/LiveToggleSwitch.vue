@@ -2,7 +2,7 @@
     <label class="live_toggle_switch toggle-switchy">
         <input
           type="checkbox"
-          :name="cmd_name"
+          :name="change_action"
           :checked="value_feedback"
           :disabled="disabled"
           @change="on_change"
@@ -21,17 +21,17 @@ export default {
       return {};
   },
   props: {
-    cmd_name: String,
+    change_action: String,
     value_feedback: {default: false, type: Boolean},
     disabled: {default: false, type: Boolean}
   },
   methods: {
     // Submit current state, we emit an event with name and value
     on_change(event) {
-      this.$emit("value_changed", this.cmd_name, event.target.checked);
+      this.$emit("action_triggered", this.change_action, event.target.checked);
     },
   },
-  emits: ["value_changed"]
+  emits: ["action_triggered"]
 };
 </script>
 

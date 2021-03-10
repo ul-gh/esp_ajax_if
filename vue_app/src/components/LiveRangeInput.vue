@@ -3,7 +3,7 @@
     <input
       type="range"
       :class="{editing: editing}"
-      :name="cmd_name"
+      :name="change_action"
       v-model="value_displayed"
       :min="min.toFixed(digits)"
       :max="max.toFixed(digits)"
@@ -27,7 +27,7 @@ export default {
     };
   },
   props: {
-    cmd_name: String,
+    change_action: String,
     value_feedback: Number,
     min: Number,
     max: Number,
@@ -50,7 +50,7 @@ export default {
       // Set editing state of a number or text input box, prevent view updates
       // from happening
       this.editing = true;
-      this.$emit("value_changed", this.cmd_name, Number(event.target.value));
+      this.$emit("action_triggered", this.change_action, Number(event.target.value));
       clearTimeout(timeout_timer_id);
       timeout_timer_id = setTimeout(() => this.editing = false, 1000*this.timeout_s);
     },
@@ -59,7 +59,7 @@ export default {
       setTimeout(() => this.editing = false, 1.1*this.roundtrip_ms);
     },
   },
-  emits: ["value_changed"]
+  emits: ["action_triggered"]
 };
 </script>
 

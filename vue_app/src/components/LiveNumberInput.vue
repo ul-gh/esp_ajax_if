@@ -3,7 +3,7 @@
     <input
       type="number"
       :class="{editing: editing}"
-      :name="cmd_name"
+      :name="change_action"
       v-model="value_displayed"
       :min="min.toFixed(digits)"
       :max="max.toFixed(digits)"
@@ -28,7 +28,7 @@ export default {
     };
   },
   props: {
-    cmd_name: String,
+    change_action: String,
     value_feedback: Number,
     min: Number,
     max: Number,
@@ -56,14 +56,14 @@ export default {
     },
     // Submit value, we emit an event with name and value
     on_change(event) {
-      this.$emit("value_changed", this.cmd_name, Number(event.target.value));
+      this.$emit("action_triggered", this.change_action, Number(event.target.value));
       this.on_blur();
     },
     on_blur() {
       setTimeout(() => this.editing = false, 1.1*this.roundtrip_ms);
     },
   },
-  emits: ["value_changed"]
+  emits: ["action_triggered"]
 };
 </script>
 

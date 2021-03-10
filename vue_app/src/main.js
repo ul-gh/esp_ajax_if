@@ -5,4 +5,4 @@ const app = createApp(EspAjaxLab);
 const vm = app.mount('#app');
 
 window.eal = vm;
-window.eal_main = vm.$refs.eal;
+window.live_controller = vm.$refs.LiveController;
