@@ -1,5 +1,11 @@
 <template>
   <div class="esp_ajax_lab">
+    <p>
+      <a href="update.html">Perform OTA Firmware Upload</a>
+    </p>
+    <p>
+        2021-03-11 Ulrich Lukas
+    </p>
   </div>
 </template>
 

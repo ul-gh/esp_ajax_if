@@ -1,8 +1,8 @@
 <template>
-  <div class="esp_ajax_lab">
+  <div class="live_controller">
     <!--Responsive grid layout for main content-->
     <ul class="grid_container main_grid">
-      <li class="grid_item lr_center">
+      <li class="grid_item">
         <table>
           <thead>
             <tr>
@@ -17,29 +17,28 @@
             </tr>
             <tr>
               <td>
-                <div class="flex-centered state_vw" id="connection_vw"
-                    :active="set_if(!disabled)">
-                  <span style="white-space: pre">
-                    {{ disabled ? "No Connection\nto Hardware!" : "OK" }}
-                  </span>
-                </div>
+                <LiveColorIndicatorBtn
+                  inactive_text="OK"
+                  :disabled_text="'No Connection\nto Hardware!'"
+                  disabled_color="rgb(250, 84, 84)"
+                  :disabled="disabled"
+                />
               </td>
               <td>
-                <div class="flex-centered state_vw" id="power_pwm_vw"
-                    :disabled="set_if(disabled)"
-                    :active="set_if(state.power_pwm_active)"
-                >
-                  <span style="white-space: pre">
-                    {{ state.power_pwm_active ? "Power PWM ON" : "Power PWM OFF" }}
-                  </span>
-                </div>
+                <LiveColorIndicatorBtn
+                  :value_feedback="state.power_pwm_active"
+                  inactive_text="Power PWM OFF"
+                  active_text="Power PWM ON"
+                  active_color="red"
+                  :disabled="disabled"
+                />
               </td>
               <td>
-                <LiveErrorIndicatorBtn
+                <LiveColorIndicatorBtn
                   change_action="clear_shutdown"
                   :value_feedback="state.hw_oc_fault_present"
-                  ok_text="State: Normal"
-                  :error_text="'HW OC FAULT\nClick here to Reset!'"
+                  inactive_text="State: Normal"
+                  :active_text="'HW OC FAULT\nClick here to Reset!'"
                   :disabled="disabled"
                   @action_triggered="submit_nv"
                 />
@@ -81,105 +80,6 @@
                   :value_feedback="state.fan_override"
                   :disabled="disabled"
                   @action_triggered="submit_nv"
-                />
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </li>
-
-      <li class="grid_item lr_center">
-        <table>
-          <thead>
-            <tr>
-              <th colspan="2">Dead Time Settings</th>
-              <th colspan="1">All Settings</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Lead (ZVS) DT /ns</td>
-              <td>Lag (ZCS) DT /ns</td>
-              <td>Save All Settings</td>
-            </tr>
-            <tr>
-              <td>
-                <LiveNumberInput
-                    change_action="set_lead_dt"
-                    :value_feedback="state.lead_dt"
-                    :min="6" :max="5000"
-                    :digits="0"
-                    :disabled="disabled"
-                    @action_triggered="submit_nv"
-                />
-              </td>
-              <td>
-                <LiveNumberInput
-                    change_action="set_lag_dt"
-                    :value_feedback="state.lag_dt"
-                    :min="6" :max="5000"
-                    :digits="0"
-                    :disabled="disabled"
-                    @action_triggered="submit_nv"
-                />
-              </td>
-              <td>
-                <button class="ajax_btn" id="btn_save_settings"
-                    name="save_settings"
-                    value="true"
-                    :disabled="disabled"
-                    @click="submit_btn"
-                >
-                  Save!
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </li>
-
-      <li class="grid_item lr_center">
-        <table>
-          <thead>
-            <tr>
-              <th colspan="3">Limit Values</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Current Limit /A</td>
-              <td>Frequency MIN /kHz</td>
-              <td>Frequency MAX /kHz</td>
-            </tr>
-            <tr>
-              <td>
-                <LiveNumberInput
-                    change_action="set_current_limit"
-                    :value_feedback="state.current_limit"
-                    :min="0" :max="100"
-                    :digits="0"
-                    :disabled="disabled"
-                    @action_triggered="submit_nv"
-                />
-              </td>
-              <td>
-                <LiveNumberInput
-                    change_action="set_frequency_min"
-                    :value_feedback="state.frequency_min"
-                    :min="0.00" :max="5000.00"
-                    :digits="2"
-                    :disabled="disabled"
-                    @action_triggered="submit_nv"
-                />
-              </td>
-              <td>
-                <LiveNumberInput
-                    change_action="set_frequency_max"
-                    :value_feedback="state.frequency_max"
-                    :min="0.00" :max="5000.00"
-                    :digits="2"
-                    :disabled="disabled"
-                    @action_triggered="submit_nv"
                 />
               </td>
             </tr>
@@ -351,16 +251,11 @@
 
       <!--End responsive grid layout-->
     </ul>
-
-    <p>
-      <a href="update.html">Perform OTA Firmware Upload</a>
-    </p>
-    <p>2021-02-27 Ulrich Lukas</p>
   </div>
 </template>
 
 <script>
-import LiveErrorIndicatorBtn from './LiveErrorIndicatorBtn.vue'
+import LiveColorIndicatorBtn from './LiveColorIndicatorBtn.vue'
 import LiveToggleSwitch from './LiveToggleSwitch.vue';
 import LiveNumberInput from './LiveNumberInput.vue';
 import LiveRangeInput from './LiveRangeInput.vue';
@@ -368,7 +263,7 @@ import LiveRangeInput from './LiveRangeInput.vue';
 export default {
   name: "LiveController",
   components: {
-      LiveErrorIndicatorBtn,
+      LiveColorIndicatorBtn,
       LiveToggleSwitch,
       LiveNumberInput,
       LiveRangeInput,

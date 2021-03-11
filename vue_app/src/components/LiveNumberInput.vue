@@ -68,6 +68,9 @@ export default {
 </script>
 
 <style scoped>
+input {
+    width: 6rem;
+}
 input.editing {
   background-color: #ffa8a8;
 }
