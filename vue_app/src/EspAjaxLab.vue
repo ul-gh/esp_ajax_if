@@ -1,3 +1,21 @@
+<!-- ESP Ajax Lab - Web Application for Remote Hardware Control
+ *
+ * See home page: https://github.com/ul-gh/esp_ajax_if
+ *
+ * This single-page web application is built using vue.js v.3.
+ * 
+ * Remote hardware is interfaced using ES7 fetch API and async co-routines
+ * performing HTTP requests. Server-Sent Events (SSE) are used to update the
+ * application view with state updates sent back from the server.
+ * => See imported modules from async_requests_sse.js
+ *
+ * This main app component is a container for a tabbed view of sub-components.
+ * This component also sets up the hardware interfacing and app state model
+ * using the vue.js live-cycle hooks below.
+ * 
+ * 2021-03-12 Ulrich Lukas
+ * License: GPL v.3
+-->
 <template>
   <!-- Grid for header, tab bar and tab area -->
   <ul class="grid_container">
@@ -8,16 +26,18 @@
       <li class="grid_item">
         <span class="tab-bar">
           <button
-            v-for="tab in tabs"
-            :key="tab"
-            :class="['tab-button', { active: current_tab === tab }]"
-            @click="current_tab = tab"
+            v-for="(title, key) in tabs"
+            :key="key"
+            :class="['tab-button', { active: current_tab === key }]"
+            @click="current_tab = key"
           >
-            {{ tab }}
+            {{ title }}
           </button>
+          <!--
           <button class="tab-button tab-spacer">
             &nbsp;
           </button>
+          -->
         </span>
       </li>
       <li class="grid_item">
@@ -39,7 +59,8 @@ import { reactive } from "vue";
 
 import LiveController from "./components/LiveController.vue";
 import OperationSettings from "./components/OperationSettings.vue";
-import UpdateNetworkSetup from "./components/UpdateNetworkSetup.vue";
+import HelpDocumentation from "./components/HelpDocumentation.vue";
+import NetworkAndUpdate from "./components/NetworkAndUpdate.vue";
 
 import {
   AsyncRequestGenerator,
@@ -102,11 +123,17 @@ export default {
   components: {
     LiveController,
     OperationSettings,
-    UpdateNetworkSetup
+    HelpDocumentation,
+    NetworkAndUpdate,
   },
   data() {
     return {
-      tabs: ["LiveController", "OperationSettings", "UpdateNetworkSetup"],
+      tabs: {
+          "LiveController": "Live HW Control",
+          "OperationSettings": "Operation Settings",
+          "HelpDocumentation": "Help / Documentation",
+          "NetworkAndUpdate": "Network and Update",
+      },
       current_tab: "LiveController",
       store: view_state_store,
       state: view_state_store.state,
@@ -133,7 +160,7 @@ export default {
       view_state_store,
       this.app_watchdog
     );
-  }
+  },
 };
 </script>
 
@@ -185,6 +212,9 @@ ul.grid_container {
 }
 .tab-button:hover {
   background: #e0e0e0;
+}
+.tab-button:focus {
+  outline: none;
 }
 .tab-button.active {
   background: #e0e0e0;

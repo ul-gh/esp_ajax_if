@@ -1,3 +1,5 @@
+<!-- ESP Ajax Lab Main Hardware Controller Component
+-->
 <template>
   <div class="live_controller">
     <!--Responsive grid layout for main content-->
@@ -146,6 +148,18 @@
                 />
               </td>
             </tr>
+            <tr class="alternating_bg">
+              <td colspan="2">
+                <LiveJogDial
+                    change_action="set_duty"
+                    :value_feedback="state.duty"
+                    :min="0" :max="100"
+                    :digits="1"
+                    :disabled="disabled"
+                    @action_triggered="submit_nv"
+                />
+              </td>
+            </tr>
           </tbody>
         </table>
       </li>
@@ -255,10 +269,11 @@
 </template>
 
 <script>
-import LiveColorIndicatorBtn from './LiveColorIndicatorBtn.vue'
-import LiveToggleSwitch from './LiveToggleSwitch.vue';
-import LiveNumberInput from './LiveNumberInput.vue';
-import LiveRangeInput from './LiveRangeInput.vue';
+import LiveColorIndicatorBtn from './widgets/LiveColorIndicatorBtn.vue'
+import LiveToggleSwitch from './widgets/LiveToggleSwitch.vue';
+import LiveNumberInput from './widgets/LiveNumberInput.vue';
+import LiveRangeInput from './widgets/LiveRangeInput.vue';
+import LiveJogDial from './widgets/LiveJogDial.vue';
 
 export default {
   name: "LiveController",
@@ -267,6 +282,7 @@ export default {
       LiveToggleSwitch,
       LiveNumberInput,
       LiveRangeInput,
+      LiveJogDial,
   },
   data() {
     return {};

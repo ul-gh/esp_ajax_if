@@ -1,3 +1,5 @@
+<!-- ESP Ajax Lab Operation Specific Settings Component
+-->
 <template>
   <div class="operation_settings">
     <!--Responsive grid layout for main content-->
@@ -106,9 +108,9 @@
 </template>
 
 <script>
-import LiveColorIndicatorBtn from './LiveColorIndicatorBtn.vue'
-import LiveToggleSwitch from './LiveToggleSwitch.vue';
-import LiveNumberInput from './LiveNumberInput.vue';
+import LiveColorIndicatorBtn from './widgets/LiveColorIndicatorBtn.vue'
+import LiveToggleSwitch from './widgets/LiveToggleSwitch.vue';
+import LiveNumberInput from './widgets/LiveNumberInput.vue';
 
 
 export default {
