@@ -8,9 +8,9 @@
     <form action="/update" method="post" enctype="multipart/form-data">
       <table>
         <caption>
-          Select a local ".bin" firmware file and click the "Perform Upload!"
-          button to perform Over-The-Air flash update procedure for
-          ESP Ajax Lab. Be aware, a wrong firmware will brick your device...
+          Select a local ".bin" firmware file and click the "Perform Update Now!"
+          button to start the upload and flash update procedure.<br><br>
+          Be aware, there is no integrity checks and a wrong firmware file will 
         </caption>
         <thead>
           <tr>
@@ -26,7 +26,7 @@
               <input
                 type="submit"
                 class="button_large"
-                value="Perform Upload!"
+                value="Perform Update Now!"
                 id="btn_update"
               />
             </td>
@@ -66,4 +66,10 @@ export default {
 
 
 <style>
+h2 {
+    text-align: center;
+}
+caption {
+    margin-bottom: 1rem;
+}
 </style>

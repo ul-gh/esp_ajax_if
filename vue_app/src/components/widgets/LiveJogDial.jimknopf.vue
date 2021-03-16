@@ -1,15 +1,19 @@
 <template>
   <div class="live_jog_dial">
-    <div id="jog_dial_one">
-    </div>
-    <div id="jog_dial_one_meter">
-        <div></div>
-    </div>
+      <input class="p5" type="range" min="0" max="100"
+       data-width="100" 
+       data-height="100" 
+       data-angleOffset="220"
+       data-angleRange="280"
+      >
+
   </div>
 </template>
 
 <script>
-import JogDial from "./JogDial.js";
+//import JogDial from "./JogDial.js";
+//import pureKnob from "./pureknob.js";
+import * as JimKnopf from "./knob.js";
 
 let timeout_timer_id = undefined;
 
@@ -56,66 +60,49 @@ export default {
   },
   emits: ["action_triggered"],
   mounted() {
-    const options = {
-        debug: false,
-        wheelSize: "200px",
-        knobSize: "70px",
-        minDegree: 0,
-        maxDegree: 1800,
-        touchMode: "knob",
-    };
-    const dial_el = this.$el.children[0];
-    const bar_el = this.$el.children[1].firstElementChild;
-    const dial = JogDial(dial_el, options);
-    dial.on(
-        'mousemove',
-        e => bar_el.style = `width: ${Math.round((e.target.rotation/1800)*100)}%`
-		);
+    let Ui = JimKnopf.Ui;
+
+    Ui.P5=function(){};
+    Ui.P5.prototype=Object.create(Ui.prototype);
+    Ui.P5.prototype.createElement=function(){
+        Ui.prototype.createElement.apply(this,arguments);
+        this.addComponent(new Ui.Pointer({
+            type:'Arc',size:30,
+            outerRadius:this.width/2.2,
+            innerRadius:this.width/2.2-this.width/6,
+            angleoffset:this.options.angleoffset
+        }));
+        this.addComponent(new Ui.Text());
+        var circle=new Ui.El.Circle(this.width/2.1,this.width/2,this.height/2);
+        this.el.node.appendChild(circle.node);
+        this.el.node.setAttribute("class","p5");};
+
+    new JimKnopf.Knob(this.$el.firstElementChild, new Ui.P5());
   },
 };
 </script>
 
 <style scoped>
-::v-deep #jog_dial_one {
+/** {
     -webkit-touch-callout: none;
     -webkit-user-select: none;
     -khtml-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
+}*/
+#unique_id_abc {
+    width: 200px;
+    height: 200px;
 }
 
-::v-deep #jog_dial_one {
-  overflow: hidden;
-  position: relative;
-  width: 260px;
-  height: 260px;
-  margin: 20px auto;
-  background: url('./wheel.png');
-  background-repeat: none;
-}
-::v-deep #jog_dial_one_knob {
-  background: url('./knob.png');
+#unique_id_abc_knob {
+    /*This is your knob style*/
 }
 
-::v-deep #jog_dial_one_meter {
-  width: 200px;
-  height: 10px;
-  margin: 20px auto 30px;
-  background: #999;
-  overflow: hidden;
-  -webkit-border-radius: 5px;
-  -moz-border-radius: 5px;
-  -ms-border-radius: 5px;
-  -o-border-radius: 5px;
-  border-radius: 5px;
-}
-::v-deep #jog_dial_one_meter div {
-  position: relative;
-  width: 0;
-  height: 100%;
-  background: #80e93a;
-}
+::v-deep svg circle{stroke:#57c7b6;fill: none;stroke: black;stroke-width:2;}
+::v-deep svg text{font-size:40px;fill:#57c7b6;font-weight:300}
+::v-deep svg path{fill:#57c7b6}
 
 
 </style>

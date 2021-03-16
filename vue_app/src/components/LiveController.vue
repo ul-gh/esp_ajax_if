@@ -8,14 +8,14 @@
         <table>
           <thead>
             <tr>
-              <th colspan="3">Operation Status</th>
+              <th colspan="3">Hardware Status Display</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td>Network Connection</td>
-              <td>Power Output State</td>
-              <td>HW Error Shutdown</td>
+              <th>Network Connection</th>
+              <th>Power Output State</th>
+              <th>HW Error Shutdown</th>
             </tr>
             <tr>
               <td>
@@ -46,22 +46,11 @@
                 />
               </td>
             </tr>
-          </tbody>
-        </table>
-      </li>
-
-      <li class="grid_item lr_center">
-        <table>
-          <thead>
+            <!-- Temperatures and FAN -->
             <tr>
-              <th colspan="3">Temperatures and Fan</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Heatsink 1 Temp</td>
-              <td>Heatsink 2 Temp</td>
-              <td>Fan Override ON</td>
+              <th>Heatsink 1 Temp</th>
+              <th>Heatsink 2 Temp</th>
+              <th>Fan Override ON</th>
             </tr>
             <tr>
               <td>
@@ -98,9 +87,43 @@
           </thead>
           <tbody>
             <tr class="alternating_bg">
-              <td>Frequency /kHz:</td>
+              <th>Frequency /kHz:</th>
               <td>
-                <LiveNumberInput
+                <span class="flex-centered-row">
+                    <LiveNumberInput
+                        change_action="set_frequency"
+                        :value_feedback="state.frequency"
+                        :min="state.frequency_min" :max="state.frequency_max"
+                        :digits="2"
+                        :disabled="disabled"
+                        @action_triggered="submit_nv"
+                    />
+                    <label>
+                        &nbsp;&nbsp;
+                        <input
+                            type="radio"
+                            name="f_range_dial"
+                            :value="false"
+                            v-model="f_dial_active"
+                        >
+                        Slider
+                    </label>
+                    <label>
+                        <input
+                            type="radio"
+                            name="f_range_dial"
+                            :value="true"
+                            v-model="f_dial_active"
+                        >
+                        Dial
+                    </label>
+                </span>
+              </td>
+            </tr>
+            <tr class="alternating_bg">
+              <td colspan="2">
+                <LiveRangeInput
+                    v-if="!f_dial_active"
                     change_action="set_frequency"
                     :value_feedback="state.frequency"
                     :min="state.frequency_min" :max="state.frequency_max"
@@ -108,11 +131,8 @@
                     :disabled="disabled"
                     @action_triggered="submit_nv"
                 />
-              </td>
-            </tr>
-            <tr class="alternating_bg">
-              <td colspan="2">
-                <LiveRangeInput
+                <LiveJogDial
+                    v-if="f_dial_active"
                     change_action="set_frequency"
                     :value_feedback="state.frequency"
                     :min="state.frequency_min" :max="state.frequency_max"
@@ -124,21 +144,43 @@
             </tr>
 
             <tr class="alternating_bg">
-              <td>Duty Cycle /%:</td>
+              <th>Duty Cycle /%:</th>
               <td>
-                <LiveNumberInput
-                    change_action="set_duty"
-                    :value_feedback="state.duty"
-                    :min="0" :max="100"
-                    :digits="1"
-                    :disabled="disabled"
-                    @action_triggered="submit_nv"
-                />
+                <span class="flex-centered-row">
+                    <LiveNumberInput
+                        change_action="set_duty"
+                        :value_feedback="state.duty"
+                        :min="0" :max="100"
+                        :digits="1"
+                        :disabled="disabled"
+                        @action_triggered="submit_nv"
+                    />
+                    <label>
+                        &nbsp;&nbsp;
+                        <input
+                            type="radio"
+                            name="d_range_dial"
+                            :value="false"
+                            v-model="d_dial_active"
+                        >
+                        Slider
+                    </label>
+                    <label>
+                        <input
+                            type="radio"
+                            name="d_range_dial"
+                            :value="true"
+                            v-model="d_dial_active"
+                        >
+                        Dial
+                    </label>
+                </span>
               </td>
             </tr>
             <tr class="alternating_bg">
               <td colspan="2">
                 <LiveRangeInput
+                    v-if="!d_dial_active"
                     change_action="set_duty"
                     :value_feedback="state.duty"
                     :min="0" :max="100"
@@ -146,11 +188,8 @@
                     :disabled="disabled"
                     @action_triggered="submit_nv"
                 />
-              </td>
-            </tr>
-            <tr class="alternating_bg">
-              <td colspan="2">
                 <LiveJogDial
+                    v-if="d_dial_active"
                     change_action="set_duty"
                     :value_feedback="state.duty"
                     :min="0" :max="100"
@@ -173,9 +212,9 @@
           </thead>
           <tbody>
             <tr>
-              <td>Power PWM</td>
-              <td>REF/CAL Load</td>
-              <td>DUT Output</td>
+              <th>Power PWM</th>
+              <th>REF/CAL Load</th>
+              <th>DUT Output</th>
             </tr>
             <tr>
               <td>
@@ -232,8 +271,8 @@
           </thead>
           <tbody>
             <tr>
-              <td>Pulse Length /sec</td>
-              <td>Trigger One-Shot</td>
+              <th>Pulse Length /sec</th>
+              <th>Trigger One-Shot</th>
             </tr>
             <tr>
               <td>
@@ -285,7 +324,10 @@ export default {
       LiveJogDial,
   },
   data() {
-    return {};
+    return {
+        f_dial_active: false,
+        d_dial_active: false,
+    };
   },
   props: {
     state: Object,
@@ -313,5 +355,5 @@ export default {
 </script>
 
 
-<style>
+<style scoped>
 </style>

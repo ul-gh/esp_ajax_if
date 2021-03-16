@@ -1,15 +1,11 @@
 <template>
-  <div class="live_jog_dial">
-    <div id="jog_dial_one">
-    </div>
-    <div id="jog_dial_one_meter">
-        <div></div>
-    </div>
+  <div class="live_jog_dial" id="unique_id_abc">
   </div>
 </template>
 
 <script>
-import JogDial from "./JogDial.js";
+//import JogDial from "./JogDial.js";
+import pureKnob from "./pureknob.js";
 
 let timeout_timer_id = undefined;
 
@@ -56,27 +52,40 @@ export default {
   },
   emits: ["action_triggered"],
   mounted() {
+    const knob = pureKnob.createKnob(300, 300);
+
+    // Set properties.
+    knob.setProperty('angleStart', 0 * Math.PI);
+    knob.setProperty('angleEnd', 2 * Math.PI);
+    knob.setProperty('colorFG', '#88ff88');
+    knob.setProperty('trackWidth', 0.4);
+    knob.setProperty('valMin', 0);
+    knob.setProperty('valMax', 100);
+
+    // Set initial value.
+    knob.setValue(50);
+
+    const node = knob.node();
+    this.$el.appendChild(node);
+
+/*
     const options = {
-        debug: false,
-        wheelSize: "200px",
-        knobSize: "70px",
-        minDegree: 0,
-        maxDegree: 1800,
+        debug: true,
+        wheelSize: "90%",
+        knobSize: "50%",
+        minDegree: null,
+        maxDegree: null,
         touchMode: "knob",
     };
-    const dial_el = this.$el.children[0];
-    const bar_el = this.$el.children[1].firstElementChild;
-    const dial = JogDial(dial_el, options);
-    dial.on(
-        'mousemove',
-        e => bar_el.style = `width: ${Math.round((e.target.rotation/1800)*100)}%`
-		);
+    const dial = JogDial(this.$el, options);
+    console.log(dial);
+*/
   },
 };
 </script>
 
 <style scoped>
-::v-deep #jog_dial_one {
+* {
     -webkit-touch-callout: none;
     -webkit-user-select: none;
     -khtml-user-select: none;
@@ -84,38 +93,12 @@ export default {
     -ms-user-select: none;
     user-select: none;
 }
-
-::v-deep #jog_dial_one {
-  overflow: hidden;
-  position: relative;
-  width: 260px;
-  height: 260px;
-  margin: 20px auto;
-  background: url('./wheel.png');
-  background-repeat: none;
-}
-::v-deep #jog_dial_one_knob {
-  background: url('./knob.png');
+#unique_id_abc {
+    width: 500px;
+    height: 500px;
 }
 
-::v-deep #jog_dial_one_meter {
-  width: 200px;
-  height: 10px;
-  margin: 20px auto 30px;
-  background: #999;
-  overflow: hidden;
-  -webkit-border-radius: 5px;
-  -moz-border-radius: 5px;
-  -ms-border-radius: 5px;
-  -o-border-radius: 5px;
-  border-radius: 5px;
+#unique_id_abc_knob {
+    /*This is your knob style*/
 }
-::v-deep #jog_dial_one_meter div {
-  position: relative;
-  width: 0;
-  height: 100%;
-  background: #80e93a;
-}
-
-
 </style>

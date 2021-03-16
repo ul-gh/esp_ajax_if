@@ -53,6 +53,15 @@ ul.main_grid {
     justify-content: center;
 }
 
+.flex-centered-row {
+    height: 100%;
+    margin: auto;
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    justify-content: center;
+}
+
 a,
 p {
     display: block;
