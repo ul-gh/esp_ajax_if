@@ -22,7 +22,7 @@ export default {
   name: "LiveRangeInput",
   data() {
     return {
-      value_displayed: 0.0,
+      value_displayed: this.value_feedback.toFixed(this.digits),
       editing: false,
     };
   },
@@ -46,17 +46,20 @@ export default {
     }
   },
   methods: {
+    leave_edit_mode() {
+      this.editing = false;
+      this.value_displayed = this.value_feedback.toFixed(this.digits);
+    },
     on_input(event) {
-      // Set editing state of a number or text input box, prevent view updates
-      // from happening
+      // Set editing state of input, prevent view updates from happening
       this.editing = true;
       this.$emit("action_triggered", this.change_action, Number(event.target.value));
       clearTimeout(timeout_timer_id);
-      timeout_timer_id = setTimeout(() => this.editing = false, 1000*this.timeout_s);
+      timeout_timer_id = setTimeout(() => this.leave_edit_mode(), 1000*this.timeout_s);
     },
     // Submit value, we emit an event with name and value
     on_change(_) {
-      setTimeout(() => this.editing = false, 1.1*this.roundtrip_ms);
+      setTimeout(() => this.leave_edit_mode(), 1.1*this.roundtrip_ms);
     },
   },
   emits: ["action_triggered"]

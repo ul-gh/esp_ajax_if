@@ -1,15 +1,15 @@
 <template>
   <div class="live_jog_dial">
-    <div id="jog_dial_one">
+    <div class="dial" @mousemove="on_dial_mousemove">
     </div>
-    <div id="jog_dial_one_meter">
-        <div></div>
+    <div class="bar_graph">
+        <div class="bar" :style="{width: bar_width_fmt}"></div>
     </div>
   </div>
 </template>
 
 <script>
-import JogDial from "./JogDial.js";
+import JogDial from "../../js_modules/JogDial.js/jogDial.js";
 
 let timeout_timer_id = undefined;
 
@@ -19,6 +19,8 @@ export default {
     return {
       value_displayed: 0.0,
       editing: false,
+      bar_width_fmt: "0%", // Bar graph bar width as a string
+      events_inhibited: false,
     };
   },
   props: {
@@ -27,6 +29,7 @@ export default {
     min: Number,
     max: Number,
     digits: {default: 0, type: Number},
+    n_turns: {default: 5, type: Number},
     timeout_s: {default: 7, type: Number},
     // Specify request round-trip or periodic update time to prevent flicker on input
     roundtrip_ms: {default: 750, type: Number},
@@ -37,46 +40,61 @@ export default {
       if (this.editing) {
         return;
       }
-      this.value_displayed = val.toFixed(this.digits);
-    }
+      this.set_value(val);
+    },
+    n_turns: function(val) {
+        this.jog_dial.opt.maxDegree = val * 360;
+    },
   },
   methods: {
-    on_input(event) {
-      // Set editing state of a number or text input box, prevent view updates
-      // from happening
-      this.editing = true;
-      this.$emit("action_triggered", this.change_action, Number(event.target.value));
-      clearTimeout(timeout_timer_id);
-      timeout_timer_id = setTimeout(() => this.editing = false, 1000*this.timeout_s);
+    set_value(val) {
+      val = val < this.min ? this.min : val > this.max ? this.max : val;
+      this.value_displayed = val.toFixed(this.digits);
+      let scale_factor = (Number(this.value_displayed) - this.min) / (this.max - this.min);
+      this.bar_width_fmt = `${(100 * scale_factor).toFixed(0)}%`;
+      this.events_inhibited = true;
+      this.jog_dial.angle(scale_factor * this.n_turns * 360);
+      this.events_inhibited = false;
     },
-    // Submit value, we emit an event with name and value
-    on_change(_) {
-      setTimeout(() => this.editing = false, 1.1*this.roundtrip_ms);
+    leave_edit_mode() {
+        this.editing = false;
+        this.set_value(this.value_feedback);
+    },
+    on_dial_mousemove(e) {
+      if (this.events_inhibited || e.target.rotation == undefined) {
+          return;
+      }
+      // Set editing state of input, prevent view updates from happening
+      this.editing = true;
+      let scale_factor = e.target.rotation / (360 * this.n_turns);
+      this.bar_width_fmt = `${(100 * scale_factor).toFixed(0)}%`;
+      this.value_displayed = (
+          this.min + scale_factor * (this.max - this.min)
+          ).toFixed(this.digits);
+      this.$emit("action_triggered", this.change_action, Number(this.value_displayed));
+      clearTimeout(timeout_timer_id);
+      timeout_timer_id = setTimeout(() => this.leave_edit_mode(), 1.1*this.roundtrip_ms);
     },
   },
   emits: ["action_triggered"],
   mounted() {
-    const options = {
+    const init_options = {
         debug: false,
         wheelSize: "200px",
         knobSize: "70px",
         minDegree: 0,
-        maxDegree: 1800,
+        maxDegree: this.n_turns * 360,
         touchMode: "knob",
     };
-    const dial_el = this.$el.children[0];
-    const bar_el = this.$el.children[1].firstElementChild;
-    const dial = JogDial(dial_el, options);
-    dial.on(
-        'mousemove',
-        e => bar_el.style = `width: ${Math.round((e.target.rotation/1800)*100)}%`
-		);
+    const dial_el = document.getElementsByClassName("dial")[0];
+    this.jog_dial = JogDial(dial_el, init_options);
+    this.set_value(this.value_feedback);
   },
 };
 </script>
 
 <style scoped>
-::v-deep #jog_dial_one {
+:deep(.live_jog_dial) {
     -webkit-touch-callout: none;
     -webkit-user-select: none;
     -khtml-user-select: none;
@@ -85,20 +103,20 @@ export default {
     user-select: none;
 }
 
-::v-deep #jog_dial_one {
+:deep(.dial) {
   overflow: hidden;
   position: relative;
   width: 260px;
   height: 260px;
   margin: 20px auto;
-  background: url('./wheel.png');
+  background: url('./wheel_sa.png');
   background-repeat: none;
 }
-::v-deep #jog_dial_one_knob {
+:deep(.dial_knob) {
   background: url('./knob.png');
 }
 
-::v-deep #jog_dial_one_meter {
+:deep(.bar_graph) {
   width: 200px;
   height: 10px;
   margin: 20px auto 30px;
@@ -110,12 +128,10 @@ export default {
   -o-border-radius: 5px;
   border-radius: 5px;
 }
-::v-deep #jog_dial_one_meter div {
+:deep(.bar_graph .bar) {
   position: relative;
   width: 0;
   height: 100%;
   background: #80e93a;
 }
-
-
 </style>
