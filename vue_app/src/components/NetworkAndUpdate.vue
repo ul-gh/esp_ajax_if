@@ -2,19 +2,26 @@
 -->
 <template>
   <div class="network_and_update">
-    <h2>
-      Over-The-Air Firmware Update
-    </h2>
     <form action="/update" method="post" enctype="multipart/form-data">
       <table>
-        <caption>
-          Select a local ".bin" firmware file and click the "Perform Update Now!"
-          button to start the upload and flash update procedure.<br><br>
-          Be aware, there is no integrity checks and a wrong firmware file will 
+        <caption class="info_text">
+          <h2>
+            Over-The-Air Firmware Update
+          </h2>
+          <p class="align-left">
+            1.) Select a local ".bin" firmware file
+          </p>
+          <p class="align-left">
+            2.) Click the "Perform Update Now!" button to start the upload/update
+          </p>
+          <p>
+            ATTENTION: There is no integrity checks and a wrong firmware file will
+            render the hardware non-functional or show unwanted behaviour!
+          </p>
         </caption>
         <thead>
           <tr>
-            <th>DANGER ZONE - OTA Firmware Upload</th>
+            <th>OTA Firmware Upload</th>
           </tr>
         </thead>
         <tbody>
@@ -65,11 +72,16 @@ export default {
 </script>
 
 
-<style>
+<style scoped>
 h2 {
-    text-align: center;
+  text-align: center;
 }
 caption {
-    margin-bottom: 1rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+.align-left {
+  text-align: left;
+  margin-left: 0.5rem;
 }
 </style>

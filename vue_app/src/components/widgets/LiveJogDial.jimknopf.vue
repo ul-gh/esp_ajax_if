@@ -15,10 +15,13 @@
 //import pureKnob from "./pureknob.js";
 import * as JimKnopf from "./knob.js";
 
-let timeout_timer_id = undefined;
-
 export default {
   name: "LiveJogDial",
+  setup() {
+    return {
+      timeout_timer_id: undefined,
+    };
+  },
   data() {
     return {
       value_displayed: 0.0,
@@ -50,8 +53,8 @@ export default {
       // from happening
       this.editing = true;
       this.$emit("action_triggered", this.change_action, Number(event.target.value));
-      clearTimeout(timeout_timer_id);
-      timeout_timer_id = setTimeout(() => this.editing = false, 1000*this.timeout_s);
+      clearTimeout(this.timeout_timer_id);
+      this.timeout_timer_id = setTimeout(() => this.editing = false, 1000*this.timeout_s);
     },
     // Submit value, we emit an event with name and value
     on_change(_) {

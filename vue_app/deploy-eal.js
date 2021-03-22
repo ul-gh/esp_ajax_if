@@ -16,7 +16,7 @@ function deploy_files() {
     // We want to deploy the .gz compressed versions only, so the
     // original, uncompressed build files are excluded
     options = {
-        exclude: ["./**/*.js", "./**/*.css", "./**/*.html", "./**/*.svg", "./**/*.json"],
+        exclude: ["./**/*.js", "./**/*.css", "./**/*.html", "./**/*.svg", "./**/*.json", "./**/*.map"],
         up: 1,
         follow: true,
         verbose: true,

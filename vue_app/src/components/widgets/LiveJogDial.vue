@@ -1,6 +1,6 @@
 <template>
   <div class="live_jog_dial">
-    <div class="dial" @mousemove="on_dial_mousemove">
+    <div class="jog_dial" @mousemove="on_dial_mousemove">
     </div>
     <div class="bar_graph">
         <div class="bar" :style="{width: bar_width_fmt}"></div>
@@ -9,18 +9,24 @@
 </template>
 
 <script>
+// https://github.com/ul-gh/JogDial.js: Fork of https://github.com/ohsiwon/JogDial.js
+// setting HTML element class instead of id attribute for multiple instances
 import JogDial from "../../js_modules/JogDial.js/jogDial.js";
-
-let timeout_timer_id = undefined;
 
 export default {
   name: "LiveJogDial",
+  setup() {
+    return {
+      timeout_timer_id: undefined,
+      jog_dial: undefined,
+    };
+  },
   data() {
     return {
-      value_displayed: 0.0,
+      value: 0.0,
       editing: false,
-      bar_width_fmt: "0%", // Bar graph bar width as a string
-      events_inhibited: false,
+      bar_width_fmt: "0%", // CSS attribute value, set by set_value()
+      events_inhibited: true, // Prevent events when setting value programmatically
     };
   },
   props: {
@@ -28,7 +34,7 @@ export default {
     value_feedback: Number,
     min: Number,
     max: Number,
-    digits: {default: 0, type: Number},
+    digits: {default: undefined, type: Number},
     n_turns: {default: 5, type: Number},
     timeout_s: {default: 7, type: Number},
     // Specify request round-trip or periodic update time to prevent flicker on input
@@ -37,47 +43,69 @@ export default {
   },
   watch: {
     value_feedback: function(val) {
-      if (this.editing) {
-        return;
-      }
       this.set_value(val);
     },
+    min: function() {
+      this.set_value(this.value);
+    },
+    max: function() {
+      this.set_value(this.value);
+    },
     n_turns: function(val) {
-        this.jog_dial.opt.maxDegree = val * 360;
+      if (!this.jog_dial) {
+        return;
+      }
+      this.jog_dial.opt.maxDegree = val * 360;
+      this.set_value(this.value);
     },
   },
   methods: {
     set_value(val) {
+      if (!this.jog_dial) {
+        return;
+      }
       val = val < this.min ? this.min : val > this.max ? this.max : val;
-      this.value_displayed = val.toFixed(this.digits);
-      let scale_factor = (Number(this.value_displayed) - this.min) / (this.max - this.min);
+      this.value = this.digits === undefined ? val : Number(val.toFixed(this.digits));
+      const scale_factor = (this.value - this.min) / (this.max - this.min);
       this.bar_width_fmt = `${(100 * scale_factor).toFixed(0)}%`;
-      this.events_inhibited = true;
-      this.jog_dial.angle(scale_factor * this.n_turns * 360);
-      this.events_inhibited = false;
+      // When the wheel is not currently being turned manually, also set its angle value
+      if (!this.editing) {
+        // When calling the angle setter method, the library still emits the
+        // "mousemove" event, so we have to prevent an infinite callback loop here..
+        this.events_inhibited = true;
+        this.jog_dial.angle(scale_factor * this.n_turns * 360);
+        this.events_inhibited = false;
+      }
+
     },
     leave_edit_mode() {
         this.editing = false;
-        this.set_value(this.value_feedback);
+        this.set_value(this.value);
     },
     on_dial_mousemove(e) {
-      if (this.events_inhibited || e.target.rotation == undefined) {
+      if (e.target.rotation === undefined || this.events_inhibited) {
           return;
       }
-      // Set editing state of input, prevent view updates from happening
+      // Underlying control has no disable function, turning wheel back to fixed value
+      if (this.disabled) {
+          this.set_value(this.value);
+          return;
+      }
+      // Prevent view updates from happening while control is being operated
       this.editing = true;
-      let scale_factor = e.target.rotation / (360 * this.n_turns);
-      this.bar_width_fmt = `${(100 * scale_factor).toFixed(0)}%`;
-      this.value_displayed = (
-          this.min + scale_factor * (this.max - this.min)
-          ).toFixed(this.digits);
-      this.$emit("action_triggered", this.change_action, Number(this.value_displayed));
-      clearTimeout(timeout_timer_id);
-      timeout_timer_id = setTimeout(() => this.leave_edit_mode(), 1.1*this.roundtrip_ms);
+      const scale_factor = e.target.rotation / (360 * this.n_turns);
+      //this.bar_width_fmt = `${(100 * scale_factor).toFixed(0)}%`;
+      let val = this.min + scale_factor * (this.max - this.min);
+      val = this.digits === undefined ? val : Number(val.toFixed(this.digits));
+      this.$emit("action_triggered", this.change_action, val);
+      clearTimeout(this.timeout_timer_id_id);
+      // Vue auto-binds "this" instance to methods, no need for arrow function etc..
+      this.timeout_timer_id_id = setTimeout(this.leave_edit_mode, 1.1*this.roundtrip_ms);
     },
   },
   emits: ["action_triggered"],
   mounted() {
+    console.log(this.foo);
     const init_options = {
         debug: false,
         wheelSize: "200px",
@@ -86,8 +114,7 @@ export default {
         maxDegree: this.n_turns * 360,
         touchMode: "knob",
     };
-    const dial_el = document.getElementsByClassName("dial")[0];
-    this.jog_dial = JogDial(dial_el, init_options);
+    this.jog_dial = JogDial(this.$el.firstElementChild, init_options);
     this.set_value(this.value_feedback);
   },
 };
@@ -103,7 +130,7 @@ export default {
     user-select: none;
 }
 
-:deep(.dial) {
+:deep(.jog_dial) {
   overflow: hidden;
   position: relative;
   width: 260px;
@@ -112,7 +139,7 @@ export default {
   background: url('./wheel_sa.png');
   background-repeat: none;
 }
-:deep(.dial_knob) {
+:deep(.jog_dial_knob) {
   background: url('./knob.png');
 }
 

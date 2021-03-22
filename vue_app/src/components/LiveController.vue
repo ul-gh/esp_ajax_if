@@ -54,15 +54,15 @@
             </tr>
             <tr>
               <td>
-                <div class="flex-centered number_vw"
+                <div class="flex-stacked-calign"
                     :disabled="set_if(disabled)">
-                  {{ state.aux_temp.toFixed(1) + " °C" }}
+                  {{ state.temp_1.toFixed(1) + " °C" }}
                 </div>
               </td>
               <td>
-                <div class="flex-centered number_vw"
+                <div class="flex-stacked-calign"
                     :disabled="set_if(disabled)">
-                  {{ state.heatsink_temp.toFixed(1) + " °C" }}
+                  {{ state.temp_2.toFixed(1) + " °C" }}
                 </div>
               </td>
               <td>
@@ -78,7 +78,7 @@
         </table>
       </li>
 
-      <li class="grid_item lr_center">
+      <li class="grid_item">
         <table>
           <thead>
             <tr>
@@ -90,6 +90,10 @@
               <th>Frequency /kHz:</th>
               <td>
                 <span class="flex-centered-row">
+                    <span class="flex-stacked-calign">
+                        <span>Min:</span>
+                        {{state.frequency_min.toFixed(2)}}
+                    </span>
                     <LiveNumberInput
                         change_action="set_frequency"
                         :value_feedback="state.frequency"
@@ -98,6 +102,10 @@
                         :disabled="disabled"
                         @action_triggered="submit_nv"
                     />
+                    <span class="flex-stacked-calign">
+                        <span>Max:</span>
+                        {{state.frequency_max.toFixed(2)}}
+                    </span>
                     <label>
                         &nbsp;&nbsp;
                         <input
@@ -122,24 +130,25 @@
             </tr>
             <tr class="alternating_bg">
               <td colspan="2">
-                <LiveRangeInput
-                    v-if="!f_dial_active"
-                    change_action="set_frequency"
-                    :value_feedback="state.frequency"
-                    :min="state.frequency_min" :max="state.frequency_max"
-                    :digits="2"
-                    :disabled="disabled"
-                    @action_triggered="submit_nv"
-                />
-                <LiveJogDial
-                    v-if="f_dial_active"
-                    change_action="set_frequency"
-                    :value_feedback="state.frequency"
-                    :min="state.frequency_min" :max="state.frequency_max"
-                    :digits="2"
-                    :disabled="disabled"
-                    @action_triggered="submit_nv"
-                />
+                <keep-alive>
+                  <LiveRangeInput
+                      v-if="!f_dial_active"
+                      change_action="set_frequency"
+                      :value_feedback="state.frequency"
+                      :min="state.frequency_min" :max="state.frequency_max"
+                      :digits="2"
+                      :disabled="disabled"
+                      @action_triggered="submit_nv"
+                  />
+                  <LiveJogDial
+                      v-else
+                      change_action="set_frequency"
+                      :value_feedback="state.frequency"
+                      :min="state.frequency_min" :max="state.frequency_max"
+                      :disabled="disabled"
+                      @action_triggered="submit_nv"
+                  />
+                </keep-alive>
               </td>
             </tr>
 
@@ -147,14 +156,22 @@
               <th>Duty Cycle /%:</th>
               <td>
                 <span class="flex-centered-row">
+                    <span class="flex-stacked-calign">
+                        <span>Min:</span>
+                        {{state.duty_min.toFixed(1)}}
+                    </span>
                     <LiveNumberInput
                         change_action="set_duty"
                         :value_feedback="state.duty"
-                        :min="0" :max="100"
+                        :min="state.duty_min" :max="state.duty_max"
                         :digits="1"
                         :disabled="disabled"
                         @action_triggered="submit_nv"
                     />
+                    <span class="flex-stacked-calign">
+                        <span>Max:</span>
+                        {{state.duty_max.toFixed(1)}}
+                    </span>
                     <label>
                         &nbsp;&nbsp;
                         <input
@@ -179,31 +196,32 @@
             </tr>
             <tr class="alternating_bg">
               <td colspan="2">
-                <LiveRangeInput
-                    v-if="!d_dial_active"
-                    change_action="set_duty"
-                    :value_feedback="state.duty"
-                    :min="0" :max="100"
-                    :digits="1"
-                    :disabled="disabled"
-                    @action_triggered="submit_nv"
-                />
-                <LiveJogDial
-                    v-if="d_dial_active"
-                    change_action="set_duty"
-                    :value_feedback="state.duty"
-                    :min="0" :max="100"
-                    :digits="1"
-                    :disabled="disabled"
-                    @action_triggered="submit_nv"
-                />
+                <keep-alive>
+                  <LiveRangeInput
+                      v-if="!d_dial_active"
+                      change_action="set_duty"
+                      :value_feedback="state.duty"
+                      :min="state.duty_min" :max="state.duty_max"
+                      :digits="1"
+                      :disabled="disabled"
+                      @action_triggered="submit_nv"
+                  />
+                  <LiveJogDial
+                      v-else
+                      change_action="set_duty"
+                      :value_feedback="state.duty"
+                      :min="state.duty_min" :max="state.duty_max"
+                      :disabled="disabled"
+                      @action_triggered="submit_nv"
+                  />
+                </keep-alive>
               </td>
             </tr>
           </tbody>
         </table>
       </li>
 
-      <li class="grid_item lr_center">
+      <li class="grid_item">
         <table>
           <thead>
             <tr>
@@ -219,7 +237,7 @@
             <tr>
               <td>
                 <span style="white-space: nowrap">
-                  <button class="ajax_btn"
+                  <button
                       id="btn_pwm_on"
                       name="set_power_pwm_active"
                       value="true"
@@ -228,7 +246,7 @@
                   >
                     ON
                   </button>
-                  <button class="ajax_btn"
+                  <button
                       id="btn_pwm_off"
                       name="set_power_pwm_active"
                       value="false"
@@ -262,7 +280,7 @@
         </table>
       </li>
 
-      <li class="grid_item lr_center">
+      <li class="grid_item">
         <table>
           <thead>
             <tr>
@@ -287,7 +305,7 @@
                 />
               </td>
               <td>
-                <button class="ajax_btn"
+                <button
                     id="btn_trigger_oneshot"
                     name="trigger_oneshot"
                     value="true"
@@ -356,4 +374,27 @@ export default {
 
 
 <style scoped>
+    #btn_pwm_on {
+        display: inline-block;
+        font-size: 1.3rem;
+        padding: 0.8rem 1.3rem;
+        color: white;
+        background-color: #4CAF50; /* Green */
+    }
+
+    #btn_pwm_off {
+        display: inline-block;
+        font-size: 1.3rem;
+        padding: 0.8rem 1.3rem;
+        color: white;
+        background-color: red;
+    }
+
+    #btn_trigger_oneshot {
+        display: inline-block;
+        font-size: 1.3rem;
+        padding: 0.8rem 1.3rem;
+        color: white;
+        background-color: orange;
+    }
 </style>

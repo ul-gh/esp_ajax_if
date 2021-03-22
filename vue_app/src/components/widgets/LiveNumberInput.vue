@@ -17,10 +17,13 @@
 </template>
 
 <script>
-let timeout_timer_id = undefined;
-
 export default {
   name: "LiveNumberInput",
+  setup() {
+    return {
+      timeout_timer_id: undefined,
+    };
+  },
   data() {
     return {
       editing: false,
@@ -55,8 +58,8 @@ export default {
       // Set editing state of a number or text input box, prevent view updates
       // from happening
       this.editing = true;
-      clearTimeout(timeout_timer_id);
-      timeout_timer_id = setTimeout(() => this.leave_edit_mode(), 1000*this.timeout_s);
+      clearTimeout(this.timeout_timer_id);
+      this.timeout_timer_id = setTimeout(() => this.leave_edit_mode(), 1000*this.timeout_s);
     },
     // Submit value, we emit an event with name and value
     on_change(event) {

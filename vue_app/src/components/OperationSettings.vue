@@ -4,43 +4,259 @@
   <div class="operation_settings">
     <!--Responsive grid layout for main content-->
     <ul class="grid_container main_grid">
-      <li class="grid_item lr_center">
+      <li class="grid_item">
         <table>
           <thead>
             <tr>
-              <th colspan="2">Dead Time Settings</th>
-              <th colspan="1">All Settings</th>
+              <th colspan="2">Limit Values</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td>Lead (ZVS) DT /ns</td>
-              <td>Lag (ZCS) DT /ns</td>
-              <td>Save All Settings</td>
+              <th>Overtemperature Limit<br>Heat Sink 1 /°C</th>
+              <th>Overtemperature Limit<br>Heat Sink 2 /°C</th>
             </tr>
             <tr>
               <td>
-                <LiveNumberInput
-                    change_action="set_lead_dt"
-                    :value_feedback="state.lead_dt"
-                    :min="6" :max="5000"
-                    :digits="0"
-                    :disabled="disabled"
-                    @action_triggered="submit_nv"
-                />
+                <span class="flex-centered-row">
+                  <LiveNumberInput
+                      change_action="set_temp_1_limit"
+                      :value_feedback="state.temp_1_limit"
+                      :min="0" :max="150"
+                      :digits="0"
+                      :disabled="disabled"
+                      @action_triggered="submit_nv"
+                  />
+                  <span class="flex-stacked-calign">
+                    HW Limit:<br>Suggested: 50 °C<br>(Sensor: 150°C..)
+                  </span>
+                </span>
               </td>
               <td>
-                <LiveNumberInput
-                    change_action="set_lag_dt"
-                    :value_feedback="state.lag_dt"
-                    :min="6" :max="5000"
-                    :digits="0"
-                    :disabled="disabled"
-                    @action_triggered="submit_nv"
-                />
+                <span class="flex-centered-row">
+                  <LiveNumberInput
+                      change_action="set_temp_2_limit"
+                      :value_feedback="state.temp_2_limit"
+                      :min="0" :max="150"
+                      :digits="0"
+                      :disabled="disabled"
+                      @action_triggered="submit_nv"
+                  />
+                  <span class="flex-stacked-calign">
+                    HW Limit:<br>Suggested: 50 °C<br>(Sensor: 150°C..)
+                  </span>
+                </span>
+              </td>
+            </tr>
+
+            <tr>
+              <th>Frequency Min /kHz</th>
+              <th>Frequency Max /kHz</th>
+            </tr>
+            <tr>
+              <td>
+                <span class="flex-centered-row">
+                  <LiveNumberInput
+                      change_action="set_frequency_min"
+                      :value_feedback="state.frequency_min"
+                      :min="0.00" :max="5000.00"
+                      :digits="2"
+                      :disabled="disabled"
+                      @action_triggered="submit_nv"
+                  />
+                  <span class="flex-stacked-calign">
+                    HW Limit:<br>
+                    {{state.frequency_min_hw.toFixed(2)}}&nbsp;kHz
+                  </span>
+                </span>
               </td>
               <td>
-                <button class="ajax_btn" id="btn_save_settings"
+                <span class="flex-centered-row">
+                  <LiveNumberInput
+                      change_action="set_frequency_max"
+                      :value_feedback="state.frequency_max"
+                      :min="0.00" :max="5000.00"
+                      :digits="2"
+                      :disabled="disabled"
+                      @action_triggered="submit_nv"
+                  />
+                  <span class="flex-stacked-calign">
+                    HW Limit:<br>
+                    {{state.frequency_max_hw.toFixed(2)}}&nbsp;kHz
+                  </span>
+                </span>
+              </td>
+            </tr>
+
+            <tr>
+              <th>Duty Min /%</th>
+              <th>Duty Max /%</th>
+            </tr>
+            <tr>
+              <td>
+                <span class="flex-centered-row">
+                  <LiveNumberInput
+                      change_action="set_duty_min"
+                      :value_feedback="state.duty_min"
+                      :min="0.0" :max="100.0"
+                      :digits="1"
+                      :disabled="disabled"
+                      @action_triggered="submit_nv"
+                  />
+                  <span class="flex-stacked-calign">
+                    HW Limit:<br>
+                    0.0&nbsp;%
+                  </span>
+                </span>
+              </td>
+              <td>
+                <span class="flex-centered-row">
+                  <LiveNumberInput
+                      change_action="set_duty_max"
+                      :value_feedback="state.duty_max"
+                      :min="0.0" :max="100.0"
+                      :digits="1"
+                      :disabled="disabled"
+                      @action_triggered="submit_nv"
+                  />
+                  <span class="flex-stacked-calign">
+                    HW Limit:<br>
+                    {{
+                      (100 * (1 - 1E-6 * state.frequency * 2 * (Math.max(state.lead_dt, state.lag_dt)))
+                      ).toFixed(1)
+                    }}&nbsp;%
+                  </span>
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </li>
+
+      <li class="grid_item">
+        <table>
+          <thead>
+            <tr>
+              <th colspan="3">Dead Time Settings</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th>Lead (ZVS) DT /ns</th>
+              <th>Lag (ZCS) DT /ns</th>
+              <th>Hardware Limit /ns</th>
+            </tr>
+            <tr>
+              <td>
+                <span class="flex-centered-row">
+                  <LiveNumberInput
+                      change_action="set_lead_dt"
+                      :value_feedback="state.lead_dt"
+                      :min="6" :max="5000"
+                      :digits="0"
+                      :disabled="disabled"
+                      @action_triggered="submit_nv"
+                  />
+                  <span class="flex-stacked-calign">
+                    Min:<br>6&nbsp;ns
+                  </span>
+                </span>
+              </td>
+              <td>
+                <span class="flex-centered-row">
+                  <LiveNumberInput
+                      change_action="set_lag_dt"
+                      :value_feedback="state.lag_dt"
+                      :min="6" :max="5000"
+                      :digits="0"
+                      :disabled="disabled"
+                      @action_triggered="submit_nv"
+                  />
+                  <span class="flex-stacked-calign">
+                    Min:<br>6&nbsp;ns
+                  </span>
+                </span>
+              </td>
+              <td>
+                <span class="flex-stacked-calign">
+                  <span>Lead + Lag Sum Max:</span>
+                  {{disabled ? "unknown.." : state.dt_sum_max_hw.toFixed(0)}}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </li>
+
+      <li class="grid_item">
+        <table>
+          <thead>
+            <tr>
+              <th colspan="2">Setpoint Throttling (Soft-Start Feature)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th>Frequency Rate of Change /(kHz/s)</th>
+              <th>Duty Rate of Change /(%/s)</th>
+            </tr>
+            <tr>
+              <td>
+                <span class="flex-centered-row">
+                  <LiveNumberInput
+                      change_action="set_frequency_changerate"
+                      :value_feedback="state.frequency_changerate"
+                      :min="0.01" :max="1000"
+                      :digits="2"
+                      :disabled="disabled"
+                      @action_triggered="submit_nv"
+                  />
+                  <span class="flex-stacked-calign">
+                    Min:<br>0.01&nbsp;kHz/s
+                  </span>
+                  <span class="flex-stacked-calign">
+                    Max:<br>1000&nbsp;kHz/s
+                  </span>
+                </span>
+              </td>
+              <td>
+                <span class="flex-centered-row">
+                  <LiveNumberInput
+                      change_action="set_duty_changerate"
+                      :value_feedback="state.duty_changerate"
+                      :min="0.1" :max="5000"
+                      :digits="1"
+                      :disabled="disabled"
+                      @action_triggered="submit_nv"
+                  />
+                  <span class="flex-stacked-calign">
+                    Min:<br>0.1&nbsp;%/s
+                  </span>
+                  <span class="flex-stacked-calign">
+                    Max:<br>5000&nbsp;%/s
+                  </span>
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </li>
+
+      <li class="grid_item">
+        <table>
+          <thead>
+            <tr>
+              <th colspan="3">All Settings - Persistent Storage</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th>Save all settings &nbsp;&nbsp;(State will be restored on next system start)</th>
+            </tr>
+            <tr>
+              <td>
+                <button
+                    id="btn_save_settings"
                     name="save_settings"
                     value="true"
                     :disabled="disabled"
@@ -48,55 +264,6 @@
                 >
                   Save!
                 </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </li>
-
-      <li class="grid_item lr_center">
-        <table>
-          <thead>
-            <tr>
-              <th colspan="3">Limit Values</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Current Limit /A</td>
-              <td>Frequency MIN /kHz</td>
-              <td>Frequency MAX /kHz</td>
-            </tr>
-            <tr>
-              <td>
-                <LiveNumberInput
-                    change_action="set_current_limit"
-                    :value_feedback="state.current_limit"
-                    :min="0" :max="100"
-                    :digits="0"
-                    :disabled="disabled"
-                    @action_triggered="submit_nv"
-                />
-              </td>
-              <td>
-                <LiveNumberInput
-                    change_action="set_frequency_min"
-                    :value_feedback="state.frequency_min"
-                    :min="0.00" :max="5000.00"
-                    :digits="2"
-                    :disabled="disabled"
-                    @action_triggered="submit_nv"
-                />
-              </td>
-              <td>
-                <LiveNumberInput
-                    change_action="set_frequency_max"
-                    :value_feedback="state.frequency_max"
-                    :min="0.00" :max="5000.00"
-                    :digits="2"
-                    :disabled="disabled"
-                    @action_triggered="submit_nv"
-                />
               </td>
             </tr>
           </tbody>
@@ -116,9 +283,9 @@ import LiveNumberInput from './widgets/LiveNumberInput.vue';
 export default {
   name: "OperationSettings",
   components: {
-      LiveColorIndicatorBtn,
-      LiveToggleSwitch,
-      LiveNumberInput,
+    LiveColorIndicatorBtn,
+    LiveToggleSwitch,
+    LiveNumberInput,
   },
   data() {
     return {};

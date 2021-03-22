@@ -16,4 +16,5 @@ module.exports = {
             .use(CompressionPlugin)
             .init(Plugin => new Plugin(esp_ajax_if_compression_config));
     },
+    productionSourceMap: process.env.NODE_ENV != 'production',
 };

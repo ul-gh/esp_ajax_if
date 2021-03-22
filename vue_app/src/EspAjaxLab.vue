@@ -71,15 +71,21 @@ import {
 let view_state_store = reactive({
   debug: false,
   state: {
+    // Hardware limits
     frequency_min_hw: Number(),
     frequency_max_hw: Number(),
     dt_sum_max_hw: Number(),
-    // Runtime user setpoint limits for output frequency
-    frequency_min: 90.0,
-    frequency_max: 110.0,
+    current_limit_max_hw: 100,
+    // Runtime user setpoint limits for output frequency and duty cycle
+    frequency_min: 90.00,
+    frequency_max: 110.00,
+    duty_min: 0.0,
+    duty_max: 100.0,
     // Operational setpoints for PSPWM module
-    frequency: 100.0,
+    frequency: 100.00,
+    frequency_changerate: 25.00,
     duty: 0.0,
+    duty_changerate: 250.0,
     lead_dt: 300,
     lag_dt: 300,
     power_pwm_active: Boolean(),
@@ -88,8 +94,11 @@ let view_state_store = reactive({
     relay_ref_active: Boolean(),
     relay_dut_active: Boolean(),
     // Temperatures and fan
-    heatsink_temp: Number(),
-    aux_temp: Number(),
+    temp_1: Number(),
+    temp_2: Number(),
+    // Overtemperature protection limits
+    temp_1_limit: 50,
+    temp_2_limit: 50,
     fan_active: Boolean(),
     fan_override: Boolean(),
     // Clock divider settings
@@ -111,7 +120,9 @@ let view_state_store = reactive({
       console.log("update_state called with", new_state);
     }
     for (let key in this.state) {
-      this.state[key] = new_state[key];
+      if (new_state[key] !== undefined) {
+        this.state[key] = new_state[key];
+      }
     }
     // Probably unsafe as it adds arbitrary new attributes from unsafe JSON
     //Object.assign(this.state, new_state);
@@ -189,6 +200,7 @@ ul.grid_container {
 
 .tab-dimensions{
   background: #e0e0e0;
+  /* background-color: #e4f0f5; */
   border: 3px solid #f0f0f0;
 }
 .tab-bar {
