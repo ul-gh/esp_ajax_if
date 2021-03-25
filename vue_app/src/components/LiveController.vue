@@ -38,11 +38,11 @@
               <td>
                 <LiveColorIndicatorBtn
                   change_action="clear_shutdown"
-                  :value_feedback="state.hw_oc_fault_present"
+                  :value_feedback="Boolean(state.hw_error)"
                   inactive_text="State: Normal"
-                  :active_text="'HW OC FAULT\nClick here to Reset!'"
+                  :active_text="`${state.hw_error}\nClick here to Reset!`"
                   :disabled="disabled"
-                  @action_triggered="submit_nv"
+                  @action_triggered="dispatch_nv"
                 />
               </td>
             </tr>
@@ -56,13 +56,13 @@
               <td>
                 <div class="flex-stacked-calign"
                     :disabled="set_if(disabled)">
-                  {{ state.temp_1.toFixed(1) + " °C" }}
+                  {{ state.temp_1.toFixed(1) + "&nbsp;°C" }}
                 </div>
               </td>
               <td>
                 <div class="flex-stacked-calign"
                     :disabled="set_if(disabled)">
-                  {{ state.temp_2.toFixed(1) + " °C" }}
+                  {{ state.temp_2.toFixed(1) + "&nbsp;°C" }}
                 </div>
               </td>
               <td>
@@ -70,7 +70,7 @@
                   change_action="set_fan_override"
                   :value_feedback="state.fan_override"
                   :disabled="disabled"
-                  @action_triggered="submit_nv"
+                  @action_triggered="dispatch_nv"
                 />
               </td>
             </tr>
@@ -87,7 +87,7 @@
           </thead>
           <tbody>
             <tr class="alternating_bg">
-              <th>Frequency /kHz:</th>
+              <th>Frequency [kHz]:</th>
               <td>
                 <span class="flex-centered-row">
                     <span class="flex-stacked-calign">
@@ -100,7 +100,7 @@
                         :min="state.frequency_min" :max="state.frequency_max"
                         :digits="2"
                         :disabled="disabled"
-                        @action_triggered="submit_nv"
+                        @action_triggered="dispatch_nv"
                     />
                     <span class="flex-stacked-calign">
                         <span>Max:</span>
@@ -138,7 +138,7 @@
                       :min="state.frequency_min" :max="state.frequency_max"
                       :digits="2"
                       :disabled="disabled"
-                      @action_triggered="submit_nv"
+                      @action_triggered="dispatch_nv"
                   />
                   <LiveJogDial
                       v-else
@@ -146,14 +146,14 @@
                       :value_feedback="state.frequency"
                       :min="state.frequency_min" :max="state.frequency_max"
                       :disabled="disabled"
-                      @action_triggered="submit_nv"
+                      @action_triggered="dispatch_nv"
                   />
                 </keep-alive>
               </td>
             </tr>
 
             <tr class="alternating_bg">
-              <th>Duty Cycle /%:</th>
+              <th>Duty Cycle [%]:</th>
               <td>
                 <span class="flex-centered-row">
                     <span class="flex-stacked-calign">
@@ -166,7 +166,7 @@
                         :min="state.duty_min" :max="state.duty_max"
                         :digits="1"
                         :disabled="disabled"
-                        @action_triggered="submit_nv"
+                        @action_triggered="dispatch_nv"
                     />
                     <span class="flex-stacked-calign">
                         <span>Max:</span>
@@ -204,7 +204,7 @@
                       :min="state.duty_min" :max="state.duty_max"
                       :digits="1"
                       :disabled="disabled"
-                      @action_triggered="submit_nv"
+                      @action_triggered="dispatch_nv"
                   />
                   <LiveJogDial
                       v-else
@@ -212,7 +212,7 @@
                       :value_feedback="state.duty"
                       :min="state.duty_min" :max="state.duty_max"
                       :disabled="disabled"
-                      @action_triggered="submit_nv"
+                      @action_triggered="dispatch_nv"
                   />
                 </keep-alive>
               </td>
@@ -242,7 +242,7 @@
                       name="set_power_pwm_active"
                       value="true"
                       :disabled="disabled"
-                      @click="submit_btn"
+                      @click="dispatch_btn"
                   >
                     ON
                   </button>
@@ -251,7 +251,7 @@
                       name="set_power_pwm_active"
                       value="false"
                       :disabled="disabled"
-                      @click="submit_btn"
+                      @click="dispatch_btn"
                   >
                     OFF
                   </button>
@@ -263,7 +263,7 @@
                   change_action="set_relay_ref_active"
                   :value_feedback="state.relay_ref_active"
                   :disabled="disabled"
-                  @action_triggered="submit_nv"
+                  @action_triggered="dispatch_nv"
                 />
               </td>
               <td>
@@ -272,7 +272,7 @@
                   change_action="set_relay_dut_active"
                   :value_feedback="state.relay_dut_active"
                   :disabled="disabled"
-                  @action_triggered="submit_nv"
+                  @action_triggered="dispatch_nv"
                 />
               </td>
             </tr>
@@ -289,7 +289,7 @@
           </thead>
           <tbody>
             <tr>
-              <th>Pulse Length /sec</th>
+              <th>Pulse Length [s]</th>
               <th>Trigger One-Shot</th>
             </tr>
             <tr>
@@ -301,7 +301,7 @@
                     :max="1800"
                     :digits="3"
                     :disabled="disabled"
-                    @action_triggered="submit_nv"
+                    @action_triggered="dispatch_nv"
                 />
               </td>
               <td>
@@ -310,7 +310,7 @@
                     name="trigger_oneshot"
                     value="true"
                     :disabled="disabled"
-                    @click="submit_btn"
+                    @click="dispatch_btn"
                 >
                   TRIGGER!
                 </button>
@@ -358,17 +358,15 @@ export default {
       return is_true ? "" : undefined;
     },
     // Push buttons can have a name and value
-    submit_btn(event) {
-      console.log(event);
-      this.$emit("submit_cmd", event.target.name, event.target.value);
+    dispatch_btn(event) {
+      this.$emit("action", event.target.name, event.target.value);
     },
     // Submit name=value pair
-    submit_nv(name, value) {
-        console.log("submitting " + name + "=" + value);
-        this.$emit("submit_cmd", name, value);
+    dispatch_nv(name, value) {
+        this.$emit("action", name, value);
     },
   },
-  emits: ["submit_cmd"],
+  emits: ["action"],
 };
 </script>
 

@@ -57,17 +57,15 @@ export default {
   },
   methods: {
     // Push buttons can have a name and value
-    submit_btn(event) {
-      console.log(event);
-      this.$emit("submit_cmd", event.target.name, event.target.value);
+    dispatch_btn(event) {
+      this.$emit("action", event.target.name, event.target.value);
     },
     // Submit name=value pair
-    submit_nv(name, value) {
-      console.log("submitting " + name + "=" + value);
-      this.$emit("submit_cmd", name, value);
+    dispatch_nv(name, value) {
+      this.$emit("action", name, value);
     }
   },
-  emits: ["submit_cmd"]
+  emits: ["action"]
 };
 </script>
 

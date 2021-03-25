@@ -44,9 +44,9 @@
         <component
           :is="current_tab"
           :ref="current_tab"
-          :state="state"
-          :disabled="disabled"
-          @submit_cmd="submit_cmd"
+          :state="store.state"
+          :disabled="store.disabled"
+          @action="store.dispatch_action"
         >
         </component>
       </li>
@@ -68,13 +68,17 @@ import {
   AppWatchdog
 } from "./async_requests_sse.js";
 
+const request_generator = new AsyncRequestGenerator("/cmd");
+
 let view_state_store = reactive({
   debug: false,
+  disabled: true, // Disable all controls by default, is enabled on watchdog reset
   state: {
     // Hardware limits
-    frequency_min_hw: Number(),
-    frequency_max_hw: Number(),
-    dt_sum_max_hw: Number(),
+    frequency_min_hw: 0.01,
+    frequency_max_hw: 1000,
+    dt_sum_max_hw: 600,
+    duty_max_hw: 100.0,
     current_limit_max_hw: 100,
     // Runtime user setpoint limits for output frequency and duty cycle
     frequency_min: 90.00,
@@ -88,46 +92,61 @@ let view_state_store = reactive({
     duty_changerate: 250.0,
     lead_dt: 300,
     lag_dt: 300,
-    power_pwm_active: Boolean(),
+    power_pwm_active: true,
     // Settings for auxiliary HW control module
-    current_limit: Number(),
-    relay_ref_active: Boolean(),
-    relay_dut_active: Boolean(),
+    current_limit: 0,
+    relay_ref_active: false,
+    relay_dut_active: false,
     // Temperatures and fan
-    temp_1: Number(),
-    temp_2: Number(),
+    temp_1: 0.0,
+    temp_2: 0.0,
     // Overtemperature protection limits
-    temp_1_limit: 50,
-    temp_2_limit: 50,
-    fan_active: Boolean(),
-    fan_override: Boolean(),
+    temp_1_limit: 50.0,
+    temp_2_limit: 50.0,
+    fan_active: false,
+    fan_override: false,
     // Clock divider settings
-    base_div: Number(),
-    timer_div: Number(),
+    base_div: 1.0,
+    timer_div: 1.0,
     // Gate driver supply and disable signals
-    drv_supply_active: Boolean(),
-    drv_disabled: Boolean(),
-    // True when hardware OC shutdown condition is present
-    hw_oc_fault_present: Boolean(),
-    // Hardware Fault Shutdown Status is latched using this flag
-    hw_oc_fault_occurred: Boolean(),
+    drv_supply_active: true,
+    drv_disabled: true,
+    // Hardware Fault Shutdown Status is latched using these flags
+    hw_error: "",
+    hw_oc_fault: false,
+    hw_overtemp: false,
     // Length of the power output one-shot timer pulse
-    oneshot_len: Number()
+    oneshot_len: 0.001,
   },
   // Called by server-sent event handler
   update_state(new_state) {
     if (this.debug) {
-      console.log("update_state called with", new_state);
+      console.log("Updating app state with received object: ", new_state);
     }
     for (let key in this.state) {
-      if (new_state[key] !== undefined) {
+      if (new_state.hasOwnProperty(key)) {
         this.state[key] = new_state[key];
       }
     }
     // Probably unsafe as it adds arbitrary new attributes from unsafe JSON
     //Object.assign(this.state, new_state);
-  }
+    // Some of the application state is re-computed when state update is received
+    this.compute_mutations();
+  },
+  dispatch_action(name, value) {
+    if (this.debug) {
+      console.log(`Dispatching action "${name}" with value: ${value}`);
+    }
+    request_generator.send_cmd(name, value);
+  },
+  compute_mutations() {
+    const state = this.state;
+    state.hw_error = state.hw_oc_fault ? "HW OC FAULT" : state.hw_overtemp ? "OVERTEMPERATURE" : "";
+    const dt_effective = Math.max(state.lead_dt, state.lag_dt);
+    state.duty_max_hw = 100 * (1 - 1E-6 * state.frequency * 2 * dt_effective);
+  },
 });
+
 
 export default {
   name: "EspAjaxLab",
@@ -140,37 +159,27 @@ export default {
   data() {
     return {
       tabs: {
-          "LiveController": "Live HW Control",
-          "OperationSettings": "Operation Settings",
-          "HelpDocumentation": "Help / Documentation",
-          "NetworkAndUpdate": "Network and Update",
+        "LiveController": "Live HW Control",
+        "OperationSettings": "Operation Settings",
+        "HelpDocumentation": "Help / Documentation",
+        "NetworkAndUpdate": "Network and Update",
       },
       current_tab: "LiveController",
       store: view_state_store,
-      state: view_state_store.state,
-      disabled: true
+      disabled: view_state_store.disabled,
     };
   },
   methods: {
-    submit_cmd(name, value) {
-      this.request_generator.send_cmd(name, value);
-    },
-    set_disabled(bv) {
-      this.disabled = bv;
-    },
     set_debug() {
       this.store.debug = true;
       this.sse_handler.disable_reconnect_and_watchdog();
     }
   },
   created() {
-    this.app_watchdog = new AppWatchdog(1500, s => this.set_disabled(s));
-    this.request_generator = new AsyncRequestGenerator("/cmd");
-    this.sse_handler = new ServerSentEventHandler(
-      "/events",
-      view_state_store,
-      this.app_watchdog
-    );
+    this.app_watchdog = new AppWatchdog(1500, val => view_state_store.disabled = val);
+    this.sse_handler = new ServerSentEventHandler("/events", view_state_store, this.app_watchdog);
+    // Initial computed state update
+    this.store.compute_mutations();
   },
 };
 </script>

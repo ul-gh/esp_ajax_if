@@ -13,8 +13,8 @@
           </thead>
           <tbody>
             <tr>
-              <th>Overtemperature Limit<br>Heat Sink 1 /°C</th>
-              <th>Overtemperature Limit<br>Heat Sink 2 /°C</th>
+              <th>Overtemperature Limit<br>Heat Sink 1 [°C]</th>
+              <th>Overtemperature Limit<br>Heat Sink 2 [°C]</th>
             </tr>
             <tr>
               <td>
@@ -25,10 +25,10 @@
                       :min="0" :max="150"
                       :digits="0"
                       :disabled="disabled"
-                      @action_triggered="submit_nv"
+                      @action_triggered="dispatch_nv"
                   />
                   <span class="flex-stacked-calign">
-                    HW Limit:<br>Suggested: 50 °C<br>(Sensor: 150°C..)
+                    HW Limit:<br>Suggested: 50&nbsp;°C<br>(Sensor: 150&nbsp;°C..)
                   </span>
                 </span>
               </td>
@@ -40,18 +40,18 @@
                       :min="0" :max="150"
                       :digits="0"
                       :disabled="disabled"
-                      @action_triggered="submit_nv"
+                      @action_triggered="dispatch_nv"
                   />
                   <span class="flex-stacked-calign">
-                    HW Limit:<br>Suggested: 50 °C<br>(Sensor: 150°C..)
+                    HW Limit:<br>Suggested: 50&nbsp;°C<br>(Sensor: 150&nbsp;°C..)
                   </span>
                 </span>
               </td>
             </tr>
 
             <tr>
-              <th>Frequency Min /kHz</th>
-              <th>Frequency Max /kHz</th>
+              <th>Frequency Min [kHz]</th>
+              <th>Frequency Max [kHz]</th>
             </tr>
             <tr>
               <td>
@@ -59,10 +59,10 @@
                   <LiveNumberInput
                       change_action="set_frequency_min"
                       :value_feedback="state.frequency_min"
-                      :min="0.00" :max="5000.00"
+                      :min="state.frequency_min_hw" :max="state.frequency_max_hw"
                       :digits="2"
                       :disabled="disabled"
-                      @action_triggered="submit_nv"
+                      @action_triggered="dispatch_nv"
                   />
                   <span class="flex-stacked-calign">
                     HW Limit:<br>
@@ -75,10 +75,10 @@
                   <LiveNumberInput
                       change_action="set_frequency_max"
                       :value_feedback="state.frequency_max"
-                      :min="0.00" :max="5000.00"
+                      :min="state.frequency_min_hw" :max="state.frequency_max_hw"
                       :digits="2"
                       :disabled="disabled"
-                      @action_triggered="submit_nv"
+                      @action_triggered="dispatch_nv"
                   />
                   <span class="flex-stacked-calign">
                     HW Limit:<br>
@@ -89,8 +89,8 @@
             </tr>
 
             <tr>
-              <th>Duty Min /%</th>
-              <th>Duty Max /%</th>
+              <th>Duty Min [%]</th>
+              <th>Duty Max [%]</th>
             </tr>
             <tr>
               <td>
@@ -98,10 +98,10 @@
                   <LiveNumberInput
                       change_action="set_duty_min"
                       :value_feedback="state.duty_min"
-                      :min="0.0" :max="100.0"
+                      :min="0.0" :max="state.duty_max_hw"
                       :digits="1"
                       :disabled="disabled"
-                      @action_triggered="submit_nv"
+                      @action_triggered="dispatch_nv"
                   />
                   <span class="flex-stacked-calign">
                     HW Limit:<br>
@@ -114,17 +114,14 @@
                   <LiveNumberInput
                       change_action="set_duty_max"
                       :value_feedback="state.duty_max"
-                      :min="0.0" :max="100.0"
+                      :min="0.0" :max="state.duty_max_hw"
                       :digits="1"
                       :disabled="disabled"
-                      @action_triggered="submit_nv"
+                      @action_triggered="dispatch_nv"
                   />
                   <span class="flex-stacked-calign">
                     HW Limit:<br>
-                    {{
-                      (100 * (1 - 1E-6 * state.frequency * 2 * (Math.max(state.lead_dt, state.lag_dt)))
-                      ).toFixed(1)
-                    }}&nbsp;%
+                    {{state.duty_max_hw.toFixed(1)}}&nbsp;%
                   </span>
                 </span>
               </td>
@@ -142,9 +139,9 @@
           </thead>
           <tbody>
             <tr>
-              <th>Lead (ZVS) DT /ns</th>
-              <th>Lag (ZCS) DT /ns</th>
-              <th>Hardware Limit /ns</th>
+              <th>Lead (ZVS) DT [ns]</th>
+              <th>Lag (ZCS) DT [ns]</th>
+              <th>Hardware Limit [ns]</th>
             </tr>
             <tr>
               <td>
@@ -152,10 +149,10 @@
                   <LiveNumberInput
                       change_action="set_lead_dt"
                       :value_feedback="state.lead_dt"
-                      :min="6" :max="5000"
+                      :min="6" :max="lead_dt_max_hw"
                       :digits="0"
                       :disabled="disabled"
-                      @action_triggered="submit_nv"
+                      @action_triggered="dispatch_nv"
                   />
                   <span class="flex-stacked-calign">
                     Min:<br>6&nbsp;ns
@@ -167,10 +164,10 @@
                   <LiveNumberInput
                       change_action="set_lag_dt"
                       :value_feedback="state.lag_dt"
-                      :min="6" :max="5000"
+                      :min="6" :max="lag_dt_max_hw"
                       :digits="0"
                       :disabled="disabled"
-                      @action_triggered="submit_nv"
+                      @action_triggered="dispatch_nv"
                   />
                   <span class="flex-stacked-calign">
                     Min:<br>6&nbsp;ns
@@ -180,7 +177,7 @@
               <td>
                 <span class="flex-stacked-calign">
                   <span>Lead + Lag Sum Max:</span>
-                  {{disabled ? "unknown.." : state.dt_sum_max_hw.toFixed(0)}}
+                  {{disabled ? "unknown.." : state.dt_sum_max_hw.toFixed(0)}}&nbsp;ns
                 </span>
               </td>
             </tr>
@@ -197,8 +194,8 @@
           </thead>
           <tbody>
             <tr>
-              <th>Frequency Rate of Change /(kHz/s)</th>
-              <th>Duty Rate of Change /(%/s)</th>
+              <th>Frequency Rate of Change [kHz/s]</th>
+              <th>Duty Rate of Change [%/s]</th>
             </tr>
             <tr>
               <td>
@@ -209,7 +206,7 @@
                       :min="0.01" :max="1000"
                       :digits="2"
                       :disabled="disabled"
-                      @action_triggered="submit_nv"
+                      @action_triggered="dispatch_nv"
                   />
                   <span class="flex-stacked-calign">
                     Min:<br>0.01&nbsp;kHz/s
@@ -227,7 +224,7 @@
                       :min="0.1" :max="5000"
                       :digits="1"
                       :disabled="disabled"
-                      @action_triggered="submit_nv"
+                      @action_triggered="dispatch_nv"
                   />
                   <span class="flex-stacked-calign">
                     Min:<br>0.1&nbsp;%/s
@@ -260,7 +257,7 @@
                     name="save_settings"
                     value="true"
                     :disabled="disabled"
-                    @click="submit_btn"
+                    @click="dispatch_btn"
                 >
                   Save!
                 </button>
@@ -294,6 +291,14 @@ export default {
     state: Object,
     disabled: Boolean,
   },
+  computed: {
+    lag_dt_max_hw() {
+      return this.state.dt_sum_max_hw - this.state.lead_dt;
+    },
+    lead_dt_max_hw() {
+      return this.state.dt_sum_max_hw - this.state.lag_dt;
+    },
+  },
   methods: {
     // Helper function for setting custom boolean attributes on any HTML element.
     // These are defined to be true when present and false when removed from the DOM.
@@ -301,17 +306,15 @@ export default {
       return is_true ? "" : undefined;
     },
     // Push buttons can have a name and value
-    submit_btn(event) {
-      console.log(event);
-      this.$emit("submit_cmd", event.target.name, event.target.value);
+    dispatch_btn(event) {
+      this.$emit("action", event.target.name, event.target.value);
     },
     // Submit name=value pair
-    submit_nv(name, value) {
-        console.log("submitting " + name + "=" + value);
-        this.$emit("submit_cmd", name, value);
+    dispatch_nv(name, value) {
+        this.$emit("action", name, value);
     },
   },
-  emits: ["submit_cmd"],
+  emits: ["action"],
 };
 </script>
 

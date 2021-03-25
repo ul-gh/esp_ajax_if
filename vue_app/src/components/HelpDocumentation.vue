@@ -33,7 +33,7 @@ export default {
     state: Object,
     disabled: Boolean
   },
-  emits: ["submit_cmd"]
+  emits: ["action"]
 };
 </script>
 
