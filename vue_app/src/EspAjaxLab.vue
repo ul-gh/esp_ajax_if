@@ -44,9 +44,9 @@
         <component
           :is="current_tab"
           :ref="current_tab"
-          :state="store.state"
-          :disabled="store.disabled"
-          @action="store.dispatch_action"
+          :state="state"
+          :disabled="disabled"
+          @action="dispatch_action"
         >
         </component>
       </li>
@@ -55,98 +55,12 @@
 </template>
 
 <script>
-import { reactive } from "vue";
-
 import LiveController from "./components/LiveController.vue";
 import OperationSettings from "./components/OperationSettings.vue";
 import HelpDocumentation from "./components/HelpDocumentation.vue";
 import NetworkAndUpdate from "./components/NetworkAndUpdate.vue";
 
-import {
-  AsyncRequestGenerator,
-  ServerSentEventHandler,
-  AppWatchdog
-} from "./async_requests_sse.js";
-
-const request_generator = new AsyncRequestGenerator("/cmd");
-
-let view_state_store = reactive({
-  debug: false,
-  disabled: true, // Disable all controls by default, is enabled on watchdog reset
-  state: {
-    // Hardware limits
-    frequency_min_hw: 0.01,
-    frequency_max_hw: 1000,
-    dt_sum_max_hw: 600,
-    duty_max_hw: 100.0,
-    current_limit_max_hw: 100,
-    // Runtime user setpoint limits for output frequency and duty cycle
-    frequency_min: 90.00,
-    frequency_max: 110.00,
-    duty_min: 0.0,
-    duty_max: 100.0,
-    // Operational setpoints for PSPWM module
-    frequency: 100.00,
-    frequency_changerate: 25.00,
-    duty: 0.0,
-    duty_changerate: 250.0,
-    lead_dt: 300,
-    lag_dt: 300,
-    power_pwm_active: true,
-    // Settings for auxiliary HW control module
-    current_limit: 0,
-    relay_ref_active: false,
-    relay_dut_active: false,
-    // Temperatures and fan
-    temp_1: 0.0,
-    temp_2: 0.0,
-    // Overtemperature protection limits
-    temp_1_limit: 50.0,
-    temp_2_limit: 50.0,
-    fan_active: false,
-    fan_override: false,
-    // Clock divider settings
-    base_div: 1.0,
-    timer_div: 1.0,
-    // Gate driver supply and disable signals
-    drv_supply_active: true,
-    drv_disabled: true,
-    // Hardware Fault Shutdown Status is latched using these flags
-    hw_error: "",
-    hw_oc_fault: false,
-    hw_overtemp: false,
-    // Length of the power output one-shot timer pulse
-    oneshot_len: 0.001,
-  },
-  // Called by server-sent event handler
-  update_state(new_state) {
-    if (this.debug) {
-      console.log("Updating app state with received object: ", new_state);
-    }
-    for (let key in this.state) {
-      if (new_state.hasOwnProperty(key)) {
-        this.state[key] = new_state[key];
-      }
-    }
-    // Probably unsafe as it adds arbitrary new attributes from unsafe JSON
-    //Object.assign(this.state, new_state);
-    // Some of the application state is re-computed when state update is received
-    this.compute_mutations();
-  },
-  dispatch_action(name, value) {
-    if (this.debug) {
-      console.log(`Dispatching action "${name}" with value: ${value}`);
-    }
-    request_generator.send_cmd(name, value);
-  },
-  compute_mutations() {
-    const state = this.state;
-    state.hw_error = state.hw_oc_fault ? "HW OC FAULT" : state.hw_overtemp ? "OVERTEMPERATURE" : "";
-    const dt_effective = Math.max(state.lead_dt, state.lag_dt);
-    state.duty_max_hw = 100 * (1 - 1E-6 * state.frequency * 2 * dt_effective);
-  },
-});
-
+import useApiState from "./api/useApiState.js";
 
 export default {
   name: "EspAjaxLab",
@@ -155,6 +69,17 @@ export default {
     OperationSettings,
     HelpDocumentation,
     NetworkAndUpdate,
+  },
+  setup() {
+    // const {debug,
+    //        disabled,
+    //        state,
+    //        update_state,
+    //        update_computed_values,
+    //        dispatch_action,
+    //        sse_handler,
+    //        } = useApiState();
+    return useApiState();
   },
   data() {
     return {
@@ -165,21 +90,7 @@ export default {
         "NetworkAndUpdate": "Network and Update",
       },
       current_tab: "LiveController",
-      store: view_state_store,
-      disabled: view_state_store.disabled,
     };
-  },
-  methods: {
-    set_debug() {
-      this.store.debug = true;
-      this.sse_handler.disable_reconnect_and_watchdog();
-    }
-  },
-  created() {
-    this.app_watchdog = new AppWatchdog(1500, val => view_state_store.disabled = val);
-    this.sse_handler = new ServerSentEventHandler("/events", view_state_store, this.app_watchdog);
-    // Initial computed state update
-    this.store.compute_mutations();
   },
 };
 </script>

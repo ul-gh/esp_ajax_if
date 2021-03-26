@@ -1,3 +1,21 @@
+<!-- LiveJogDial - Numeric input similar to HTML "range" input,
+ *                 using a Multi-Turn "JogDial" style knob.
+ * 
+ * A changed value is emitted in the form of a named "action_triggered" event
+ * useful for Vuex state updates, async requests or web socket transmission.
+ * 
+ * In addition to the input feature, this control acts as a live view of
+ * its reactive "value_feedback" property value using a bar graph; the
+ * knob rotation angle is always kept in sync.
+ * 
+ * Automatic switchover between manual editing mode and visual state
+ * representation, including a timeout timer, allows smooth manual control
+ * even in the presence of asynchronous/simultaneous updates of the displayed
+ * property value.
+ *
+ * 2021-03-26 Ulrich Lukas
+ * License: GPL v.3
+-->
 <template>
   <div class="live_jog_dial">
     <div class="jog_dial" @mousemove="on_dial_mousemove">
@@ -30,15 +48,21 @@ export default {
     };
   },
   props: {
+    // Name of the emitted "action_triggered" event
     change_action: String,
+    // Displayed reactive property
     value_feedback: Number,
     min: Number,
     max: Number,
+    // Decimal digits precision for output value rounding and bar graph step size
     digits: {default: undefined, type: Number},
+    // Number of turns of the dial control
     n_turns: {default: 5, type: Number},
-    timeout_s: {default: 7, type: Number},
-    // Specify request round-trip or periodic update time to prevent flicker on input
-    roundtrip_ms: {default: 750, type: Number},
+    // Timeout for automatic termination of manual editing mode at standstill.
+    // This should be slightly larger than the maximum expected request
+    // round-trip cycle time to have a most up-to-date value display.
+    timeout_ms: {default: 750, type: Number},
+    // Input is blocked and no events are emitted when disabled
     disabled: {default: false, type: Boolean}
   },
   watch: {
@@ -100,7 +124,7 @@ export default {
       this.$emit("action_triggered", this.change_action, val);
       clearTimeout(this.timeout_timer_id_id);
       // Vue auto-binds "this" instance to methods, no need for arrow function etc..
-      this.timeout_timer_id_id = setTimeout(this.leave_edit_mode, 1.1*this.roundtrip_ms);
+      this.timeout_timer_id_id = setTimeout(this.leave_edit_mode, this.timeout_ms);
     },
   },
   emits: ["action_triggered"],

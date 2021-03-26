@@ -1,3 +1,19 @@
+<!-- LiveNumberInput - Numeric input also acting as a reactive state display
+ * 
+ * A changed value is emitted in the form of a named "action_triggered" event
+ * useful for Vuex state updates, async requests or web socket transmission.
+ * 
+ * In addition to the input feature, this control acts as a live view of
+ * its reactive "value_feedback" property.
+ * 
+ * Automatic switchover between manual editing mode and visual state
+ * representation, including a timeout timer, allows smooth manual control
+ * even in the presence of asynchronous/simultaneous updates of the displayed
+ * property value.
+ *
+ * 2021-03-26 Ulrich Lukas
+ * License: GPL v.3
+-->
 <template>
   <div class="live_number_input">
     <input
@@ -31,15 +47,22 @@ export default {
     };
   },
   props: {
+    // Name of the emitted "action_triggered" event
     change_action: String,
+    // Displayed reactive property
     value_feedback: Number,
     min: Number,
     max: Number,
+    // Decimal digits precision for value rounding
     digits: {default: 0, type: Number},
-    timeout_s: {default: 7, type: Number},
-    // Specify request round-trip or periodic update time to prevent flicker on input
-    roundtrip_ms: {default: 750, type: Number},
-    disabled: {default: false, type: Boolean}
+    // Timeout for automatic termination of manual editing mode at standstill.
+    // This should be slightly larger than the maximum expected request
+    // round-trip cycle time to have a most up-to-date value display.
+    timeout_ms: {default: 750, type: Number},
+    // Longer timeout useful when value is being edited by keyboard/cursor
+    edit_timeout_ms: {default: 7000, type: Number},
+    // Input is blocked and no events are emitted when disabled
+    disabled: {default: false, type: Boolean},
   },
   watch: {
     value_feedback: function(val) {
@@ -58,16 +81,19 @@ export default {
       // Set editing state of a number or text input box, prevent view updates
       // from happening
       this.editing = true;
+      this.start_timeout(this.edit_timeout_ms);
+    },
+    on_change(e) {
+      this.$emit("action_triggered", this.change_action, Number(e.target.value));
+      this.start_timeout(this.timeout_ms);
+    },
+    on_blur(_) {
+      this.start_timeout(this.timeout_ms);
+    },
+    // Also called on blur event of the original input
+    start_timeout(t_ms) {
       clearTimeout(this.timeout_timer_id);
-      this.timeout_timer_id = setTimeout(() => this.leave_edit_mode(), 1000*this.timeout_s);
-    },
-    // Submit value, we emit an event with name and value
-    on_change(event) {
-      this.$emit("action_triggered", this.change_action, Number(event.target.value));
-      this.on_blur();
-    },
-    on_blur() {
-      setTimeout(() => this.leave_edit_mode(), 1.1*this.roundtrip_ms);
+      this.timeout_timer_id = setTimeout(() => this.leave_edit_mode(), t_ms);
     },
   },
   emits: ["action_triggered"]

@@ -84,9 +84,9 @@ class AsyncRequestGenerator {
  *   - calls watchdog.reset() on SSE reception
  */
 class ServerSentEventHandler {
-    constructor(endpoint, state_store, watchdog) {
+    constructor(endpoint, callback, watchdog) {
         this.endpoint = endpoint;
-        this.state_store = state_store;
+        this.callback = callback;
         this.watchdog = watchdog;
         // The backend SSE source
         this.source = null;
@@ -124,7 +124,7 @@ class ServerSentEventHandler {
                 // periodically, we use this to reset the watchdog.
                 this.watchdog.reset();
                 const remote_state = JSON.parse(e.data);
-                this.state_store.update_state(remote_state);
+                this.callback(remote_state);
             },
             false);
     }
