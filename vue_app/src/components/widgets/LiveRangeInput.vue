@@ -76,10 +76,11 @@ export default {
       // Set editing state of input, prevent view updates from happening
       this.editing = true;
       this.$emit("action_triggered", this.change_action, Number(e.target.value));
-      this.start_timeout(this.timeout_ms);
+      //this.start_timeout(this.timeout_ms);
     },
     on_change(_) {
-      this.start_timeout(this.timeout_ms);
+      //this.start_timeout(this.timeout_ms);
+      this.leave_edit_mode();
     },
     start_timeout(t_ms) {
       clearTimeout(this.timeout_timer_id);

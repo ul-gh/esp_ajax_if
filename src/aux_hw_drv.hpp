@@ -33,8 +33,8 @@ class AuxHwDrv
 public:
     static constexpr auto aux_hw_conf = AuxHwDrvConfig{};
     AuxHwDrvState state;
-    SensorKTY81_121 sensor_aux_temp{aux_hw_conf.temp_ch_aux};
-    SensorKTY81_121 sensor_heatsink_temp{aux_hw_conf.temp_ch_heatsink};
+    SensorKTY81_121 sensor_temp_1{aux_hw_conf.temp_ch_1};
+    SensorKTY81_121 sensor_temp_2{aux_hw_conf.temp_ch_2};
 
     AuxHwDrv();
     virtual ~AuxHwDrv();
@@ -48,15 +48,18 @@ public:
     void set_drv_disabled(bool state);
     static void reset_oc_shutdown_start();
     static void reset_oc_shutdown_finish();
+    
     /** @brief Only updates the state structure for temperature sensors.
      * Other state variables are only modified by setter functions above.
      */
     void update_temperature_sensors();
-    /** @brief Switch heatsink fan on or off depending on current temperature
+
+    /** @brief Check if temperature exceeds threshold value and
+     * switch fan accordingly
      * 
      * To be called periodically from slow timer event
      */
-    void update_fan_state();
+    void evaluate_temperature_sensors();
 
 private:
 

@@ -126,6 +126,33 @@
                 </span>
               </td>
             </tr>
+
+            <tr>
+              <th>Current Limit [A]</th>
+              <th></th>
+            </tr>
+            <tr>
+              <td>
+                <span class="flex-centered-row">
+                  <LiveNumberInput
+                      change_action="set_current_limit"
+                      :value_feedback="state.current_limit"
+                      :min="0" :max="100"
+                      :digits="0"
+                      :disabled="disabled"
+                      @action_triggered="dispatch_nv"
+                  />
+                  <span class="flex-stacked-calign">
+                    HW Limit:<br>
+                    100&nbsp;A
+                  </span>
+                </span>
+              </td>
+              <td>
+                <span class="flex-centered-row">
+                </span>
+              </td>
+            </tr>
           </tbody>
         </table>
       </li>

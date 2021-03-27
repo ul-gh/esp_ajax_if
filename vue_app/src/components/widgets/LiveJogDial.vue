@@ -18,7 +18,12 @@
 -->
 <template>
   <div class="live_jog_dial">
-    <div class="jog_dial" @mousemove="on_dial_mousemove">
+    <div
+      class="jog_dial"
+      @mousedown="on_dial_mousedown"
+      @mousemove="on_dial_mousemove"
+      @mouseup="on_dial_mouseup"
+    >
     </div>
     <div class="bar_graph">
         <div class="bar" :style="{width: bar_width_fmt}"></div>
@@ -106,6 +111,10 @@ export default {
         this.editing = false;
         this.set_value(this.value);
     },
+    on_dial_mousedown(_) {
+      // Prevent view updates from happening while control is being operated
+      this.editing = true;
+    },
     on_dial_mousemove(e) {
       if (e.target.rotation === undefined || this.events_inhibited) {
           return;
@@ -122,9 +131,12 @@ export default {
       let val = this.min + scale_factor * (this.max - this.min);
       val = this.digits === undefined ? val : Number(val.toFixed(this.digits));
       this.$emit("action_triggered", this.change_action, val);
-      clearTimeout(this.timeout_timer_id_id);
+      //clearTimeout(this.timeout_timer_id_id);
       // Vue auto-binds "this" instance to methods, no need for arrow function etc..
-      this.timeout_timer_id_id = setTimeout(this.leave_edit_mode, this.timeout_ms);
+      //this.timeout_timer_id_id = setTimeout(this.leave_edit_mode, this.timeout_ms);
+    },
+    on_dial_mouseup(_) {
+      this.leave_edit_mode();
     },
   },
   emits: ["action_triggered"],

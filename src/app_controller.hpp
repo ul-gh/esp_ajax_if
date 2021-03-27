@@ -106,6 +106,11 @@ public:
 
     void set_current_limit(float n);
 
+    /** @brief Set overtemperature shutdown limits
+     */
+    void set_temp_1_limit(float n);
+    void set_temp_2_limit(float n);
+
     void set_relay_ref_active(bool new_val);
 
     void set_relay_dut_active(bool new_val);
@@ -168,6 +173,10 @@ private:
      * This is e.g. ADC conversion and HW overcurrent detection handling
      */
     void _on_fast_timer_event_update_state();
+
+    /** @brief Perform overtemperature shutdown if temperature limit exceeded
+     */
+    void _evaluate_temperature_sensors();
 
     /** @brief Called when app state is changed and triggers the respective event.
      * Used for sending push updates to the clients.

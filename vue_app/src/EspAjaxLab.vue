@@ -1,19 +1,22 @@
-<!-- ESP Ajax Lab - Web Application for Remote Hardware Control
+<!-- ESP Ajax Lab - Web Application for Live Feedback Remote Hardware Control
  *
  * See home page: https://github.com/ul-gh/esp_ajax_if
  *
- * This single-page web application is built using vue.js v.3.
+ * This single-page application is built using Vue.js 3.
  * 
  * Remote hardware is interfaced using ES7 fetch API and async co-routines
- * performing HTTP requests. Server-Sent Events (SSE) are used to update the
- * application view with state updates sent back from the server.
- * => See imported modules from async_requests_sse.js
+ * performing outgoing HTTP GET requests.
+ *
+ * The return channel is built using Server-Sent Events (SSE) updating the
+ * application state and view with async data telegrams received in JSON format.
+ * 
+ * => See imported modules in "./api/useApiStore.js"
  *
  * This main app component is a container for a tabbed view of sub-components.
- * This component also sets up the hardware interfacing and app state model
- * using the vue.js live-cycle hooks below.
+ * The sub-components are provided with the HTTP API via a state object
+ * and action method added as Vue component properties.
  * 
- * 2021-03-12 Ulrich Lukas
+ * 2021-03-27 Ulrich Lukas
  * License: GPL v.3
 -->
 <template>
@@ -60,7 +63,7 @@ import OperationSettings from "./components/OperationSettings.vue";
 import HelpDocumentation from "./components/HelpDocumentation.vue";
 import NetworkAndUpdate from "./components/NetworkAndUpdate.vue";
 
-import useApiState from "./api/useApiState.js";
+import useApiStore from "./api/useApiStore.js";
 
 export default {
   name: "EspAjaxLab",
@@ -71,15 +74,25 @@ export default {
     NetworkAndUpdate,
   },
   setup() {
-    // const {debug,
-    //        disabled,
-    //        state,
-    //        update_state,
-    //        update_computed_values,
-    //        dispatch_action,
-    //        sse_handler,
-    //        } = useApiState();
-    return useApiState();
+    // HTTP API interface implemented in module imported above (api/useApiStore.js).
+    // API request actions and live representation of remote state are
+    // implemented similar in style of a Vuex store.
+    // The store properties, the state object and methods and are injected
+    // into the application instance using the Vue 3 composition API, see:
+    // https://v3.vuejs.org/guide/composition-api-introduction.html
+    const {debug,
+           disabled,
+           state,
+           update_state,
+           update_computed_values,
+           dispatch_action,
+           sse_handler,
+           } = useApiStore();
+    return {debug,
+            disabled,
+            state,
+            dispatch_action,
+            };
   },
   data() {
     return {
@@ -95,7 +108,8 @@ export default {
 };
 </script>
 
-<style src="./main_app.css"></style>
+<style src="./main_app.css">
+</style>
 
 <style scoped>
 img {

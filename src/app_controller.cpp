@@ -157,6 +157,12 @@ void AppController::set_lead_dt_ns(float n) {
  */
 void AppController::set_power_pwm_active(bool new_val) {
     if (new_val == true) {
+        // For the tate.hw_oc_fault_xxx flags, these are
+        // automatically checked by pspwm module on reactivation
+        if (aux_hw_drv.state.hw_overtemp) {
+            ESP_LOGE(TAG, "Overtemperature shutdown still active!");
+            return;
+        }
         if (state.setpoint_throttling_enabled) {
             // Begin with duty = 0.0 for soft start
             // state.pspwm_setpoint->ps_duty = n;
@@ -187,13 +193,31 @@ void AppController::trigger_oneshot() {
 
 // The output is /not/ enabled again, it must be re-enabled explicitly.
 void AppController::clear_shutdown() {
-    // The timer callback generates a three-cycle reset pulse and
-    // sends a state_changed event when finished.
-    oc_reset_timer.start();
+    aux_hw_drv.state.hw_overtemp = false;
+    // This sets the aux_hw_drv.state.hw_overtemp flag back again should
+    // the temperature still be above limits.
+    aux_hw_drv.evaluate_temperature_sensors();
+    if (state.hw_oc_fault_occurred) {
+        // The timer callback generates a three-cycle reset pulse and
+        // sends a state_changed event when finished.
+        oc_reset_timer.start();
+    } else {
+        _send_state_changed_event();
+    }
 }
 
 void AppController::set_current_limit(float n) {
     aux_hw_drv.set_current_limit(n);
+    _send_state_changed_event();
+}
+
+void AppController::set_temp_1_limit(float n) {
+    aux_hw_drv.state.temp_1_limit = n;
+    _send_state_changed_event();
+}
+
+void AppController::set_temp_2_limit(float n) {
+    aux_hw_drv.state.temp_2_limit = n;
     _send_state_changed_event();
 }
 
@@ -224,7 +248,7 @@ void AppController::save_settings() {
 /* Read state back from SPI flash file and initialize the hardware
  * with these settings.
  * 
- * This is called on boot.
+ * Called on boot when the application task event loop is not yet running.
  */
 void AppController::restore_settings() {
     ESP_LOGI(TAG, "Restoring state from settings.json...");
@@ -235,9 +259,13 @@ void AppController::restore_settings() {
     set_lead_dt_ns(state.pspwm_setpoint->lead_red * 1E9f);
     set_lag_dt_ns(state.pspwm_setpoint->lag_red * 1E9f);
     set_current_limit(state.aux_hw_drv_state->current_limit);
+    set_temp_1_limit(state.aux_hw_drv_state->temp_1_limit);
+    set_temp_2_limit(state.aux_hw_drv_state->temp_2_limit);
     set_relay_ref_active(state.aux_hw_drv_state->relay_ref_active);
     set_relay_dut_active(state.aux_hw_drv_state->relay_dut_active);
     set_fan_override(state.aux_hw_drv_state->fan_override);
+    aux_hw_drv.update_temperature_sensors();
+    _evaluate_temperature_sensors();
     // There is no API for this at the moment, so this is always active..
     ESP_LOGI(TAG, "Activating Gate driver power supply...");
     aux_hw_drv.set_drv_supply_active(true);
@@ -340,6 +368,12 @@ void AppController::_register_http_api(APIServer* api_server) {
     // "set_current_limit"
     cb_float = [this](float n) {set_current_limit(n);};
     api_server->register_api_cb("set_current_limit", cb_float);
+    // "set_temp_1_limit"
+    cb_float = [this](float n) {set_temp_1_limit(n);};
+    api_server->register_api_cb("set_temp_1_limit", cb_float);
+    // "set_temp_2_limit"
+    cb_float = [this](float n) {set_temp_2_limit(n);};
+    api_server->register_api_cb("set_temp_2_limit", cb_float);
     // "set_relay_ref_active"
     cb_text = [this](const String &text) {set_relay_ref_active(text=="true");};
     api_server->register_api_cb("set_relay_ref_active", cb_text);
@@ -445,8 +479,8 @@ void AppController::_app_event_task(void *pVParameters) {
             self->_on_fast_timer_event_update_state();
         }
         if (flags.have(EventFlags::timer_slow)) {
+            self->_evaluate_temperature_sensors();
             self->_push_state_update();
-            self->aux_hw_drv.update_fan_state();
         }
         if (flags.have(EventFlags::state_changed)) {
             self->_push_state_update();
@@ -480,6 +514,17 @@ void AppController::_on_fast_timer_event_update_state() {
         if (values_differ) {
             _set_frequency_raw(state.pspwm_setpoint->frequency);
         }
+    }
+}
+
+/* Perform overtemperature shutdown if temperature limit exceeded
+ */
+void AppController::_evaluate_temperature_sensors() {
+    aux_hw_drv.evaluate_temperature_sensors();
+    if (aux_hw_drv.state.hw_overtemp) {
+        // aux_hw_drv.set_drv_disabled(true);
+        pspwm_disable_output(app_conf.mcpwm_num);
+        // State update is automatically pushed from slow timer loop
     }
 }
 

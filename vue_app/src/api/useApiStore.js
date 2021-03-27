@@ -6,7 +6,7 @@ import {
   AppWatchdog
 } from "./async_requests_sse.js";
 
-export default function useApiState() {
+export default function useApiStore() {
   const debug = ref(false);
   // Disable all controls by default, is enabled on watchdog reset
   const disabled = ref(true);
@@ -22,7 +22,7 @@ export default function useApiState() {
     frequency_min: 90.00,
     frequency_max: 110.00,
     duty_min: 0.0,
-    duty_max: 100.0,
+    duty_max: 95.0,
     // Operational setpoints for PSPWM module
     frequency: 100.00,
     frequency_changerate: 25.00,
@@ -67,8 +67,6 @@ export default function useApiState() {
         state[key] = new_state[key];
       }
     }
-    // Probably unsafe as it adds arbitrary new attributes from unsafe JSON
-    //Object.assign(this.state, new_state);
     // Some of the application state is re-computed when state update is received
     update_computed_values();
   }
@@ -92,7 +90,8 @@ export default function useApiState() {
   const app_watchdog = new AppWatchdog(1500, val => disabled.value = val);
   const sse_handler = new ServerSentEventHandler("/events", update_state, app_watchdog);
 
-  watch(debug, () => sse_handler.disable_reconnect_and_watchdog());
+  // When debug set to boolean true value, enable UI and disable auto-reconnect
+  watch(debug, val => sse_handler.disable_reconnect_and_watchdog(val));
 
   return {
     debug,

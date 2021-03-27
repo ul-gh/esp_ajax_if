@@ -90,6 +90,7 @@ class ServerSentEventHandler {
         this.watchdog = watchdog;
         // The backend SSE source
         this.source = null;
+        this.reconnect_timer_id = undefined;
         this.connect();
     }
 
@@ -103,39 +104,40 @@ class ServerSentEventHandler {
             console.log("Connecting Server-Sent Events...");
         }
         this.source = new EventSource(this.endpoint);
-        this.source.addEventListener(
-            // eslint-disable-next-line no-unused-vars
-            "open", e => console.log("Events Connected"), false);
-        this.source.addEventListener(
-            "error",
-            e => {
-                if (e.target.readyState != EventSource.OPEN) {
-                    console.log("Events Disconnected!");
-                    // Start Auto-Reconnect
-                    this.reconnect_timer_id = setTimeout(
-                        () => this.connect(), sse_reconnect_timeout);
-                }
-            },
-            false);
-        this.source.addEventListener(
-            "hw_app_state",
-            e => {
-                // Since app state update telegram is emitted
-                // periodically, we use this to reset the watchdog.
-                this.watchdog.reset();
-                const remote_state = JSON.parse(e.data);
-                this.callback(remote_state);
-            },
-            false);
+        this.source.addEventListener("open", e => console.log("Events Connected", e), false);
+        this.source.addEventListener("error", e => this.on_error(e), false);
+        this.source.addEventListener("hw_app_state", e => this.on_hw_app_state(e), false);
     }
-    
+
     /** For debugging, disable reconnect feature cluttering the console.
      * Also disables the app watchdog.
      */
-    disable_reconnect_and_watchdog() {
+    disable_reconnect_and_watchdog(bv) {
+      if (bv) {
         clearTimeout(this.reconnect_timer_id);
+        this.source.removeEventListener("error", this.on_error);
         this.watchdog.disable();
+      } else {
+        this.connect();
+        this.watchdog.enable();
+      }
     }
+
+    on_hw_app_state(e) {
+        // Since app state update telegram is emitted
+        // periodically, we use this to reset the watchdog.
+        this.watchdog.reset();
+        const remote_state = JSON.parse(e.data);
+        this.callback(remote_state);
+    }
+
+    on_error(e) {
+      if (e.target.readyState != EventSource.OPEN) {
+        console.log("Events Disconnected!");
+        // Start Auto-Reconnect
+        this.reconnect_timer_id = setTimeout(() => this.connect(), sse_reconnect_timeout);
+    }
+  }
 }
 
 

@@ -29,9 +29,11 @@ size_t AppState::serialize_full_state(char *buf, size_t buf_len) {
     json_doc["frequency_min"] = frequency_min * 1e-3f;
     json_doc["frequency_max"] = frequency_max * 1e-3f;
     // Operational setpoints for PSPWM module
-    json_doc["frequency"] = frequency_target * 1e-3f;
+    json_doc["frequency"] = pspwm_setpoint->frequency * 1e-3f;
+    //json_doc["frequency"] = frequency_target * 1e-3f;
     json_doc["frequency_changerate"] = frequency_increment / app_conf.timer_fast_interval_ms;
-    json_doc["duty"] = duty_target * 100.0f;
+    json_doc["duty"] = pspwm_setpoint->ps_duty * 100.0f;
+    //json_doc["duty"] = duty_target * 100.0f;
     json_doc["duty_changerate"] = duty_increment * 1e5f / app_conf.timer_fast_interval_ms;
     json_doc["lead_dt"] = pspwm_setpoint->lead_red * 1e9f;
     json_doc["lag_dt"] = pspwm_setpoint->lag_red * 1e9f;
@@ -41,8 +43,10 @@ size_t AppState::serialize_full_state(char *buf, size_t buf_len) {
     json_doc["relay_ref_active"] = aux_hw_drv_state->relay_ref_active;
     json_doc["relay_dut_active"] = aux_hw_drv_state->relay_dut_active;
     // Temperatures and fan
-    json_doc["temp_1"] = aux_hw_drv_state->aux_temp;
-    json_doc["temp_2"] = aux_hw_drv_state->heatsink_temp;
+    json_doc["temp_1"] = aux_hw_drv_state->temp_1;
+    json_doc["temp_2"] = aux_hw_drv_state->temp_2;
+    json_doc["temp_1_limit"] = aux_hw_drv_state->temp_1_limit;
+    json_doc["temp_2_limit"] = aux_hw_drv_state->temp_2_limit;
     json_doc["fan_active"] = aux_hw_drv_state->fan_active;
     json_doc["fan_override"] = aux_hw_drv_state->fan_override;
     // Clock divider settings
@@ -51,10 +55,10 @@ size_t AppState::serialize_full_state(char *buf, size_t buf_len) {
     // Gate driver supply and disable signals
     json_doc["drv_supply_active"] = aux_hw_drv_state->drv_supply_active;
     json_doc["drv_disabled"] = aux_hw_drv_state->drv_disabled;
-    // True when hardware OC shutdown condition is present
-    json_doc["hw_oc_fault_present"] = hw_oc_fault_present;
     // Hardware Fault Shutdown Status is latched using this flag
-    json_doc["hw_oc_fault_occurred"] = hw_oc_fault_occurred;
+    json_doc["hw_oc_fault"] = hw_oc_fault_occurred;
+    // Overtemperature shutdown active flag
+    json_doc["hw_overtemp"] = aux_hw_drv_state->hw_overtemp;
     // Length of the power output one-shot timer pulse
     json_doc["oneshot_len"] = oneshot_power_pulse_length_ms * 1e-3f;
     // Do the serialization
@@ -88,6 +92,8 @@ bool AppState::deserialize_settings(const char *buf, size_t buf_len) {
     pspwm_setpoint->lag_red = float{json_doc["lag_dt"]} * 1e-9f;
     // Settings for auxiliary HW control module
     aux_hw_drv_state->current_limit = float{json_doc["current_limit"]};
+    aux_hw_drv_state->temp_1_limit = float{json_doc["temp_1_limit"]};
+    aux_hw_drv_state->temp_2_limit = float{json_doc["temp_2_limit"]};
     aux_hw_drv_state->relay_ref_active = json_doc["relay_ref_active"];
     aux_hw_drv_state->relay_dut_active = json_doc["relay_dut_active"];
     // Temperatures and fan

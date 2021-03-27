@@ -26,18 +26,19 @@ struct AppState
     /** ATTENTION!
      * Following constants need to be adapted if JSON object size is changed!
      */
-    static constexpr size_t _json_objects_size = JSON_OBJECT_SIZE(27);
+    static constexpr size_t _json_objects_size = JSON_OBJECT_SIZE(29);
     static constexpr size_t _strings_size = sizeof(
         "setpoint_throttling_enabled"
         "frequency_min_hw""frequency_max_hw""dt_sum_max_hw"
         "frequency_min""frequency_max"
         "frequency""frequency_changerate""duty""duty_changerate"
         "lead_dt""lag_dt""power_pwm_active"
-        "current_limit""relay_ref_active""relay_dut_active"
-        "aux_temp""heatsink_temp""fan_active""fan_override"
+        "current_limit""temp_1_limit""temp_2_limit"
+        "relay_ref_active""relay_dut_active"
+        "temp_1""temp_2""fan_active""fan_override"
         "base_div""timer_div"
         "drv_supply_active""drv_disabled"
-        "hw_oc_fault_present""hw_oc_fault_occurred"
+        "hw_oc_fault""hw_overtemp"
         "oneshot_len"
         );
     // Prevent buffer overflow even if above calculations are wrong...
@@ -63,7 +64,7 @@ struct AppState
     float duty_increment = 0.05f;
     // True when hardware OC shutdown condition is currently present
     bool hw_oc_fault_present = true;
-    // Hardware Fault Shutdown Status is latched using this flag
+    // Hardware Overcurrent Fault Shutdown Status is latched using this flag
     bool hw_oc_fault_occurred = true;
     // Pulse length for one-shot mode power output pulse
     uint32_t oneshot_power_pulse_length_ms = 1;

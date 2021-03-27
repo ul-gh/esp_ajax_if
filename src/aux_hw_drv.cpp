@@ -114,31 +114,35 @@ void AuxHwDrv::reset_oc_shutdown_finish() {
 
 /* Get temperature sensor values via ADC, updates respective public attributes
  *
- * To be called periodically from PsPWMAppHwControl fast timer event.
- * 
+ * To be called periodically from fast timer event.
  */
 void AuxHwDrv::update_temperature_sensors() {
-    sensor_aux_temp.update_filter();
-    sensor_heatsink_temp.update_filter();
-    state.aux_temp = sensor_aux_temp.get_temp_pwl();
-    state.heatsink_temp = sensor_heatsink_temp.get_temp_pwl();
+    sensor_temp_1.update_filter();
+    sensor_temp_2.update_filter();
+    state.temp_1 = sensor_temp_1.get_temp_pwl();
+    state.temp_2 = sensor_temp_2.get_temp_pwl();
 }
 
-/* Switch heatsink fan on or off depending on current temperature
+/* Check if temperature exceeds threshold values, switch fan and
+ * set overtemperature shutdown flag accordingly
  * 
  * To be called periodically from slow timer event
  */
-void AuxHwDrv::update_fan_state() {
-    auto new_state = state.fan_active;
-    if (       state.heatsink_temp >= aux_hw_conf.temp_threshold_heatsink_hi
-            || state.aux_temp >= aux_hw_conf.temp_threshold_aux_hi
-            || state.fan_override) {
-        new_state = true;
-    } else if (state.heatsink_temp < aux_hw_conf.temp_threshold_heatsink_lo
-               && state.aux_temp < aux_hw_conf.temp_threshold_aux_lo) {
-        new_state = false;
+void AuxHwDrv::evaluate_temperature_sensors() {
+    if (       state.temp_1 > state.temp_1_limit
+            || state.temp_2 > state.temp_2_limit) {
+        state.hw_overtemp = true;
     }
-    if (new_state != state.fan_active) {
-        set_fan_active(new_state);
+    auto fan_active = state.fan_active;
+    if (       state.temp_1 >= aux_hw_conf.temp_1_fan_threshold_hi
+            || state.temp_2 >= aux_hw_conf.temp_2_fan_threshold_hi
+            || state.fan_override) {
+        fan_active = true;
+    } else if (state.temp_1 < aux_hw_conf.temp_1_fan_threshold_lo
+               && state.temp_2 < aux_hw_conf.temp_2_fan_threshold_lo) {
+        fan_active = false;
+    }
+    if (fan_active != state.fan_active) {
+        set_fan_active(fan_active);
     }
 }
