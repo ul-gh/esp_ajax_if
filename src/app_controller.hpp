@@ -73,13 +73,14 @@ public:
 
     void set_frequency_min_khz(float n);
     void set_frequency_max_khz(float n);
-
     void set_frequency_khz(float n);
     /** @brief Set rate of change of frequency in kHz per second
      */
     void set_frequency_changerate_khz_sec(float n);
     void _set_frequency_raw(float n);
 
+    void set_duty_min_percent(float n);
+    void set_duty_max_percent(float n);
     void set_duty_percent(float n);
     /** @brief Set rate of change of duty cycle in percent per second
      */
@@ -87,7 +88,6 @@ public:
     void _set_duty_raw(float n);
 
     void set_lag_dt_ns(float n);
-
     void set_lead_dt_ns(float n);
 
     /** @brief Activate PWM power output if arg is true

@@ -9,9 +9,8 @@
  * knob rotation angle is always kept in sync.
  * 
  * Automatic switchover between manual editing mode and visual state
- * representation, including a timeout timer, allows smooth manual control
- * even in the presence of asynchronous/simultaneous updates of the displayed
- * property value.
+ * representation allows smooth manual control even in the presence
+ * of simultaneously incoming updates of the "value_feedback" property.
  *
  * 2021-03-26 Ulrich Lukas
  * License: GPL v.3
@@ -39,9 +38,11 @@ import JogDial from "../../js_modules/JogDial.js/jogDial.js";
 export default {
   name: "LiveJogDial",
   setup() {
+    // Set-up of non-reactive variables
     return {
-      timeout_timer_id: undefined,
       jog_dial: undefined,
+      // Prevent JogDial events when setting angle value programmatically
+      events_inhibited: true,
     };
   },
   data() {
@@ -49,7 +50,6 @@ export default {
       value: 0.0,
       editing: false,
       bar_width_fmt: "0%", // CSS attribute value, set by set_value()
-      events_inhibited: true, // Prevent events when setting value programmatically
     };
   },
   props: {
@@ -63,10 +63,6 @@ export default {
     digits: {default: undefined, type: Number},
     // Number of turns of the dial control
     n_turns: {default: 5, type: Number},
-    // Timeout for automatic termination of manual editing mode at standstill.
-    // This should be slightly larger than the maximum expected request
-    // round-trip cycle time to have a most up-to-date value display.
-    timeout_ms: {default: 750, type: Number},
     // Input is blocked and no events are emitted when disabled
     disabled: {default: false, type: Boolean}
   },
@@ -112,7 +108,7 @@ export default {
         this.set_value(this.value);
     },
     on_dial_mousedown(_) {
-      // Prevent view updates from happening while control is being operated
+      // Prevent async view updates from happening while control is being operated
       this.editing = true;
     },
     on_dial_mousemove(e) {
@@ -124,16 +120,14 @@ export default {
           this.set_value(this.value);
           return;
       }
-      // Prevent view updates from happening while control is being operated
       this.editing = true;
       const scale_factor = e.target.rotation / (360 * this.n_turns);
+      // Uncomment to have the bar graph display the setpoint instead of the
+      // feedback value while the wheel is being operated
       //this.bar_width_fmt = `${(100 * scale_factor).toFixed(0)}%`;
       let val = this.min + scale_factor * (this.max - this.min);
       val = this.digits === undefined ? val : Number(val.toFixed(this.digits));
       this.$emit("action_triggered", this.change_action, val);
-      //clearTimeout(this.timeout_timer_id_id);
-      // Vue auto-binds "this" instance to methods, no need for arrow function etc..
-      //this.timeout_timer_id_id = setTimeout(this.leave_edit_mode, this.timeout_ms);
     },
     on_dial_mouseup(_) {
       this.leave_edit_mode();
@@ -142,14 +136,13 @@ export default {
   emits: ["action_triggered"],
   mounted() {
     console.log(this.foo);
-    const init_options = {
-        debug: false,
-        wheelSize: "200px",
-        knobSize: "70px",
-        minDegree: 0,
-        maxDegree: this.n_turns * 360,
-        touchMode: "knob",
-    };
+    const init_options = {debug: false,
+                          wheelSize: "200px",
+                          knobSize: "70px",
+                          minDegree: 0,
+                          maxDegree: this.n_turns * 360,
+                          touchMode: "knob",
+                          };
     this.jog_dial = JogDial(this.$el.firstElementChild, init_options);
     this.set_value(this.value_feedback);
   },
@@ -158,12 +151,12 @@ export default {
 
 <style scoped>
 :deep(.live_jog_dial) {
-    -webkit-touch-callout: none;
-    -webkit-user-select: none;
-    -khtml-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 
 :deep(.jog_dial) {

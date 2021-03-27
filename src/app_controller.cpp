@@ -122,8 +122,17 @@ void AppController::_set_frequency_raw(float n) {
     _send_state_changed_event();
 }
 
+void AppController::set_duty_min_percent(float n) {
+    state.duty_min = n * 0.01f;
+    _send_state_changed_event();
+}
+void AppController::set_duty_max_percent(float n) {
+    state.duty_max = n * 0.01f;
+    _send_state_changed_event();
+}
 void AppController::set_duty_percent(float n) {
-    state.duty_target = n*0.01f;
+    auto d_requested = std::max(n*0.01f, state.duty_min);
+    state.duty_target = std::min(d_requested, state.duty_max);
     if (!state.setpoint_throttling_enabled) {
         _set_duty_raw(state.duty_target);
     }
@@ -254,13 +263,12 @@ void AppController::restore_settings() {
     ESP_LOGI(TAG, "Restoring state from settings.json...");
     state.restore_from_file(app_conf.settings_filename);
     // We only need to run the setters for properties which affect the hardware.
+    // Again: Other values are polled and need no further setting..
     set_frequency_khz(state.frequency_target * 1E-3f);
     set_duty_percent(state.duty_target * 100.0f);
     set_lead_dt_ns(state.pspwm_setpoint->lead_red * 1E9f);
     set_lag_dt_ns(state.pspwm_setpoint->lag_red * 1E9f);
     set_current_limit(state.aux_hw_drv_state->current_limit);
-    set_temp_1_limit(state.aux_hw_drv_state->temp_1_limit);
-    set_temp_2_limit(state.aux_hw_drv_state->temp_2_limit);
     set_relay_ref_active(state.aux_hw_drv_state->relay_ref_active);
     set_relay_dut_active(state.aux_hw_drv_state->relay_dut_active);
     set_fan_override(state.aux_hw_drv_state->fan_override);
@@ -341,6 +349,12 @@ void AppController::_register_http_api(APIServer* api_server) {
     // "set_frequency_changerate"
     cb_float = [this](float n) {set_frequency_changerate_khz_sec(n);};
     api_server->register_api_cb("set_frequency_changerate", cb_float);
+    // "set_duty_min"
+    cb_float = [this](float n) {set_duty_min_percent(n);};
+    api_server->register_api_cb("set_duty_min", cb_float);
+    // "set_duty_max"
+    cb_float = [this](float n) {set_duty_max_percent(n);};
+    api_server->register_api_cb("set_duty_max", cb_float);
     // "set_duty"
     cb_float = [this](float n) {set_duty_percent(n);};
     api_server->register_api_cb("set_duty", cb_float);

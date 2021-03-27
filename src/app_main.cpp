@@ -27,6 +27,7 @@
 #include "api_server.hpp"
 #include "app_controller.hpp"
 
+#undef LOG_LOCAL_LEVEL
 #define LOG_LOCAL_LEVEL ESP_LOG_DEBUG
 #include "esp_log.h"
 static auto TAG = "app_main";

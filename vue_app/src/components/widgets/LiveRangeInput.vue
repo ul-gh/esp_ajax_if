@@ -7,9 +7,8 @@
  * its reactive "value_feedback" property value by the current slider position.
  * 
  * Automatic switchover between manual editing mode and visual state
- * representation, including a timeout timer, allows smooth manual control
- * even in the presence of asynchronous/simultaneous updates of the displayed
- * property value.
+ * representation allows smooth manual control even in the presence
+ * of simultaneously incoming updates of the "value_feedback" property.
  *
  * 2021-03-26 Ulrich Lukas
  * License: GPL v.3
@@ -35,9 +34,7 @@
 export default {
   name: "LiveRangeInput",
   setup() {
-    return {
-      timeout_timer_id: undefined,
-    };
+    return {};
   },
   data() {
     return {
@@ -54,8 +51,6 @@ export default {
     max: Number,
     // Decimal digits precision for output value rounding and slider step size
     digits: {default: 0, type: Number},
-    // Specify request round-trip or periodic update time to prevent flicker on input
-    timeout_ms: {default: 750, type: Number},
     // Input is blocked and no events are emitted when disabled
     disabled: {default: false, type: Boolean},
   },
@@ -76,10 +71,8 @@ export default {
       // Set editing state of input, prevent view updates from happening
       this.editing = true;
       this.$emit("action_triggered", this.change_action, Number(e.target.value));
-      //this.start_timeout(this.timeout_ms);
     },
     on_change(_) {
-      //this.start_timeout(this.timeout_ms);
       this.leave_edit_mode();
     },
     start_timeout(t_ms) {

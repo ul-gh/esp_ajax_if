@@ -26,21 +26,41 @@ struct AppState
     /** ATTENTION!
      * Following constants need to be adapted if JSON object size is changed!
      */
-    static constexpr size_t _json_objects_size = JSON_OBJECT_SIZE(29);
     static constexpr size_t _strings_size = sizeof(
         "setpoint_throttling_enabled"
-        "frequency_min_hw""frequency_max_hw""dt_sum_max_hw"
-        "frequency_min""frequency_max"
-        "frequency""frequency_changerate""duty""duty_changerate"
-        "lead_dt""lag_dt""power_pwm_active"
-        "current_limit""temp_1_limit""temp_2_limit"
-        "relay_ref_active""relay_dut_active"
-        "temp_1""temp_2""fan_active""fan_override"
-        "base_div""timer_div"
-        "drv_supply_active""drv_disabled"
-        "hw_oc_fault""hw_overtemp"
+        "base_div"
+        "timer_div"
+        "frequency_min_hw"
+        "frequency_max_hw"
+        "frequency_min"
+        "frequency_max"
+        "frequency"
+        "frequency_changerate"
+        "duty_min"
+        "duty_max"
+        "duty"
+        "duty_changerate"
+        "dt_sum_max_hw"
+        "lead_dt"
+        "lag_dt"
+        "current_limit"
+        "temp_1_limit"
+        "temp_2_limit"
+        "temp_1"
+        "temp_2"
+        "fan_active"
+        "fan_override"
+        "relay_ref_active"
+        "relay_dut_active"
+        "drv_supply_active"
+        "drv_disabled"
+        "power_pwm_active"
+        "hw_oc_fault"
+        "hw_overtemp"
         "oneshot_len"
         );
+    // JSON_OBJECT_SIZE is provided with the number of properties as from above
+    static constexpr size_t _json_objects_size = JSON_OBJECT_SIZE(31);
     // Prevent buffer overflow even if above calculations are wrong...
     static constexpr size_t I_AM_SCARED_MARGIN = 50;
     static constexpr size_t json_buf_len = _json_objects_size
@@ -60,6 +80,8 @@ struct AppState
     // Runtime setpoints and throttling increment per fast event timer interval
     float frequency_target = 100.0E3f;
     float frequency_increment = 500.0f;
+    float duty_min = 0.0f;
+    float duty_max = 0.8f;
     float duty_target = 0.0f;
     float duty_increment = 0.05f;
     // True when hardware OC shutdown condition is currently present

@@ -55,8 +55,10 @@ export default {
     max: Number,
     // Decimal digits precision for value rounding
     digits: {default: 0, type: Number},
-    // Timeout for automatic termination of manual editing mode at standstill.
-    // This should be slightly larger than the maximum expected request
+    // Without this timeout, editing the value using the up/down buttons is
+    // immediately followed by a reset to the value_feedback property.
+    // This makes incremental changes very sluggish.
+    // This timeout should be slightly larger than the maximum expected request
     // round-trip cycle time to have a most up-to-date value display.
     timeout_ms: {default: 750, type: Number},
     // Longer timeout useful when value is being edited by keyboard/cursor
@@ -84,11 +86,15 @@ export default {
       this.start_timeout(this.edit_timeout_ms);
     },
     on_change(e) {
-      this.$emit("action_triggered", this.change_action, Number(e.target.value));
+      let val = parseFloat(e.target.value);
+      if (val !== NaN) {
+        val = Math.min(this.max, Math.max(this.min, val));
+        this.$emit("action_triggered", this.change_action, val);
+      }
       this.start_timeout(this.timeout_ms);
     },
     on_blur(_) {
-      this.start_timeout(this.timeout_ms);
+      this.leave_edit_mode();
     },
     // Also called on blur event of the original input
     start_timeout(t_ms) {
