@@ -103,7 +103,7 @@ void APIServer::_add_rewrites() {
 // Add Request URL rewrites to the server instance
 void APIServer::_add_redirects() {
     backend->on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
-        request->redirect(srv_conf.index_html_file);
+        request->redirect(srv_conf.app_route);
         });
 }
 
@@ -119,6 +119,16 @@ void APIServer::_add_handlers() {
         },
         _on_update_body_upload
         );
+
+    // All sub-routes of app URI are served the main index.html file
+    char app_catchall[2+strlen(srv_conf.app_route)];
+    strcpy(app_catchall, srv_conf.app_route);
+    strcat(app_catchall, "*");
+    auto handler = &backend->serveStatic(app_catchall, SPIFFS, srv_conf.index_html_file);
+    handler->setCacheControl(srv_conf.cache_control);
+    if (srv_conf.http_auth_activated) {
+        handler->setAuthentication(srv_conf.http_user, srv_conf.http_pass);
+    }
 
     // Serve static HTML and related files content
     if (srv_conf.serve_static_from_spiffs) {
