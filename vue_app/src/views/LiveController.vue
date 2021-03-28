@@ -326,11 +326,11 @@
 </template>
 
 <script>
-import LiveColorIndicatorBtn from './widgets/LiveColorIndicatorBtn.vue'
-import LiveToggleSwitch from './widgets/LiveToggleSwitch.vue';
-import LiveNumberInput from './widgets/LiveNumberInput.vue';
-import LiveRangeInput from './widgets/LiveRangeInput.vue';
-import LiveJogDial from './widgets/LiveJogDial.vue';
+import LiveColorIndicatorBtn from '~@/widgets/LiveColorIndicatorBtn.vue'
+import LiveToggleSwitch from '~@/widgets/LiveToggleSwitch.vue';
+import LiveNumberInput from '~@/widgets/LiveNumberInput.vue';
+import LiveRangeInput from '~@/widgets/LiveRangeInput.vue';
+import LiveJogDial from '~@/widgets/LiveJogDial.vue';
 
 export default {
   name: "LiveController",

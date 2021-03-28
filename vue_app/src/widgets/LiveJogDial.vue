@@ -33,7 +33,7 @@
 <script>
 // https://github.com/ul-gh/JogDial.js: Fork of https://github.com/ohsiwon/JogDial.js
 // setting HTML element class instead of id attribute for multiple instances
-import JogDial from "../../js_modules/JogDial.js/jogDial.js";
+import JogDial from "@/ext_modules/JogDial.js/";
 
 export default {
   name: "LiveJogDial",
