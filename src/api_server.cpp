@@ -14,7 +14,7 @@
 #include "http_content.hpp"
 
 #undef LOG_LOCAL_LEVEL
-#define LOG_LOCAL_LEVEL ESP_LOG_DEBUG
+#define LOG_LOCAL_LEVEL ESP_LOG_INFO
 #include "esp_log.h"
 static const char* TAG = "APIServer";
 
@@ -113,12 +113,9 @@ void APIServer::_add_rewrites() {
 
 // Add Request URL rewrites to the server instance
 void APIServer::_add_redirects() {
-    backend->on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
-        request->redirect(srv_conf.index_html_file);
-        });
-    backend->on(srv_conf.app_route, HTTP_GET, [](AsyncWebServerRequest *request) {
-        request->redirect(srv_conf.index_html_file);
-        });
+    //backend->on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
+    //    request->redirect(srv_conf.index_html_file);
+    //    });
 }
 
 // Add request handlers to the server instance

@@ -31,8 +31,8 @@
           <button
             v-for="(tab, index) in tabs"
             :key="index"
-            :class="['tab-button', { active: current_tab === tab }]"
-            @click="open_tab(tab)"
+            :class="['tab-button', { active: $route.path === tab.path }]"
+            @click="open_tab(tab.path)"
           >
             {{ tab.name }}
           </button>
@@ -45,7 +45,7 @@
       </li>
       <li class="grid_item">
         <router-view
-          :ref="current_tab.name"
+          :ref="$route.name"
           :state="state"
           :disabled="disabled"
           @action="dispatch_action"
@@ -95,16 +95,14 @@ export default {
   data() {
     // All named routes defined in router/index.js (We omit the catch-all-route)
     const tabs = this.$router.options.routes.filter(r => r.hasOwnProperty('name'));
-    const current_tab = tabs.find(tab => tab.path === this.$route.path);
+    //const tab_paths = routes.map(route => route.path);
     return {
       tabs,
-      current_tab,
     };
   },
   methods: {
-    open_tab(route) {
-      this.current_tab = route;
-      this.$router.push(route);
+    open_tab(path) {
+      this.$router.push(path);
     },
   },
 };
