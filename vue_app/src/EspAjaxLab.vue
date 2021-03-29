@@ -95,9 +95,10 @@ export default {
   data() {
     // All named routes defined in router/index.js (We omit the catch-all-route)
     const tabs = this.$router.options.routes.filter(r => r.hasOwnProperty('name'));
+    const current_tab = tabs.find(tab => tab.path === this.$route.path);
     return {
       tabs,
-      current_tab: tabs[0],
+      current_tab,
     };
   },
   methods: {
