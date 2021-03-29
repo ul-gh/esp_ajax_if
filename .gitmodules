@@ -13,3 +13,6 @@
 [submodule "util/esp32"]
 	path = util/esp32_svd
 	url = https://github.com/esp-rs/esp32.git
+[submodule "vue_app/src/ext_modules/JogDial.js"]
+	path = vue_app/src/ext_modules/JogDial.js
+	url = https://github.com/ul-gh/JogDial.js
