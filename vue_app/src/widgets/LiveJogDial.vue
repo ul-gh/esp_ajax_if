@@ -33,7 +33,7 @@
 <script>
 // https://github.com/ul-gh/JogDial.js: Fork of https://github.com/ohsiwon/JogDial.js
 // setting HTML element class instead of id attribute for multiple instances
-import JogDial from "@/ext_modules/JogDial.js/";
+import JogDial from "@/ext_modules/JogDial.js/jogDial.js";
 
 export default {
   name: "LiveJogDial",
@@ -101,7 +101,6 @@ export default {
         this.jog_dial.angle(scale_factor * this.n_turns * 360);
         this.events_inhibited = false;
       }
-
     },
     leave_edit_mode() {
         this.editing = false;

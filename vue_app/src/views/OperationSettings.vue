@@ -299,9 +299,9 @@
 </template>
 
 <script>
-import LiveColorIndicatorBtn from '~@/widgets/LiveColorIndicatorBtn.vue'
-import LiveToggleSwitch from '~@/widgets/LiveToggleSwitch.vue';
-import LiveNumberInput from '~@/widgets/LiveNumberInput.vue';
+import LiveColorIndicatorBtn from '@/widgets/LiveColorIndicatorBtn.vue'
+import LiveToggleSwitch from '@/widgets/LiveToggleSwitch.vue';
+import LiveNumberInput from '@/widgets/LiveNumberInput.vue';
 
 
 export default {

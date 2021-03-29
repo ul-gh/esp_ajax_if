@@ -29,12 +29,12 @@
       <li class="grid_item">
         <span class="tab-bar">
           <button
-            v-for="(title, key) in tabs"
-            :key="key"
-            :class="['tab-button', { active: current_tab === key }]"
-            @click="current_tab = key"
+            v-for="(tab, index) in tabs"
+            :key="index"
+            :class="['tab-button', { active: current_tab === tab }]"
+            @click="open_tab(tab)"
           >
-            {{ title }}
+            {{ tab.name }}
           </button>
           <!--
           <button class="tab-button tab-spacer">
@@ -44,24 +44,22 @@
         </span>
       </li>
       <li class="grid_item">
-        <component
-          :is="current_tab"
-          :ref="current_tab"
+        <router-view
+          :ref="current_tab.name"
           :state="state"
           :disabled="disabled"
           @action="dispatch_action"
-        >
-        </component>
+        />
       </li>
     </span>
   </ul>
 </template>
 
 <script>
-import LiveController from "./components/LiveController.vue";
-import OperationSettings from "./components/OperationSettings.vue";
-import HelpDocumentation from "./components/HelpDocumentation.vue";
-import NetworkAndUpdate from "./components/NetworkAndUpdate.vue";
+import LiveController from "./views/LiveController.vue";
+import OperationSettings from "./views/OperationSettings.vue";
+import HelpDocumentation from "./views/HelpDocumentation.vue";
+import NetworkAndUpdate from "./views/NetworkAndUpdate.vue";
 
 import useApiStore from "./api/useApiStore.js";
 
@@ -95,15 +93,18 @@ export default {
             };
   },
   data() {
+    // All named routes defined in router/index.js (We omit the catch-all-route)
+    const tabs = this.$router.options.routes.filter(r => r.hasOwnProperty('name'));
     return {
-      tabs: {
-        "LiveController": "Live HW Control",
-        "OperationSettings": "Operation Settings",
-        "HelpDocumentation": "Help / Documentation",
-        "NetworkAndUpdate": "Network and Update",
-      },
-      current_tab: "LiveController",
+      tabs,
+      current_tab: tabs[0],
     };
+  },
+  methods: {
+    open_tab(route) {
+      this.current_tab = route;
+      this.$router.push(route);
+    },
   },
 };
 </script>

@@ -5,14 +5,13 @@ struct APIServerConfig
     bool serve_static_from_spiffs = true;
     // Name of the SPIFFS subfolder storing the static files. Default is "www"
     const char* spiffs_static_files_folder = "www";
-    // The name of the URL route for static file content. Default is "/static/".
-    const char* static_route = "/s/";
-    // Application main page route. Server root ("/") is redirected here.
-    // All sub-routes will also be served above index.html file.
-    const char* app_route = "/app";
-    // Main page / main application HTML file.
+    // The name of the URL route for static file content. Default is "/".
+    const char* static_route = "/";
+    // Route for which all sub-routes should be served the same index.html file
+    const char* app_route = "/app*";
+    // Main page / main application HTML file (public location not SPIFFS path).
     // Served when application route or sub-routes are requested.
-    const char* index_html_file = "/s/index.html";
+    const char* index_html_file = "/index.html";
     // Add to static file responses a CacheControl header.
     // Default is "public, max-age=86400" which instructs remote clients to
     // normally not request again for the specified time in seconds (one day).

@@ -14,7 +14,7 @@
 #include "http_content.hpp"
 
 #undef LOG_LOCAL_LEVEL
-#define LOG_LOCAL_LEVEL ESP_LOG_INFO
+#define LOG_LOCAL_LEVEL ESP_LOG_DEBUG
 #include "esp_log.h"
 static const char* TAG = "APIServer";
 
@@ -96,14 +96,17 @@ void APIServer::register_api_cb(const char* cmd_name, CbVoidT cmd_callback) {
 
 // Add Request URL rewrites to the server instance
 void APIServer::_add_rewrites() {
-   //auto rewrite = new AsyncWebRewrite("/foo.html", "/bar.html");
+   //auto rewrite = new AsyncWebRewrite("/app*", srv_conf.index_html_file);
    //backend->addRewrite(rewrite);
 }
 
 // Add Request URL rewrites to the server instance
 void APIServer::_add_redirects() {
     backend->on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
-        request->redirect(srv_conf.app_route);
+        request->redirect(srv_conf.index_html_file);
+        });
+    backend->on(srv_conf.app_route, HTTP_GET, [](AsyncWebServerRequest *request) {
+        request->redirect(srv_conf.index_html_file);
         });
 }
 
@@ -120,20 +123,12 @@ void APIServer::_add_handlers() {
         _on_update_body_upload
         );
 
-    // All sub-routes of app URI are served the main index.html file
-    char app_catchall[2+strlen(srv_conf.app_route)];
-    strcpy(app_catchall, srv_conf.app_route);
-    strcat(app_catchall, "*");
-    auto handler = &backend->serveStatic(app_catchall, SPIFFS, srv_conf.index_html_file);
-    handler->setCacheControl(srv_conf.cache_control);
-    if (srv_conf.http_auth_activated) {
-        handler->setAuthentication(srv_conf.http_user, srv_conf.http_pass);
-    }
-
     // Serve static HTML and related files content
     if (srv_conf.serve_static_from_spiffs) {
-        auto handler = &backend->serveStatic(
-            srv_conf.static_route, SPIFFS, srv_conf.spiffs_static_files_folder);
+        auto handler = &backend->serveStatic(srv_conf.static_route,
+                                             SPIFFS,
+                                             srv_conf.spiffs_static_files_folder,
+                                             srv_conf.cache_control);
         //handler->setDefaultFile(srv_conf.index_html_file);
         if (srv_conf.template_processing_activated) {
             handler->setTemplateProcessor(
@@ -141,10 +136,6 @@ void APIServer::_add_handlers() {
                     return _template_processor(placeholder);
                 }
             );
-        } else {
-            // When no template processing is used, this is assumed to be all
-            // static files which do not change and can be cached indefinitely
-            handler->setCacheControl(srv_conf.cache_control);
         }
         if (srv_conf.http_auth_activated) {
             handler->setAuthentication(srv_conf.http_user, srv_conf.http_pass);

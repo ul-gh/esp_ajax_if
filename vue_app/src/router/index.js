@@ -1,17 +1,17 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import LiveController from "~@/views/LiveController.vue";
-import OperationSettings from "~@/views/OperationSettings.vue";
-import HelpDocumentation from "~@/views/HelpDocumentation.vue";
-import NetworkAndUpdate from "~@/views/NetworkAndUpdate.vue";
+import LiveController from "@/views/LiveController.vue";
+import OperationSettings from "@/views/OperationSettings.vue";
+import HelpDocumentation from "@/views/HelpDocumentation.vue";
+import NetworkAndUpdate from "@/views/NetworkAndUpdate.vue";
 
 const routes = [
   {
     path: '/app',
-    name: 'Live Controller',
+    name: 'Live HW Control',
     component: LiveController,
   },
   {
-    path: '/app/Operation Settings',
+    path: '/app/OperationSettings',
     name: 'Operation Settings',
     component: OperationSettings,
     // route level code-splitting
@@ -21,18 +21,23 @@ const routes = [
   },
   {
     path: '/app/HelpDocumentation',
-    name: 'Help',
+    name: 'Help / Documentation',
     component: HelpDocumentation,
   },
-
   {
     path: '/app/NetworkAndUpdate',
     name: 'Network and Update',
     component: NetworkAndUpdate,
   },
+  {
+    // Catch-all route
+    path: '/:pathMatch(.*)*',
+    redirect: '/app',
+  }
 ]
 
 const router = createRouter({
+  //base: "/app/",
   history: createWebHistory(process.env.BASE_URL),
   routes
 })

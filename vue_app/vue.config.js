@@ -7,7 +7,7 @@ const esp_ajax_if_compression_config = {
 };
 
 module.exports = {
-    publicPath: "/static/",
+    publicPath: "/",
     filenameHashing: false,
     chainWebpack(config) {       
         // Use GZIP compression, also in development mode
