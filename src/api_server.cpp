@@ -93,11 +93,22 @@ void APIServer::register_api_cb(const char* cmd_name, CbVoidT cmd_callback) {
 
 
 ////// Implementation
+class AsyncWebRewriteAppCatchall : public AsyncWebRewrite
+{
+public:
+    using AsyncWebRewrite::AsyncWebRewrite;
+    bool match(AsyncWebServerRequest *request) override {
+        return request->url().startsWith(from());
+    }
+};
 
 // Add Request URL rewrites to the server instance
 void APIServer::_add_rewrites() {
-   //auto rewrite = new AsyncWebRewrite("/app*", srv_conf.index_html_file);
-   //backend->addRewrite(rewrite);
+   auto rewrite_app = new AsyncWebRewriteAppCatchall(srv_conf.app_route,
+                                                     srv_conf.index_html_file);
+   auto rewrite_root = new AsyncWebRewrite("/", srv_conf.index_html_file);
+   backend->addRewrite(rewrite_app);
+   backend->addRewrite(rewrite_root);
 }
 
 // Add Request URL rewrites to the server instance

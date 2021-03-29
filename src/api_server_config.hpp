@@ -8,7 +8,7 @@ struct APIServerConfig
     // The name of the URL route for static file content. Default is "/".
     const char* static_route = "/";
     // Route for which all sub-routes should be served the same index.html file
-    const char* app_route = "/app*";
+    const char* app_route = "/app";
     // Main page / main application HTML file (public location not SPIFFS path).
     // Served when application route or sub-routes are requested.
     const char* index_html_file = "/index.html";
