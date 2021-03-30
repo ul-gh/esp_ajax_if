@@ -5,17 +5,17 @@
     font-size: 16px;
 }*/
 
-@media screen and (max-width: 670px) and (min-width: 501px) {
+@media screen and (max-width: 670px) {
     html {
-        font-size: 13px;
+        font-size: 15px;
     }
 }
 
-@media screen and (max-width: 500px) {
+/*@media screen and (max-width: 500px) {
     html {
         font-size: 10px;
     }
-}
+}*/
 
 body {
     font-size: 1rem;
@@ -26,6 +26,7 @@ body {
 }
 
 ul.grid_container {
+    width: 100%;
     display: grid;
     list-style: none;
     padding: 0;
@@ -114,7 +115,7 @@ td {
 
 td {
     height: 100%;
-    min-width: 12rem;
+    min-width: 8rem;
 }
 
 input {

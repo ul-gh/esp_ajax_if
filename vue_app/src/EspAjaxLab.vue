@@ -116,10 +116,11 @@ img {
   margin: auto;
   margin-bottom: 1rem;
   display: block;
-  width: 28rem;
-  height: 3rem;
+  width: 22rem;
+  height: 2.5rem;
 }
 ul.grid_container {
+  width: 100%;
   display: grid;
   list-style: none;
   padding: 0;
@@ -133,6 +134,7 @@ ul.grid_container {
 }
 
 .tab-dimensions{
+  width: 100%;
   background: #e0e0e0;
   /* background-color: #e4f0f5; */
   border: 3px solid #f0f0f0;

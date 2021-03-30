@@ -13,14 +13,14 @@
           </thead>
           <tbody>
             <tr>
-              <th>Network Connection</th>
-              <th>Power Output State</th>
-              <th>HW Error Shutdown</th>
+              <th>Network</th>
+              <th>Power Output</th>
+              <th>HW Error</th>
             </tr>
             <tr>
               <td>
                 <LiveColorIndicatorBtn
-                  inactive_text="OK"
+                  inactive_text="Connected OK"
                   :disabled_text="'No Connection\nto Hardware!'"
                   disabled_color="rgb(250, 84, 84)"
                   :disabled="disabled"
@@ -29,8 +29,8 @@
               <td>
                 <LiveColorIndicatorBtn
                   :value_feedback="state.power_pwm_active"
-                  inactive_text="Power PWM OFF"
-                  active_text="Power PWM ON"
+                  inactive_text="PWM OFF"
+                  active_text="PWM ON"
                   active_color="red"
                   :disabled="disabled"
                 />
@@ -39,8 +39,8 @@
                 <LiveColorIndicatorBtn
                   change_action="clear_shutdown"
                   :value_feedback="Boolean(state.hw_error)"
-                  inactive_text="State: Normal"
-                  :active_text="`${state.hw_error}\nClick here to Reset!`"
+                  inactive_text="Normal"
+                  :active_text="`${state.hw_error}\nClick for Reset!`"
                   :disabled="disabled"
                   @action_triggered="dispatch_nv"
                 />
@@ -48,9 +48,9 @@
             </tr>
             <!-- Temperatures and FAN -->
             <tr>
-              <th>Heatsink 1 Temp</th>
-              <th>Heatsink 2 Temp</th>
-              <th>Fan Override ON</th>
+              <th>Temp 1</th>
+              <th>Temp 2</th>
+              <th>Fan Override</th>
             </tr>
             <tr>
               <td>
@@ -231,8 +231,8 @@
           <tbody>
             <tr>
               <th>Power PWM</th>
-              <th>REF/CAL Load</th>
-              <th>DUT Output</th>
+              <th>REF/CAL Out</th>
+              <th>DUT Out</th>
             </tr>
             <tr>
               <td>
@@ -375,7 +375,7 @@ export default {
     #btn_pwm_on {
         display: inline-block;
         font-size: 1.3rem;
-        padding: 0.8rem 1.3rem;
+        padding: 0.6rem 1rem;
         color: white;
         background-color: #4CAF50; /* Green */
     }
@@ -383,7 +383,7 @@ export default {
     #btn_pwm_off {
         display: inline-block;
         font-size: 1.3rem;
-        padding: 0.8rem 1.3rem;
+        padding: 0.6rem 0.85rem;
         color: white;
         background-color: red;
     }
@@ -391,7 +391,7 @@ export default {
     #btn_trigger_oneshot {
         display: inline-block;
         font-size: 1.3rem;
-        padding: 0.8rem 1.3rem;
+        padding: 0.6rem 1rem;
         color: white;
         background-color: orange;
     }
