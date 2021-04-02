@@ -7,12 +7,12 @@ import NetworkAndUpdate from "@/views/NetworkAndUpdate.vue";
 const routes = [
   {
     path: '/app',
-    name: 'Live HW Control',
+    name: 'Live Control',
     component: LiveController,
   },
   {
-    path: '/app/OperationSettings',
-    name: 'Operation Settings',
+    path: '/app/Settings',
+    name: 'Settings',
     component: OperationSettings,
     // route level code-splitting
     // this generates a separate chunk (about.[hash].js) for this route
@@ -20,13 +20,13 @@ const routes = [
     //component: () => import(/* webpackChunkName: "about" */ '../views/About.vue')
   },
   {
-    path: '/app/HelpDocumentation',
-    name: 'Help / Documentation',
+    path: '/app/Documentation',
+    name: 'Documentation',
     component: HelpDocumentation,
   },
   {
     path: '/app/NetworkAndUpdate',
-    name: 'Network and Update',
+    name: 'Network / Update',
     component: NetworkAndUpdate,
   },
   {

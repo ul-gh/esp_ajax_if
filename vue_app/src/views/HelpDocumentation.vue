@@ -7,18 +7,18 @@
     </h2>
     <br>
     <h3>
-      Online Documentation:
       <a href="https://ul-gh.github.io/esp_ajax_if/">
-        https://ul-gh.github.io/esp_ajax_if/
+        Online Documentation Pages
       </a>
     </h3>
     <br>
     <h3>
-      Github Project:
       <a href="https://github.com/ul-gh/esp_ajax_if/">
-        https://github.com/ul-gh/esp_ajax_if/
+        Github Project
       </a>
     </h3>
+    <p><br>2021-04-02  Ulrich Lukas
+    </p>
   </div>
 </template>
 
@@ -41,8 +41,7 @@ export default {
 <style scoped>
 .help_documentation {
   background-color: #e4f0f5;
-  margin-top: 0.5rem;
-  margin-bottom: 0.5rem;
+  padding-left: 0.5rem;
 }
 h2 {
   text-align: center;
@@ -50,10 +49,9 @@ h2 {
 }
 h3 {
   text-align: left;
-  margin-left: 0.5rem;
-  margin-bottom: 0rem;
+  margin: 0rem;
 }
-a {
+a,p {
   text-align: left;
 }
 </style>

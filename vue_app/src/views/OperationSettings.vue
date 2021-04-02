@@ -13,8 +13,8 @@
           </thead>
           <tbody>
             <tr>
-              <th>Overtemperature Limit<br>Heat Sink 1 [°C]</th>
-              <th>Overtemperature Limit<br>Heat Sink 2 [°C]</th>
+              <th>Overtemperature Limit<br>Sensor 1 [°C]</th>
+              <th>Overtemperature Limit<br>Sensor 2 [°C]</th>
             </tr>
             <tr>
               <td>
@@ -28,7 +28,8 @@
                       @action_triggered="dispatch_nv"
                   />
                   <span class="flex-stacked-calign">
-                    HW Limit:<br>Suggested: 50&nbsp;°C<br>(Sensor: 150&nbsp;°C..)
+                    Default: 50&nbsp;°C<br>
+                    (Max.: 150&nbsp;°C)
                   </span>
                 </span>
               </td>
@@ -43,7 +44,8 @@
                       @action_triggered="dispatch_nv"
                   />
                   <span class="flex-stacked-calign">
-                    HW Limit:<br>Suggested: 50&nbsp;°C<br>(Sensor: 150&nbsp;°C..)
+                    Default: 50&nbsp;°C<br>
+                    (Max.: 150&nbsp;°C)
                   </span>
                 </span>
               </td>
@@ -166,9 +168,9 @@
           </thead>
           <tbody>
             <tr>
-              <th>Lead (ZVS) DT [ns]</th>
-              <th>Lag (ZCS) DT [ns]</th>
-              <th>Hardware Limit [ns]</th>
+              <th>Lead (ZVS) [ns]</th>
+              <th>Lag (ZCS) [ns]</th>
+              <th>HW Limit [ns]</th>
             </tr>
             <tr>
               <td>
@@ -182,7 +184,8 @@
                       @action_triggered="dispatch_nv"
                   />
                   <span class="flex-stacked-calign">
-                    Min:<br>6&nbsp;ns
+                    Min:<br>
+                    6&nbsp;ns
                   </span>
                 </span>
               </td>
@@ -197,14 +200,15 @@
                       @action_triggered="dispatch_nv"
                   />
                   <span class="flex-stacked-calign">
-                    Min:<br>6&nbsp;ns
+                    Min:<br>
+                    6&nbsp;ns
                   </span>
                 </span>
               </td>
               <td>
                 <span class="flex-stacked-calign">
-                  <span>Lead + Lag Sum Max:</span>
-                  {{disabled ? "unknown.." : state.dt_sum_max_hw.toFixed(0)}}&nbsp;ns
+                  <span>Both Sum Max:</span>
+                  {{disabled ? "unknown" : state.dt_sum_max_hw.toFixed(0)}}&nbsp;ns
                 </span>
               </td>
             </tr>
@@ -216,13 +220,12 @@
         <table>
           <thead>
             <tr>
-              <th colspan="2">Setpoint Throttling (Soft-Start Feature)</th>
+              <th>Setpoint Throttling (Soft-Start Feature)</th>
             </tr>
           </thead>
           <tbody>
             <tr>
               <th>Frequency Rate of Change [kHz/s]</th>
-              <th>Duty Rate of Change [%/s]</th>
             </tr>
             <tr>
               <td>
@@ -236,13 +239,20 @@
                       @action_triggered="dispatch_nv"
                   />
                   <span class="flex-stacked-calign">
-                    Min:<br>0.01&nbsp;kHz/s
+                    Min:<br>
+                    0.01&nbsp;kHz/s
                   </span>
                   <span class="flex-stacked-calign">
-                    Max:<br>1000&nbsp;kHz/s
+                    Max:<br>
+                    1000&nbsp;kHz/s
                   </span>
                 </span>
               </td>
+            </tr>
+            <tr>
+              <th>Duty Rate of Change [%/s]</th>
+            </tr>
+            <tr>
               <td>
                 <span class="flex-centered-row">
                   <LiveNumberInput
@@ -254,10 +264,12 @@
                       @action_triggered="dispatch_nv"
                   />
                   <span class="flex-stacked-calign">
-                    Min:<br>0.1&nbsp;%/s
+                    Min:<br>
+                    0.1&nbsp;%/s
                   </span>
                   <span class="flex-stacked-calign">
-                    Max:<br>5000&nbsp;%/s
+                    Max:<br>
+                    5000&nbsp;%/s
                   </span>
                 </span>
               </td>
@@ -275,7 +287,8 @@
           </thead>
           <tbody>
             <tr>
-              <th>Save all settings &nbsp;&nbsp;(State will be restored on next system start)</th>
+              <th>Save all settings<br>
+              (Restored on next system start)</th>
             </tr>
             <tr>
               <td>

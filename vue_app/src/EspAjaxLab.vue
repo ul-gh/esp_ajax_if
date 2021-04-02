@@ -114,7 +114,7 @@ export default {
 <style scoped>
 img {
   margin: auto;
-  margin-bottom: 1rem;
+  margin-bottom: 0.25rem;
   display: block;
   width: 22rem;
   height: 2.5rem;
@@ -165,7 +165,7 @@ ul.grid_container {
   outline: none;
 }
 .tab-button.active {
-  background: #e0e0e0;
+  background: #bde6f6;
 }
 .tab-spacer {
   cursor: default;

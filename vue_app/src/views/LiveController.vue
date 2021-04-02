@@ -106,8 +106,7 @@
                         <span>Max:</span>
                         {{state.frequency_max.toFixed(2)}}
                     </span>
-                    <label>
-                        &nbsp;&nbsp;
+                    <label class="flex-stacked-calign">
                         <input
                             type="radio"
                             name="f_range_dial"
@@ -116,7 +115,7 @@
                         >
                         Slider
                     </label>
-                    <label>
+                    <label class="flex-stacked-calign">
                         <input
                             type="radio"
                             name="f_range_dial"
@@ -172,8 +171,7 @@
                         <span>Max:</span>
                         {{state.duty_max.toFixed(1)}}
                     </span>
-                    <label>
-                        &nbsp;&nbsp;
+                    <label class="flex-stacked-calign">
                         <input
                             type="radio"
                             name="d_range_dial"
@@ -182,7 +180,7 @@
                         >
                         Slider
                     </label>
-                    <label>
+                    <label class="flex-stacked-calign">
                         <input
                             type="radio"
                             name="d_range_dial"

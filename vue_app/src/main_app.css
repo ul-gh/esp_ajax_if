@@ -44,6 +44,8 @@ ul.main_grid {
 
 .flex-stacked-calign {
     height: 100%;
+    padding-left: 0.25rem;
+    padding-right: 0.25rem;
     margin: auto;
     display: flex;
     flex-flow: column nowrap;

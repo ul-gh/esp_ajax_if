@@ -108,7 +108,7 @@ export default {
 
 <style scoped>
 input {
-    width: 6rem;
+    width: 5.5rem;
 }
 input.editing {
   background-color: #ffa8a8;
