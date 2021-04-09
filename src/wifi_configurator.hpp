@@ -14,11 +14,8 @@
 #include "ArduinoJson.h"
 #include "AsyncJson.h"
 
-#include "network_config.hpp"
+#include "app_config.hpp"
 
-static constexpr size_t ssid_maxlen = 32 + 1;
-static constexpr size_t psk_maxlen = 63 + 1;
-static constexpr size_t hostname_maxlen = 32 + 1;
 
 /** @brief WiFi configuration using ESP-IDF NVS subsystem for persistent config.
  *
@@ -26,22 +23,14 @@ static constexpr size_t hostname_maxlen = 32 + 1;
  * see ApiServer class (api_server.cpp)
  *
  * There is NO flash encryption!
- * There is NO security implemented other than the network link-level!
+ * There is NO security implemented other than on the network link-level!
  */
 class WiFiConfigurator
 {
 public:
-    bool ap_mode_active;
-    char hostname[hostname_maxlen];
-    IPAddress ip4_addr;
-    IPAddress ip4_gw;
-    IPAddress ip4_mask;
-    char ssid[ssid_maxlen];
-    char psk[psk_maxlen];
-
     WiFiConfigurator(AsyncWebServer *http_backend,
                      DNSServer *dns_server,
-                     NetworkConfig &net_conf);
+                     NetworkConfig &conf);
 
     ~WiFiConfigurator();
 
@@ -51,17 +40,23 @@ public:
 private:
     AsyncWebServer *http_backend;
     DNSServer *dns_server;
-    NetworkConfig &net_conf;
+    NetworkConfig &conf;
+
     nvs_handle_t _nvs_handle;
     uint8_t _restart_counter = 0;
+
     // ESPAsyncWebServer HTTP request handler for WiFi configuration API endpoint 
     AsyncCallbackJsonWebHandler *_http_request_handler = nullptr;
 
-    void _get_persistent_state();
-    void _set_persistent_state();
+    void _counting_device_restart();
 
+    void _get_nvs_state();
+    void _set_nvs_state();
+
+    void _reconnect_ap_mode();
     void _reconnect_station_mode();
-    void _run_wifi_ap_mode();
+
+    void _reconfigure_current_mode();
 
     void _configure_station_mode();
     void _configure_ap_mode();

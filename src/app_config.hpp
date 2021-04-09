@@ -7,12 +7,63 @@
 #include "driver/ledc.h"
 #include "driver/adc.h"
 
-/** @brief Application configuration and default values for class AppController
+#include "IPAddress.h"
+#include "ArduinoJson.h"
+
+constexpr auto serial_baudrate = 115200ul;
+
+/** @brief Constant / compile-time config values go here!
  */
-struct AppConfig
+struct AppConstants
 {
     // Objects are constexpr, so members can be used as template parameters etc.
-    constexpr AppConfig(){};
+    constexpr AppConstants(){};
+
+    ////////////// For application state and JSON serialisation ////////////////
+    //
+    // ATTENTION!
+    // Following constants need to be adapted if JSON object size is changed!
+    static constexpr size_t _strings_size = sizeof(
+        "setpoint_throttling_enabled"
+        "base_div"
+        "timer_div"
+        "frequency_min_hw"
+        "frequency_max_hw"
+        "frequency_min"
+        "frequency_max"
+        "frequency"
+        "frequency_changerate"
+        "duty_min"
+        "duty_max"
+        "duty"
+        "duty_changerate"
+        "dt_sum_max_hw"
+        "lead_dt"
+        "lag_dt"
+        "current_limit"
+        "temp_1_limit"
+        "temp_2_limit"
+        "temp_1"
+        "temp_2"
+        "fan_active"
+        "fan_override"
+        "relay_ref_active"
+        "relay_dut_active"
+        "drv_supply_active"
+        "drv_disabled"
+        "power_pwm_active"
+        "hw_oc_fault"
+        "hw_overtemp"
+        "oneshot_len"
+        );
+    // JSON_OBJECT_SIZE is provided with the number of properties as from above
+    static constexpr size_t _json_objects_size = JSON_OBJECT_SIZE(31);
+    // Prevent buffer overflow even if above calculations are wrong...
+    static constexpr size_t I_AM_SCARED_MARGIN = 50;
+    static constexpr size_t json_buf_len = _json_objects_size
+                                           + _strings_size
+                                           + I_AM_SCARED_MARGIN;
+
     ///////////////////////////// For AppController ///////////////////////////
     // App state serialization using the ArduionJSON module takes a lot of it
     uint32_t app_event_task_stack_size = 4096;
@@ -65,6 +116,45 @@ struct AppConfig
     bool init_power_pwm_active = false;
 };
 
+
+/** @brief WiFi network configuration structure with default values
+ * 
+ * These are to be overridden with user-set values stored on NVS.
+ * 
+ * There is NO secure boot / flash encryption activated currently.
+ * Do not share password for different services or purposes!
+ */
+struct NetworkConfig {
+    static constexpr size_t ssid_maxlen = 32 + 1;
+    static constexpr size_t psk_maxlen = 63 + 1;
+    static constexpr size_t hostname_maxlen = 32 + 1;
+
+    // Run initially in access point mode when true
+    bool ap_mode_active = true;
+    // Auto-configure IP4 address in station mode when set to true
+    bool sta_mode_use_dhcp = true;
+
+    char hostname[hostname_maxlen] = "eal";
+    const char* dns_tld = ".lan";
+
+    char ssid[ssid_maxlen] = "esp_ajax_lab";
+    // Default value to be overridden with custom value on NVS.
+    char psk[psk_maxlen] = "123FOO456";
+
+    IPAddress ip4_addr = {192, 168, 4, 1};
+    IPAddress ip4_gw = {192, 168, 4, 1};
+    IPAddress ip4_mask = {255, 255, 255, 0};
+
+    bool use_dns = true;
+    bool use_mdns = false;
+
+    uint16_t http_tcp_port = 80;
+
+    // Maximum number of connection attempts for configured acces point in station mode
+    int max_reconnections = 4;
+    uint32_t reconnection_timeout_ms = 3000;
+    uint32_t dns_ttl = 3000;
+};
 
 /** @brief Hardware configuration for AuxHwDrv
  */
@@ -155,28 +245,6 @@ struct AuxHwDrvConfig
         1 << pwm_timer_config.duty_resolution);
     uint32_t curr_limit_pwm_offset = 0;
     ///////////////////////////////////////////////////////// End Configuration
-};
-
-/***************** AuxHwDrv state with initial values ******************//**
- * Used as public member of AuxHwDrv.
- * These members are accessed by AppController.
- */
-struct AuxHwDrvState
-{
-    float current_limit = 8;
-    bool relay_ref_active = false;
-    bool relay_dut_active = false;
-    float temp_1 = 150;
-    float temp_2 = 150;
-    float temp_1_limit = 50;
-    float temp_2_limit = 50;
-    bool fan_active = true;
-    // Manual override, fan is permanently "on" when true
-    bool fan_override = false;
-    bool drv_supply_active = true;
-    bool drv_disabled = false;
-    // Overtemperature shutdown active flag
-    bool hw_overtemp = true;
 };
 
 #endif

@@ -61,12 +61,13 @@ TaskHandle_t AppController::_app_event_task_handle;
 // FreeRTOS event group handle for triggering event task actions
 EventGroupHandle_t AppController::_app_event_group;
 
-AppController::AppController(APIServer *api_server)
+AppController::AppController(AppState &state, APIServer *api_server)
     // HTTP AJAX API server instance was created before
-    : api_server{api_server}
+    : state{state}
+    , api_server{api_server}
 {
     assert(api_server);
-    // Reads this.app_conf and sets this.state
+    // Reads this.constants and sets this.state
     _initialize_ps_pwm_drv();
     state.aux_hw_drv_state = &aux_hw_drv.state;
     _create_app_event_task();
@@ -114,11 +115,11 @@ void AppController::set_frequency_khz(float n) {
     }
 }
 void AppController::set_frequency_changerate_khz_sec(float n) {
-    state.frequency_increment = n * app_conf.timer_fast_interval_ms;
+    state.frequency_increment = n * constants.timer_fast_interval_ms;
 }
 void AppController::_set_frequency_raw(float n) {
     // state.pspwm_setpoint->frequency = n;
-    pspwm_set_frequency(app_conf.mcpwm_num, n);
+    pspwm_set_frequency(constants.mcpwm_num, n);
     _send_state_changed_event();
 }
 
@@ -138,25 +139,25 @@ void AppController::set_duty_percent(float n) {
     }
 }
 void AppController::set_duty_changerate_percent_sec(float n) {
-    state.duty_increment = n * app_conf.timer_fast_interval_ms * 1e-5f;
+    state.duty_increment = n * constants.timer_fast_interval_ms * 1e-5f;
     _send_state_changed_event();
 }
 void AppController::_set_duty_raw(float n) {
     // state.pspwm_setpoint->ps_duty = n;
-    pspwm_set_ps_duty(app_conf.mcpwm_num, n);
+    pspwm_set_ps_duty(constants.mcpwm_num, n);
     _send_state_changed_event();
 }
 
 void AppController::set_lag_dt_ns(float n) {
     state.pspwm_setpoint->lag_red = n * 1e-9;
-    pspwm_set_deadtimes_symmetrical(app_conf.mcpwm_num,
+    pspwm_set_deadtimes_symmetrical(constants.mcpwm_num,
                                     state.pspwm_setpoint->lead_red,
                                     state.pspwm_setpoint->lag_red);
     _send_state_changed_event();
 }
 void AppController::set_lead_dt_ns(float n) {
     state.pspwm_setpoint->lead_red = n * 1e-9;
-    pspwm_set_deadtimes_symmetrical(app_conf.mcpwm_num,
+    pspwm_set_deadtimes_symmetrical(constants.mcpwm_num,
                                     state.pspwm_setpoint->lead_red,
                                     state.pspwm_setpoint->lag_red);
     _send_state_changed_event();
@@ -175,13 +176,13 @@ void AppController::set_power_pwm_active(bool new_val) {
         if (state.setpoint_throttling_enabled) {
             // Begin with duty = 0.0 for soft start
             // state.pspwm_setpoint->ps_duty = n;
-            pspwm_set_ps_duty(app_conf.mcpwm_num, 0.0f);
+            pspwm_set_ps_duty(constants.mcpwm_num, 0.0f);
         }
         // aux_hw_drv.set_drv_disabled(false);
-        pspwm_resync_enable_output(app_conf.mcpwm_num);
+        pspwm_resync_enable_output(constants.mcpwm_num);
     } else {
         // aux_hw_drv.set_drv_disabled(true);
-        pspwm_disable_output(app_conf.mcpwm_num);
+        pspwm_disable_output(constants.mcpwm_num);
     }
     _send_state_changed_event();
 }
@@ -250,7 +251,7 @@ void AppController::set_fan_override(bool new_val) {
  * The stored settings are restored on reboot.
  */
 void AppController::save_settings() {
-    state.save_to_file(app_conf.settings_filename);
+    state.save_to_file(constants.settings_filename);
     _send_state_changed_event();
 }
 
@@ -261,7 +262,7 @@ void AppController::save_settings() {
  */
 void AppController::restore_settings() {
     ESP_LOGI(TAG, "Restoring state from settings.json...");
-    state.restore_from_file(app_conf.settings_filename);
+    state.restore_from_file(constants.settings_filename);
     // We only need to run the setters for properties which affect the hardware.
     // Again: Other values are polled and need no further setting..
     set_frequency_khz(state.frequency_target * 1E-3f);
@@ -283,29 +284,29 @@ void AppController::restore_settings() {
 
 void AppController::_initialize_ps_pwm_drv() {
     ESP_LOGI(TAG, "Configuring Phase-Shift-PWM...");
-    auto errors = pspwm_init_symmetrical(app_conf.mcpwm_num,
-                                         app_conf.gpio_pwm0a_out,
-                                         app_conf.gpio_pwm0b_out,
-                                         app_conf.gpio_pwm1a_out,
-                                         app_conf.gpio_pwm1b_out,
-                                         app_conf.init_frequency,
-                                         app_conf.init_ps_duty,
-                                         app_conf.init_lead_dt,
-                                         app_conf.init_lag_dt,
-                                         app_conf.init_power_pwm_active,
-                                         app_conf.disable_action_lead_leg,
-                                         app_conf.disable_action_lag_leg);
-    errors |= pspwm_get_setpoint_limits_ptr(app_conf.mcpwm_num,
+    auto errors = pspwm_init_symmetrical(constants.mcpwm_num,
+                                         constants.gpio_pwm0a_out,
+                                         constants.gpio_pwm0b_out,
+                                         constants.gpio_pwm1a_out,
+                                         constants.gpio_pwm1b_out,
+                                         constants.init_frequency,
+                                         constants.init_ps_duty,
+                                         constants.init_lead_dt,
+                                         constants.init_lag_dt,
+                                         constants.init_power_pwm_active,
+                                         constants.disable_action_lead_leg,
+                                         constants.disable_action_lag_leg);
+    errors |= pspwm_get_setpoint_limits_ptr(constants.mcpwm_num,
                                             &state.pspwm_setpoint_limits);
-    errors |= pspwm_get_setpoint_ptr(app_conf.mcpwm_num,
+    errors |= pspwm_get_setpoint_ptr(constants.mcpwm_num,
                                      &state.pspwm_setpoint);
-    errors |= pspwm_get_clk_conf_ptr(app_conf.mcpwm_num,
+    errors |= pspwm_get_clk_conf_ptr(constants.mcpwm_num,
                                      &state.pspwm_clk_conf);
-    errors |= pspwm_enable_hw_fault_shutdown(app_conf.mcpwm_num,
-                                             app_conf.gpio_fault_shutdown,
+    errors |= pspwm_enable_hw_fault_shutdown(constants.mcpwm_num,
+                                             constants.gpio_fault_shutdown,
                                              MCPWM_LOW_LEVEL_TGR);
     // Pull-down enabled for low-level shutdown active default state
-    errors |= gpio_pulldown_en(app_conf.gpio_fault_shutdown);
+    errors |= gpio_pulldown_en(constants.gpio_fault_shutdown);
     if (errors != ESP_OK) {
         ESP_LOGE(TAG, "Error initializing the PS-PWM module!");
         abort();
@@ -315,11 +316,11 @@ void AppController::_initialize_ps_pwm_drv() {
 void AppController::_create_app_event_task() {
     xTaskCreatePinnedToCore(_app_event_task,
                             "app_event_task", 
-                            app_conf.app_event_task_stack_size,
+                            constants.app_event_task_stack_size,
                             static_cast<void*>(this),
-                            app_conf.app_event_task_priority,
+                            constants.app_event_task_priority,
                             &_app_event_task_handle,
-                            app_conf.app_event_task_core_id);
+                            constants.app_event_task_core_id);
     _app_event_group = xEventGroupCreate();
     if (!_app_event_task_handle || !_app_event_group) {
         ESP_LOGE(TAG, "Failed to create application event task or event group!");
@@ -409,13 +410,13 @@ void AppController::_connect_timer_callbacks(){
     // Configure timers triggering periodic events.
     // Fast events are used for triggering ADC conversion etc.
     event_timer_fast.attach_ms(
-        app_conf.timer_fast_interval_ms,
+        constants.timer_fast_interval_ms,
         [](){xEventGroupSetBits(_app_event_group, EventFlags::timer_fast);}
         );
     // Slow events are used for sending periodic SSE push messages updating the
     // application state as displayed by the remote clients
     event_timer_slow.attach_ms(
-        app_conf.timer_slow_interval_ms,
+        constants.timer_slow_interval_ms,
         [](){xEventGroupSetBits(_app_event_group, EventFlags::timer_slow);}
         );
     // Timer for generating output pulses
@@ -463,7 +464,7 @@ void AppController::_connect_timer_callbacks(){
                 self->aux_hw_drv.reset_oc_shutdown_finish();
             } else if (repeat_count == 3) {
                 ESP_LOGD(TAG, "External HW reset done. Resetting SOC fault latch...");
-                pspwm_clear_hw_fault_shutdown_occurred(self->app_conf.mcpwm_num);
+                pspwm_clear_hw_fault_shutdown_occurred(self->constants.mcpwm_num);
                 self->_send_state_changed_event();
             }
         },
@@ -507,9 +508,9 @@ void AppController::_app_event_task(void *pVParameters) {
  */
 void AppController::_on_fast_timer_event_update_state() {
     // True when hardware OC shutdown condition is present
-    state.hw_oc_fault_present = pspwm_get_hw_fault_shutdown_present(app_conf.mcpwm_num);
+    state.hw_oc_fault_present = pspwm_get_hw_fault_shutdown_present(constants.mcpwm_num);
     // Hardware Fault Shutdown Status is latched using this flag
-    state.hw_oc_fault_occurred = pspwm_get_hw_fault_shutdown_occurred(app_conf.mcpwm_num);
+    state.hw_oc_fault_occurred = pspwm_get_hw_fault_shutdown_occurred(constants.mcpwm_num);
     // Update temperature sensor values on this occasion.
     // With averaging of 64 samples, both channels acquisition
     // takes approx. 9 ms combined.
@@ -537,7 +538,7 @@ void AppController::_evaluate_temperature_sensors() {
     aux_hw_drv.evaluate_temperature_sensors();
     if (aux_hw_drv.state.hw_overtemp) {
         // aux_hw_drv.set_drv_disabled(true);
-        pspwm_disable_output(app_conf.mcpwm_num);
+        pspwm_disable_output(constants.mcpwm_num);
         // State update is automatically pushed from slow timer loop
     }
 }
@@ -556,9 +557,8 @@ void AppController::_send_state_changed_event() {
  */
 void AppController::_push_state_update() {
     assert(api_server && api_server->event_source);
-    constexpr auto len = AppState::json_buf_len;
-    auto json_buf = std::array<char, len>{};
-    state.serialize_full_state(json_buf.data(), len);
+    auto json_buf = std::array<char, constants.json_buf_len>{};
+    state.serialize_full_state(json_buf.data(), constants.json_buf_len);
     api_server->event_source->send(json_buf.data(), "hw_app_state");
 }
 

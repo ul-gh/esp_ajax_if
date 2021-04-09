@@ -23,7 +23,6 @@
 #include "api_server.hpp"
 #include "multi_timer.hpp"
 
-#include "app_config.hpp"
 #include "app_state_model.hpp"
 
 
@@ -48,10 +47,10 @@ class AppController
 public:
     /** @brief Configuration and initial values for the application state
      */
-    static constexpr auto app_conf = AppConfig{};
+    static constexpr auto constants = AppConstants{};
 
     // Runtime state plus JSON serialisation import/export
-    AppState state;
+    AppState &state;
 
     // Instance of auxiliary HW control module
     AuxHwDrv aux_hw_drv;
@@ -59,7 +58,7 @@ public:
     // Instance of HTTP API server. There must only be one.
     APIServer* api_server;
 
-    AppController(APIServer* api_server);
+    AppController(AppState &state, APIServer* api_server);
     virtual ~AppController();
 
     /** @brief Begin operation.

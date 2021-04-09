@@ -15,7 +15,7 @@
 
 #include "sensor_kty81_1xx.hpp"
 
-#include "app_config.hpp"
+#include "app_state_model.hpp"
 
 /** @brief Auxiliary hardware driver for ESP-AJAX-Lab
  * This implements GPIO control for relays, fan, enable and reset signals and

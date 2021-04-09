@@ -23,39 +23,45 @@
 #include <DNSServer.h>
 #include <ESPAsyncWebServer.h>
 
+/** Global application state model with default values.
+ * General configuration constants are imported from app_config.hpp.
+ */
+#include "app_state_model.hpp"
+
 #include "wifi_configurator.hpp"
 #include "api_server.hpp"
 #include "app_controller.hpp"
-#include "network_config.hpp"
 
 #undef LOG_LOCAL_LEVEL
 #define LOG_LOCAL_LEVEL ESP_LOG_DEBUG
 #include "esp_log.h"
 static auto TAG = "app_main";
 
-static auto net_conf = NetworkConfig{};
-constexpr auto serial_baudrate = 115200ul;
-
 void update_debug_messages();
 void print_debug_messages();
+
+
+// Global application state store object.
+// Configuration and state stored/restored persistently in NVS and SPI flash.
+auto state = AppState{};
 
 // Without name resolution, Windows and browser clients spam the server with
 // failing DNS queries. Also this is used by the WiFi Manager and portal page.
 auto dns_server = DNSServer{};
 
 // ESPAsyncWebserver must be one single instance
-auto http_backend = AsyncWebServer{net_conf.http_tcp_port};
+auto http_backend = AsyncWebServer{state.net_conf.http_tcp_port};
 
 // HTTP server provides REST API + HTML5 AJAX web interface on port 80
 auto api_server = APIServer{&http_backend};
 
-auto wifi_configurator = WiFiConfigurator(&http_backend, &dns_server, net_conf);
+auto wifi_configurator = WiFiConfigurator(&http_backend, &dns_server, state.net_conf);
 
 // Application main controller.
 //
 // This registers the HTTP API callbacks, timer and interrupt handlers
 // and runs the application event loop in a separate FreeRTOS task.
-auto app_controller = AppController{&api_server};
+auto app_controller = AppController{state, &api_server};
 
 
 void setup() {
@@ -76,7 +82,7 @@ void setup() {
 }
 
 void loop() {
-    if (net_conf.use_dns) {
+    if (state.net_conf.use_dns) {
         dns_server.processNextRequest();
     }
     update_debug_messages();
