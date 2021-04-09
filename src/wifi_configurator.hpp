@@ -6,19 +6,21 @@
 #ifndef WIFI_CONFIGURATOR_HPP__
 #define WIFI_CONFIGURATOR_HPP__
 
+#include "nvs.h"
+
 #include <DNSServer.h>
+
 #include <ESPAsyncWebServer.h>
+#include "ArduinoJson.h"
+#include "AsyncJson.h"
 
-// Local debug level
-#define LOG_LOCAL_LEVEL ESP_LOG_DEBUG
-#include "esp_log.h"
-static auto TAG = "wifi_configurator.cpp";
-
-#include "wifi_configurator.hpp"
 #include "network_config.hpp"
 
+static constexpr size_t ssid_maxlen = 32 + 1;
+static constexpr size_t psk_maxlen = 63 + 1;
+static constexpr size_t hostname_maxlen = 32 + 1;
 
-/** @brief Wifi configuration using ESP-IDF NVS subsystem for persistent config.
+/** @brief WiFi configuration using ESP-IDF NVS subsystem for persistent config.
  *
  * Configuration is triggered by HTTP API server instance,
  * see ApiServer class (api_server.cpp)
@@ -26,15 +28,22 @@ static auto TAG = "wifi_configurator.cpp";
  * There is NO flash encryption!
  * There is NO security implemented other than the network link-level!
  */
-class WifiConfigurator
+class WiFiConfigurator
 {
 public:
-    WifiConfigurator(AsyncWebServer *http_backend,
-                     DNSServer *dns_server,
-                     struct NetworkConfig &net_conf);
+    bool ap_mode_active;
+    char hostname[hostname_maxlen];
+    IPAddress ip4_addr;
+    IPAddress ip4_gw;
+    IPAddress ip4_mask;
+    char ssid[ssid_maxlen];
+    char psk[psk_maxlen];
 
-    ~WifiConfigurator() {
-    }
+    WiFiConfigurator(AsyncWebServer *http_backend,
+                     DNSServer *dns_server,
+                     NetworkConfig &net_conf);
+
+    ~WiFiConfigurator();
 
     // This is supposed to block until WiFi is up and running...
     void begin();
@@ -42,15 +51,22 @@ public:
 private:
     AsyncWebServer *http_backend;
     DNSServer *dns_server;
-    const struct NetworkConfig &net_conf;
+    NetworkConfig &net_conf;
+    nvs_handle_t _nvs_handle;
+    uint8_t _restart_counter = 0;
+    // ESPAsyncWebServer HTTP request handler for WiFi configuration API endpoint 
+    AsyncCallbackJsonWebHandler *_http_request_handler = nullptr;
 
-    void _on_boot_setup_wifi(uint8_t max_retries);
+    void _get_persistent_state();
+    void _set_persistent_state();
 
-    void _setup_wifi_station();
+    void _reconnect_station_mode();
+    void _run_wifi_ap_mode();
 
-    void _setup_wifi_hostap();
+    void _configure_station_mode();
+    void _configure_ap_mode();
 
-    void _do_configuration(AsyncWebServerRequest *request);
+    void _on_request_do_configuration(JsonObject &json_obj);
 
     /* Register all application HTTP GET API callbacks into the HTPP server
     */

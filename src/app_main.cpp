@@ -23,9 +23,10 @@
 #include <DNSServer.h>
 #include <ESPAsyncWebServer.h>
 
-#include "network_setup.hpp"
+#include "wifi_configurator.hpp"
 #include "api_server.hpp"
 #include "app_controller.hpp"
+#include "network_config.hpp"
 
 #undef LOG_LOCAL_LEVEL
 #define LOG_LOCAL_LEVEL ESP_LOG_DEBUG
@@ -48,6 +49,8 @@ auto http_backend = AsyncWebServer{net_conf.http_tcp_port};
 // HTTP server provides REST API + HTML5 AJAX web interface on port 80
 auto api_server = APIServer{&http_backend};
 
+auto wifi_configurator = WiFiConfigurator(&http_backend, &dns_server, net_conf);
+
 // Application main controller.
 //
 // This registers the HTTP API callbacks, timer and interrupt handlers
@@ -58,18 +61,11 @@ auto app_controller = AppController{&api_server};
 void setup() {
     esp_log_level_set("*", ESP_LOG_DEBUG);
     Serial.begin(serial_baudrate);
-    /* WIFI setup when not using AsyncWifiManager:
-     * Call either "setup_wifi_hostap" or "setup_wifi_station" and then
-     * call http_backend.begin()
-     */
-    setup_wifi_station(net_conf); // Setup WiFi for station mode
-    //setup_wifi_hostap(net_conf); // Setup WiFi for access point mode
+
+    wifi_configurator.begin();
+
     http_backend.begin(); // Only when not using AsyncWifiManager!
-    if (net_conf.use_dns) {
-        setup_dns_server(dns_server, net_conf);
-    }
-    // Disable above setup_wifi... calls when using AsyncWifiManager
-    //run_wifi_manager(&dns_server, &http_backend);
+
     // Run HTTP server and prepare AJAX API registration
     api_server.begin();
     /** Begin operation of PWM stages etc.

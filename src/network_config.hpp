@@ -3,9 +3,12 @@
 #include "IPAddress.h"
 
 struct NetworkConfig {
-    IPAddress ap_ip{192,168,4,1};
-    IPAddress ap_gateway{192,168,4,1};
-    IPAddress ap_subnet{255,255,255,0};
+    // Run initially in access point mode when true
+    bool ap_mode_active = true;
+
+    IPAddress ip4_addr = {192,168,4,1};
+    IPAddress ip4_gw = {192,168,4,1};
+    IPAddress ip4_mask = {255,255,255,0};
 
     const char* ap_ssid = "isocal";
     const char* ap_psk = "123FOO456";
@@ -16,18 +19,19 @@ struct NetworkConfig {
     //const char* sta_ssid = "K9m";
     //const char* sta_psk = "1c185GFzFgk";
 
-    const char* host_name = "isocal";
-    const char* dns_domain = "isocal.lan";
+    // Hostname max length is 32 here.
+    const char* hostname = "isocal";
+    const char* dns_tld = ".lan";
 
     bool use_dns = false;
     bool use_mdns = false;
 
     uint16_t http_tcp_port = 80;
 
-    // WiFi Manager can launch the ESP in access point mode and serve a
-    // captive portal page for WiFi configuration.
-    // This mostly makes sense for use as a WiFi client.
-    bool use_wifi_manager = false;
+    // Maximum number of connection attempts for configured acces point in station mode
+    int max_reconnections = 4;
+    uint32_t reconnection_timeout_ms = 3000;
+    uint32_t dns_ttl = 3000;
 };
 
 #endif
