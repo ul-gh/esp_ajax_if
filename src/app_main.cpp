@@ -20,7 +20,6 @@
  */
 #include <Arduino.h>
 #include "esp32-hal-log.h"
-#include <DNSServer.h>
 #include <ESPAsyncWebServer.h>
 
 /** Global application state model with default values.
@@ -55,7 +54,7 @@ auto http_backend = AsyncWebServer{state.net_conf.http_tcp_port};
 // HTTP server provides REST API + HTML5 AJAX web interface on port 80
 auto api_server = APIServer{&http_backend};
 
-auto wifi_configurator = WiFiConfigurator(&http_backend, &dns_server, state.net_conf);
+auto wifi_configurator = WiFiConfigurator(state.net_conf, &http_backend, &dns_server);
 
 // Application main controller.
 //
@@ -82,7 +81,7 @@ void setup() {
 }
 
 void loop() {
-    if (state.net_conf.use_dns) {
+    if (state.net_conf.dns_active) {
         dns_server.processNextRequest();
     }
     update_debug_messages();

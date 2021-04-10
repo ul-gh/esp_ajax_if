@@ -67,7 +67,8 @@ public:
      */
     void begin();
 
-    //////////// Application API ///////////
+    ////////////////// Application API ///////////////////////
+    // (except for network configuration which is separate) //
     void set_setpoint_throttling_enabled(bool new_val);
 
     void set_frequency_min_khz(float n);

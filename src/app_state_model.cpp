@@ -65,6 +65,18 @@ size_t AppState::serialize_full_state(char *buf, size_t buf_len) {
     json_doc["hw_overtemp"] = aux_hw_drv_state->hw_overtemp;
     // Length of the power output one-shot timer pulse
     json_doc["oneshot_len"] = oneshot_power_pulse_length_ms * 1e-3f;
+    /////////////// Network configuration ////////////////////////
+    json_doc["ip4_addr"] = net_conf.ip4_addr.toString().c_str();
+    json_doc["ip4_gw"] = net_conf.ip4_gw.toString().c_str();
+    json_doc["ip4_mask"] = net_conf.ip4_mask.toString().c_str();
+    json_doc["hostname"] = net_conf.hostname;
+    json_doc["ssid"] = net_conf.ssid;
+    // Nope.... PSK is not submitted back to the client
+    // json_doc["psk"] = net_conf.psk;
+    json_doc["ap_mode_active"] = net_conf.ap_mode_active;
+    json_doc["sta_mode_use_dhcp"] = net_conf.sta_mode_use_dhcp;
+    json_doc["dns_active"] = net_conf.dns_active;
+    json_doc["mdns_active"] = net_conf.mdns_active;
     // Do the serialization
     auto json_size = serializeJson(json_doc, buf, buf_len);
     // Should the API increase in the future, we need to observe stack usage...

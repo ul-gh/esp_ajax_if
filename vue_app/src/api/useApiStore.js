@@ -55,6 +55,17 @@ export default function useApiStore() {
     hw_overtemp: false,
     // Length of the power output one-shot timer pulse
     oneshot_len: 0.001,
+    //// Network configuration
+    ip4_addr: "192.168.4.1",
+    ip4_gw: "192.168.4.1",
+    ip4_mask: "255.255.0.0",
+    hostname: "eal",
+    ssid: "esp_ajax_lab",
+    psk: "123FOO456",
+    ap_mode_active: true,
+    sta_mode_use_dhcp: true,
+    dns_active: true,
+    mdns_active: false,
   });
 
   // Called by server-sent event handler

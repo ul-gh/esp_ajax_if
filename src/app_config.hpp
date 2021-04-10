@@ -12,6 +12,56 @@
 
 constexpr auto serial_baudrate = 115200ul;
 
+
+/** @brief WiFi network configuration structure with default values
+ * 
+ * These are to be overridden with user-set values stored on NVS.
+ * 
+ * There is NO secure boot / flash encryption activated currently.
+ * Do not share password for different services or purposes!
+ */
+struct NetworkConfig {
+    ///////// Constants /////////
+    static constexpr size_t ssid_maxlen = 32 + 1;
+    static constexpr size_t psk_maxlen = 63 + 1;
+    static constexpr size_t hostname_maxlen = 32 + 1;
+
+    static constexpr const char* netconf_api_endpoint = "/configure_wifi";
+    static constexpr uint16_t http_tcp_port = 80;
+
+    // Maximum number of device reboots when multiple reconnections have failed
+    static constexpr uint32_t max_reboots = 5;
+    // Maximum number of connection attempts for configured acces point in station mode
+    static constexpr uint32_t max_reconnections = 4;
+    static constexpr uint32_t reconnection_timeout_ms = 3000;
+    static constexpr uint32_t dns_ttl = 3000;
+
+    // Domain suffix for DNS name ==> http://eal.lan
+    static constexpr const char* dns_tld = ".lan";
+
+    ////// Runtime state with default values. This is overriden by NVS ///////
+
+    // Run initially in access point mode when true
+    bool ap_mode_active = true;
+    // Auto-configure IP4 address in station mode when set to true
+    bool sta_mode_use_dhcp = true;
+
+    // Activate DNS and/or MDNS service
+    bool dns_active = true;
+    bool mdns_active = false;
+
+    char hostname[hostname_maxlen] = "eal";
+
+    char ssid[ssid_maxlen] = "esp_ajax_lab";
+    // Default value to be overridden with custom value on NVS.
+    char psk[psk_maxlen] = "123FOO456";
+
+    IPAddress ip4_addr = {192, 168, 4, 1};
+    IPAddress ip4_gw = {192, 168, 4, 1};
+    IPAddress ip4_mask = {255, 255, 0, 0};
+};
+
+
 /** @brief Constant / compile-time config values go here!
  */
 struct AppConstants
@@ -23,7 +73,7 @@ struct AppConstants
     //
     // ATTENTION!
     // Following constants need to be adapted if JSON object size is changed!
-    static constexpr size_t _strings_size = sizeof(
+    static constexpr size_t _key_strings_size = sizeof(
         "setpoint_throttling_enabled"
         "base_div"
         "timer_div"
@@ -55,13 +105,25 @@ struct AppConstants
         "hw_oc_fault"
         "hw_overtemp"
         "oneshot_len"
+        "ip4_addr"
+        "ip4_gw"
+        "ip4_mask"
+        "hostname"
+        "ssid"
+        "ap_mode_active"
+        "sta_mode_use_dhcp"
+        "dns_active"
+        "mdns_active"
         );
     // JSON_OBJECT_SIZE is provided with the number of properties as from above
-    static constexpr size_t _json_objects_size = JSON_OBJECT_SIZE(31);
+    static constexpr size_t _json_objects_size = JSON_OBJECT_SIZE(35)
+                                                 + NetworkConfig::hostname_maxlen
+                                                 + NetworkConfig::ssid_maxlen
+                                                 + 3 * sizeof("255.255.255.255");
     // Prevent buffer overflow even if above calculations are wrong...
     static constexpr size_t I_AM_SCARED_MARGIN = 50;
     static constexpr size_t json_buf_len = _json_objects_size
-                                           + _strings_size
+                                           + _key_strings_size
                                            + I_AM_SCARED_MARGIN;
 
     ///////////////////////////// For AppController ///////////////////////////
@@ -116,45 +178,6 @@ struct AppConstants
     bool init_power_pwm_active = false;
 };
 
-
-/** @brief WiFi network configuration structure with default values
- * 
- * These are to be overridden with user-set values stored on NVS.
- * 
- * There is NO secure boot / flash encryption activated currently.
- * Do not share password for different services or purposes!
- */
-struct NetworkConfig {
-    static constexpr size_t ssid_maxlen = 32 + 1;
-    static constexpr size_t psk_maxlen = 63 + 1;
-    static constexpr size_t hostname_maxlen = 32 + 1;
-
-    // Run initially in access point mode when true
-    bool ap_mode_active = true;
-    // Auto-configure IP4 address in station mode when set to true
-    bool sta_mode_use_dhcp = true;
-
-    char hostname[hostname_maxlen] = "eal";
-    const char* dns_tld = ".lan";
-
-    char ssid[ssid_maxlen] = "esp_ajax_lab";
-    // Default value to be overridden with custom value on NVS.
-    char psk[psk_maxlen] = "123FOO456";
-
-    IPAddress ip4_addr = {192, 168, 4, 1};
-    IPAddress ip4_gw = {192, 168, 4, 1};
-    IPAddress ip4_mask = {255, 255, 255, 0};
-
-    bool use_dns = true;
-    bool use_mdns = false;
-
-    uint16_t http_tcp_port = 80;
-
-    // Maximum number of connection attempts for configured acces point in station mode
-    int max_reconnections = 4;
-    uint32_t reconnection_timeout_ms = 3000;
-    uint32_t dns_ttl = 3000;
-};
 
 /** @brief Hardware configuration for AuxHwDrv
  */

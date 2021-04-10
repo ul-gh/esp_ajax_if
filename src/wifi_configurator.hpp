@@ -17,30 +17,41 @@
 #include "app_config.hpp"
 
 
-/** @brief WiFi configuration using ESP-IDF NVS subsystem for persistent config.
- *
- * Configuration is triggered by HTTP API server instance,
- * see ApiServer class (api_server.cpp)
- *
- * There is NO flash encryption!
- * There is NO security implemented other than on the network link-level!
+/** @brief Reconnect to or set up a WiFi network connection
+ * 
+ * This is different from other WiFi manager implementations in that
+ * we support configuring either a permanent access-point or station mode.
+ * 
+ * Configuration is done using a HTTP POST API receiving JSON configuration
+ * data under the endpoint configured in struct NetworkConfig (app_config.hpp).
+ * 
+ * Configuration is submitted in plain text and security is link-level only!
+ * 
+ * The configuration is stored using the ESP32 NVS subsystem.
+ * 
+ * There is NO flash memory encryption - please do not re-use the password
+ * for any sensitive purpose..
  */
 class WiFiConfigurator
 {
 public:
-    WiFiConfigurator(AsyncWebServer *http_backend,
-                     DNSServer *dns_server,
-                     NetworkConfig &conf);
+    WiFiConfigurator(NetworkConfig &conf,
+                     AsyncWebServer *http_backend,
+                     DNSServer *dns_server);
 
     ~WiFiConfigurator();
 
-    // This is supposed to block until WiFi is up and running...
+    /** @brief Reconnect to or set up a WiFi network connection
+     * 
+     * This function call blocks or reboots the system until a connection
+     * is established or the maximum number of reboots is reached.
+     */
     void begin();
 
 private:
+    NetworkConfig &conf;
     AsyncWebServer *http_backend;
     DNSServer *dns_server;
-    NetworkConfig &conf;
 
     nvs_handle_t _nvs_handle;
     uint8_t _restart_counter = 0;
@@ -50,26 +61,29 @@ private:
 
     void _counting_device_restart();
 
-    void _get_nvs_state();
-    void _set_nvs_state();
+    void _restore_state_from_nvs();
+    void _save_state_to_nvs();
 
     void _reconnect_ap_mode();
     void _reconnect_station_mode();
 
-    void _reconfigure_current_mode();
+    // Looks up if current state says this is AP or station mode and calls
+    // _configure and _reconnect for the respective mode
+    void _reconfigure_reconnect_network_interface();
 
     void _configure_station_mode();
     void _configure_ap_mode();
 
     void _on_request_do_configuration(JsonObject &json_obj);
 
-    /* Register all application HTTP GET API callbacks into the HTPP server
-    */
+    // Register all application HTTP GET API callbacks into the HTPP server
     void _register_http_api();
 
-    /* Configures the DNSServer instance
-    */
+    // Configure a DNSServer instance
     void _setup_dns_server();
+
+    // Optionally, configure MDNS server
+    void _setup_mdns_server();
 };
 
 #endif /* WIFI_CONFIGURATOR_HPP__ */
