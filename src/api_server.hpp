@@ -14,7 +14,7 @@
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
 
-#include "api_server_config.hpp"
+#include "app_config.hpp"
 
 // Callback function with string argument
 using CbStringT = std::function<void(const String&)>;

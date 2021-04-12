@@ -22,8 +22,11 @@
 #include "esp32-hal-log.h"
 #include <ESPAsyncWebServer.h>
 
-/** Global application state model with default values.
- * General configuration constants are imported from app_config.hpp.
+/** @brief Most configuration settings found here
+ */
+#include "app_config.hpp"
+
+/** @brief Global application state model with default values.
  */
 #include "app_state_model.hpp"
 
@@ -65,7 +68,7 @@ auto app_controller = AppController{state, &api_server};
 
 void setup() {
     esp_log_level_set("*", ESP_LOG_DEBUG);
-    Serial.begin(serial_baudrate);
+    Serial.begin(SerialConfig::serial_baudrate);
 
     wifi_configurator.begin();
 
