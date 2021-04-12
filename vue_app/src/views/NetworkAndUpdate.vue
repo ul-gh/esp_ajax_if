@@ -1,11 +1,11 @@
 <!-- ESP Ajax Lab Network and Updating Component
 -->
 <template>
-  <div class="network_and_update"
-       @click="disable_view_updates"
-       @blur="enable_view_updates"
-  >
-    <form action="/configure_wifi" method="post">
+  <div class="network_and_update">
+    <form 
+      @submit.prevent="submit_formdata"
+      action="/set_wifi_config"
+      method="POST">
       <table>
         <caption class="info_text">
           <h2>
@@ -55,7 +55,7 @@
               <label class="flex-stacked-calign">
                 <input
                     type="radio"
-                    name="sta_mode_use_dhcp"
+                    name="sta_use_dhcp"
                     :value="false"
                     v-model="sta_mode_use_dhcp"
                 >
@@ -64,7 +64,7 @@
               <label class="flex-stacked-calign">
                 <input
                     type="radio"
-                    name="sta_mode_use_dhcp"
+                    name="sta_use_dhcp"
                     :value="true"
                     checked
                     v-model="sta_mode_use_dhcp"
@@ -139,6 +139,18 @@
                 >
               </label>
             </td>
+            <!-- Omitting the gateway IP configuration box - do we ever need to change the default address?
+            <td>
+              <label class="flex-stacked-calign">
+                IP Address
+                <input
+                  type="text"
+                  name="ip4_gw"
+                  v-model="ip4_gw"
+                >
+              </label>
+            </td>
+            -->
             <td>
               <label class="flex-stacked-calign">
                 Subnet Mask
@@ -156,7 +168,6 @@
                 type="submit"
                 class="button_large"
                 value="Submit!"
-                @click="enable_view_updates"
               >
             </td>
           </tr>
@@ -211,6 +222,7 @@ export default {
   components: {},
   data() {
     return {
+      //// Network configuration (values are only defaults)
       ip4_addr: "192.168.4.1",
       ip4_gw: "192.168.4.1",
       ip4_mask: "255.255.0.0",
@@ -221,44 +233,60 @@ export default {
       sta_mode_use_dhcp: true,
       dns_active: true,
       mdns_active: false,
-
-      updates_inhibited: false,
     };
   },
   props: {
     state: Object,
     disabled: Boolean
   },
-  watch: {
-    state: function(new_state) {
-      if (this.updates_inhibited) {
-        return;
-      } else {
+  methods: {
+    async get_initial_state() {
+      const response = await fetch("/get_wifi_config");
+      this.update_data(response);
+    },
+    async submit_formdata(event) {
+      const form = event.target;
+      if (form.hasAttribute("disabled")) {return;}
+      // Form data as JSON
+      const form_data = new FormData(form);
+      let request_obj = {};
+      form_data.forEach((value, key) => request_obj[key] = value);
+      const request_body = JSON.stringify(request_obj);
+      // Prepare fetch request
+      const fetch_options = {
+        method: form.method,
+        //mode: 'cors', // no-cors, *cors, same-origin
+        cache: 'no-cache',
+        //credentials: 'same-origin', // include, *same-origin, omit
+        headers: {
+          'Content-Type': 'application/json'
+          // 'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        redirect: 'error', // manual, *follow, error
+        // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin,
+        // same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+        referrerPolicy: 'no-referrer',
+        // body data type must match "Content-Type" header
+        body: request_body,
+      };
+      const response = await fetch(form.action, fetch_options);
+      this.update_data(response);
+    },
+    update_data(response) {
+      if (response.ok) {
+        new_config = response.json();
         for (let key of this.$data) {
-          if (new_state.hasOwnProperty(key)) {
-            this.$data[key] = new_state[key];
+          if (new_config.hasOwnProperty(key)) {
+            this.$data[key] = new_config[key];
           }
         }
       }
     }
   },
-  methods: {
-    disable_view_updates(_) {
-      upates_inhibited = true;
-    },
-    enable_view_updates(_) {
-      updates_inhibited = false;
-    },
-    // Push buttons can have a name and value
-    dispatch_btn(event) {
-      this.$emit("action", event.target.name, event.target.value);
-    },
-    // Submit name=value pair
-    dispatch_nv(name, value) {
-      this.$emit("action", name, value);
-    }
+  emits: ["action-triggered"],
+  mounted() {
+    this.get_initial_state();
   },
-  emits: ["action"]
 };
 </script>
 

@@ -18,7 +18,7 @@ static auto TAG = "app_state_model.cpp";
 size_t AppState::serialize_full_state(char *buf, size_t buf_len) {
     assert(pspwm_clk_conf && pspwm_setpoint && pspwm_setpoint_limits && aux_hw_drv_state);
     // ArduinoJson JsonDocument object, see https://arduinojson.org
-    auto json_doc = StaticJsonDocument<constants._json_objects_size>{};
+    auto json_doc = StaticJsonDocument<_json_objects_size>{};
     // Setpoint throttling
     json_doc["setpoint_throttling_enabled"] = setpoint_throttling_enabled;
     // Clock divider settings
@@ -65,18 +65,6 @@ size_t AppState::serialize_full_state(char *buf, size_t buf_len) {
     json_doc["hw_overtemp"] = aux_hw_drv_state->hw_overtemp;
     // Length of the power output one-shot timer pulse
     json_doc["oneshot_len"] = oneshot_power_pulse_length_ms * 1e-3f;
-    /////////////// Network configuration ////////////////////////
-    json_doc["ip4_addr"] = net_conf.ip4_addr.toString().c_str();
-    json_doc["ip4_gw"] = net_conf.ip4_gw.toString().c_str();
-    json_doc["ip4_mask"] = net_conf.ip4_mask.toString().c_str();
-    json_doc["hostname"] = net_conf.hostname;
-    json_doc["ssid"] = net_conf.ssid;
-    // Nope.... PSK is not submitted back to the client
-    // json_doc["psk"] = net_conf.psk;
-    json_doc["ap_mode_active"] = net_conf.ap_mode_active;
-    json_doc["sta_mode_use_dhcp"] = net_conf.sta_mode_use_dhcp;
-    json_doc["dns_active"] = net_conf.dns_active;
-    json_doc["mdns_active"] = net_conf.mdns_active;
     // Do the serialization
     auto json_size = serializeJson(json_doc, buf, buf_len);
     // Should the API increase in the future, we need to observe stack usage...
@@ -92,7 +80,7 @@ size_t AppState::serialize_full_state(char *buf, size_t buf_len) {
 bool AppState::deserialize_settings(const char *buf, size_t buf_len) {
     assert(pspwm_clk_conf && pspwm_setpoint && pspwm_setpoint_limits && aux_hw_drv_state);
     // Size of the ArduinoJSON doc object must be larger here than when serializing..
-    auto json_doc = StaticJsonDocument<constants.json_buf_len>{};
+    auto json_doc = StaticJsonDocument<json_buf_len>{};
     auto errors = deserializeJson(json_doc, buf, buf_len);
     if (errors != DeserializationError::Ok) {
         ESP_LOGE(TAG, "Error deserialising the JSON settings!\n Error code: %s", errors.c_str());
@@ -132,8 +120,8 @@ bool AppState::deserialize_settings(const char *buf, size_t buf_len) {
 /* Write application runtime configurable settings as JSON to SPIFFs file.
  */
 bool AppState::save_to_file(const char *filename) {
-    auto json_buf = std::array<char, constants.json_buf_len>{};
-    auto json_size = serialize_full_state(json_buf.data(), constants.json_buf_len);
+    auto json_buf = std::array<char, json_buf_len>{};
+    auto json_size = serialize_full_state(json_buf.data(), json_buf_len);
     auto json_buf_uint8 = reinterpret_cast<uint8_t*>(json_buf.data());
     auto is_ok = FSIO::write_to_file_uint8(filename, json_buf_uint8, json_size);
     auto md5_builder = MD5Builder{};
@@ -155,8 +143,8 @@ bool AppState::restore_from_file(const char *filename) {
         ESP_LOGI(TAG, "No stored settings found");
         return false;
     }
-    auto json_buf = std::array<char, constants.json_buf_len>{};
+    auto json_buf = std::array<char, json_buf_len>{};
     auto json_buf_uint8 = reinterpret_cast<uint8_t*>(json_buf.data());
-    auto len = FSIO::read_from_file_uint8(filename, json_buf_uint8, constants.json_buf_len);
+    auto len = FSIO::read_from_file_uint8(filename, json_buf_uint8, json_buf_len);
     return deserialize_settings(json_buf.data(), len);
 }

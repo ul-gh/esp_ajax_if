@@ -76,6 +76,9 @@ private:
 
     void _on_request_do_configuration(JsonObject &json_obj);
 
+    // On request, send configuration JSON encoded as HTTP body
+    void _send_config_response(AsyncWebServerRequest *request);
+
     // Register all application HTTP GET API callbacks into the HTPP server
     void _register_http_api();
 

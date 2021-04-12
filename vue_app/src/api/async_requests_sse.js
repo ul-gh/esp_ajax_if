@@ -14,12 +14,12 @@ const request_interval_min_ms = 300;
 // Configure Server-Sent-Event source reconnect timer timeout in ms
 const sse_reconnect_timeout = 3000;
 
-/** Asynchronous and rate-limited HTTP request generator for single API endpoint
+/** Asynchronous and rate-limited HTTP GET request generator for single endpoint
  */
 class AsyncRequestGenerator {
     constructor (endpoint) {
         // HTTP GET API remote endpoint
-        this._req_start_str = endpoint + "?";
+        this._endpoint = endpoint;
         // For assuring a minimum delay between HTTP requests
         this._rate_limit_active = false;
         // Last request string received which could not be sent due rate limit
@@ -31,7 +31,7 @@ class AsyncRequestGenerator {
      * all intermediate requests are ignored without any action, except for the
      * very last one which is stored for automatic pending transmission.
      */
-    async do_http_request(req_str) {
+    async do_passive_get_request(req_str) {
         if (this._rate_limit_active) {
             this._pending_req_str = req_str;
             return;
@@ -69,8 +69,12 @@ class AsyncRequestGenerator {
     /** Send name=value pair as a rate-limited HTTP request
      */
     async send_cmd(name, value) {
-        const req_str = this._req_start_str + name + "=" + value;
-        await this.do_http_request(req_str);
+        if (value === undefined) {
+            const req_str = `${this._endpoint}?${name}`;
+        } else {
+            const req_str = `${this._endpoint}?${name}=${value}`;
+        }
+        await this.do_passive_get_request(req_str);
     }
 }
 

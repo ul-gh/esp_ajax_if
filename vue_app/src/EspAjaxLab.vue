@@ -48,7 +48,7 @@
           :ref="$route.name"
           :state="state"
           :disabled="disabled"
-          @action="dispatch_action"
+          @action_triggered="dispatch_action"
         />
       </li>
     </span>

@@ -26,7 +26,8 @@ struct NetworkConfig {
     static constexpr size_t psk_maxlen = 63 + 1;
     static constexpr size_t hostname_maxlen = 32 + 1;
 
-    static constexpr const char* netconf_api_endpoint = "/configure_wifi";
+    static constexpr const char* get_wifi_config_endpoint = "/get_wifi_config";
+    static constexpr const char* set_wifi_config_endpoint = "/set_wifi_config";
     static constexpr uint16_t http_tcp_port = 80;
 
     // Maximum number of device reboots when multiple reconnections have failed
@@ -44,7 +45,7 @@ struct NetworkConfig {
     // Run initially in access point mode when true
     bool ap_mode_active = true;
     // Auto-configure IP4 address in station mode when set to true
-    bool sta_mode_use_dhcp = true;
+    bool sta_use_dhcp = true;
 
     // Activate DNS and/or MDNS service
     bool dns_active = true;
@@ -68,63 +69,6 @@ struct AppConstants
 {
     // Objects are constexpr, so members can be used as template parameters etc.
     constexpr AppConstants(){};
-
-    ////////////// For application state and JSON serialisation ////////////////
-    //
-    // ATTENTION!
-    // Following constants need to be adapted if JSON object size is changed!
-    static constexpr size_t _key_strings_size = sizeof(
-        "setpoint_throttling_enabled"
-        "base_div"
-        "timer_div"
-        "frequency_min_hw"
-        "frequency_max_hw"
-        "frequency_min"
-        "frequency_max"
-        "frequency"
-        "frequency_changerate"
-        "duty_min"
-        "duty_max"
-        "duty"
-        "duty_changerate"
-        "dt_sum_max_hw"
-        "lead_dt"
-        "lag_dt"
-        "current_limit"
-        "temp_1_limit"
-        "temp_2_limit"
-        "temp_1"
-        "temp_2"
-        "fan_active"
-        "fan_override"
-        "relay_ref_active"
-        "relay_dut_active"
-        "drv_supply_active"
-        "drv_disabled"
-        "power_pwm_active"
-        "hw_oc_fault"
-        "hw_overtemp"
-        "oneshot_len"
-        "ip4_addr"
-        "ip4_gw"
-        "ip4_mask"
-        "hostname"
-        "ssid"
-        "ap_mode_active"
-        "sta_mode_use_dhcp"
-        "dns_active"
-        "mdns_active"
-        );
-    // JSON_OBJECT_SIZE is provided with the number of properties as from above
-    static constexpr size_t _json_objects_size = JSON_OBJECT_SIZE(35)
-                                                 + NetworkConfig::hostname_maxlen
-                                                 + NetworkConfig::ssid_maxlen
-                                                 + 3 * sizeof("255.255.255.255");
-    // Prevent buffer overflow even if above calculations are wrong...
-    static constexpr size_t I_AM_SCARED_MARGIN = 50;
-    static constexpr size_t json_buf_len = _json_objects_size
-                                           + _key_strings_size
-                                           + I_AM_SCARED_MARGIN;
 
     ///////////////////////////// For AppController ///////////////////////////
     // App state serialization using the ArduionJSON module takes a lot of it

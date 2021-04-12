@@ -4,10 +4,10 @@
  * see ApiServer class (api_server.cpp)
  *
  * There is NO flash encryption!
- * There is NO security implemented other than the network link-level!
+ * There is NO security implemented other than on the network link-level!
  * 
  * License: GPL v.3 
- * U. Lukas 2021-04-08
+ * U. Lukas 2021-04-21
  */
 #include "esp_system.h"
 #include "nvs_flash.h"
@@ -118,7 +118,7 @@ void WiFiConfigurator::_restore_state_from_nvs() {
     conf.ap_mode_active = static_cast<bool>(u8_flag);
     // Auto-configure ip4 address in station mode when set to true
     err |= nvs_get_u8(_nvs_handle, "sta_dhcp", &u8_flag);
-    conf.sta_mode_use_dhcp = static_cast<bool>(u8_flag);
+    conf.sta_use_dhcp = static_cast<bool>(u8_flag);
     // Activate DNS when set to true
     err |= nvs_get_u8(_nvs_handle, "dns_active", &u8_flag);
     conf.dns_active = static_cast<bool>(u8_flag);
@@ -156,7 +156,7 @@ void WiFiConfigurator::_save_state_to_nvs() {
     auto u8_flag = static_cast<uint8_t>(conf.ap_mode_active);
     err |= nvs_set_u8(_nvs_handle, "ap_mode_active", u8_flag);
     // Auto-configure ip4 address in station mode when set to true
-    u8_flag = static_cast<uint8_t>(conf.sta_mode_use_dhcp);
+    u8_flag = static_cast<uint8_t>(conf.sta_use_dhcp);
     err |= nvs_set_u8(_nvs_handle, "sta_dhcp", u8_flag);
     // Activate DNS when set to true
     u8_flag = static_cast<uint8_t>(conf.dns_active);
@@ -248,7 +248,7 @@ void WiFiConfigurator::_configure_station_mode() {
     WiFi.setAutoReconnect(true);
     WiFi.mode(WIFI_STA);
     WiFi.setHostname(conf.hostname);
-    if (!conf.sta_mode_use_dhcp) {
+    if (!conf.sta_use_dhcp) {
         WiFi.config(conf.ip4_addr, conf.ip4_gw, conf.ip4_mask);
     }
     // Connect to Wi-Fi network with SSID and password
@@ -268,26 +268,31 @@ void WiFiConfigurator::_configure_ap_mode() {
     }
 }
 
-/* Register WiFi configuration HTTP POST API callback into the server
- */
+// Register WiFi configuration HTTP POST API callback into the server
 void WiFiConfigurator::_register_http_api() {
     constexpr size_t json_obj_size = JSON_OBJECT_SIZE(7);
     constexpr size_t keys_size = sizeof(
         "hostname""ip4_addr""ip4_gw""ip4_mask""ssid""psk"
-        "ap_mode_active""sta_dhcp""dns_active""mdns_active"
+        "ap_mode_active""sta_use_dhcp""dns_active""mdns_active"
         );
     // WPA2 SSID and PSK
     constexpr size_t data_strings_size = NetworkConfig::hostname_maxlen
                                          + NetworkConfig::ssid_maxlen
                                          + NetworkConfig::psk_maxlen;
     constexpr size_t json_buf_size = 50 + json_obj_size + keys_size + data_strings_size;
-    // "/configure_wifi"
+    // Register "/get_wifi_config" handler
+    http_backend->on(
+        conf.get_wifi_config_endpoint,
+        HTTP_GET,
+        [this](AsyncWebServerRequest *request){_send_config_response(request);}
+    );
+    // Register "/set_wifi_config" handler
     _http_request_handler = new AsyncCallbackJsonWebHandler(
-        conf.netconf_api_endpoint,
-        [this](AsyncWebServerRequest *request, JsonVariant &json) {
-            auto json_obj = json.as<JsonObject>();
+        conf.set_wifi_config_endpoint,
+        [this](AsyncWebServerRequest *request, JsonVariant &jv) {
+            auto json_obj = jv.as<JsonObject>();
             _on_request_do_configuration(json_obj);
-            request->send(200, "text/plain", "OK");
+            _send_config_response(request);
         },
         json_buf_size
     );
@@ -295,37 +300,64 @@ void WiFiConfigurator::_register_http_api() {
 }
 
 
-/* Configure WiFi on API request
- */
+// Configure WiFi on API request
 void WiFiConfigurator::_on_request_do_configuration(JsonObject &json_obj) {
-    conf.ip4_addr = IPAddress{}.fromString(json_obj["ip4_addr"].as<char*>());
-    conf.ip4_gw = IPAddress{}.fromString(json_obj["ip4_gw"].as<char*>());
-    conf.ip4_mask = IPAddress{}.fromString(json_obj["ip4_mask"].as<char*>());
-    strncpy(conf.hostname, json_obj["hostname"].as<char*>(), conf.hostname_maxlen);
-    strncpy(conf.ssid, json_obj["ssid"].as<char*>(), conf.ssid_maxlen);
-    strncpy(conf.psk, json_obj["psk"].as<char*>(), conf.psk_maxlen);
-    conf.ap_mode_active = bool{json_obj["ap_mode_active"]};
-    conf.sta_mode_use_dhcp = bool{json_obj["sta_dhcp"]};
-    conf.dns_active = bool{json_obj["dns_active"]};
-    conf.mdns_active = bool{json_obj["mdns_active"]};
+    auto ip = IPAddress{};
+    auto str = json_obj["ip4_addr"].as<char*>();
+    if (str && ip.fromString(str)) {conf.ip4_addr = ip;}
+    str = json_obj["ip4_gw"].as<char*>();
+    if (str && ip.fromString(str)) {conf.ip4_gw = ip;}
+    str = json_obj["ip4_mask"].as<char*>();
+    if (str && ip.fromString(str)) {conf.ip4_mask = ip;}
+    str = json_obj["hostname"].as<char*>();
+    if (str && strlen(str) < sizeof(conf.hostname)) {strcpy(conf.hostname, str);}
+    str = json_obj["ssid"].as<char*>();
+    if (str && strlen(str) < sizeof(conf.ssid)) {strcpy(conf.ssid, str);}
+    str = json_obj["psk"].as<char*>();
+    if (str && strlen(str) < sizeof(conf.psk)) {strcpy(conf.psk, str);}
+    auto jv = json_obj["ap_mode_active"];
+    if (jv && jv.is<bool>()) {conf.ap_mode_active = jv.as<bool>();}
+    jv = json_obj["sta_use_dhcp"];
+    if (jv && jv.is<bool>()) {conf.sta_use_dhcp = jv.as<bool>();}
+    jv = json_obj["dns_active"];
+    if (jv && jv.is<bool>()) {conf.dns_active = jv.as<bool>();}
+    jv = json_obj["mdns_active"];
+    if (jv && jv.is<bool>()) {conf.mdns_active = jv.as<bool>();}
     _reconfigure_reconnect_network_interface();
 }
 
 
+// On request, send configuration JSON encoded as HTTP body
+void WiFiConfigurator::_send_config_response(AsyncWebServerRequest *request) {
+    auto response = new AsyncJsonResponse();
+    auto json_variant = response->getRoot();
+    json_variant["ip4_addr"] = conf.ip4_addr.toString().c_str();
+    json_variant["ip4_gw"] = conf.ip4_gw.toString().c_str();
+    json_variant["ip4_mask"] = conf.ip4_mask.toString().c_str();
+    json_variant["hostname"] = conf.hostname;
+    json_variant["ssid"] = conf.ssid;
+    // Nope.... PSK is not submitted back to the client
+    // json_doc["psk"] = conf.psk;
+    json_variant["ap_mode_active"] = conf.ap_mode_active;
+    json_variant["sta_use_dhcp"] = conf.sta_use_dhcp;
+    json_variant["dns_active"] = conf.dns_active;
+    json_variant["mdns_active"] = conf.mdns_active;
+    response->setLength();
+    request->send(response);
+}
+
 // Configure a DNSServer instance
 void WiFiConfigurator::_setup_dns_server() {
-    if (!dns_server) {
-        return;
-    }
-  // DNS caching TTL associated  with the domain name.
-  dns_server->setTTL(conf.dns_ttl);
-  // set which return code will be used for all other domains (e.g. sending
-  // ServerFailure instead of NonExistentDomain will reduce number of queries
-  // sent by clients)
-  // default is AsyncDNSReplyCode::NonExistentDomain
-  //dns_server.setErrorReplyCode(AsyncDNSReplyCode::ServerFailure);
-  auto dns_domain = String(conf.hostname) + conf.dns_tld;
-  dns_server->start(53, dns_domain, conf.ip4_addr);
+    if (!dns_server) {return;}
+    // DNS caching TTL associated  with the domain name.
+    dns_server->setTTL(conf.dns_ttl);
+    // set which return code will be used for all other domains (e.g. sending
+    // ServerFailure instead of NonExistentDomain will reduce number of queries
+    // sent by clients)
+    // default is AsyncDNSReplyCode::NonExistentDomain
+    //dns_server.setErrorReplyCode(AsyncDNSReplyCode::ServerFailure);
+    auto dns_domain = String(conf.hostname) + conf.dns_tld;
+    dns_server->start(53, dns_domain, conf.ip4_addr);
 }
 
 // Optionally, configure MDNS service

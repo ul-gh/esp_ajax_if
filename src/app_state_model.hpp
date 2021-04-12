@@ -48,6 +48,51 @@ struct AuxHwDrvState
  */
 struct AppState
 {
+    ////////////// For application state JSON serialisation ////////////////
+    //
+    // ATTENTION!
+    // Following constants need to be adapted if JSON object size is changed!
+    static constexpr size_t _key_strings_size = sizeof(
+        "setpoint_throttling_enabled"
+        "base_div"
+        "timer_div"
+        "frequency_min_hw"
+        "frequency_max_hw"
+        "frequency_min"
+        "frequency_max"
+        "frequency"
+        "frequency_changerate"
+        "duty_min"
+        "duty_max"
+        "duty"
+        "duty_changerate"
+        "dt_sum_max_hw"
+        "lead_dt"
+        "lag_dt"
+        "current_limit"
+        "temp_1_limit"
+        "temp_2_limit"
+        "temp_1"
+        "temp_2"
+        "fan_active"
+        "fan_override"
+        "relay_ref_active"
+        "relay_dut_active"
+        "drv_supply_active"
+        "drv_disabled"
+        "power_pwm_active"
+        "hw_oc_fault"
+        "hw_overtemp"
+        "oneshot_len"
+        );
+    // JSON_OBJECT_SIZE is provided with the number of properties as from above
+    static constexpr size_t _json_objects_size = JSON_OBJECT_SIZE(31);
+    // Prevent buffer overflow even if above calculations are wrong...
+    static constexpr size_t I_AM_SCARED_MARGIN = 50;
+    static constexpr size_t json_buf_len = _json_objects_size
+                                            + _key_strings_size
+                                            + I_AM_SCARED_MARGIN;
+
     // Initial values for AppController()
     static constexpr AppConstants constants{};
 

@@ -557,8 +557,8 @@ void AppController::_send_state_changed_event() {
  */
 void AppController::_push_state_update() {
     assert(api_server && api_server->event_source);
-    auto json_buf = std::array<char, constants.json_buf_len>{};
-    state.serialize_full_state(json_buf.data(), constants.json_buf_len);
+    auto json_buf = std::array<char, AppState::json_buf_len>{};
+    state.serialize_full_state(json_buf.data(), AppState::json_buf_len);
     api_server->event_source->send(json_buf.data(), "hw_app_state");
 }
 
