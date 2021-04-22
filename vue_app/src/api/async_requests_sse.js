@@ -108,7 +108,7 @@ class ServerSentEventHandler {
             console.log("Connecting Server-Sent Events...");
         }
         this.source = new EventSource(this.endpoint);
-        this.source.addEventListener("open", e => console.log("Events Connected", e), false);
+        this.source.addEventListener("open", _ => console.log("Events Connected"), false);
         this.source.addEventListener("error", e => this.on_error(e), false);
         this.source.addEventListener("hw_app_state", e => this.on_hw_app_state(e), false);
     }

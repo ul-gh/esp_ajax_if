@@ -3,7 +3,7 @@
 <template>
   <div class="network_and_update">
     <form 
-      @submit.prevent="submit_formdata"
+      @submit.prevent="submit_config"
       action="/set_wifi_config"
       method="POST">
       <table>
@@ -244,13 +244,18 @@ export default {
       const response = await fetch("/get_wifi_config");
       this.update_data(response);
     },
-    async submit_formdata(event) {
+    async submit_config(event) {
       const form = event.target;
       if (form.hasAttribute("disabled")) {return;}
       // Form data as JSON
-      const form_data = new FormData(form);
+      //FormData keeps boolean attributes as string values, but the server
+      // needs boolean. So we send the vue data object instead.
+      //const form_data = new FormData(form);
       let request_obj = {};
-      form_data.forEach((value, key) => request_obj[key] = value);
+      //this.$data.forEach((value, key) => request_obj[key] = value);
+      for (let key in this.$data) {
+        request_obj[key] = this.$data[key];
+      }
       const request_body = JSON.stringify(request_obj);
       // Prepare fetch request
       const fetch_options = {
@@ -274,8 +279,8 @@ export default {
     },
     update_data(response) {
       if (response.ok) {
-        new_config = response.json();
-        for (let key of this.$data) {
+        const new_config = response.json();
+        for (let key in this.$data) {
           if (new_config.hasOwnProperty(key)) {
             this.$data[key] = new_config[key];
           }

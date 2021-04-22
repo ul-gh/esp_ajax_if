@@ -64,7 +64,7 @@ void WiFiConfigurator::begin() {
     // We suppose that AP mode with fallback defaults can not fail and so
     // there is no protection against infinite reboots in case of wrong
     // default values for AP mode
-    ESP_LOGI(TAG, "This is restart no.: %d\n", _restart_counter);
+    ESP_LOGI(TAG, "This is restart no.: %d", _restart_counter);
     if (_restart_counter > conf.max_reboots) {
         ESP_LOGI(TAG, "Max. restarts reached. Could not connect to WiFi in station mode.");
         // Restore default configuration
@@ -111,18 +111,20 @@ void WiFiConfigurator::_restore_state_from_nvs() {
     auto err = ESP_OK;
     // _restart counter defaults to 0
     err |= nvs_get_u8(_nvs_handle, "restart_counter", &_restart_counter);
-    // Fallback value from config header
-    auto u8_flag = static_cast<uint8_t>(conf.ap_mode_active);
     // Persistent activation of access point mode if set to true
+    auto u8_flag = static_cast<uint8_t>(conf.ap_mode_active);
     err |= nvs_get_u8(_nvs_handle, "ap_mode_active", &u8_flag);
     conf.ap_mode_active = static_cast<bool>(u8_flag);
     // Auto-configure ip4 address in station mode when set to true
+    u8_flag = static_cast<uint8_t>(conf.sta_use_dhcp);
     err |= nvs_get_u8(_nvs_handle, "sta_dhcp", &u8_flag);
     conf.sta_use_dhcp = static_cast<bool>(u8_flag);
     // Activate DNS when set to true
+    u8_flag = static_cast<uint8_t>(conf.dns_active);
     err |= nvs_get_u8(_nvs_handle, "dns_active", &u8_flag);
     conf.dns_active = static_cast<bool>(u8_flag);
     // Activate MDNS when set to true
+    u8_flag = static_cast<uint8_t>(conf.mdns_active);
     err |= nvs_get_u8(_nvs_handle, "mdns_active", &u8_flag);
     conf.mdns_active = static_cast<bool>(u8_flag);
     // IPv4 address for both access point or station mode
@@ -187,6 +189,7 @@ void WiFiConfigurator::_save_state_to_nvs() {
 }
 
 void WiFiConfigurator::_reconnect_ap_mode() {
+    ESP_LOGI(TAG, "Reconnecting AP mode..");
     for (auto retries = 0; retries < conf.max_reconnections; retries++) {
         // Try to re-establish an access point using stored IP configuration
         if (WiFi.softAP(conf.ssid, conf.psk) && WiFi.softAPIP() == conf.ip4_addr) {
@@ -206,29 +209,29 @@ void WiFiConfigurator::_reconnect_ap_mode() {
 }
 
 void WiFiConfigurator::_reconnect_station_mode() {
+    ESP_LOGI(TAG, "Reconnecting station mode..");
     for (auto retries = 0; retries < conf.max_reconnections; retries++) {
         // Try reconnecting with stored config. If this retruns WL_CONNECTED, we are done..
         if (WiFi.waitForConnectResult() == WL_CONNECTED) {
-            break;
-        }
-        if (retries >= conf.max_reconnections) {
-            _configure_station_mode();
-            _counting_device_restart();
+            // We are now connected.. Restoring configuration from stored connection..
+            // When using DHCP, the configuration can have changed.
+            // The changes are added to the instance properties but not made persistent.
+            conf.ip4_addr = WiFi.localIP();
+            conf.ip4_gw = WiFi.gatewayIP();
+            conf.ip4_mask = WiFi.subnetMask();
+            strncpy(conf.hostname, WiFi.getHostname(), conf.hostname_maxlen);
+            strncpy(conf.ssid, WiFi.SSID().c_str(), conf.ssid_maxlen);
+            ESP_LOGI(TAG, "Connected as host %s with IP address: %s",
+                     conf.hostname, conf.ip4_addr.toString().c_str());
+            return;
         }
         ESP_LOGW(TAG, "Timeout. Retrying..");
         WiFi.begin();
         delay(conf.reconnection_timeout_ms);
     }
-    // We are now connected.. Restoring configuration from stored connection..
-    // When using DHCP, the configuration can have changed.
-    // The changes are added to the instance properties but not made persistent.
-    conf.ip4_addr = WiFi.localIP();
-    conf.ip4_gw = WiFi.gatewayIP();
-    conf.ip4_mask = WiFi.subnetMask();
-    strncpy(conf.hostname, WiFi.getHostname(), conf.hostname_maxlen);
-    strncpy(conf.ssid, WiFi.SSID().c_str(), conf.ssid_maxlen);
-    ESP_LOGI(TAG, "Connected as host %s with IP address: %s",
-             conf.hostname, conf.ip4_addr.toString().c_str());
+    // Maximum number of reconnections exceeded. Reconfigure and restart device..
+    _configure_station_mode();
+    _counting_device_restart();
 }
 
 // Looks up if this is AP or station mode and calls _configure and _reconnect
@@ -316,13 +319,13 @@ void WiFiConfigurator::_on_request_do_configuration(JsonObject &json_obj) {
     str = json_obj["psk"].as<char*>();
     if (str && strlen(str) < sizeof(conf.psk)) {strcpy(conf.psk, str);}
     auto jv = json_obj["ap_mode_active"];
-    if (jv && jv.is<bool>()) {conf.ap_mode_active = jv.as<bool>();}
+    if (!jv.isNull() && jv.is<bool>()) {conf.ap_mode_active = jv.as<bool>();}
     jv = json_obj["sta_use_dhcp"];
-    if (jv && jv.is<bool>()) {conf.sta_use_dhcp = jv.as<bool>();}
+    if (!jv.isNull() && jv.is<bool>()) {conf.sta_use_dhcp = jv.as<bool>();}
     jv = json_obj["dns_active"];
-    if (jv && jv.is<bool>()) {conf.dns_active = jv.as<bool>();}
+    if (!jv.isNull() && jv.is<bool>()) {conf.dns_active = jv.as<bool>();}
     jv = json_obj["mdns_active"];
-    if (jv && jv.is<bool>()) {conf.mdns_active = jv.as<bool>();}
+    if (!jv.isNull() && jv.is<bool>()) {conf.mdns_active = jv.as<bool>();}
     _reconfigure_reconnect_network_interface();
 }
 
@@ -331,9 +334,10 @@ void WiFiConfigurator::_on_request_do_configuration(JsonObject &json_obj) {
 void WiFiConfigurator::_send_config_response(AsyncWebServerRequest *request) {
     auto response = new AsyncJsonResponse();
     auto json_variant = response->getRoot();
-    json_variant["ip4_addr"] = conf.ip4_addr.toString().c_str();
-    json_variant["ip4_gw"] = conf.ip4_gw.toString().c_str();
-    json_variant["ip4_mask"] = conf.ip4_mask.toString().c_str();
+    // Const cast necessary as this Arduino JSON version does not make a copy for const char* rvalue IIRC
+    json_variant["ip4_addr"] = const_cast<char*>(conf.ip4_addr.toString().c_str());
+    json_variant["ip4_gw"] = const_cast<char*>(conf.ip4_gw.toString().c_str());
+    json_variant["ip4_mask"] = const_cast<char*>(conf.ip4_mask.toString().c_str());
     json_variant["hostname"] = conf.hostname;
     json_variant["ssid"] = conf.ssid;
     // Nope.... PSK is not submitted back to the client

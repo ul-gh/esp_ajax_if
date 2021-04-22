@@ -57,7 +57,8 @@ auto http_backend = AsyncWebServer{state.net_conf.http_tcp_port};
 // HTTP server provides REST API + HTML5 AJAX web interface on port 80
 auto api_server = APIServer{&http_backend};
 
-auto wifi_configurator = WiFiConfigurator(state.net_conf, &http_backend, &dns_server);
+//auto wifi_configurator = WiFiConfigurator(state.net_conf, &http_backend, &dns_server);
+WiFiConfigurator *wifi_configurator = nullptr;
 
 // Application main controller.
 //
@@ -69,8 +70,8 @@ auto app_controller = AppController{state, &api_server};
 void setup() {
     esp_log_level_set("*", ESP_LOG_DEBUG);
     Serial.begin(SerialConfig::serial_baudrate);
-
-    wifi_configurator.begin();
+    wifi_configurator = new WiFiConfigurator(state.net_conf, &http_backend, &dns_server);
+    wifi_configurator->begin();
 
     http_backend.begin(); // Only when not using AsyncWifiManager!
 
