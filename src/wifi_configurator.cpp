@@ -269,10 +269,12 @@ bool WiFiConfigurator::_configure_station_mode(NetworkConfig &conf) {
     WiFi.persistent(true);
     WiFi.setAutoReconnect(true);
     WiFi.mode(WIFI_STA);
-    WiFi.setHostname(conf.hostname);
     if (!conf.sta_use_dhcp) {
         WiFi.config(conf.ip4_addr, conf.ip4_gw, conf.ip4_mask);
+    } else {
+        WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);
     }
+    WiFi.setHostname(conf.hostname);
     // Connect to Wi-Fi network with SSID and password
     ESP_LOGI(TAG, "(Re-)Connecting to SSID: %s", conf.ssid);
     return WiFi.begin(conf.ssid, conf.psk) == WL_CONNECTED;
