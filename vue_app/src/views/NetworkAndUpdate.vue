@@ -57,7 +57,7 @@
                     type="radio"
                     name="sta_use_dhcp"
                     :value="false"
-                    v-model="sta_mode_use_dhcp"
+                    v-model="sta_use_dhcp"
                 >
                 Fixed IP
               </label>
@@ -67,7 +67,7 @@
                     name="sta_use_dhcp"
                     :value="true"
                     checked
-                    v-model="sta_mode_use_dhcp"
+                    v-model="sta_use_dhcp"
                 >
                 Auto / DHCP
               </label>
@@ -230,7 +230,7 @@ export default {
       ssid: "esp_ajax_lab",
       psk: "123FOO456",
       ap_mode_active: true,
-      sta_mode_use_dhcp: true,
+      sta_use_dhcp: true,
       dns_active: true,
       mdns_active: false,
     };
