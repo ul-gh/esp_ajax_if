@@ -14,7 +14,7 @@
 #include "ArduinoJson.h"
 #include "AsyncJson.h"
 
-#include "app_config.hpp"
+#include "app_state_model.hpp"
 
 
 /** @brief Reconnect to or set up a WiFi network connection
@@ -35,7 +35,7 @@
 class WiFiConfigurator
 {
 public:
-    WiFiConfigurator(NetworkConfig &conf,
+    WiFiConfigurator(AppState &state,
                      AsyncWebServer *http_backend,
                      DNSServer *dns_server);
 
@@ -49,7 +49,7 @@ public:
     void begin();
 
 private:
-    NetworkConfig &conf;
+    AppState &state;
     AsyncWebServer *http_backend;
     DNSServer *dns_server;
 
@@ -61,23 +61,23 @@ private:
 
     void _counting_device_restart();
 
-    void _restore_state_from_nvs();
-    void _save_state_to_nvs();
+    esp_err_t _restore_state_from_nvs(NetworkConfig &conf);
+    esp_err_t _save_state_to_nvs(NetworkConfig &conf);
 
-    void _reconnect_ap_mode();
-    void _reconnect_station_mode();
+    bool _reconnect_ap_mode(NetworkConfig &conf);
+    bool _reconnect_station_mode(NetworkConfig &conf);
 
     // Looks up if current state says this is AP or station mode and calls
     // _configure and _reconnect for the respective mode
-    void _reconfigure_reconnect_network_interface();
+    bool _reconfigure_reconnect_network_interface(NetworkConfig &conf);
 
-    void _configure_station_mode();
-    void _configure_ap_mode();
+    bool _configure_station_mode(NetworkConfig &conf);
+    bool _configure_ap_mode(NetworkConfig &conf);
 
-    void _on_request_do_configuration(JsonObject &json_obj);
+    bool _on_request_do_configuration(JsonObject &json_obj, AsyncWebServerRequest *request);
 
     // On request, send configuration JSON encoded as HTTP body
-    void _send_config_response(AsyncWebServerRequest *request);
+    void _send_config_response(NetworkConfig &conf, AsyncWebServerRequest *request);
 
     // Register all application HTTP GET API callbacks into the HTPP server
     void _register_http_api();

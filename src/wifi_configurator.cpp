@@ -27,11 +27,11 @@ static auto TAG = "wifi_configurator.cpp";
 #include "wifi_configurator.hpp"
 
 
-WiFiConfigurator::WiFiConfigurator(NetworkConfig &conf,
+WiFiConfigurator::WiFiConfigurator(AppState &state,
                                    AsyncWebServer *http_backend,
                                    DNSServer *dns_server)
     // HTTP AJAX API server instance was created before
-    : conf{conf}
+    : state{state}
     , http_backend{http_backend}
     , dns_server{dns_server}
 {
@@ -47,10 +47,10 @@ WiFiConfigurator::WiFiConfigurator(NetworkConfig &conf,
     //std::shared_ptr<nvs::NVSHandle> handle = nvs::open_nvs_handle("eal_storage", NVS_READWRITE, &result);
     err |= nvs_open("eal_storage", NVS_READWRITE, &_nvs_handle);
     if (err != ESP_OK) {
+        // Assuming there is something seriously wrong, it makes no sense to continue booting
         ESP_LOGE(TAG, "Failed to initialize NVS. Abort.");
         abort();
     }
-    _restore_state_from_nvs();
 }
 
 WiFiConfigurator::~WiFiConfigurator() {
@@ -60,27 +60,38 @@ WiFiConfigurator::~WiFiConfigurator() {
 
 // This is supposed to block or reboot until WiFi is up and running...
 void WiFiConfigurator::begin() {
+    auto &conf = state.net_conf;
+    _restore_state_from_nvs(conf);
     // The number of restarts was obtained from NVS on constructor call before.
     // We suppose that AP mode with fallback defaults can not fail and so
     // there is no protection against infinite reboots in case of wrong
     // default values for AP mode
     ESP_LOGI(TAG, "This is restart no.: %d", _restart_counter);
     if (_restart_counter > conf.max_reboots) {
-        ESP_LOGI(TAG, "Max. restarts reached. Could not connect to WiFi in station mode.");
+        ESP_LOGE(TAG, "Max. restarts reached. Could not connect to WiFi network!");
         // Restore default configuration
         conf = NetworkConfig{};
         conf.ap_mode_active = true;
-        _save_state_to_nvs();
+        _save_state_to_nvs(conf);
     }
     ESP_LOGI(TAG, "Try setting up WiFi with saved configuration...");
-    if ((WiFi.getMode() == WIFI_AP) != conf.ap_mode_active) {
-        _reconfigure_reconnect_network_interface();
+    auto connected = false;
+    auto ap_mode_active = WiFi.getMode() == WIFI_AP;
+    if (ap_mode_active != conf.ap_mode_active) {
+        ESP_LOGW(TAG, "AP / Station mode seems to have changed. Reconfiguring...");
+        connected = _reconfigure_reconnect_network_interface(conf);
     } else {
         if (conf.ap_mode_active) {
-            _reconnect_ap_mode();
+            connected = _reconnect_ap_mode(conf);
         } else {
-            _reconnect_station_mode();
+            connected = _reconnect_station_mode(conf);
         }
+    }
+    // If all of the above triggered retries have failed, and we are still not
+    // connected, fall back to access point mode.
+    if (!connected) {
+        _configure_ap_mode(conf);
+        _counting_device_restart();
     }
     // We should now be connected and we can reset the restart counter..
     auto err = nvs_set_u8(_nvs_handle, "restart_counter", 0);
@@ -107,7 +118,7 @@ void WiFiConfigurator::_counting_device_restart() {
     ESP.restart();
 }
 
-void WiFiConfigurator::_restore_state_from_nvs() {
+esp_err_t WiFiConfigurator::_restore_state_from_nvs(NetworkConfig &conf) {
     auto err = ESP_OK;
     // _restart counter defaults to 0
     err |= nvs_get_u8(_nvs_handle, "restart_counter", &_restart_counter);
@@ -149,11 +160,12 @@ void WiFiConfigurator::_restore_state_from_nvs() {
     str_len = conf.hostname_maxlen;
     err |= nvs_get_str(_nvs_handle, "hostname", conf.hostname, &str_len);
     if (err != ESP_OK) {
-        ESP_LOGE(TAG, "Failed to read persistent state from NVS!");
+        ESP_LOGW(TAG, "Failed to read persistent state from NVS!");
     }
+    return err;
 }
 
-void WiFiConfigurator::_save_state_to_nvs() {
+esp_err_t WiFiConfigurator::_save_state_to_nvs(NetworkConfig &conf) {
     auto err = ESP_OK;
     auto u8_flag = static_cast<uint8_t>(conf.ap_mode_active);
     err |= nvs_set_u8(_nvs_handle, "ap_mode_active", u8_flag);
@@ -186,34 +198,37 @@ void WiFiConfigurator::_save_state_to_nvs() {
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "Failed to write persistent state to NVS!");
     }
+    return err;
 }
 
-void WiFiConfigurator::_reconnect_ap_mode() {
+bool WiFiConfigurator::_reconnect_ap_mode(NetworkConfig &conf) {
     ESP_LOGI(TAG, "Reconnecting AP mode..");
     for (auto retries = 0; retries < conf.max_reconnections; retries++) {
         // Try to re-establish an access point using stored IP configuration
-        if (WiFi.softAP(conf.ssid, conf.psk) && WiFi.softAPIP() == conf.ip4_addr) {
-            break;
+        auto connected = WiFi.softAP(conf.ssid, conf.psk);
+        connected &= WiFi.softAPIP() == conf.ip4_addr;
+        if (connected) {
+            // We are now running an access point (hopefully)..
+            ESP_LOGI(TAG, "Set up access point with SSID: %s  and IP address: %s",
+                    conf.ssid, conf.ip4_addr.toString().c_str());
+            return true;
+        } else {
+            ESP_LOGW(TAG, "Timeout. Retrying..");
+            _configure_ap_mode(conf);
+            delay(conf.reconnection_timeout_ms);
         }
-        if (retries >= conf.max_reconnections) {
-            _configure_ap_mode();
-            _counting_device_restart();
-        }
-        ESP_LOGW(TAG, "Timeout. Retrying..");
-        _configure_ap_mode();
-        delay(conf.reconnection_timeout_ms);
     }
-    // We are now running an access point (hopefully)..
-    ESP_LOGI(TAG, "Set up access point with SSID: %s  and IP address: %s",
-             conf.ssid, conf.ip4_addr.toString().c_str());
+    // Maximum number of reconnections exceeded.
+    return false;
 }
 
-void WiFiConfigurator::_reconnect_station_mode() {
+bool WiFiConfigurator::_reconnect_station_mode(NetworkConfig &conf) {
     ESP_LOGI(TAG, "Reconnecting station mode..");
     for (auto retries = 0; retries < conf.max_reconnections; retries++) {
         // Try reconnecting with stored config. If this retruns WL_CONNECTED, we are done..
-        if (WiFi.waitForConnectResult() == WL_CONNECTED) {
-            // We are now connected.. Restoring configuration from stored connection..
+        auto connected = WiFi.waitForConnectResult() == WL_CONNECTED;
+        if (connected) {
+            // Restoring configuration from stored connection..
             // When using DHCP, the configuration can have changed.
             // The changes are added to the instance properties but not made persistent.
             conf.ip4_addr = WiFi.localIP();
@@ -223,30 +238,34 @@ void WiFiConfigurator::_reconnect_station_mode() {
             strncpy(conf.ssid, WiFi.SSID().c_str(), conf.ssid_maxlen);
             ESP_LOGI(TAG, "Connected as host %s with IP address: %s",
                      conf.hostname, conf.ip4_addr.toString().c_str());
-            return;
+            return true;
+        } else {
+            ESP_LOGW(TAG, "Timeout. Retrying..");
+            WiFi.begin();
+            delay(conf.reconnection_timeout_ms);
         }
-        ESP_LOGW(TAG, "Timeout. Retrying..");
-        WiFi.begin();
-        delay(conf.reconnection_timeout_ms);
     }
-    // Maximum number of reconnections exceeded. Reconfigure and restart device..
-    _configure_station_mode();
-    _counting_device_restart();
+    // Maximum number of reconnections exceeded.
+    return false;
 }
 
 // Looks up if this is AP or station mode and calls _configure and _reconnect
 // for the respective mode
-void WiFiConfigurator::_reconfigure_reconnect_network_interface() {
+bool WiFiConfigurator::_reconfigure_reconnect_network_interface(NetworkConfig &conf) {
+    auto connected = false;
     if (conf.ap_mode_active) {
-        _configure_ap_mode();
-        _reconnect_ap_mode();
+        connected = _configure_ap_mode(conf);
+        if (!connected) {connected = _reconnect_ap_mode(conf);}
     } else {
-        _configure_station_mode();
-        _reconnect_station_mode();
+        connected = _configure_station_mode(conf);
+        if (!connected) {connected = _reconnect_station_mode(conf);}
     }
+    return connected;
 }
 
-void WiFiConfigurator::_configure_station_mode() {
+bool WiFiConfigurator::_configure_station_mode(NetworkConfig &conf) {
+    // Bugfix for sethostname
+    WiFi.disconnect();
     WiFi.persistent(true);
     WiFi.setAutoReconnect(true);
     WiFi.mode(WIFI_STA);
@@ -256,18 +275,20 @@ void WiFiConfigurator::_configure_station_mode() {
     }
     // Connect to Wi-Fi network with SSID and password
     ESP_LOGI(TAG, "(Re-)Connecting to SSID: %s", conf.ssid);
-    WiFi.begin(conf.ssid, conf.psk);
+    return WiFi.begin(conf.ssid, conf.psk) == WL_CONNECTED;
 }
 
-void WiFiConfigurator::_configure_ap_mode() {
+bool WiFiConfigurator::_configure_ap_mode(NetworkConfig &conf) {
     ESP_LOGI(TAG, "Setting soft-AP mode...");
     WiFi.mode(WIFI_AP);
     WiFi.softAPConfig(conf.ip4_addr, conf.ip4_gw, conf.ip4_mask);
     WiFi.softAPsetHostname(conf.hostname);
     if (WiFi.softAP(conf.ssid, conf.psk)) {
         ESP_LOGI(TAG, "Soft-AP IP address: %s", WiFi.softAPIP().toString().c_str());
+        return true;
     } else {
         ESP_LOGE(TAG, "Setting up Access Point failed!");
+        return false;
     }
 }
 
@@ -285,17 +306,19 @@ void WiFiConfigurator::_register_http_api() {
     constexpr size_t json_buf_size = 50 + json_obj_size + keys_size + data_strings_size;
     // Register "/get_wifi_config" handler
     http_backend->on(
-        conf.get_wifi_config_endpoint,
+        state.net_conf.get_wifi_config_endpoint,
         HTTP_GET,
-        [this](AsyncWebServerRequest *request){_send_config_response(request);}
+        [this](AsyncWebServerRequest *request){_send_config_response(state.net_conf, request);}
     );
     // Register "/set_wifi_config" handler
     _http_request_handler = new AsyncCallbackJsonWebHandler(
-        conf.set_wifi_config_endpoint,
+        state.net_conf.set_wifi_config_endpoint,
         [this](AsyncWebServerRequest *request, JsonVariant &jv) {
             auto json_obj = jv.as<JsonObject>();
-            _on_request_do_configuration(json_obj);
-            _send_config_response(request);
+            // Does not seem to work, we relpy a successful state and reboot.
+            //auto success = _on_request_do_configuration(json_obj);
+            //_send_config_response(success, request);
+            _on_request_do_configuration(json_obj, request);
         },
         json_buf_size
     );
@@ -304,54 +327,84 @@ void WiFiConfigurator::_register_http_api() {
 
 
 // Configure WiFi on API request
-void WiFiConfigurator::_on_request_do_configuration(JsonObject &json_obj) {
+bool WiFiConfigurator::_on_request_do_configuration(JsonObject &json_obj, AsyncWebServerRequest *request) {
+    // Make a back-up of the old configuration first...
+    // Does not seem to work, see below...
+    //auto backup_conf = state.net_conf;
+    auto &current_conf = state.net_conf;
+    // Overwrite current config with received config
     auto ip = IPAddress{};
     auto str = json_obj["ip4_addr"].as<char*>();
-    if (str && ip.fromString(str)) {conf.ip4_addr = ip;}
+    if (str && ip.fromString(str)) {current_conf.ip4_addr = ip;}
     str = json_obj["ip4_gw"].as<char*>();
-    if (str && ip.fromString(str)) {conf.ip4_gw = ip;}
+    if (str && ip.fromString(str)) {current_conf.ip4_gw = ip;}
     str = json_obj["ip4_mask"].as<char*>();
-    if (str && ip.fromString(str)) {conf.ip4_mask = ip;}
+    if (str && ip.fromString(str)) {current_conf.ip4_mask = ip;}
     str = json_obj["hostname"].as<char*>();
-    if (str && strlen(str) < sizeof(conf.hostname)) {strcpy(conf.hostname, str);}
+    if (str && strlen(str) < sizeof(current_conf.hostname)) {strcpy(current_conf.hostname, str);}
     str = json_obj["ssid"].as<char*>();
-    if (str && strlen(str) < sizeof(conf.ssid)) {strcpy(conf.ssid, str);}
+    if (str && strlen(str) < sizeof(current_conf.ssid)) {strcpy(current_conf.ssid, str);}
     str = json_obj["psk"].as<char*>();
-    if (str && strlen(str) < sizeof(conf.psk)) {strcpy(conf.psk, str);}
+    if (str && strlen(str) < sizeof(current_conf.psk)) {strcpy(current_conf.psk, str);}
     auto jv = json_obj["ap_mode_active"];
-    if (!jv.isNull() && jv.is<bool>()) {conf.ap_mode_active = jv.as<bool>();}
+    if (!jv.isNull() && jv.is<bool>()) {current_conf.ap_mode_active = jv.as<bool>();}
     jv = json_obj["sta_use_dhcp"];
-    if (!jv.isNull() && jv.is<bool>()) {conf.sta_use_dhcp = jv.as<bool>();}
+    if (!jv.isNull() && jv.is<bool>()) {current_conf.sta_use_dhcp = jv.as<bool>();}
     jv = json_obj["dns_active"];
-    if (!jv.isNull() && jv.is<bool>()) {conf.dns_active = jv.as<bool>();}
+    if (!jv.isNull() && jv.is<bool>()) {current_conf.dns_active = jv.as<bool>();}
     jv = json_obj["mdns_active"];
-    if (!jv.isNull() && jv.is<bool>()) {conf.mdns_active = jv.as<bool>();}
-    _reconfigure_reconnect_network_interface();
+    if (!jv.isNull() && jv.is<bool>()) {current_conf.mdns_active = jv.as<bool>();}
+    // Pretend this was successful..
+    _send_config_response(current_conf, request);
+    delay(1000);
+    // Try connection with new configuration...
+    auto success = _reconfigure_reconnect_network_interface(current_conf);
+    if (success) {
+        // Make changes permanent
+        state.net_conf = current_conf;
+        _save_state_to_nvs(current_conf);
+    } else {
+        // Resetting the connection alone does not seem to work, rebooting...
+        _counting_device_restart();
+        //state.net_conf = backup_conf;
+        //success = _reconfigure_reconnect_network_interface(backup_conf);
+        // If this does again not succeed, we have just lost our old and
+        // was-good-before conection... Reboot is likely a good idea now..
+        //if (!success) {
+        //    _counting_device_restart();
+        //}
+    }
+    return success;
 }
 
 
 // On request, send configuration JSON encoded as HTTP body
-void WiFiConfigurator::_send_config_response(AsyncWebServerRequest *request) {
+void WiFiConfigurator::_send_config_response(NetworkConfig &conf, AsyncWebServerRequest *request) {
     auto response = new AsyncJsonResponse();
-    auto json_variant = response->getRoot();
-    // Const cast necessary as this Arduino JSON version does not make a copy for const char* rvalue IIRC
-    json_variant["ip4_addr"] = const_cast<char*>(conf.ip4_addr.toString().c_str());
-    json_variant["ip4_gw"] = const_cast<char*>(conf.ip4_gw.toString().c_str());
-    json_variant["ip4_mask"] = const_cast<char*>(conf.ip4_mask.toString().c_str());
-    json_variant["hostname"] = conf.hostname;
-    json_variant["ssid"] = conf.ssid;
-    // Nope.... PSK is not submitted back to the client
-    // json_doc["psk"] = conf.psk;
-    json_variant["ap_mode_active"] = conf.ap_mode_active;
-    json_variant["sta_use_dhcp"] = conf.sta_use_dhcp;
-    json_variant["dns_active"] = conf.dns_active;
-    json_variant["mdns_active"] = conf.mdns_active;
+    //if (!success) {
+    //    // Reply with "Internal Server Error"
+    //    response->setCode(500);
+    //} else {
+        auto json_variant = response->getRoot();
+        // Const cast necessary as this Arduino JSON version does not make a copy for const char* rvalue IIRC
+        json_variant["ip4_addr"] = const_cast<char*>(conf.ip4_addr.toString().c_str());
+        json_variant["ip4_gw"] = const_cast<char*>(conf.ip4_gw.toString().c_str());
+        json_variant["ip4_mask"] = const_cast<char*>(conf.ip4_mask.toString().c_str());
+        json_variant["hostname"] = conf.hostname;
+        json_variant["ssid"] = conf.ssid;
+        json_variant["psk"] = conf.psk;
+        json_variant["ap_mode_active"] = conf.ap_mode_active;
+        json_variant["sta_use_dhcp"] = conf.sta_use_dhcp;
+        json_variant["dns_active"] = conf.dns_active;
+        json_variant["mdns_active"] = conf.mdns_active;
+    //}
     response->setLength();
     request->send(response);
 }
 
 // Configure a DNSServer instance
 void WiFiConfigurator::_setup_dns_server() {
+    auto &conf = state.net_conf;
     if (!dns_server) {return;}
     // DNS caching TTL associated  with the domain name.
     dns_server->setTTL(conf.dns_ttl);
@@ -366,6 +419,7 @@ void WiFiConfigurator::_setup_dns_server() {
 
 // Optionally, configure MDNS service
 void WiFiConfigurator::_setup_mdns_server() {
+    auto &conf = state.net_conf;
     MDNS.begin(conf.hostname);
     MDNS.addService("http", "tcp", conf.http_tcp_port);
 }

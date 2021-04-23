@@ -35,9 +35,9 @@ struct NetworkConfig {
     static constexpr uint16_t http_tcp_port = 80;
 
     // Maximum number of device reboots when multiple reconnections have failed
-    static constexpr uint32_t max_reboots = 5;
+    static constexpr uint32_t max_reboots = 4;
     // Maximum number of connection attempts for configured acces point in station mode
-    static constexpr uint32_t max_reconnections = 4;
+    static constexpr uint32_t max_reconnections = 3;
     static constexpr uint32_t reconnection_timeout_ms = 3000;
     static constexpr uint32_t dns_ttl = 3000;
 

@@ -241,8 +241,8 @@ export default {
   },
   methods: {
     async get_initial_state() {
-      const response = await fetch("/get_wifi_config");
-      this.update_data(response);
+      const data_obj = await this.do_json_request("/get_wifi_config");
+      this.update_data(data_obj);
     },
     async submit_config(event) {
       const form = event.target;
@@ -256,10 +256,22 @@ export default {
       for (let key in this.$data) {
         request_obj[key] = this.$data[key];
       }
-      const request_body = JSON.stringify(request_obj);
+      const data_obj = await this.do_json_request(form.action, request_obj, 'POST');
+      this.update_data(data_obj);
+    },
+    async do_json_request(uri, request_obj=undefined, method='GET') {
+      const json_str = JSON.stringify(request_obj);
+      let request_body = undefined;
+      if (method === 'POST') {
+        request_body = json_str;
+      } else if (method === 'GET') {
+        if (json_str) {
+          uri += `?${encodeURIComponent(json_str)}`;
+        }
+      }
       // Prepare fetch request
       const fetch_options = {
-        method: form.method,
+        method: method,
         //mode: 'cors', // no-cors, *cors, same-origin
         cache: 'no-cache',
         //credentials: 'same-origin', // include, *same-origin, omit
@@ -274,16 +286,21 @@ export default {
         // body data type must match "Content-Type" header
         body: request_body,
       };
-      const response = await fetch(form.action, fetch_options);
-      this.update_data(response);
+
+      const response = await fetch(uri, fetch_options);
+      if (!response.ok) {
+        alert("Server error, bad request or bad configuration...");
+        return {};
+      } else {
+        const data_obj = await response.json();
+        return data_obj;
+      }
     },
-    update_data(response) {
-      if (response.ok) {
-        const new_config = response.json();
-        for (let key in this.$data) {
-          if (new_config.hasOwnProperty(key)) {
-            this.$data[key] = new_config[key];
-          }
+    update_data(data_obj) {
+      console.log("Updating data with: ", data_obj);
+      for (let key in this.$data) {
+        if (data_obj.hasOwnProperty(key)) {
+          this.$data[key] = data_obj[key];
         }
       }
     }
