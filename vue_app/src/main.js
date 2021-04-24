@@ -6,4 +6,3 @@ const app = createApp(EspAjaxLab).use(router);
 const vm = app.mount('#app');
 
 window.eal = vm;
-window.live_controller = vm.$refs.LiveController;

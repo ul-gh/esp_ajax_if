@@ -48,6 +48,9 @@ public:
      */
     void begin();
 
+    void print_ap_info();
+    void print_station_info();
+
 private:
     AppState &state;
     AsyncWebServer *http_backend;

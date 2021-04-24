@@ -3,9 +3,10 @@
 <template>
   <div class="network_and_update">
     <form 
-      @submit.prevent="submit_config"
+      @submit.prevent="submit_net_conf"
       action="/set_wifi_config"
-      method="POST">
+      autocomplete="off"
+    >
       <table>
         <caption class="info_text">
           <h2>
@@ -32,19 +33,18 @@
               <label class="flex-stacked-calign">
                 <input
                     type="radio"
-                    name="ap_mode_active"
                     :value="true"
                     checked
-                    v-model="ap_mode_active"
+                    v-model="net_conf.ap_mode_active"
+                    @click="set_ap_mode_defaults"
                 >
                 Access Point
               </label>
               <label class="flex-stacked-calign">
                 <input
                     type="radio"
-                    name="ap_mode_active"
                     :value="false"
-                    v-model="ap_mode_active"
+                    v-model="net_conf.ap_mode_active"
                 >
                 Station
               </label>
@@ -55,19 +55,17 @@
               <label class="flex-stacked-calign">
                 <input
                     type="radio"
-                    name="sta_use_dhcp"
                     :value="false"
-                    v-model="sta_use_dhcp"
+                    v-model="net_conf.sta_use_dhcp"
                 >
                 Fixed IP
               </label>
               <label class="flex-stacked-calign">
                 <input
                     type="radio"
-                    name="sta_use_dhcp"
                     :value="true"
                     checked
-                    v-model="sta_use_dhcp"
+                    v-model="net_conf.sta_use_dhcp"
                 >
                 Auto / DHCP
               </label>
@@ -80,16 +78,14 @@
               <label class="flex-stacked-calign">
                 <input
                     type="checkbox"
-                    name="dns_active"
-                    v-model="dns_active"
+                    v-model="net_conf.dns_active"
                 >
                 Enable DNS
               </label>
               <label class="flex-stacked-calign">
                 <input
                     type="checkbox"
-                    name="mdns_active"
-                    v-model="mdns_active"
+                    v-model="net_conf.mdns_active"
                 >
                 Enable MDNS
               </label>
@@ -100,8 +96,7 @@
                 WiFi PSK / Password
                 <input
                   type="password"
-                  name="psk"
-                  v-model="psk"
+                  v-model="net_conf.psk"
                 >
               </label>
             </td>
@@ -112,8 +107,7 @@
                 DNS / DHCP Hostname
                 <input
                   type="text"
-                  name="hostname"
-                  v-model="hostname"
+                  v-model="net_conf.hostname"
                 >
               </label>
             </td>
@@ -122,8 +116,7 @@
                 WiFi Name / SSID
                 <input
                   type="text"
-                  name="ssid"
-                  v-model="ssid"
+                  v-model="net_conf.ssid"
                 >
               </label>
             </td>
@@ -134,8 +127,7 @@
                 IP Address
                 <input
                   type="text"
-                  name="ip4_addr"
-                  v-model="ip4_addr"
+                  v-model="net_conf.ip4_addr"
                 >
               </label>
             </td>
@@ -145,8 +137,7 @@
                 IP Address
                 <input
                   type="text"
-                  name="ip4_gw"
-                  v-model="ip4_gw"
+                  v-model="net_conf.ip4_gw"
                 >
               </label>
             </td>
@@ -156,8 +147,7 @@
                 Subnet Mask
                 <input
                   type="text"
-                  name="ip4_mask"
-                  v-model="ip4_mask"
+                  v-model="net_conf.ip4_mask"
                 >
               </label>
             </td>
@@ -217,22 +207,26 @@
 </template>
 
 <script>
+import { do_json_request } from "@/api/async_requests_sse.js";
+
 export default {
   name: "NetworkAndUpdate",
   components: {},
   data() {
     return {
-      //// Network configuration (values are only defaults)
-      ip4_addr: "192.168.4.1",
-      ip4_gw: "192.168.4.1",
-      ip4_mask: "255.255.0.0",
-      hostname: "eal",
-      ssid: "esp_ajax_lab",
-      psk: "123FOO456",
-      ap_mode_active: true,
-      sta_use_dhcp: true,
-      dns_active: true,
-      mdns_active: false,
+      net_conf: {
+        //// Network configuration (values are only defaults)
+        ip4_addr: "192.168.4.1",
+        ip4_gw: "192.168.4.1",
+        ip4_mask: "255.255.0.0",
+        hostname: "eal",
+        ssid: "esp_ajax_lab",
+        psk: "123FOO456",
+        ap_mode_active: true,
+        sta_use_dhcp: true,
+        dns_active: true,
+        mdns_active: false,
+      },
     };
   },
   props: {
@@ -241,73 +235,34 @@ export default {
   },
   methods: {
     async get_initial_state() {
-      const data_obj = await this.do_json_request("/get_wifi_config");
-      this.update_data(data_obj);
+      const response = await do_json_request("/get_wifi_config");
+      this.update_net_conf(response);
     },
-    async submit_config(event) {
-      const form = event.target;
-      if (form.hasAttribute("disabled")) {return;}
-      // Form data as JSON
-      //FormData keeps boolean attributes as string values, but the server
-      // needs boolean. So we send the vue data object instead.
-      //const form_data = new FormData(form);
-      let request_obj = {};
-      //this.$data.forEach((value, key) => request_obj[key] = value);
-      for (let key in this.$data) {
-        request_obj[key] = this.$data[key];
-      }
-      const data_obj = await this.do_json_request(form.action, request_obj, 'POST');
-      this.update_data(data_obj);
+    async submit_net_conf(event) {
+      if (this.disabled) {return;}
+      const endpoint = event.target.action;
+      const response = await do_json_request(endpoint, this.net_conf, 'POST');
+      this.update_net_conf(response);
     },
-    async do_json_request(uri, request_obj=undefined, method='GET') {
-      const json_str = JSON.stringify(request_obj);
-      let request_body = undefined;
-      if (method === 'POST') {
-        request_body = json_str;
-      } else if (method === 'GET') {
-        if (json_str) {
-          uri += `?${encodeURIComponent(json_str)}`;
+    update_net_conf(response_obj) {
+      console.log("Updating net_conf with: ", response_obj);
+      Object.keys(this.net_conf).forEach(key => {
+        if (response_obj.hasOwnProperty(key)) {
+          this.net_conf[key] = response_obj[key];
         }
-      }
-      // Prepare fetch request
-      const fetch_options = {
-        method: method,
-        //mode: 'cors', // no-cors, *cors, same-origin
-        cache: 'no-cache',
-        //credentials: 'same-origin', // include, *same-origin, omit
-        headers: {
-          'Content-Type': 'application/json'
-          // 'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        redirect: 'error', // manual, *follow, error
-        // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin,
-        // same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
-        referrerPolicy: 'no-referrer',
-        // body data type must match "Content-Type" header
-        body: request_body,
-      };
-
-      const response = await fetch(uri, fetch_options);
-      if (!response.ok) {
-        alert("Server error, bad request or bad configuration...");
-        return {};
-      } else {
-        const data_obj = await response.json();
-        return data_obj;
-      }
+      });
     },
-    update_data(data_obj) {
-      console.log("Updating data with: ", data_obj);
-      for (let key in this.$data) {
-        if (data_obj.hasOwnProperty(key)) {
-          this.$data[key] = data_obj[key];
-        }
-      }
-    }
+    // It is too easy to accidentially set a previously set infrastructure SSID
+    // as our AP SSID, so the fields are pre-populated with defaults.
+    set_ap_mode_defaults() {
+      this.net_conf.ssid = 'esp_ajax_lab';
+      this.net_conf.psk = '123FOO456';
+    },
   },
   emits: ["action-triggered"],
   mounted() {
     this.get_initial_state();
+    window.tab = this;
   },
 };
 </script>

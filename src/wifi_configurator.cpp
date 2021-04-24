@@ -108,6 +108,31 @@ void WiFiConfigurator::begin() {
     }
 }
 
+void WiFiConfigurator::print_ap_info() {
+    ESP_LOGI(TAG,
+        "\n=============== WiFi Access Point ================\n"
+        "SSID: %s  PSK: %s\n"
+        "IP address: %s  hostname: %s\n"
+        "===================================================",
+        state.net_conf.ssid, state.net_conf.psk,
+        WiFi.softAPIP().toString().c_str(),
+        WiFi.softAPgetHostname()
+        );
+}
+
+void WiFiConfigurator::print_station_info() {
+    ESP_LOGI(TAG,
+        "\n======== WiFi connected in station mode =========\n"
+        "SSID: %s  PSK: %s\n"
+        "IP address: %s  hostname: %s\n"
+        "===================================================",
+        WiFi.SSID().c_str(), WiFi.psk().c_str(),
+        WiFi.softAPIP().toString().c_str(),
+        state.net_conf.hostname
+        );
+}
+
+
 void WiFiConfigurator::_counting_device_restart() {
     ESP_LOGW(TAG, "Max. connection retries exhausted. Restart...");
     _restart_counter++;
@@ -209,8 +234,7 @@ bool WiFiConfigurator::_reconnect_ap_mode(NetworkConfig &conf) {
         connected &= WiFi.softAPIP() == conf.ip4_addr;
         if (connected) {
             // We are now running an access point (hopefully)..
-            ESP_LOGI(TAG, "Set up access point with SSID: %s  and IP address: %s",
-                    conf.ssid, conf.ip4_addr.toString().c_str());
+            print_ap_info();
             return true;
         } else {
             ESP_LOGW(TAG, "Timeout. Retrying..");
@@ -236,8 +260,7 @@ bool WiFiConfigurator::_reconnect_station_mode(NetworkConfig &conf) {
             conf.ip4_mask = WiFi.subnetMask();
             strncpy(conf.hostname, WiFi.getHostname(), conf.hostname_maxlen);
             strncpy(conf.ssid, WiFi.SSID().c_str(), conf.ssid_maxlen);
-            ESP_LOGI(TAG, "Connected as host %s with IP address: %s",
-                     conf.hostname, conf.ip4_addr.toString().c_str());
+            print_station_info();
             return true;
         } else {
             ESP_LOGW(TAG, "Timeout. Retrying..");
@@ -277,7 +300,13 @@ bool WiFiConfigurator::_configure_station_mode(NetworkConfig &conf) {
     WiFi.setHostname(conf.hostname);
     // Connect to Wi-Fi network with SSID and password
     ESP_LOGI(TAG, "(Re-)Connecting to SSID: %s", conf.ssid);
-    return WiFi.begin(conf.ssid, conf.psk) == WL_CONNECTED;
+    auto connected = WiFi.begin(conf.ssid, conf.psk) == WL_CONNECTED;
+    if (connected) {
+        print_station_info();
+    } else {
+        ESP_LOGE(TAG, "Connecting in station mode failed!");
+    }
+    return connected;
 }
 
 bool WiFiConfigurator::_configure_ap_mode(NetworkConfig &conf) {
@@ -285,13 +314,13 @@ bool WiFiConfigurator::_configure_ap_mode(NetworkConfig &conf) {
     WiFi.mode(WIFI_AP);
     WiFi.softAPConfig(conf.ip4_addr, conf.ip4_gw, conf.ip4_mask);
     WiFi.softAPsetHostname(conf.hostname);
-    if (WiFi.softAP(conf.ssid, conf.psk)) {
-        ESP_LOGI(TAG, "Soft-AP IP address: %s", WiFi.softAPIP().toString().c_str());
-        return true;
+    auto connected = WiFi.softAP(conf.ssid, conf.psk);
+    if (connected) {
+        print_ap_info();
     } else {
         ESP_LOGE(TAG, "Setting up Access Point failed!");
-        return false;
     }
+    return connected;
 }
 
 // Register WiFi configuration HTTP POST API callback into the server

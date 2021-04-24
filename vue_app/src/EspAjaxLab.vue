@@ -45,7 +45,6 @@
       </li>
       <li class="grid_item">
         <router-view
-          :ref="$route.name"
           :state="state"
           :disabled="disabled"
           @action_triggered="dispatch_action"

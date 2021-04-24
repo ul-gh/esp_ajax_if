@@ -9,7 +9,44 @@
  * License: GPL v.3
  */
 
-import { ErrorCodes } from "@vue/runtime-core";
+// Make request with request_obj turned into JSON data.
+// Retuns object from response JSON.
+async function do_json_request(url_endpoint, obj_input=undefined, method='GET') {
+  const json_str = JSON.stringify(obj_input);
+  let request_body = undefined;
+  if (method === 'POST') {
+    request_body = json_str;
+  } else if (method === 'GET') {
+    if (json_str) {
+      url_endpoint += `?${encodeURIComponent(json_str)}`;
+    }
+  }
+  // Prepare fetch request
+  const fetch_options = {
+    method: method,
+    //mode: 'cors', // no-cors, *cors, same-origin
+    cache: 'no-cache',
+    //credentials: 'same-origin', // include, *same-origin, omit
+    headers: {
+      'Content-Type': 'application/json'
+      // 'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    redirect: 'error', // manual, *follow, error
+    // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin,
+    // same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+    referrerPolicy: 'no-referrer',
+    // body data type must match "Content-Type" header
+    body: request_body,
+  };
+  const response = await fetch(url_endpoint, fetch_options);
+  if (!response.ok) {
+    alert("Server error, bad request or bad configuration...");
+    return {};
+  } else {
+    const obj_out = await response.json();
+    return obj_out;
+  }
+}
 
 // Configure minimum delay between two requests sent to the HTTP server in ms
 const request_interval_min_ms = 300;
@@ -189,4 +226,9 @@ class AppWatchdog {
 }
 
 
-export { AsyncRequestGenerator, ServerSentEventHandler, AppWatchdog };
+export {
+  do_json_request,
+  AsyncRequestGenerator,
+  ServerSentEventHandler,
+  AppWatchdog
+};
