@@ -1,18 +1,10 @@
-[submodule "lib/toggle-switchy"]
-	path = lib/toggle-switchy
-	url = https://github.com/adamculpepper/toggle-switchy.git
-	branch = master
-[submodule "lib/AsyncTCP"]
-	path = lib/AsyncTCP
-	url = https://github.com/me-no-dev/AsyncTCP.git
-	branch = master
-[submodule "lib/ESPAsyncWebServer"]
-	path = lib/ESPAsyncWebServer
-	url = https://github.com/ul-gh/ESPAsyncWebServer.git
-	branch = master
 [submodule "util/esp32"]
 	path = util/esp32_svd
 	url = https://github.com/esp-rs/esp32.git
 [submodule "vue_app/src/ext_modules/JogDial.js"]
 	path = vue_app/src/ext_modules/JogDial.js
 	url = git://github.com/ul-gh/JogDial.js.git
+[submodule "components/ArduinoJson"]
+	path = components/ArduinoJson
+	url = https://github.com/bblanchon/ArduinoJson.git
+	branch = 6.x

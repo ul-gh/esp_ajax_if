@@ -1,0 +1,48 @@
+# esp-idf
+### ESP-IDF master
+git clone --recursive https://github.com/espressif/esp-idf.git
+./install.sh
+. ./export.sh 
+# (Obsolete, already merged in master): pull in ksz8081 from https://github.com/espressif/arduino-esp32/pull/5061/files
+# project components
+cd examples/get-started/sample_project
+mkdir components
+cd components
+
+### Arduino master
+git clone --recursive https://github.com/espressif/arduino-esp32.git
+
+## Arduino has a dependency "arduino_tinyusb" which is for ESP32-S2 and S3
+## however it is not clear for me which version/source to use.
+## As I am using the plain ESP32, removing the dependency for now:
+# diff --git a/CMakeLists.txt b/CMakeLists.txt
+# index f6332f54..0eff4133 100644
+# --- a/CMakeLists.txt
+# +++ b/CMakeLists.txt
+# @@ -161,7 +161,7 @@ set(includedirs
+#  set(srcs ${CORE_SRCS} ${LIBRARY_SRCS} ${BLE_SRCS})
+#  set(priv_includes cores/esp32/libb64)
+#  set(requires spi_flash mbedtls mdns esp_adc_cal)
+# -set(priv_requires fatfs nvs_flash app_update spiffs bootloader_support openssl bt arduino_tinyusb main)
+# +set(priv_requires fatfs nvs_flash app_update spiffs bootloader_support openssl bt main)
+# 
+#  if(NOT CONFIG_ARDUINO_SELECTIVE_COMPILATION OR CONFIG_ARDUINO_SELECTIVE_ArduinoOTA)
+#    list(APPEND priv_requires esp_https_ota)
+# 
+
+# esp_littlefs
+git clone --recursive https://github.com/joltwallet/esp_littlefs.git esp_littlefs
+# (Obsolete, already merged in master): perform this patch: https://github.com/joltwallet/esp_littlefs/pull/30/files
+# esp-rainmaker
+git clone --recursive https://github.com/espressif/esp-rainmaker.git esp-rainmaker
+
+cd ..
+### idf.py menuconfig
+idf.py menuconfig
+# 1. flash size -> 4mb
+# 2. autostart arduino
+# 3. Component Config -> mbedTLS -> TLS Key Exchange Methods -> [*] Enable pre-shared-key ciphersuits + [*] Enable PSK based ciphersuite modes
+# fix sdkconfig
+echo "CONFIG_IO_GLITCH_FILTER_TIME_MS=50" >> sdkconfig
+# make
+make EXTRA_COMPONENT_DIRS=components/esp-rainmaker/components

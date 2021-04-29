@@ -1,7 +1,7 @@
 #ifndef APP_CONFIG_HPP__
 #define APP_CONFIG_HPP__
 
-#include "FreeRTOS.h"
+#include "freertos/FreeRTOS.h"
 #include "driver/mcpwm.h"
 #include "driver/gpio.h"
 #include "driver/ledc.h"
