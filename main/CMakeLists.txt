@@ -2,7 +2,8 @@ set(requires
     "arduino-esp32"
     "ESPAsyncWebServer"
     "AsyncTCP"
-    "ArduinoJson"
+    # Needs shim...
+    #"ArduinoJson"
     "esp32_ps_pwm"
 )
 

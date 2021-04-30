@@ -5,6 +5,26 @@
 	path = vue_app/src/ext_modules/JogDial.js
 	url = git://github.com/ul-gh/JogDial.js.git
 [submodule "components/ArduinoJson"]
-	path = components/ArduinoJson
+	path = components/esp_idf_build_incompatible/ArduinoJson
 	url = https://github.com/bblanchon/ArduinoJson.git
 	branch = 6.x
+[submodule "components/AsyncTCP"]
+	path = components/AsyncTCP
+	url = https://github.com/ul-gh/AsyncTCP.git
+	branch = master
+[submodule "components/ESPAsyncWebServer"]
+	path = components/ESPAsyncWebServer
+	url = https://github.com/ul-gh/ESPAsyncWebServer.git
+	branch = dev
+[submodule "components/arduino-esp32"]
+	path = components/arduino-esp32
+	url = https://github.com/ul-gh/arduino-esp32.git
+	branch = master
+[submodule "components/esp-rainmaker"]
+	path = components/esp-rainmaker
+	url = https://github.com/espressif/esp-rainmaker.git
+	branch = master
+[submodule "components/esp_littlefs"]
+	path = components/esp_littlefs
+	url = https://github.com/joltwallet/esp_littlefs.git
+	branch = master
