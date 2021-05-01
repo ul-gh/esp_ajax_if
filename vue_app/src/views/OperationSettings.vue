@@ -1,4 +1,4 @@
-<!-- ESP Ajax Lab Operation Specific Settings Component
+<!-- ESP-LiveControl Operation Specific Settings Component
 -->
 <template>
   <div class="operation_settings">

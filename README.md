@@ -1,4 +1,8 @@
 # ESP-LiveControl
+
+NOTE: Due to ESP-IDF v4 transition, this is still unfinished and will not
+compile. Please stand by..
+
 HTTP server, AJAX API backend and Vue.js web application implementing
 self-contained, zero-install WiFi remote control of hardware modules
 attached to the Espressif ESP32 SoC.
@@ -17,6 +21,12 @@ This also features auxiliary measurement and control functions:
 The toolchain compiler must support at least std=c++17.
 
 ## HTML Documentation: [ESP-LiveControl](https://ul-gh.github.io/esp_ajax_if/)
+
+![Appliation Main Page](https://github.com/ul-gh/esp_ajax_if/blob/master/doc/img/01_LiveControl.png?raw=true)
+
+![Appliation Settings](https://github.com/ul-gh/esp_ajax_if/blob/master/doc/img/02_Settings.png?raw=true)
+
+![WiFi Network Configuration](https://github.com/ul-gh/esp_ajax_if/blob/master/doc/img/03_WiFi_Configurator.png?raw=true)
 
 ## License
 [GPL v3.0](./LICENSE)

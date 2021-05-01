@@ -7,12 +7,12 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="36.606796mm"
+   width="41.606796mm"
    height="5.6993051mm"
-   viewBox="0 0 36.606797 5.699305"
+   viewBox="0 0 41.606797 5.699305"
    version="1.1"
    id="svg8"
-   inkscape:version="1.0.1 (3bc2e813f5, 2020-09-07)"
+   inkscape:version="1.0.2 (1.0.2+r75+1)"
    sodipodi:docname="logo.svg">
   <defs
      id="defs2" />
@@ -24,7 +24,7 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="9.5157419"
-     inkscape:cx="66.030379"
+     inkscape:cx="84.928018"
      inkscape:cy="-14.024465"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
@@ -55,18 +55,18 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(-44.10733,-67.182442)">
+     transform="translate(-39.10733,-67.182442)">
     <text
        xml:space="preserve"
        style="font-style:normal;font-weight:normal;font-size:4.23333px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#008080;fill-opacity:1;stroke:none;stroke-width:0.264583"
-       x="43.718723"
+       x="38.718723"
        y="71.808731"
        id="text835"><tspan
          sodipodi:role="line"
          id="tspan833"
-         x="43.718723"
+         x="38.718723"
          y="71.808731"
-         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.23333px;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans Bold';fill:#008080;stroke-width:0.264583">ESP-AJAX-Lab</tspan></text>
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.23333px;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans Bold';fill:#008080;stroke-width:0.264583">ESP-LiveControl</tspan></text>
     <path
        fill="#ff0000"
        d="m 79.49531,72.881574 -0.249607,-1.415606 0.275714,0.393925 0.348257,-2.028465 -1.520894,0.878057 0.945174,-3.527043 h 0.901233 l -0.994719,2.586521 1.513658,-0.873921 -0.782675,3.028264 0.446136,-0.30156 -0.882277,1.260001"

@@ -1,4 +1,4 @@
-<!-- ESP Ajax Lab Main Hardware Controller Component
+<!-- ESP-LiveControl Main Hardware Controller Component
 -->
 <template>
   <div class="live_controller">

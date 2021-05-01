@@ -1,4 +1,4 @@
-<!-- ESP Ajax Lab Network and Updating Component
+<!-- ESP-LiveControl Network and Updating Component
 -->
 <template>
   <div class="network_and_update">

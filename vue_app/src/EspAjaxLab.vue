@@ -1,4 +1,4 @@
-<!-- ESP Ajax Lab - Web Application for Live Feedback Remote Hardware Control
+<!-- ESP-LiveControl - Web Application for Live Feedback Remote Hardware Control
  *
  * See home page: https://github.com/ul-gh/esp_ajax_if
  *

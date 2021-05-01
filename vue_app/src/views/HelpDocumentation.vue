@@ -1,4 +1,4 @@
-<!-- ESP Ajax Lab Help and Documentation Component
+<!-- ESP-LiveControl Help and Documentation Component
 -->
 <template>
   <div class="help_documentation info_text">
