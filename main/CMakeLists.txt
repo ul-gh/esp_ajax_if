@@ -1,8 +1,8 @@
 set(requires
     "arduino-esp32"
     "ESPAsyncWebServer"
-    "AsyncTCP"
-    # Needs shim...
+    #"AsyncTCP" # Already required by ESPAsyncWebServer
+    # Not compatible with IDF 4 build, see include_dirs below
     #"ArduinoJson"
     "esp32_ps_pwm"
 )
@@ -19,10 +19,20 @@ set(sources
     "fs_io.cpp"
 )
 
-idf_component_register(SRCS "${sources}"
-                       INCLUDE_DIRS "config" "include"
-                       REQUIRES "${requires}"
+set(include_dirs
+    "include"
+    "config"
+    "${PROJECT_DIR}/components/esp_idf_build_incompatible/ArduinoJson/src"
+)
+
+idf_component_register(
+    SRCS "${sources}"
+    INCLUDE_DIRS "${include_dirs}"
+    REQUIRES "${requires}"
 )
 
 #target_compile_definitions(${COMPONENT_TARGET} PUBLIC -DESP32)
-#target_compile_options(${COMPONENT_TARGET} PRIVATE -fno-rtti)
+#target_compile_options(${COMPONENT_TARGET} PRIVATE xyz)
+
+idf_build_get_property(components COMPONENTS)
+message(STATUS "++++++++++++++ Components: ${components}")

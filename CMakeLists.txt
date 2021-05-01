@@ -1,18 +1,12 @@
 cmake_minimum_required(VERSION 3.16.0)
 
-set(EXTRA_COMPONENT_DIRS
+set(CMAKE_CXX_STANDARD 20)
+
+list(APPEND EXTRA_COMPONENT_DIRS
     "components/esp-rainmaker/components"
     )
 
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 
-set(extra_includes
-    "components/esp_idf_build_incompatible/ArduinoJson/src"
-    )
-message(STATUS
-        "=========================== Extra Includes: ${extra_includes}"
-        )
-include_directories("${extra_includes}")
-link_directories("${extra_includes}")
-
+message(STATUS "-------------- IDF_TARGET: ${IDF_TARGET}")
 project(esp_ajax_if)

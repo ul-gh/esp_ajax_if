@@ -1,9 +1,12 @@
 # esp-idf
 ### ESP-IDF master
-git clone --recursive https://github.com/espressif/esp-idf.git
+git clone -b release/v4.3 --recursive https://github.com/espressif/esp-idf.git
+cd esp-idf
 ./install.sh
 . ./export.sh 
 # (Obsolete, already merged in master): pull in ksz8081 from https://github.com/espressif/arduino-esp32/pull/5061/files
+# pull in ksz8081 from https://github.com/espressif/arduino-esp32/pull/5061/files
+git cherry-pick 98a4c70af94acdfb93baf48d7d25fe4d1560e4df
 # project components
 cd examples/get-started/sample_project
 mkdir components

@@ -2,7 +2,6 @@
 #set(requires
 #)
 
-# register_component() is now deprecated
 set(sources
     "ps_pwm.c"
 )
