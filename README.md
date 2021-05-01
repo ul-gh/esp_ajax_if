@@ -16,7 +16,7 @@ This also features auxiliary measurement and control functions:
 
 The toolchain compiler must support at least std=c++17.
 
-## HTML Documentation: [ESP-AJAX-LAB](https://ul-gh.github.io/esp_ajax_if/)
+## HTML Documentation: [ESP-LiveControl](https://ul-gh.github.io/esp_ajax_if/)
 
 ## License
 [GPL v3.0](./LICENSE)
