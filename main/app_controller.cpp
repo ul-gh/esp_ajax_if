@@ -99,11 +99,11 @@ void AppController::set_setpoint_throttling_enabled(bool new_val) {
 }
 
 void AppController::set_frequency_min_khz(float n) {
-    state.frequency_min = n * 1E3;
+    state.frequency_min = n * 1e3f;
     _send_state_changed_event();
 }
 void AppController::set_frequency_max_khz(float n) {
-    state.frequency_max = n * 1E3;
+    state.frequency_max = n * 1e3f;
     _send_state_changed_event();
 }
 
@@ -149,14 +149,14 @@ void AppController::_set_duty_raw(float n) {
 }
 
 void AppController::set_lag_dt_ns(float n) {
-    state.pspwm_setpoint->lag_red = n * 1e-9;
+    state.pspwm_setpoint->lag_red = n * 1e-9f;
     pspwm_set_deadtimes_symmetrical(constants.mcpwm_num,
                                     state.pspwm_setpoint->lead_red,
                                     state.pspwm_setpoint->lag_red);
     _send_state_changed_event();
 }
 void AppController::set_lead_dt_ns(float n) {
-    state.pspwm_setpoint->lead_red = n * 1e-9;
+    state.pspwm_setpoint->lead_red = n * 1e-9f;
     pspwm_set_deadtimes_symmetrical(constants.mcpwm_num,
                                     state.pspwm_setpoint->lead_red,
                                     state.pspwm_setpoint->lag_red);
@@ -190,7 +190,7 @@ void AppController::set_power_pwm_active(bool new_val) {
 /* Set power output oneshot pulse timer pulse length in seconds
  */
 void AppController::set_oneshot_len(float n) {
-    state.oneshot_power_pulse_length_ms = static_cast<uint32_t>(n * 1000);
+    state.oneshot_power_pulse_length_ms = static_cast<uint32_t>(n * 1000.0f);
     _send_state_changed_event();
 }
 
@@ -265,10 +265,10 @@ void AppController::restore_settings() {
     state.restore_from_file(constants.settings_filename);
     // We only need to run the setters for properties which affect the hardware.
     // Again: Other values are polled and need no further setting..
-    set_frequency_khz(state.frequency_target * 1E-3f);
+    set_frequency_khz(state.frequency_target * 1e-3f);
     set_duty_percent(state.duty_target * 100.0f);
-    set_lead_dt_ns(state.pspwm_setpoint->lead_red * 1E9f);
-    set_lag_dt_ns(state.pspwm_setpoint->lag_red * 1E9f);
+    set_lead_dt_ns(state.pspwm_setpoint->lead_red * 1e9f);
+    set_lag_dt_ns(state.pspwm_setpoint->lag_red * 1e9f);
     set_current_limit(state.aux_hw_drv_state->current_limit);
     set_relay_ref_active(state.aux_hw_drv_state->relay_ref_active);
     set_relay_dut_active(state.aux_hw_drv_state->relay_dut_active);

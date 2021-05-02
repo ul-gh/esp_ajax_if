@@ -162,16 +162,16 @@ struct AppConstants
     mcpwm_action_on_pwmxa_t disable_action_lead_leg = MCPWM_FORCE_MCPWMXA_LOW;
 
     // Default runtime frequency setpoint limits
-    float frequency_min = 50e3;
-    float frequency_max = 300e3;
+    float frequency_min = 50e3f;
+    float frequency_max = 300e3f;
     // Initial frequency setpoint
-    float init_frequency = 100e3;
+    float init_frequency = 100e3f;
     // Initial phase-shift setpoint
-    float init_ps_duty = 0.45;
+    float init_ps_duty = 0.45f;
     // Initial leading leg dead-time value
-    float init_lead_dt = 125e-9;
+    float init_lead_dt = 125e-9f;
     // Initial lagging leg dead-time value
-    float init_lag_dt = 125e-9;
+    float init_lag_dt = 125e-9f;
     // Initial output state should be "false" representing "off"
     bool init_power_pwm_active = false;
 };
@@ -185,10 +185,10 @@ struct AuxHwDrvConfig
     constexpr AuxHwDrvConfig(){};
 
     // Threshold values for activating/deactivating the fan in automatic mode
-    float temp_1_fan_threshold_hi = 45.0;
-    float temp_1_fan_threshold_lo = 40.0;
-    float temp_2_fan_threshold_hi = 45.0;
-    float temp_2_fan_threshold_lo = 40.0;
+    float temp_1_fan_threshold_hi = 45.0f;
+    float temp_1_fan_threshold_lo = 40.0f;
+    float temp_2_fan_threshold_hi = 45.0f;
+    float temp_2_fan_threshold_lo = 40.0f;
     // Analog inputs config //
     /** @brief ADC channel for first temperature sensor */
     adc1_channel_t temp_ch_1 = ADC1_CHANNEL_0; // Sensor VP
@@ -262,7 +262,7 @@ struct AuxHwDrvConfig
     // FreeRTOS scheduler tick period.
     uint32_t oc_reset_pulse_length_ms = 20;
     // Calibration values for current limit PWM
-    float curr_limit_pwm_scale = 1.0/100 * (
+    float curr_limit_pwm_scale = 1.0f/100.0f * (float)(
         1 << pwm_timer_config.duty_resolution);
     uint32_t curr_limit_pwm_offset = 0;
     ///////////////////////////////////////////////////////// End Configuration

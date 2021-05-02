@@ -21,13 +21,13 @@
  */
 struct AuxHwDrvState
 {
-    float current_limit = 8;
+    float current_limit = 8.0f;
     bool relay_ref_active = false;
     bool relay_dut_active = false;
-    float temp_1 = 150;
-    float temp_2 = 150;
-    float temp_1_limit = 50;
-    float temp_2_limit = 50;
+    float temp_1 = 150.0f;
+    float temp_2 = 150.0f;
+    float temp_1_limit = 50.0f;
+    float temp_2_limit = 50.0f;
     bool fan_active = true;
     // Manual override, fan is permanently "on" when true
     bool fan_override = false;
@@ -114,7 +114,7 @@ struct AppState
     float frequency_min = constants.frequency_min;
     float frequency_max = constants.frequency_max;
     // Runtime setpoints and throttling increment per fast event timer interval
-    float frequency_target = 100.0E3f;
+    float frequency_target = 100.0e3f;
     float frequency_increment = 500.0f;
     float duty_min = 0.0f;
     float duty_max = 0.8f;

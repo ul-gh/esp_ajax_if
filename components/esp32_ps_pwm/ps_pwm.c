@@ -94,12 +94,12 @@ esp_err_t pspwm_init(mcpwm_unit_t mcpwm_num,
             return ESP_FAIL;
         }
     }
-    s_setpoint_limits[mcpwm_num]->frequency_min = s_clk_conf.timer_clk / UINT16_MAX;
+    s_setpoint_limits[mcpwm_num]->frequency_min = s_clk_conf.timer_clk / (float)UINT16_MAX;
     s_setpoint_limits[mcpwm_num]->frequency_max = s_clk_conf.timer_clk / period_min;
-    if (UINT16_MAX/s_clk_conf.base_clk < 1.0 / frequency) {
-        s_setpoint_limits[mcpwm_num]->dt_sum_max = UINT16_MAX / s_clk_conf.base_clk;
+    if ((float)UINT16_MAX/s_clk_conf.base_clk < 1.0f / frequency) {
+        s_setpoint_limits[mcpwm_num]->dt_sum_max = (float)UINT16_MAX / s_clk_conf.base_clk;
     } else {
-        s_setpoint_limits[mcpwm_num]->dt_sum_max = 1.0 / frequency;
+        s_setpoint_limits[mcpwm_num]->dt_sum_max = 1.0f / frequency;
     }
     ESP_LOGD(TAG, "frequency_min is now: %g", s_setpoint_limits[mcpwm_num]->frequency_min);
     ESP_LOGD(TAG, "frequency_max is now: %g", s_setpoint_limits[mcpwm_num]->frequency_max);
@@ -110,11 +110,11 @@ esp_err_t pspwm_init(mcpwm_unit_t mcpwm_num,
             ESP_LOGE(TAG, "Frequency setpoint out of range!");
             return ESP_FAIL;
     }
-    if (ps_duty < 0 || ps_duty > 1) {
+    if (ps_duty < 0.0f || ps_duty > 1.0f) {
         ESP_LOGE(TAG, "Invalid setpoint value for ps_duty");
         return ESP_FAIL;
     }
-    if (lead_red < 0 || lead_fed < 0 || lag_red < 0 || lag_fed < 0
+    if (lead_red < 0.0f || lead_fed < 0.0f || lag_red < 0.0f || lag_fed < 0.0f
             || lead_red + lead_fed >= s_setpoint_limits[mcpwm_num]->dt_sum_max
             || lag_red + lag_fed >= s_setpoint_limits[mcpwm_num]->dt_sum_max) {
         ESP_LOGE(TAG, "Dead time setpoint out of range");
@@ -198,20 +198,20 @@ esp_err_t pspwm_set_frequency(mcpwm_unit_t mcpwm_num,
     }
     // Set global state
     setpoints->frequency = frequency;
-    if (UINT16_MAX/s_clk_conf.base_clk < 1.0 / frequency) {
-        s_setpoint_limits[mcpwm_num]->dt_sum_max = UINT16_MAX / s_clk_conf.base_clk;
+    if ((float)UINT16_MAX/s_clk_conf.base_clk < 1.0f / frequency) {
+        s_setpoint_limits[mcpwm_num]->dt_sum_max = (float)UINT16_MAX / s_clk_conf.base_clk;
     } else {
-        s_setpoint_limits[mcpwm_num]->dt_sum_max = 1.0 / frequency;
+        s_setpoint_limits[mcpwm_num]->dt_sum_max = 1.0f / frequency;
     }
-    float half_period = 0.5 * s_clk_conf.timer_clk / frequency;
-    uint32_t timer_top = (uint32_t)(2 * half_period) - 1;
+    float half_period = 0.5f * s_clk_conf.timer_clk / frequency;
+    uint32_t timer_top = (uint32_t)(2.0f * half_period) - 1u;
     uint32_t cmpr_0_a = (uint32_t)(
         half_period
-        + 0.5 * (s_clk_conf.timer_clk * (setpoints->lead_red 
+        + 0.5f * (s_clk_conf.timer_clk * (setpoints->lead_red 
                                          - setpoints->lead_fed)));
     uint32_t cmpr_1_a = (uint32_t)(
         half_period
-        + 0.5 * (s_clk_conf.timer_clk * (setpoints->lag_red
+        + 0.5f * (s_clk_conf.timer_clk * (setpoints->lag_red
                                          - setpoints->lag_fed)));
     // Phase shift value for Timer 1 needs updating when changing frequency.
     // Timer 0 is the reference phase and needs no update.
@@ -254,7 +254,7 @@ esp_err_t pspwm_set_deadtimes(mcpwm_unit_t mcpwm_num,
     pspwm_setpoint_t* setpoints = s_setpoints[mcpwm_num];
     assert(setpoints != NULL);
     // PWM base period and duty cycle must be adjusted when changing dead-times
-    if (lead_red < 0 || lead_fed < 0 || lag_red < 0 || lag_fed < 0
+    if (lead_red < 0.0f || lead_fed < 0.0f || lag_red < 0.0f || lag_fed < 0.0f
             || lead_red + lead_fed >= s_setpoint_limits[mcpwm_num]->dt_sum_max
             || lag_red + lag_fed >= s_setpoint_limits[mcpwm_num]->dt_sum_max) {
         ESP_LOGE(TAG, "Dead time setpoint out of range");
@@ -270,17 +270,17 @@ esp_err_t pspwm_set_deadtimes(mcpwm_unit_t mcpwm_num,
     uint32_t lead_fed_reg = (uint32_t)(lead_fed * s_clk_conf.base_clk);
     uint32_t lag_red_reg = (uint32_t)(lag_red * s_clk_conf.base_clk);
     uint32_t lag_fed_reg = (uint32_t)(lag_fed * s_clk_conf.base_clk);
-    float half_period = 0.5 * s_clk_conf.timer_clk / setpoints->frequency;
+    float half_period = 0.5f * s_clk_conf.timer_clk / setpoints->frequency;
     //float half_period = 0.5 * (module->timer[MCPWM_TIMER_0].period.period + 1);
     ESP_LOGD(TAG, "Limit value for (red + fed) in ns: %f",
-        (1e9*2*half_period - 1) / s_clk_conf.base_clk);
+        (1e9f*2.0f*half_period - 1.0f) / s_clk_conf.base_clk);
     uint32_t cmpr_0_a = (uint32_t)(
         half_period
-        + 0.5 * (s_clk_conf.timer_clk * (setpoints->lead_red
+        + 0.5f * (s_clk_conf.timer_clk * (setpoints->lead_red
                                          - setpoints->lead_fed)));
     uint32_t cmpr_1_a = (uint32_t)(
         half_period
-        + 0.5 * (s_clk_conf.timer_clk * (setpoints->lag_red
+        + 0.5f * (s_clk_conf.timer_clk * (setpoints->lag_red
                                          - setpoints->lag_fed)));
     // Phase shift register must not be set above cmpr_1_a value, otherwise
     // the compare event will be missed.
@@ -334,7 +334,7 @@ esp_err_t pspwm_set_ps_duty(mcpwm_unit_t mcpwm_num,
                             float ps_duty)
 {
     ESP_LOGD(TAG, "Call pspwm_set_ps_duty");
-    if (ps_duty < 0 || ps_duty > 1) {
+    if (ps_duty < 0.0f || ps_duty > 1.0f) {
         ESP_LOGE(TAG, "Invalid setpoint value for ps_duty");
         return ESP_FAIL;
     }
@@ -346,7 +346,7 @@ esp_err_t pspwm_set_ps_duty(mcpwm_unit_t mcpwm_num,
     portENTER_CRITICAL(&mcpwm_spinlock);
     // For up-counting mode, output waveform period is actually timer TOP + 1
     uint32_t curr_period = module->timer[MCPWM_TIMER_0].period.period + 1;
-    uint32_t phase_setval = (uint32_t)(curr_period * ps_duty * 0.5);
+    uint32_t phase_setval = (uint32_t)(curr_period * ps_duty * 0.5f);
     // Phase shift register must not be set above cmpr_1_a value, otherwise
     // the compare event will be missed.
     uint32_t cmpr_1_a = module->channel[MCPWM_TIMER_1].cmpr_value[MCPWM_OPR_A].cmpr_val;
@@ -718,9 +718,9 @@ esp_err_t pspwm_up_down_ctr_mode_init(mcpwm_unit_t mcpwm_num,
             return ESP_FAIL;
         }
     }
-    s_setpoint_limits[mcpwm_num]->frequency_min = 0.5 * s_clk_conf.timer_clk / UINT16_MAX;
-    s_setpoint_limits[mcpwm_num]->frequency_max = 0.5 * s_clk_conf.timer_clk / period_min;
-    s_setpoint_limits[mcpwm_num]->dt_sum_max = 1.0 / frequency;
+    s_setpoint_limits[mcpwm_num]->frequency_min = 0.5f * s_clk_conf.timer_clk / (float)UINT16_MAX;
+    s_setpoint_limits[mcpwm_num]->frequency_max = 0.5f * s_clk_conf.timer_clk / period_min;
+    s_setpoint_limits[mcpwm_num]->dt_sum_max = 1.0f / frequency;
     ESP_LOGD(TAG, "frequency_min is now: %g", s_setpoint_limits[mcpwm_num]->frequency_min);
     ESP_LOGD(TAG, "frequency_max is now: %g", s_setpoint_limits[mcpwm_num]->frequency_max);
     ESP_LOGD(TAG, "dt_sum_max is now: %g", s_setpoint_limits[mcpwm_num]->dt_sum_max);
@@ -730,13 +730,13 @@ esp_err_t pspwm_up_down_ctr_mode_init(mcpwm_unit_t mcpwm_num,
             ESP_LOGE(TAG, "Frequency setpoint out of range!");
             return ESP_FAIL;
     }
-    if (ps_duty < 0 || ps_duty > 1) {
+    if (ps_duty < 0.0f || ps_duty > 1.0f) {
         ESP_LOGE(TAG, "Invalid setpoint value for ps_duty");
         return ESP_FAIL;
     }
-    if (lead_dt < 0 || lag_dt < 0
-            || lead_dt >= 0.5 * s_setpoint_limits[mcpwm_num]->dt_sum_max
-            || lag_dt  >= 0.5 * s_setpoint_limits[mcpwm_num]->dt_sum_max) {
+    if (lead_dt < 0.0f || lag_dt < 0.0f
+            || lead_dt >= 0.5f * s_setpoint_limits[mcpwm_num]->dt_sum_max
+            || lag_dt  >= 0.5f * s_setpoint_limits[mcpwm_num]->dt_sum_max) {
         ESP_LOGE(TAG, "Dead time setpoint out of range");
         return ESP_FAIL;
     }
@@ -790,13 +790,13 @@ esp_err_t pspwm_up_down_ctr_mode_set_frequency(mcpwm_unit_t mcpwm_num,
     }
     // Set global state
     setpoints->frequency = frequency;
-    s_setpoint_limits[mcpwm_num]->dt_sum_max = 1.0 / frequency;
-    float half_period = 0.5 * s_clk_conf.timer_clk / frequency;
+    s_setpoint_limits[mcpwm_num]->dt_sum_max = 1.0f / frequency;
+    float half_period = 0.5f * s_clk_conf.timer_clk / frequency;
     uint32_t timer_top = (uint32_t)half_period;
     uint32_t cmpr_lead_a = (uint32_t)(
-        0.5 * (half_period - s_clk_conf.timer_clk * setpoints->lead_red));
+        0.5f * (half_period - s_clk_conf.timer_clk * setpoints->lead_red));
     uint32_t cmpr_lag_a = (uint32_t)(
-        0.5 * (half_period - s_clk_conf.timer_clk * setpoints->lag_red));
+        0.5f * (half_period - s_clk_conf.timer_clk * setpoints->lag_red));
     uint32_t cmpr_lead_b = timer_top - cmpr_lead_a;
     uint32_t cmpr_lag_b = timer_top - cmpr_lag_a;
     // Phase shift value for Timer 1 needs updating when changing frequency.
@@ -845,9 +845,9 @@ esp_err_t pspwm_up_down_ctr_mode_set_deadtimes(mcpwm_unit_t mcpwm_num,
     // PWM hardware must be initialised first
     pspwm_setpoint_t* setpoints = s_setpoints[mcpwm_num];
     assert(setpoints != NULL);
-    if (lead_dt < 0 || lag_dt < 0
-            || lead_dt >= 0.5 * s_setpoint_limits[mcpwm_num]->dt_sum_max
-            || lag_dt  >= 0.5 * s_setpoint_limits[mcpwm_num]->dt_sum_max) {
+    if (lead_dt < 0.0f || lag_dt < 0.0f
+            || lead_dt >= 0.5f * s_setpoint_limits[mcpwm_num]->dt_sum_max
+            || lag_dt  >= 0.5f * s_setpoint_limits[mcpwm_num]->dt_sum_max) {
         ESP_LOGE(TAG, "Dead time setpoint out of range");
         return ESP_FAIL;
     }
@@ -855,12 +855,12 @@ esp_err_t pspwm_up_down_ctr_mode_set_deadtimes(mcpwm_unit_t mcpwm_num,
     setpoints->lag_red = lag_dt;
     // PWM base period and duty cycle must be adjusted when changing dead-times
     // uint32_t timer_top = module->timer[MCPWM_TIMER_0].period.period;
-    float half_period = 0.5 * s_clk_conf.timer_clk / setpoints->frequency;
+    float half_period = 0.5f * s_clk_conf.timer_clk / setpoints->frequency;
     uint32_t timer_top = (uint32_t)half_period;
     uint32_t cmpr_lead_a = (uint32_t)(
-        0.5 * (half_period - s_clk_conf.timer_clk * setpoints->lead_red));
+        0.5f * (half_period - s_clk_conf.timer_clk * setpoints->lead_red));
     uint32_t cmpr_lag_a = (uint32_t)(
-        0.5 * (half_period - s_clk_conf.timer_clk * setpoints->lag_red));
+        0.5f * (half_period - s_clk_conf.timer_clk * setpoints->lag_red));
     uint32_t cmpr_lead_b = timer_top - cmpr_lead_a;
     uint32_t cmpr_lag_b = timer_top - cmpr_lag_a;
     mcpwm_dev_t* const module = MCPWM[mcpwm_num];

@@ -34,8 +34,8 @@ struct KTY81_1xxCommonConfig
     ////////// Moving average filter length. Must be power of two.
     size_t moving_average_filter_len = 32;
     ////////// Configuration constants for get_kty_temp_lin()
-    float temp_fsr_lower_lin = 0.0;
-    float temp_fsr_upper_lin = 100.0;
+    float temp_fsr_lower_lin = 0.0f;
+    float temp_fsr_upper_lin = 100.0f;
     /** Voltages defining full-scale-range in mV */
     int32_t v_in_fsr_lower_lin = 886; // Corresponds to 0°C
     int32_t v_in_fsr_upper_lin = 1428; // Corresponds to 100°C
