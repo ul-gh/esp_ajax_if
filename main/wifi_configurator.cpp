@@ -365,17 +365,17 @@ bool WiFiConfigurator::_on_request_do_configuration(JsonObject &json_obj, AsyncW
     auto &current_conf = state.net_conf;
     // Overwrite current config with received config
     auto ip = IPAddress{};
-    auto str = json_obj["ip4_addr"].as<char*>();
+    auto str = json_obj["ip4_addr"].as<const char*>();
     if (str && ip.fromString(str)) {current_conf.ip4_addr = ip;}
-    str = json_obj["ip4_gw"].as<char*>();
+    str = json_obj["ip4_gw"].as<const char*>();
     if (str && ip.fromString(str)) {current_conf.ip4_gw = ip;}
-    str = json_obj["ip4_mask"].as<char*>();
+    str = json_obj["ip4_mask"].as<const char*>();
     if (str && ip.fromString(str)) {current_conf.ip4_mask = ip;}
-    str = json_obj["hostname"].as<char*>();
+    str = json_obj["hostname"].as<const char*>();
     if (str && strlen(str) < sizeof(current_conf.hostname)) {strcpy(current_conf.hostname, str);}
-    str = json_obj["ssid"].as<char*>();
+    str = json_obj["ssid"].as<const char*>();
     if (str && strlen(str) < sizeof(current_conf.ssid)) {strcpy(current_conf.ssid, str);}
-    str = json_obj["psk"].as<char*>();
+    str = json_obj["psk"].as<const char*>();
     if (str && strlen(str) < sizeof(current_conf.psk)) {strcpy(current_conf.psk, str);}
     auto jv = json_obj["ap_mode_active"];
     if (!jv.isNull() && jv.is<bool>()) {current_conf.ap_mode_active = jv.as<bool>();}

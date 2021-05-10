@@ -34,5 +34,5 @@ idf_component_register(
 #target_compile_definitions(${COMPONENT_TARGET} PUBLIC -DESP32)
 #target_compile_options(${COMPONENT_TARGET} PRIVATE xyz)
 
-idf_build_get_property(components COMPONENTS)
-message(STATUS "++++++++++++++ Components: ${components}")
+#message(STATUS "XXXXXXXXX COMPONENT_TARGET: ${COMPONENT_TARGET}")
+

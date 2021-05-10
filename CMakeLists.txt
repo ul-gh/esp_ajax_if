@@ -8,6 +8,8 @@ list(APPEND EXTRA_COMPONENT_DIRS
 )
 
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
+ 
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wunsuffixed-float-constants")
 
 message(STATUS "-------------- IDF_TARGET: ${IDF_TARGET}")
 project(esp_ajax_if)
