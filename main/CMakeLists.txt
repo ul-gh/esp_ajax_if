@@ -36,3 +36,4 @@ idf_component_register(
 
 #message(STATUS "XXXXXXXXX COMPONENT_TARGET: ${COMPONENT_TARGET}")
 
+spiffs_create_partition_image("spiffs" "${PROJECT_DIR}/data")

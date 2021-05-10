@@ -10,7 +10,7 @@ const copyfiles = require('copyfiles');
 
 const index_html_file = "./dist/index.html.gz";
 const src_path_glob = "./dist/**/*";
-const dest_path_glob = "../src/data/www/";
+const dest_path_glob = "../data/www/";
 
 function deploy_files() {
     // We want to deploy the .gz compressed versions only, so the

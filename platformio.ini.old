@@ -9,7 +9,7 @@
 ; https://docs.platformio.org/page/projectconf.html
 
 [platformio]
-data_dir = src/data
+data_dir = data
 default_envs = release
 
 [env]
