@@ -33,7 +33,7 @@ export default {
     state: Object,
     disabled: Boolean
   },
-  emits: ["action-triggered"]
+  emits: ["action_triggered"]
 };
 </script>
 

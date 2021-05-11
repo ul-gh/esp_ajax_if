@@ -6,8 +6,10 @@
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
-    "deploy EAL": "./deploy-eal.js",
-    "dev build": "vue-cli-service build --mode development"
+    "make SPIFFS": "deploy-eal.js make_spiffs",
+    "flash SPIFFS": "deploy-eal.js flash_spiffs",
+    "dev build": "vue-cli-service build --mode development",
+    "print env": "set"
   },
   "dependencies": {
     "core-js": "^3.11.1",

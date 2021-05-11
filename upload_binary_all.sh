@@ -4,7 +4,7 @@
 # installed.
 #
 # This script goes into the binary firmware .ZIP file for distribution.
-# Ulrich Lukas 2020-11-12
+# Ulrich Lukas 2021-05-11
 ESPTOOL_BIN="$(which esptool)"
 if [ ! -x "$ESPTOOL_BIN" ]; then
     ESPTOOL_BIN="$(which esptool.py)"
@@ -14,9 +14,12 @@ if [ ! -x "$ESPTOOL_BIN" ]; then
     echo "This must be installed first. Aborting.."
     exit 1
 fi
-"$ESPTOOL_BIN" --chip esp32 --baud 921600 --before default_reset --after hard_reset \
+"$ESPTOOL_BIN" \
+    --chip esp32 --baud 460800 \
+    --before default_reset --after hard_reset \
     write_flash --flash_mode dio --flash_freq 40m --flash_size detect \
-    0x1000 bootloader.bin \
-    0x8000 partitions.bin \
-    0x10000 firmware.bin \
-    0x290000 spiffs.bin
+    0x1000 build/bootloader/bootloader.bin \
+    0x8000 build/partition_table/partition-table.bin \
+    0xe000 build/ota_data_initial.bin \
+    0x10000 build/esp_ajax_if.bin \
+    0x290000 build/spiffs.bin

@@ -2,7 +2,7 @@
 ::This uses the esptool python package.
 ::If none is found, an install is tried first
 ::This script goes into the binary firmware .ZIP file for distribution.
-::2020-11-12 Ulrich Lukas
+::2021-05-11 Ulrich Lukas
 @echo off
 SETLOCAL
 
@@ -30,11 +30,14 @@ where "%esptool_command%" >nul 2>nul || (
 
 :: Found the esptool. Continuing.
 echo Using %esptool_command% to upload binary firmware to the ESP32...
-"%esptool_command%" --chip esp32 --baud 921600 --before default_reset --after hard_reset^
-    write_flash -z --flash_mode dio --flash_freq 40m --flash_size detect^
-    0x1000 bootloader.bin^
-    0x8000 partitions.bin^
-    0x10000 firmware.bin^
-    0x290000 spiffs.bin
+"%esptool_command%"^
+    --chip esp32 --baud 460800^
+    --before default_reset --after hard_reset^
+    write_flash --flash_mode dio --flash_freq 40m --flash_size detect^
+    0x1000 build/bootloader/bootloader.bin^
+    0x8000 build/partition_table/partition-table.bin^
+    0xe000 build/ota_data_initial.bin^
+    0x10000 build/esp_ajax_if.bin^
+    0x290000 build/spiffs.bin
 
 :end

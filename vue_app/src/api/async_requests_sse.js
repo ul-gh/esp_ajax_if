@@ -92,7 +92,7 @@ class AsyncRequestGenerator {
     // called method exits early and only rate_limit_active flag is reset.
     setTimeout(() => {
       this._rate_limit_active = false;
-      this.do_http_request("");
+      this.do_passive_get_request("");
     },
       request_interval_min_ms
     );
@@ -109,10 +109,11 @@ class AsyncRequestGenerator {
   /** Send name=value pair as a rate-limited HTTP request
    */
   async send_cmd(name, value) {
+    let req_str;
     if (value === undefined) {
-      const req_str = `${this._endpoint}?${name}`;
+      req_str = `${this._endpoint}?${name}`;
     } else {
-      const req_str = `${this._endpoint}?${name}=${value}`;
+      req_str = `${this._endpoint}?${name}=${value}`;
     }
     await this.do_passive_get_request(req_str);
   }

@@ -259,7 +259,7 @@ export default {
       this.net_conf.psk = '123FOO456';
     },
   },
-  emits: ["action-triggered"],
+  emits: ["action_triggered"],
   mounted() {
     this.get_initial_state();
     window.tab = this;

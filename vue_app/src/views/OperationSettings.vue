@@ -347,14 +347,14 @@ export default {
     },
     // Push buttons can have a name and value
     dispatch_btn(event) {
-      this.$emit("action-triggered", event.target.name, event.target.value);
+      this.$emit("action_triggered", event.target.name, event.target.value);
     },
     // Submit name=value pair
     dispatch_nv(name, value) {
-        this.$emit("action-triggered", name, value);
+        this.$emit("action_triggered", name, value);
     },
   },
-  emits: ["action-triggered"],
+  emits: ["action_triggered"],
 };
 </script>
 

@@ -2,5 +2,6 @@
 "C_Cpp.intelliSenseEngine": "Tag Parser",
 "cmake.configureOnOpen": true,
 "idf.port": "/dev/ttyUSB0",
-"idf.flashType": "UART"
+"idf.flashType": "UART",
+"idf.toolsPathWin": "D:\\config\\.espressif"
 }
