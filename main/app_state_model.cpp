@@ -97,8 +97,8 @@ bool AppState::deserialize_settings(const char *buf, size_t buf_len) {
     // Operational setpoints for PSPWM module
     frequency_target = float{json_doc["frequency"]} * 1e3f;
     frequency_increment = float{json_doc["frequency_changerate"]} * constants.timer_fast_interval_ms;
-    duty_min = float{json_doc["duty_min"]};
-    duty_max = float{json_doc["duty_max"]};
+    duty_min = float{json_doc["duty_min"]} * 0.01f;
+    duty_max = float{json_doc["duty_max"]} * 0.01f;
     duty_target = float{json_doc["duty"]} * 0.01f;
     duty_increment = float{json_doc["duty_changerate"]} * constants.timer_fast_interval_ms * 1e-5f;;
     pspwm_setpoint->lead_red = float{json_doc["lead_dt"]} * 1e-9f;
