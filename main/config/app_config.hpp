@@ -1,3 +1,11 @@
+/** @file app_config.hpp
+ * @brief Application, network and hardware settings, constants and preset configuration.
+ *
+ * For run-time variable settings, see struct AppState().
+ * For NVM persistent storage of WiFi settings, see WiFiConfigurator().
+ *
+ * 2021-05-16 Ulrich Lukas
+ */
 #ifndef APP_CONFIG_HPP__
 #define APP_CONFIG_HPP__
 

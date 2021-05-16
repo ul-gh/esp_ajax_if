@@ -1,4 +1,4 @@
 <map id="pspwm_init_symmetrical" name="pspwm_init_symmetrical">
-<area shape="rect" id="node1" title="Shortcut version of pspwm_init() with identical rising and falling edge dead times applied for each o..." alt="" coords="5,5,171,32"/>
-<area shape="rect" id="node2" href="$ps__pwm_8h.html#ac685c2c1e1aaa5502e741638c15ba32f" title="Set up the PS&#45;PWM generator module for up&#45;counting mode, allowing individual dead&#45;time values for ris..." alt="" coords="219,5,305,32"/>
+<area shape="rect" id="node1" title="Shortcut version of pspwm_init() with identical rising and falling edge dead times applied for each o..." alt="" coords="5,5,192,32"/>
+<area shape="rect" id="node2" href="$ps__pwm_8h.html#ac685c2c1e1aaa5502e741638c15ba32f" title="Set up the PS&#45;PWM generator module for up&#45;counting mode, allowing individual dead&#45;time values for ris..." alt="" coords="240,5,337,32"/>
 </map>

@@ -15,13 +15,41 @@ This also features auxiliary measurement and control functions:
 * PWM reference signal generation for hardware overcurrent detector
 * External GPIO output control for relays, fan, enable and error-reset
 
-The toolchain compiler must support at least std=c++17.
 
-## HTML Documentation: [ESP-LiveControl](https://ul-gh.github.io/esp_ajax_if/)
+## HTML Documentation:
+[ESP-LiveControl](https://ul-gh.github.io/esp_ajax_if/)
 
 ## License
 [GPL v3.0](./LICENSE)
-~                                 
+
+## Cloud-Free (On-Board-Hosted) Single-Page Web Application
+Stored in on-board flash (SPIFFS/LittleFS), served by an instance of
+ESPAsyncWebServer and coupled using a fully-async HTTP GET and SSE push API,
+the web application implements a tabbed-view hardware remote-control
+user interface designed for either mobile, hardware dashboard or PC.
+
+The web application is designed to serve as a live-feedback,
+fairly responsive, hardware remote user interface, running in a
+point-to-point fashion on an isolated network.
+
+The web app is built using [Vue.js v3](https://v3.vuejs.org/).
+
+User interface widgets are implemented as vue.js single-file-components.
+
+API interface and remote state is implemented in a state store object
+using the vue [composition API](https://v3.vuejs.org/guide/composition-api-introduction.html)
+in file: vue_app/src/api/useApiStore.js. 
+
+WiFi/Network configuration is done using a dedicated WiFiConfigurator
+application component, designed for to be as-well suited for
+permanent access-point mode as for joining an existing network.
+
+WiFi credentials are stored in NVS storage separate from application,
+but NVS/flash encryption is OFF.
+
+SSL is (currently) /not/ implemented for the web server or application.
+
+
 ## C++ Application Data Model
 * [AppState](struct_app_state.html)
 
@@ -34,11 +62,6 @@ HTTP remote application using Server-Sent Events from a FreeRTOS timer task.
 Some auxiliary functions like GPIO and temperature readouts is outsourced
 to class AuxHwDrv.
 * [AppController](class_app_controller.html)
-
-## HTML+CSS+JS Single-Page Web Application (Remote View/Control)
-* [JS in main_app_ajax.js](../../src/data/www/main_app_ajax.js)
-* [HTML in main_app.html](../../src/data/www/main_app.html)
-* [CSS in main_app.css](../../src/data/www/main_app.css)
 
 ## C++ HTTP and SSE Event Server
 * [APIServer](class_a_p_i_server.html)
@@ -53,10 +76,10 @@ to class AuxHwDrv.
 
 ## Low-Level-Driver (ESP-IDF Compatible)
 * See file:<br>
-[src/ps_pwm.h](ps__pwm_8h.html)
+[components/esp32_ps_pwm/ps_pwm.h](ps__pwm_8h.html)
 
 ## Application Configuration
-* [AppConfig](struct_app_config.html)
+* [main/config/app_config.hpp](app__config_8hpp.html)
 
 
 ## HTTP API Documentation

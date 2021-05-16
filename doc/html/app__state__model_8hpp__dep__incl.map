@@ -1,5 +1,7 @@
-<map id="src/app_state_model.hpp" name="src/app_state_model.hpp">
-<area shape="rect" id="node1" title=" " alt="" coords="5,5,173,32"/>
-<area shape="rect" id="node2" href="$app__controller_8hpp.html" title="Application Controller Implementing C++ and HTTP GET API." alt="" coords="14,80,165,107"/>
-<area shape="rect" id="node3" href="$app__main_8cpp.html" title="ESP&#45;AJAX&#45;Lab HTTP server, AJAX API backend, web application and Soc hardware drivers for WiFi remote ..." alt="" coords="27,155,152,181"/>
+<map id="main/include/app_state_model.hpp" name="main/include/app_state_model.hpp">
+<area shape="rect" id="node1" title=" " alt="" coords="57,5,232,47"/>
+<area shape="rect" id="node2" href="$app__main_8cpp.html" title="ESP&#45;AJAX&#45;Lab HTTP server, AJAX API backend, web application and Soc hardware drivers for WiFi remote ..." alt="" coords="62,259,213,285"/>
+<area shape="rect" id="node3" href="$app__controller_8hpp.html" title="Application Controller Implementing C++ and HTTP GET API." alt="" coords="22,184,253,211"/>
+<area shape="rect" id="node4" href="$aux__hw__drv_8hpp.html" title="Auxiliary hardware driver for ESP&#45;AJAX&#45;Lab." alt="" coords="123,95,283,136"/>
+<area shape="rect" id="node5" href="$wifi__configurator_8hpp.html" title=" " alt="" coords="278,184,526,211"/>
 </map>

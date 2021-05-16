@@ -1,12 +1,13 @@
-<map id="src/app_state_model.hpp" name="src/app_state_model.hpp">
-<area shape="rect" id="node1" title=" " alt="" coords="91,5,259,32"/>
-<area shape="rect" id="node2" title=" " alt="" coords="5,80,109,107"/>
-<area shape="rect" id="node3" href="$ps__pwm_8h.html" title="Driver for the MCPWM hardware modules on the Espressif ESP32 SoC for generating a Phase&#45;Shift&#45;PWM wav..." alt="" coords="134,80,215,107"/>
-<area shape="rect" id="node6" href="$app__config_8hpp_source.html" title=" " alt="" coords="307,80,416,107"/>
-<area shape="rect" id="node4" title=" " alt="" coords="20,155,95,181"/>
-<area shape="rect" id="node5" title=" " alt="" coords="119,155,231,181"/>
-<area shape="rect" id="node7" title=" " alt="" coords="255,155,350,181"/>
-<area shape="rect" id="node8" title=" " alt="" coords="375,155,465,181"/>
-<area shape="rect" id="node9" title=" " alt="" coords="489,155,580,181"/>
-<area shape="rect" id="node10" title=" " alt="" coords="604,155,692,181"/>
+<map id="main/include/app_state_model.hpp" name="main/include/app_state_model.hpp">
+<area shape="rect" id="node1" title=" " alt="" coords="233,5,407,47"/>
+<area shape="rect" id="node2" title=" " alt="" coords="265,169,375,196"/>
+<area shape="rect" id="node3" href="$ps__pwm_8h.html" title="Driver for the MCPWM hardware modules on the Espressif ESP32 SoC for generating a Phase&#45;Shift&#45;PWM wav..." alt="" coords="132,95,220,121"/>
+<area shape="rect" id="node6" href="$app__config_8hpp.html" title="Application, network and hardware settings, constants and preset configuration." alt="" coords="463,95,585,121"/>
+<area shape="rect" id="node4" title=" " alt="" coords="5,169,88,196"/>
+<area shape="rect" id="node5" title=" " alt="" coords="112,169,240,196"/>
+<area shape="rect" id="node7" title=" " alt="" coords="523,169,675,196"/>
+<area shape="rect" id="node8" title=" " alt="" coords="699,169,803,196"/>
+<area shape="rect" id="node9" title=" " alt="" coords="827,169,930,196"/>
+<area shape="rect" id="node10" title=" " alt="" coords="955,169,1053,196"/>
+<area shape="rect" id="node11" title=" " alt="" coords="400,169,499,196"/>
 </map>

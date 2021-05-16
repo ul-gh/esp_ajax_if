@@ -1,5 +1,5 @@
-<map id="src/ps_pwm.h" name="src/ps_pwm.h">
-<area shape="rect" id="node1" title="Driver for the MCPWM hardware modules on the Espressif ESP32 SoC for generating a Phase&#45;Shift&#45;PWM wav..." alt="" coords="50,5,153,32"/>
-<area shape="rect" id="node2" title=" " alt="" coords="5,80,80,107"/>
-<area shape="rect" id="node3" title=" " alt="" coords="104,80,216,107"/>
+<map id="components/esp32_ps_pwm/ps_pwm.h" name="components/esp32_ps_pwm/ps_pwm.h">
+<area shape="rect" id="node1" title="Driver for the MCPWM hardware modules on the Espressif ESP32 SoC for generating a Phase&#45;Shift&#45;PWM wav..." alt="" coords="27,5,194,47"/>
+<area shape="rect" id="node2" title=" " alt="" coords="5,95,88,121"/>
+<area shape="rect" id="node3" title=" " alt="" coords="112,95,240,121"/>
 </map>

@@ -1,0 +1,4 @@
+<map id="SensorKTY81_1xx::SensorKTY81_1xx" name="SensorKTY81_1xx::SensorKTY81_1xx">
+<area shape="rect" id="node1" title="Initialize the analog ADC channel for use with the sensor." alt="" coords="5,13,265,39"/>
+<area shape="rect" id="node2" href="$class_e_s_p32_a_d_c_channel.html#a127f58070640b416c4e0ce6291697773" title="Calculate backwards the raw ADC reading for given input voltage, based on calibration constants from ..." alt="" coords="313,5,524,47"/>
+</map>

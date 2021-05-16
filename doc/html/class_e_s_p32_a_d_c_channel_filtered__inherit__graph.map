@@ -1,4 +1,4 @@
 <map id="ESP32ADCChannelFiltered&lt; filter_length &gt;" name="ESP32ADCChannelFiltered&lt; filter_length &gt;">
-<area shape="rect" id="node1" title="ESP32 ADC 1 channel access with configurable moving average filter. Moving average filtering/smoothin..." alt="" coords="5,80,185,121"/>
-<area shape="rect" id="node2" href="$class_e_s_p32_a_d_c_channel.html" title="ESP32 ADC 1 channel access with configurable averaging." alt="" coords="27,5,164,32"/>
+<area shape="rect" id="node1" title="ESP32 ADC 1 channel access with configurable moving average filter. Moving average filtering/smoothin..." alt="" coords="5,80,196,121"/>
+<area shape="rect" id="node2" href="$class_e_s_p32_a_d_c_channel.html" title="ESP32 ADC 1 channel access with configurable averaging." alt="" coords="29,5,172,32"/>
 </map>

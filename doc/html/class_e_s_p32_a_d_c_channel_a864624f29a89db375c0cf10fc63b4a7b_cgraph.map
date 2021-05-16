@@ -1,4 +1,4 @@
 <map id="ESP32ADCChannel::get_voltage_averaged" name="ESP32ADCChannel::get_voltage_averaged">
-<area shape="rect" id="node1" title="Get channel input voltage in millivolts. Repeats sampling a number of times, see &quot;averaged_samples&quot; c..." alt="" coords="5,5,168,47"/>
-<area shape="rect" id="node2" href="$class_e_s_p32_a_d_c_channel.html#a4e16fb501ecdf74b95cd9c720b0e3a5f" title="Get raw ADC channel conversion value. Repeats sampling a number of times, see &quot;averaged_samples&quot; cons..." alt="" coords="216,5,379,47"/>
+<area shape="rect" id="node1" title="Get channel input voltage in millivolts. Repeats sampling a number of times, see &quot;averaged_samples&quot; c..." alt="" coords="5,5,177,47"/>
+<area shape="rect" id="node2" href="$class_e_s_p32_a_d_c_channel.html#a4e16fb501ecdf74b95cd9c720b0e3a5f" title="Get raw ADC channel conversion value. Repeats sampling a number of times, see &quot;averaged_samples&quot; cons..." alt="" coords="225,5,397,47"/>
 </map>
