@@ -19,51 +19,61 @@ size_t AppState::serialize_full_state(char *buf, size_t buf_len) {
     assert(pspwm_clk_conf && pspwm_setpoint && pspwm_setpoint_limits && aux_hw_drv_state);
     // ArduinoJson JsonDocument object, see https://arduinojson.org
     auto json_doc = StaticJsonDocument<_json_objects_size>{};
-    // Setpoint throttling
+    // Setpoint throttling / soft-start feature activated/deactivated
     json_doc["setpoint_throttling_enabled"] = setpoint_throttling_enabled;
-    // Clock divider settings
+    // Clock divider settings (read-only) [number factor]
     json_doc["base_div"] = pspwm_clk_conf->base_clk_prescale;
     json_doc["timer_div"] = pspwm_clk_conf->timer_clk_prescale;
-    // Setpoint limits from PSPWM hw constraints. Scaled to kHz, ns and % respectively...
+    // Hardware setpoint limits (maximum adjustment range) for output frequency [kHz]
     json_doc["frequency_min_hw"] = pspwm_setpoint_limits->frequency_min * 1e-3f;
     json_doc["frequency_max_hw"] = pspwm_setpoint_limits->frequency_max * 1e-3f;
-    // Runtime user setpoint limits for output frequency
+    // User setpoint limits (custom adjustment range) for output frequency [kHz]
     json_doc["frequency_min"] = frequency_min * 1e-3f;
     json_doc["frequency_max"] = frequency_max * 1e-3f;
-    // Operational setpoints for PSPWM module
+    // PWM output frequency setpoint [kHz]
     json_doc["frequency"] = pspwm_setpoint->frequency * 1e-3f;
     //json_doc["frequency"] = frequency_target * 1e-3f;
+    // Setpoint throttling / soft-start speed for output frequency [kHz/sec]
     json_doc["frequency_changerate"] = frequency_increment / constants.timer_fast_interval_ms;
+    // User setpoint limits (custom adjustment range) for PWM result duty cycle [%]
     json_doc["duty_min"] = duty_min * 100.0f;
     json_doc["duty_max"] = duty_max * 100.0f;
+    // PWM result duty cycle setpoint [%]
     json_doc["duty"] = pspwm_setpoint->ps_duty * 100.0f;
     //json_doc["duty"] = duty_target * 100.0f;
+    // Setpoint throttling / soft-start speed for PWM result duty cycle [kHz/sec]
     json_doc["duty_changerate"] = duty_increment * 1e5f / constants.timer_fast_interval_ms;
+    // Hardware limits for dead-time adjustment [ns]. Sum of dead-times must be smaller.
     json_doc["dt_sum_max_hw"] = pspwm_setpoint_limits->dt_sum_max * 1e9f;
+    // Dead-time setpoint for leading and lagging half-bridge leg [ns]
     json_doc["lead_dt"] = pspwm_setpoint->lead_red * 1e9f;
     json_doc["lag_dt"] = pspwm_setpoint->lag_red * 1e9f;
-    // Power stage current limit
+    // Power stage overcurrent limit (depends on measurement shunt value) [A]
     json_doc["current_limit"] = aux_hw_drv_state->current_limit;
-    // Temperatures and fan
+    // Overtemperature protection limits for sensor channels 1 and 2 [°C]
     json_doc["temp_1_limit"] = aux_hw_drv_state->temp_1_limit;
     json_doc["temp_2_limit"] = aux_hw_drv_state->temp_2_limit;
+    // Temperature sensor readout for channels 1 and 2 [°C]
     json_doc["temp_1"] = aux_hw_drv_state->temp_1;
     json_doc["temp_2"] = aux_hw_drv_state->temp_2;
+    // Heatsink fan activated/deactivated
     json_doc["fan_active"] = aux_hw_drv_state->fan_active;
+    // Fan override activated/deactivated:
+    // When set to "true", fan is always ON. Otherwise, fan is temperature-controlled
     json_doc["fan_override"] = aux_hw_drv_state->fan_override;
-    // Power output relays
+    // Power output relays on/off
     json_doc["relay_ref_active"] = aux_hw_drv_state->relay_ref_active;
     json_doc["relay_dut_active"] = aux_hw_drv_state->relay_dut_active;
-    // Gate driver supply and disable signals
+    // Gate driver supply and disable signal status (reat-only)
     json_doc["drv_supply_active"] = aux_hw_drv_state->drv_supply_active;
     json_doc["drv_disabled"] = aux_hw_drv_state->drv_disabled;
-    // Power output signal enable/disable indication
+    // PWM output signal activated/deactivated
     json_doc["power_pwm_active"] = pspwm_setpoint->output_enabled;
-    // Hardware Fault Shutdown Status is latched using this flag
+    // Hardware Fault Shutdown Status is latched using this flag (read-only)
     json_doc["hw_oc_fault"] = hw_oc_fault_occurred;
-    // Overtemperature shutdown active flag
+    // Overtemperature shutdown active flag (read-only)
     json_doc["hw_overtemp"] = aux_hw_drv_state->hw_overtemp;
-    // Length of the power output one-shot timer pulse
+    // Length of the power output one-shot timer pulse [seconds]
     json_doc["oneshot_len"] = oneshot_power_pulse_length_ms * 1e-3f;
     // Do the serialization
     auto json_size = serializeJson(json_doc, buf, buf_len);

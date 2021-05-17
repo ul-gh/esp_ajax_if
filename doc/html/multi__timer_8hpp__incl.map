@@ -1,5 +1,5 @@
 <map id="main/include/multi_timer.hpp" name="main/include/multi_timer.hpp">
-<area shape="rect" id="node1" title="Ticker timer derivative allowing for a fixed number of repeated calls." alt="" coords="67,5,211,47"/>
-<area shape="rect" id="node2" title=" " alt="" coords="5,95,144,121"/>
-<area shape="rect" id="node3" title=" " alt="" coords="168,95,240,121"/>
+<area shape="rect" id="node1" title="Ticker timer derivative allowing for a fixed number of repeated calls." alt="" coords="63,5,190,47"/>
+<area shape="rect" id="node2" title=" " alt="" coords="5,95,128,121"/>
+<area shape="rect" id="node3" title=" " alt="" coords="153,95,221,121"/>
 </map>

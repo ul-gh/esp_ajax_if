@@ -1,4 +1,4 @@
 <map id="pspwm_set_deadtimes_symmetrical" name="pspwm_set_deadtimes_symmetrical">
-<area shape="rect" id="node1" title="Shortcut version of pspwm_set_deadtimes() with identical rising and falling edge dead times applied f..." alt="" coords="5,5,177,47"/>
-<area shape="rect" id="node2" href="$ps__pwm_8h.html#aa13feeee0237f211dcc5a8bfba19bcf2" title="Set deadtime values individually for leading leg rising and falling edge as well as for lagging leg r..." alt="" coords="225,13,397,39"/>
+<area shape="rect" id="node1" title="Shortcut version of pspwm_set_deadtimes() with identical rising and falling edge dead times applied f..." alt="" coords="5,5,160,47"/>
+<area shape="rect" id="node2" href="$ps__pwm_8h.html#aa13feeee0237f211dcc5a8bfba19bcf2" title="Set deadtime values individually for leading leg rising and falling edge as well as for lagging leg r..." alt="" coords="208,13,363,39"/>
 </map>

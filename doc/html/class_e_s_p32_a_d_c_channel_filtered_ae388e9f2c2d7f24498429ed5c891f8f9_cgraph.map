@@ -1,5 +1,5 @@
 <map id="ESP32ADCChannelFiltered::trigger_acquisition" name="ESP32ADCChannelFiltered::trigger_acquisition">
-<area shape="rect" id="node1" title="Explicitly trigger a new ADC analog input channel acquisition." alt="" coords="5,39,196,80"/>
-<area shape="rect" id="node2" href="$class_e_s_p32_a_d_c_channel.html#a4e16fb501ecdf74b95cd9c720b0e3a5f" title="Get raw ADC channel conversion value. Repeats sampling a number of times, see &quot;averaged_samples&quot; cons..." alt="" coords="244,5,416,47"/>
-<area shape="rect" id="node3" href="$class_moving_average_u_int16.html#a0eb4daffcf0fa77ba8f8a14dce28cf53" title="Read in a new datum and update the filter." alt="" coords="247,71,413,112"/>
+<area shape="rect" id="node1" title="Explicitly trigger a new ADC analog input channel acquisition." alt="" coords="5,39,185,80"/>
+<area shape="rect" id="node2" href="$class_e_s_p32_a_d_c_channel.html#a4e16fb501ecdf74b95cd9c720b0e3a5f" title="Get raw ADC channel conversion value. Repeats sampling a number of times, see &quot;averaged_samples&quot; cons..." alt="" coords="233,5,396,47"/>
+<area shape="rect" id="node3" href="$class_moving_average_u_int16.html#a0eb4daffcf0fa77ba8f8a14dce28cf53" title="Read in a new datum and update the filter." alt="" coords="242,71,387,112"/>
 </map>

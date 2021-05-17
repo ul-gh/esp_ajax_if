@@ -1,34 +1,34 @@
 <map id="main/include/app_controller.hpp" name="main/include/app_controller.hpp">
-<area shape="rect" id="node1" title="Application Controller Implementing C++ and HTTP GET API." alt="" coords="1367,5,1598,32"/>
-<area shape="rect" id="node2" title=" " alt="" coords="1777,155,1849,181"/>
-<area shape="rect" id="node3" href="$aux__hw__drv_8hpp.html" title="Auxiliary hardware driver for ESP&#45;AJAX&#45;Lab." alt="" coords="925,80,1051,107"/>
-<area shape="rect" id="node23" href="$app__state__model_8hpp.html" title=" " alt="" coords="1273,229,1436,256"/>
-<area shape="rect" id="node26" href="$api__server_8hpp.html" title=" " alt="" coords="1423,80,1542,107"/>
-<area shape="rect" id="node31" href="$multi__timer_8hpp.html" title="Ticker timer derivative allowing for a fixed number of repeated calls." alt="" coords="1750,80,1877,107"/>
-<area shape="rect" id="node4" title=" " alt="" coords="1151,379,1303,405"/>
-<area shape="rect" id="node5" title=" " alt="" coords="871,155,1001,181"/>
-<area shape="rect" id="node6" title=" " alt="" coords="358,379,461,405"/>
-<area shape="rect" id="node7" title=" " alt="" coords="900,379,1004,405"/>
-<area shape="rect" id="node8" title=" " alt="" coords="572,155,655,181"/>
-<area shape="rect" id="node9" href="$sensor__kty81__1xx_8hpp.html" title=" " alt="" coords="679,155,847,181"/>
-<area shape="rect" id="node10" title=" " alt="" coords="5,379,61,405"/>
-<area shape="rect" id="node11" href="$esp32__adc__channel_8hpp.html" title=" " alt="" coords="595,229,773,256"/>
-<area shape="rect" id="node19" href="$app__config_8hpp.html" title="Application, network and hardware settings, constants and preset configuration." alt="" coords="1077,304,1198,331"/>
-<area shape="rect" id="node12" title=" " alt="" coords="349,304,459,331"/>
-<area shape="rect" id="node13" title=" " alt="" coords="676,379,775,405"/>
-<area shape="rect" id="node14" title=" " alt="" coords="483,304,597,331"/>
-<area shape="rect" id="node15" title=" " alt="" coords="673,304,791,331"/>
-<area shape="rect" id="node16" title=" " alt="" coords="815,304,950,331"/>
-<area shape="rect" id="node17" href="$adc__filter__interpolation_8hpp_source.html" title=" " alt="" coords="71,304,273,331"/>
-<area shape="rect" id="node18" title=" " alt="" coords="130,379,214,405"/>
-<area shape="rect" id="node20" title=" " alt="" coords="1463,379,1591,405"/>
-<area shape="rect" id="node21" title=" " alt="" coords="1028,379,1127,405"/>
-<area shape="rect" id="node22" title=" " alt="" coords="1327,379,1438,405"/>
-<area shape="rect" id="node24" href="$ps__pwm_8h.html" title="Driver for the MCPWM hardware modules on the Espressif ESP32 SoC for generating a Phase&#45;Shift&#45;PWM wav..." alt="" coords="1483,304,1571,331"/>
-<area shape="rect" id="node25" title=" " alt="" coords="1615,379,1697,405"/>
-<area shape="rect" id="node27" title=" " alt="" coords="1703,155,1753,181"/>
-<area shape="rect" id="node28" title=" " alt="" coords="1279,155,1366,181"/>
-<area shape="rect" id="node29" title=" " alt="" coords="1391,155,1487,181"/>
-<area shape="rect" id="node30" title=" " alt="" coords="1511,155,1679,181"/>
-<area shape="rect" id="node32" title=" " alt="" coords="1873,155,2012,181"/>
+<area shape="rect" id="node1" title="Application Controller Implementing C++ and HTTP GET API." alt="" coords="1301,5,1507,32"/>
+<area shape="rect" id="node2" title=" " alt="" coords="1687,155,1755,181"/>
+<area shape="rect" id="node3" href="$aux__hw__drv_8hpp.html" title="Auxiliary hardware driver for ESP&#45;AJAX&#45;Lab." alt="" coords="865,80,980,107"/>
+<area shape="rect" id="node23" href="$app__state__model_8hpp.html" title=" " alt="" coords="1192,229,1339,256"/>
+<area shape="rect" id="node26" href="$api__server_8hpp.html" title=" " alt="" coords="1351,80,1457,107"/>
+<area shape="rect" id="node31" href="$multi__timer_8hpp.html" title="Ticker timer derivative allowing for a fixed number of repeated calls." alt="" coords="1666,80,1777,107"/>
+<area shape="rect" id="node4" title=" " alt="" coords="1075,379,1216,405"/>
+<area shape="rect" id="node5" title=" " alt="" coords="817,155,933,181"/>
+<area shape="rect" id="node6" title=" " alt="" coords="329,379,420,405"/>
+<area shape="rect" id="node7" title=" " alt="" coords="843,379,933,405"/>
+<area shape="rect" id="node8" title=" " alt="" coords="539,155,615,181"/>
+<area shape="rect" id="node9" href="$sensor__kty81__1xx_8hpp.html" title=" " alt="" coords="639,155,793,181"/>
+<area shape="rect" id="node10" title=" " alt="" coords="5,379,56,405"/>
+<area shape="rect" id="node11" href="$esp32__adc__channel_8hpp.html" title=" " alt="" coords="548,229,711,256"/>
+<area shape="rect" id="node19" href="$app__config_8hpp.html" title="Application, network and hardware settings, constants and preset configuration." alt="" coords="1008,304,1117,331"/>
+<area shape="rect" id="node12" title=" " alt="" coords="319,304,415,331"/>
+<area shape="rect" id="node13" title=" " alt="" coords="629,379,717,405"/>
+<area shape="rect" id="node14" title=" " alt="" coords="439,304,545,331"/>
+<area shape="rect" id="node15" title=" " alt="" coords="621,304,731,331"/>
+<area shape="rect" id="node16" title=" " alt="" coords="755,304,882,331"/>
+<area shape="rect" id="node17" href="$adc__filter__interpolation_8hpp_source.html" title=" " alt="" coords="68,304,244,331"/>
+<area shape="rect" id="node18" title=" " alt="" coords="117,379,195,405"/>
+<area shape="rect" id="node20" title=" " alt="" coords="1368,379,1480,405"/>
+<area shape="rect" id="node21" title=" " alt="" coords="957,379,1051,405"/>
+<area shape="rect" id="node22" title=" " alt="" coords="1240,379,1344,405"/>
+<area shape="rect" id="node24" href="$ps__pwm_8h.html" title="Driver for the MCPWM hardware modules on the Espressif ESP32 SoC for generating a Phase&#45;Shift&#45;PWM wav..." alt="" coords="1383,304,1465,331"/>
+<area shape="rect" id="node25" title=" " alt="" coords="1504,379,1579,405"/>
+<area shape="rect" id="node27" title=" " alt="" coords="1617,155,1663,181"/>
+<area shape="rect" id="node28" title=" " alt="" coords="1211,155,1288,181"/>
+<area shape="rect" id="node29" title=" " alt="" coords="1313,155,1407,181"/>
+<area shape="rect" id="node30" title=" " alt="" coords="1432,155,1592,181"/>
+<area shape="rect" id="node32" title=" " alt="" coords="1780,155,1903,181"/>
 </map>

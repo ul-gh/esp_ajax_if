@@ -7,3 +7,4 @@ rm html/*.png
 rm html/*.svg
 rm html/*.map
 rm html/*.md5
+rm html/*.dot

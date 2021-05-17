@@ -335,69 +335,87 @@ void AppController::_register_http_api(APIServer* api_server) {
     CbVoidT cb_void;
     CbFloatT cb_float;
     CbStringT cb_text;
+    // Activate/deactivate the setpoint throttling / soft-start feature
     // "set_setpoint_throttling_enabled"
     cb_text = [this](const String &text) {set_setpoint_throttling_enabled(text=="true");};
     api_server->register_api_cb("set_setpoint_throttling_enabled", cb_text);
+    // User setpoint limits (custom adjustment range) for output frequency [kHz]
     // "set_frequency_min"
     cb_float = [this](float n) {set_frequency_min_khz(n);};
     api_server->register_api_cb("set_frequency_min", cb_float);
     // "set_frequency_max"
     cb_float = [this](float n) {set_frequency_max_khz(n);};
     api_server->register_api_cb("set_frequency_max", cb_float);
+    // PWM output frequency setpoint [kHz]
     // "set_frequency"
     cb_float = [this](float n) {set_frequency_khz(n);};
     api_server->register_api_cb("set_frequency", cb_float);
+    // Setpoint throttling / soft-start speed for output frequency [kHz/sec]
     // "set_frequency_changerate"
     cb_float = [this](float n) {set_frequency_changerate_khz_sec(n);};
     api_server->register_api_cb("set_frequency_changerate", cb_float);
+    // User setpoint limits (custom adjustment range) for PWM result duty cycle [%]
     // "set_duty_min"
     cb_float = [this](float n) {set_duty_min_percent(n);};
     api_server->register_api_cb("set_duty_min", cb_float);
     // "set_duty_max"
     cb_float = [this](float n) {set_duty_max_percent(n);};
     api_server->register_api_cb("set_duty_max", cb_float);
+    // PWM result duty cycle setpoint [%]
     // "set_duty"
     cb_float = [this](float n) {set_duty_percent(n);};
     api_server->register_api_cb("set_duty", cb_float);
+    // Setpoint throttling / soft-start speed for PWM result duty cycle [kHz/sec]
     // "set_duty_changerate"
     cb_float = [this](float n) {set_duty_changerate_percent_sec(n);};
     api_server->register_api_cb("set_duty_changerate", cb_float);
+    // Dead-time setpoint for leading and lagging half-bridge leg [ns]
     // "set_lag_dt"
     cb_float = [this](float n) {set_lag_dt_ns(n);};
     api_server->register_api_cb("set_lag_dt", cb_float);
     // "set_lead_dt"
     cb_float = [this](float n) {set_lead_dt_ns(n);};
     api_server->register_api_cb("set_lead_dt", cb_float);
+    // Activate/deactivated the PWM output signal
     // "set_power_pwm_active"
     cb_text = [this](const String &text) {set_power_pwm_active(text=="true");};
     api_server->register_api_cb("set_power_pwm_active", cb_text);
+    // Length of the power output one-shot timer pulse [sec]
     // "set_oneshot_len"
     cb_float = [this](float n){set_oneshot_len(n);};
     api_server->register_api_cb("set_oneshot_len", cb_float);
+    // Trigger a one-shot output power pulse of configurable length [sec]
     // "trigger_oneshot"
     cb_void = [this](){trigger_oneshot();};
     api_server->register_api_cb("trigger_oneshot", cb_void);
+    // Clear the hardware error shutdown latch
     // "clear_shutdown"
     cb_void = [this](){clear_shutdown();};
     api_server->register_api_cb("clear_shutdown", cb_void);
+    // Power stage overcurrent limit (depends on measurement shunt value) [A]
     // "set_current_limit"
     cb_float = [this](float n) {set_current_limit(n);};
     api_server->register_api_cb("set_current_limit", cb_float);
+    // Overtemperature protection limits for sensor channels 1 and 2 [°C]
     // "set_temp_1_limit"
     cb_float = [this](float n) {set_temp_1_limit(n);};
     api_server->register_api_cb("set_temp_1_limit", cb_float);
     // "set_temp_2_limit"
     cb_float = [this](float n) {set_temp_2_limit(n);};
     api_server->register_api_cb("set_temp_2_limit", cb_float);
+    // Activate/deactivate power output relays/contactors
     // "set_relay_ref_active"
     cb_text = [this](const String &text) {set_relay_ref_active(text=="true");};
     api_server->register_api_cb("set_relay_ref_active", cb_text);
     // "set_relay_dut_active"
     cb_text = [this](const String &text) {set_relay_dut_active(text=="true");};
     api_server->register_api_cb("set_relay_dut_active", cb_text);
+    // Fan override activated/deactivated:
+    // When set to "true", fan is always ON. Otherwise, fan is temperature-controlled
     // "set_fan_override"
     cb_text = [this](const String &text) {set_fan_override(text=="true");};
     api_server->register_api_cb("set_fan_override", cb_text);
+    // Save all runtime settings to SPI flash for persistence accross hardware restarts
     // "save_settings"
     cb_void = [this](){save_settings();};
     api_server->register_api_cb("save_settings", cb_void);
