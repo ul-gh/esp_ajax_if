@@ -1,2 +1,5 @@
 .pio
 .vscode
+components/
+vue_app/
+util/
