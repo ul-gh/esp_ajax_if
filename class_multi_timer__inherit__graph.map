@@ -1,6 +1,5 @@
 <map id="MultiTimer" name="MultiTimer">
-<area shape="rect" id="node1" title="Ticker timer derivative allowing for a fixed number of repeated calls." alt="" coords="126,80,218,107"/>
-<area shape="rect" id="node3" href="$class_multi_timer_non_static.html" title="Same as MultiTimer but allows a pointer to a non&#45;static member function as a callback." alt="" coords="5,155,160,196"/>
-<area shape="rect" id="node4" href="$class_multi_timer_non_static.html" title=" " alt="" coords="184,155,339,196"/>
-<area shape="rect" id="node2" title=" " alt="" coords="142,5,202,32"/>
+<area shape="rect" id="node1" title="Ticker timer derivative allowing for a fixed number of repeated calls." alt="" coords="33,80,116,107"/>
+<area shape="rect" id="node3" href="$class_multi_timer_non_static.html" title="Same as MultiTimer but allows a pointer to a non&#45;static member function as a callback." alt="" coords="5,155,144,196"/>
+<area shape="rect" id="node2" title=" " alt="" coords="46,5,103,32"/>
 </map>

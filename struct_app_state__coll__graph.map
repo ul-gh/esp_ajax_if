@@ -1,8 +1,9 @@
 <map id="AppState" name="AppState">
-<area shape="rect" id="node1" title="Application state containing data and settings model." alt="" coords="317,95,398,121"/>
-<area shape="rect" id="node2" href="$structpspwm__setpoint__t.html" title=" " alt="" coords="5,5,147,32"/>
-<area shape="rect" id="node3" href="$struct_app_config.html" title="Application configuration and default values for class AppController." alt="" coords="173,5,262,32"/>
-<area shape="rect" id="node4" href="$structpspwm__clk__conf__t.html" title=" " alt="" coords="286,5,429,32"/>
-<area shape="rect" id="node5" href="$structpspwm__setpoint__limits__t.html" title=" " alt="" coords="453,5,638,32"/>
-<area shape="rect" id="node6" href="$struct_aux_hw_drv_state.html" title=" " alt="" coords="665,5,791,32"/>
+<area shape="rect" id="node1" title="Application state containing data and settings model." alt="" coords="356,132,432,159"/>
+<area shape="rect" id="node2" href="$structpspwm__setpoint__t.html" title=" " alt="" coords="25,5,151,32"/>
+<area shape="rect" id="node3" href="$structpspwm__clk__conf__t.html" title=" " alt="" coords="23,56,153,83"/>
+<area shape="rect" id="node4" href="$struct_network_config.html" title="WiFi network configuration structure with default values." alt="" coords="35,107,141,133"/>
+<area shape="rect" id="node5" href="$structpspwm__setpoint__limits__t.html" title=" " alt="" coords="5,157,171,184"/>
+<area shape="rect" id="node6" href="$struct_app_constants.html" title="Constant / compile&#45;time config values go here!" alt="" coords="36,208,140,235"/>
+<area shape="rect" id="node7" href="$struct_aux_hw_drv_state.html" title=" " alt="" coords="32,259,144,285"/>
 </map>

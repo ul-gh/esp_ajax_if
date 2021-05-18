@@ -1,10 +1,9 @@
 <map id="AuxHwDrv" name="AuxHwDrv">
-<area shape="rect" id="node1" title="Auxiliary hardware driver for ESP&#45;AJAX&#45;Lab This implements GPIO control for relays,..." alt="" coords="1120,113,1211,140"/>
-<area shape="rect" id="node2" href="$class_sensor_k_t_y81__121.html" title="KTY81&#45;121 type silicon temperature sensor readout using the ESP32 ADC in its high&#45;linearity region." alt="" coords="783,85,920,112"/>
-<area shape="rect" id="node3" href="$class_sensor_k_t_y81__1xx.html" title="KTY81&#45;1xx type silicon temperature sensor readout and conversion functions using the ESP32 ADC in its..." alt="" coords="596,85,733,112"/>
-<area shape="rect" id="node4" href="$class_e_s_p32_a_d_c_channel_filtered.html" title=" " alt="" coords="263,20,453,76"/>
-<area shape="rect" id="node5" href="$class_e_s_p32_a_d_c_channel.html" title="ESP32 ADC 1 channel access with configurable averaging." alt="" coords="17,5,160,32"/>
-<area shape="rect" id="node6" href="$class_moving_average_u_int16.html" title=" " alt="" coords="5,57,172,98"/>
-<area shape="rect" id="node7" href="$class_equidistant_p_w_l_u_int16.html" title=" " alt="" coords="256,101,460,142"/>
-<area shape="rect" id="node8" href="$struct_aux_hw_drv_state.html" title=" " alt="" coords="789,136,914,163"/>
+<area shape="rect" id="node1" title="Auxiliary hardware driver for ESP&#45;AJAX&#45;Lab This implements GPIO control for relays,..." alt="" coords="951,99,1032,125"/>
+<area shape="rect" id="node2" href="$class_sensor_k_t_y81__121.html" title="KTY81&#45;121 type silicon temperature sensor readout using the ESP32 ADC in its high&#45;linearity region." alt="" coords="679,71,809,97"/>
+<area shape="rect" id="node3" href="$class_sensor_k_t_y81__1xx.html" title="KTY81&#45;1xx type silicon temperature sensor readout and conversion functions using the ESP32 ADC in its..." alt="" coords="499,71,629,97"/>
+<area shape="rect" id="node4" href="$class_e_s_p32_a_d_c_channel_filtered.html" title=" " alt="" coords="193,5,373,61"/>
+<area shape="rect" id="node5" href="$class_e_s_p32_a_d_c_channel.html" title="ESP32 ADC 1 channel access with configurable averaging." alt="" coords="5,20,143,47"/>
+<area shape="rect" id="node6" href="$class_equidistant_p_w_l_u_int16.html" title=" " alt="" coords="192,86,375,127"/>
+<area shape="rect" id="node7" href="$struct_aux_hw_drv_state.html" title=" " alt="" coords="688,121,800,148"/>
 </map>

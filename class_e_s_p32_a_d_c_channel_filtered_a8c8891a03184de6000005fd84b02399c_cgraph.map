@@ -1,0 +1,5 @@
+<map id="ESP32ADCChannelFiltered::ESP32ADCChannelFiltered" name="ESP32ADCChannelFiltered::ESP32ADCChannelFiltered">
+<area shape="rect" id="node1" title="Initialize an ESP32 ADC channel." alt="" coords="5,39,193,80"/>
+<area shape="rect" id="node2" href="$class_e_s_p32_a_d_c_channel.html#a4e16fb501ecdf74b95cd9c720b0e3a5f" title="Get raw ADC channel conversion value. Repeats sampling a number of times, see &quot;averaged_samples&quot; cons..." alt="" coords="241,5,404,47"/>
+<area shape="rect" id="node3" href="$class_moving_average_u_int16.html#ad8b40b6234d0e2d2a6bdfc8af7266836" title="Initializes the moving average filter with a start value." alt="" coords="250,71,395,112"/>
+</map>

@@ -1,7 +1,7 @@
-<map id="src/esp32_adc_channel.hpp" name="src/esp32_adc_channel.hpp">
-<area shape="rect" id="node1" title=" " alt="" coords="5,5,205,32"/>
-<area shape="rect" id="node2" href="$sensor__kty81__1xx_8hpp.html" title=" " alt="" coords="10,80,201,107"/>
-<area shape="rect" id="node3" href="$aux__hw__drv_8hpp.html" title="Auxiliary hardware driver for ESP&#45;AJAX&#45;Lab." alt="" coords="30,155,181,181"/>
-<area shape="rect" id="node4" href="$app__controller_8hpp.html" title="Application Controller Implementing C++ and HTTP GET API." alt="" coords="22,229,189,256"/>
-<area shape="rect" id="node5" href="$app__main_8cpp.html" title="ESP&#45;AJAX&#45;Lab HTTP server, AJAX API backend, web application and Soc hardware drivers for WiFi remote ..." alt="" coords="37,304,173,331"/>
+<map id="main/include/esp32_adc_channel.hpp" name="main/include/esp32_adc_channel.hpp">
+<area shape="rect" id="node1" title=" " alt="" coords="41,5,175,47"/>
+<area shape="rect" id="node2" href="$sensor__kty81__1xx_8hpp.html" title=" " alt="" coords="39,95,177,136"/>
+<area shape="rect" id="node3" href="$aux__hw__drv_8hpp.html" title="Auxiliary hardware driver for ESP&#45;AJAX&#45;Lab." alt="" coords="37,184,179,225"/>
+<area shape="rect" id="node4" href="$app__controller_8hpp.html" title="Application Controller Implementing C++ and HTTP GET API." alt="" coords="5,273,211,300"/>
+<area shape="rect" id="node5" href="$app__main_8cpp.html" title="ESP&#45;AJAX&#45;Lab HTTP server, AJAX API backend, web application and Soc hardware drivers for WiFi remote ..." alt="" coords="41,348,175,375"/>
 </map>

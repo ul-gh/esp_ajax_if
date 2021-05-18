@@ -1,0 +1,8 @@
+<map id="SensorKTY81_1xx::get_temp_pwl" name="SensorKTY81_1xx::get_temp_pwl">
+<area shape="rect" id="node1" title="Excellent precision temperature sensing using piecewise linear interpolation of Look&#45;Up&#45;Table values ..." alt="" coords="5,39,161,80"/>
+<area shape="rect" id="node2" href="$class_e_s_p32_a_d_c_channel_filtered.html#a5bd415b08cf7b7486b750a31dd762996" title="Get raw ADC channel conversion value, through moving average filter." alt="" coords="209,39,389,80"/>
+<area shape="rect" id="node3" href="$class_moving_average_u_int16.html#a106746cc73162827ed42a146d84ced1d" title="Get filter output value." alt="" coords="455,5,600,47"/>
+<area shape="rect" id="node4" href="$class_e_s_p32_a_d_c_channel_filtered.html#ae388e9f2c2d7f24498429ed5c891f8f9" title="Explicitly trigger a new ADC analog input channel acquisition." alt="" coords="437,71,617,112"/>
+<area shape="rect" id="node5" href="$class_e_s_p32_a_d_c_channel.html#a4e16fb501ecdf74b95cd9c720b0e3a5f" title="Get raw ADC channel conversion value. Repeats sampling a number of times, see &quot;averaged_samples&quot; cons..." alt="" coords="665,37,828,79"/>
+<area shape="rect" id="node6" href="$class_moving_average_u_int16.html#a0eb4daffcf0fa77ba8f8a14dce28cf53" title="Read in a new datum and update the filter." alt="" coords="674,103,819,144"/>
+</map>
