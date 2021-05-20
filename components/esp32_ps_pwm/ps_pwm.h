@@ -133,7 +133,8 @@ esp_err_t pspwm_init(mcpwm_unit_t mcpwm_num,
 /** @brief Shortcut version of pspwm_init() with identical
  * rising and falling edge dead times applied for each of lead and lag leg.
  * 
- * This is also call compatible with the up_down_ctr_mode API (different file).
+ * This is also call compatible with the up_down_ctr_mode API
+ * (which is disabled by default, see further down this file).
  */
 esp_err_t pspwm_init_symmetrical(mcpwm_unit_t mcpwm_num,
                                  int gpio_lead_a,
