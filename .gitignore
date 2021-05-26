@@ -9,7 +9,6 @@ vue_app/esp_ajax_lab/node_modules
 .vscode/launch.json
 .vscode/ipch
 README.md
-firmware.zip
 gdb*.txt
 *.pcap
 *.pcapng

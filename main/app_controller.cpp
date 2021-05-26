@@ -23,7 +23,7 @@
 #undef LOG_LOCAL_LEVEL
 // When setting log level to ESP_LOG_DEBUG:
 // AppConfig::timer_fast_interval_ms must be at least 50
-#define LOG_LOCAL_LEVEL ESP_LOG_DEBUG
+#define LOG_LOCAL_LEVEL ESP_LOG_INFO
 #include "esp_log.h"
 static auto TAG = "AppController";
 
