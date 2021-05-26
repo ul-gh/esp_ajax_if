@@ -28,3 +28,6 @@
 	path = components/esp_littlefs
 	url = https://github.com/joltwallet/esp_littlefs.git
 	branch = master
+[submodule "components/esp32_ps_pwm"]
+	path = components/esp32_ps_pwm
+	url = https://github.com/ul-gh/esp32_ps_pwm.git

@@ -3,5 +3,11 @@
 "cmake.configureOnOpen": true,
 "idf.port": "/dev/ttyUSB0",
 "idf.flashType": "UART",
-"idf.toolsPathWin": "D:\\config\\.espressif"
+"idf.toolsPathWin": "D:\\config\\.espressif",
+"files.associations": {
+    "periph_ctrl.h": "c",
+    "mcpwm_struct.h": "c",
+    "ps_pwm.h": "c",
+    "mcpwm.h": "c"
+}
 }
