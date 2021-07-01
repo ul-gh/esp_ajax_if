@@ -16,6 +16,7 @@ export default function useApiStore() {
     frequency_min_hw: 0.01,
     frequency_max_hw: 1000,
     dt_sum_max_hw: 600,
+    // duty_max_hw is now a onstant, see comment at function update_computed_values() below.
     duty_max_hw: 100.0,
     current_limit_max_hw: 100,
     // Runtime user setpoint limits for output frequency and duty cycle
@@ -82,8 +83,12 @@ export default function useApiStore() {
 
   function update_computed_values() {
     state.hw_error = state.hw_oc_fault ? "HW OC FAULT" : state.hw_overtemp ? "OVERTEMPERATURE" : "";
-    const dt_effective = Math.max(state.lead_dt, state.lag_dt);
-    state.duty_max_hw = 100 * (1 - 1E-6 * state.frequency * 2 * dt_effective);
+    // Assuming the configured dead-time values correspond to actual hardware
+    // switching times and delays, the net effect will be zero, i.e. the output
+    // waveform will have maximum duty cycle for phase-shift of 180 degrees or
+    // state.duty = 1.0...
+    //const dt_effective = Math.max(state.lead_dt, state.lag_dt);
+    //state.duty_max_hw = 100 * (1 - 1E-6 * state.frequency * 2 * dt_effective);
   }
 
   update_computed_values();
