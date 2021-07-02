@@ -91,3 +91,7 @@ if (process.argv.includes("make_spiffs")) {
 if (process.argv.includes("flash_spiffs")) {
     flash();
 }
+
+if (process.argv.includes("deploy_data")) {
+    copy_to_data_folder();
+}
