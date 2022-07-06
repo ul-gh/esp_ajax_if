@@ -9,5 +9,6 @@
     "mcpwm_struct.h": "c",
     "ps_pwm.h": "c",
     "mcpwm.h": "c"
-}
+},
+"idf.adapterTargetName": "esp32"
 }
