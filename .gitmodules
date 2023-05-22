@@ -16,14 +16,6 @@
 	path = components/ESPAsyncWebServer
 	url = https://github.com/ul-gh/ESPAsyncWebServer.git
 	branch = dev
-[submodule "components/arduino-esp32"]
-	path = components/arduino-esp32
-	url = https://github.com/ul-gh/arduino-esp32.git
-	branch = master
-[submodule "components/esp-rainmaker"]
-	path = components/esp-rainmaker
-	url = https://github.com/espressif/esp-rainmaker.git
-	branch = master
 [submodule "components/esp_littlefs"]
 	path = components/esp_littlefs
 	url = https://github.com/joltwallet/esp_littlefs.git
@@ -31,3 +23,7 @@
 [submodule "components/esp32_ps_pwm"]
 	path = components/esp32_ps_pwm
 	url = https://github.com/ul-gh/esp32_ps_pwm.git
+[submodule "components/arduino-esp32"]
+         path = components/arduino-esp32
+         url = https://github.com/espressif/arduino-esp32.git
+         branch = master
