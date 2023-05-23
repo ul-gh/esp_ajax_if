@@ -18,11 +18,11 @@
 #include "IPAddress.h"
 #include "ArduinoJson.h"
 
-
-struct SerialConfig {
-    static constexpr auto serial_baudrate = 115200ul;
-};
-
+namespace app_config {
+    struct SerialConfig {
+        static constexpr auto serial_baudrate = 115200ul;
+    };
+}
 
 /** @brief WiFi network configuration structure with default values
  * 
@@ -276,7 +276,5 @@ struct AuxHwDrvConfig
     uint32_t curr_limit_pwm_offset = 0;
     ///////////////////////////////////////////////////////// End Configuration
 };
-
-
 
 #endif

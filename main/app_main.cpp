@@ -69,7 +69,7 @@ auto app_controller = AppController{state, &api_server};
 
 void setup() {
     esp_log_level_set("*", ESP_LOG_DEBUG);
-    Serial.begin(SerialConfig::serial_baudrate);
+    Serial.begin(app_config::SerialConfig::serial_baudrate);
     wifi_configurator = new WiFiConfigurator(state, &http_backend, &dns_server);
     wifi_configurator->begin();
 
